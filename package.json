@@ -1,0 +1,13 @@
+{
+  "name"           : "bacon",
+  "version"        : "0.0.1",
+  "author"         : "Juha Paananen",
+  "licenses"       : ["MIT"],
+  "dependencies"   : {"jsdom"        : ">=0.2.10",
+                      "jquery"       : ">=1.6.x"},
+  "devDependencies": {"jasmine-node" : ">=1.0.x",
+                      "coffee-script": ">=1.2.x"},
+  "scripts"        : {"test": "jasmine-node --coffee spec",
+                      "pre-publish": "cake build"}
+}
+
