@@ -34,17 +34,23 @@ class EventStream
   filter: (f) ->
     @withHandler (event) -> @push event if event == Bacon.end or f event
   takeWhile: (f) ->
-    @withHandler (event) -> if event == Bacon.end or f event
-                              @push event
-                            else
-                              @push Bacon.end
-                              Bacon.end
+    @withHandler (event) -> 
+      if event == Bacon.end or f event
+        @push event
+      else
+        @push Bacon.end
+        Bacon.end
   map: (f) ->
-    @withHandler (event) -> if event == Bacon.end
-                                 @push event
-                               else
-                                 @push (f event)
-  merge: (other) -> this
+    @withHandler (event) -> 
+      if event == Bacon.end
+        @push event
+      else
+        @push (f event)
+  merge: (right) -> 
+    left = this
+    new EventStream (sink) ->
+      left.subscribe(sink)
+      right.subscribe(sink)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
