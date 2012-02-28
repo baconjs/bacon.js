@@ -15,13 +15,15 @@ describe "sequentially", ->
 describe "filter", -> 
   it "should filter values", ->
     expectEvents(
-      Bacon.sequentially(1000, ["lol", "wut"]).filter((x) -> x == "lol")
-      ["lol", "wut"])
+      Bacon.sequentially(1000, ["lol", "wut"]).filter((x) -> x == "wut")
+      ["wut"])
 
 expectEvents = (src, expectedEvents) ->
   events = []
+  verify = -> expect(events).toEqual(expectedEvents)
   src.subscribe (event) ->
     if event == Bacon.end
-      expect(events).toEqual(expectedEvents)
+      verify
     else
       events.push(event)
+  setTimeout verify 5000

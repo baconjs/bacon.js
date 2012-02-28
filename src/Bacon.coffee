@@ -28,6 +28,9 @@ class EventStream
   filter: (f) ->
     new EventStream @subscribe
 
+class Dispatcher
+  constructor: (@_subscribe) ->
+
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
