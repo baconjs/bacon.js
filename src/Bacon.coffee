@@ -20,7 +20,7 @@ Bacon.sequentially = (delay, values) ->
         if empty xs
           sink Bacon.end
         else
-          setTimeout (-> push xs) delay
+          setTimeout (-> push xs), delay
       push = (xs) -> 
         reply = sink (head xs)
         unless reply == Bacon.end
