@@ -69,6 +69,9 @@ class EventStream
       left.subscribe(smartSink)
       right.subscribe(smartSink)
 
+  toProperty: ->
+    this
+
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"

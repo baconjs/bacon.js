@@ -41,9 +41,18 @@ describe "merge", ->
 describe "pushStream", ->
   it "delivers pushed events", ->
     s = Bacon.pushStream()
-    s.subscribe (event) -> console.log(event)
+    s.push "pullMe"
     expectEvents s, ["pushMe"]
     s.push "pushMe"
+    s.end()
+
+describe "Property", ->
+  it "delivers current value and changes to subscribers", ->
+    s = Bacon.pushStream()
+    p = s.toProperty()
+    s.push "a"
+    expectEvents p, ["a", "b"]
+    s.push "b"
     s.end()
 
 expectEvents = (src, expectedEvents) ->
