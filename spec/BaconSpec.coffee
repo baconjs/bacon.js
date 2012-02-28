@@ -20,10 +20,8 @@ describe "filter", ->
 
 expectEvents = (src, expectedEvents) ->
   events = []
-  verify = -> expect(events).toEqual(expectedEvents)
+  verify = -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
   src.subscribe (event) ->
-    if event == Bacon.end
-      verify
-    else
-      events.push(event)
+    events.push(event)
+    verify if event == Bacon.end
   setTimeout verify 5000

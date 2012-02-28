@@ -28,18 +28,22 @@ class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
-    new EventStream @subscribe
+    d = new Dispatcher(@subscribe)
+    push = d.push
+    d.push = (event) -> push event if event == Bacon.end or f event
+    d.toEventStream()
 
 class Dispatcher
   constructor: (subscribe) ->
     sinks = []
-    push = (event) ->
+    @push = (event) =>
       for sink in sinks
         sink event
-    @subscribe = (sink) ->
+    @subscribe = (sink) =>
       sinks.push(sink)
       if sinks.length == 1
-        subscribe push 
+        subscribe @push 
+  toEventStream: -> new EventStream(@subscribe)
 
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
