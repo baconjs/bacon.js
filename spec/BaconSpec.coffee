@@ -60,8 +60,7 @@ describe "Property", ->
 expectEvents = (src, expectedEvents) ->
   events = []
   streamEnded = -> events.length > 0 and events[events.length - 1] == Bacon.end
-  runs ->
-    src.subscribe (event) -> events.push(event)
+  runs -> src.subscribe (event) -> events.push(event)
   waitsFor streamEnded, 1000
   runs -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
 
