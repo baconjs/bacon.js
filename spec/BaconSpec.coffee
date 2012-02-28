@@ -38,10 +38,20 @@ describe "merge", ->
       left.merge(right)
       [1, 2, 3, 4, 5, 6])
 
+describe "pushStream", ->
+  it "delivers pushed events", ->
+    s = Bacon.pushStream()
+    s.subscribe (event) -> console.log(event)
+    expectEvents s, ["pushMe"]
+    s.push "pushMe"
+    s.end()
+
 expectEvents = (src, expectedEvents) ->
   events = []
   verify = -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
+  t = setTimeout verify, 5000
   src.subscribe (event) ->
     events.push(event)
-    verify if event == Bacon.end
-  setTimeout verify 5000
+    if event == Bacon.end
+      clearTimeout t
+      verify

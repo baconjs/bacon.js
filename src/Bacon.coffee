@@ -28,6 +28,13 @@ Bacon.sequentially = (delay, values) ->
       schedule values
   )
 
+Bacon.pushStream = ->
+  d = new Dispatcher
+  pushStream = d.toEventStream()
+  pushStream.push = (event) -> d.push event
+  pushStream.end = -> d.push Bacon.end
+  pushStream
+
 class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
@@ -68,6 +75,7 @@ class EventStream
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
+    subscribe ?= (event) ->
     sinks = []
     @push = (event) =>
       for sink in sinks
