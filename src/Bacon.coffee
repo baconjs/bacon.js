@@ -25,6 +25,8 @@ Bacon.sequentially = (delay, values) ->
 
 class EventStream
   constructor: (@subscribe) ->
+  filter: (f) ->
+    new EventStream @subscribe
 
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
