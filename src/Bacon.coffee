@@ -25,12 +25,21 @@ Bacon.sequentially = (delay, values) ->
   )
 
 class EventStream
-  constructor: (@subscribe) ->
+  constructor: (subscribe) ->
+    @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
     new EventStream @subscribe
 
 class Dispatcher
-  constructor: (@_subscribe) ->
+  constructor: (subscribe) ->
+    sinks = []
+    push = (event) ->
+      for sink in sinks
+        sink event
+    @subscribe = (sink) ->
+      sinks.push(sink)
+      if sinks.length == 1
+        subscribe push 
 
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
