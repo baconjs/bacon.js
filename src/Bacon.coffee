@@ -2,7 +2,9 @@ Bacon = exports.Bacon = {
   taste : "delicious"
 }
 
-Bacon.end = {}
+Bacon.end = "veggies"
+
+Bacon.more = "moar bacon!"
 
 Bacon.later = (delay, value) ->
   new EventStream ((sink) ->
@@ -14,12 +16,14 @@ Bacon.later = (delay, value) ->
 
 Bacon.sequentially = (delay, values) ->
   new EventStream ((sink) ->
-      schedule = (xs) -> setTimeout (-> push xs) delay
-      push = (xs) -> 
+      schedule = (xs) -> 
         if empty xs
           sink Bacon.end
         else
-          sink (head xs)
+          setTimeout (-> push xs) delay
+      push = (xs) -> 
+        reply = sink (head xs)
+        unless reply == Bacon.end
           schedule (tail xs)
       schedule values
   )
@@ -29,6 +33,12 @@ class EventStream
     @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
     @withHandler (event) -> @push event if event == Bacon.end or f event
+  takeWhile: (f) ->
+    @withHandler (event) -> if event == Bacon.end or f event
+                              @push event
+                            else
+                              @push Bacon.end
+                              Bacon.end
   map: (f) ->
     @withHandler (event) -> if event == Bacon.end
                                  @push event
@@ -43,7 +53,9 @@ class Dispatcher
     sinks = []
     @push = (event) =>
       for sink in sinks
-        sink event
+        reply = sink event
+        remove(sink, sinks) if reply == Bacon.end
+      if (sinks.length > 0) then Bacon.more else Bacon.end
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => handleEvent.apply(this, [event])
     @subscribe = (sink) =>
@@ -56,3 +68,7 @@ class Dispatcher
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
+remove = (x, xs) ->
+  i = xs.indexOf(x)
+  if i >= 0
+    xs.splice(i, 1)
