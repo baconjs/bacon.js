@@ -5,15 +5,15 @@ Bacon = exports.Bacon = {
 Bacon.end = {}
 
 Bacon.later = (delay, value) ->
-  { subscribe : (sink) ->
+  new EventStream ((sink) ->
       push = -> 
         sink value
         sink Bacon.end
       setTimeout push delay
-  }
+  )
 
 Bacon.sequentially = (delay, values) ->
-  { subscribe : (sink) ->
+  new EventStream ((sink) ->
       push = (xs) -> 
         sink (head xs)
         if empty xs
@@ -21,7 +21,10 @@ Bacon.sequentially = (delay, values) ->
         else
           Bacon.sequentially(delay, tail values)
       setTimeout (-> push values) delay
-  }
+  )
+
+class EventStream
+  constructor: (@subscribe) ->
 
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]

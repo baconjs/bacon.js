@@ -14,6 +14,7 @@ describe "sequentially", ->
 
 describe "filter", -> 
   it "should filter values", ->
+    expectEvents(
       Bacon.sequentially(1000, ["lol", "wut"]).filter((x) -> x == "lol")
       ["lol", "wut"])
 
