@@ -28,14 +28,14 @@ class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
-    filteredHandler = (event) -> @push event if event == Bacon.end or f event
-    new Dispatcher(@subscribe, filteredHandler).toEventStream()
+    @withHandler (event) -> @push event if event == Bacon.end or f event
   map: (f) ->
-    mappedHandler = (event) -> if event == Bacon.end
+    @withHandler (event) -> if event == Bacon.end
                                  @push event
                                else
                                  @push (f event)
-    new Dispatcher(@subscribe, mappedHandler).toEventStream()
+  withHandler: (handler) ->
+    new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
 
 class Dispatcher

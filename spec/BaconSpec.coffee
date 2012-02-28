@@ -24,6 +24,13 @@ describe "map", ->
       Bacon.sequentially(1000, ["lol", "wut"]).map((x) -> x + "!")
       ["lol!", "wut!"])
 
+describe "takeWhile", ->
+  it "should take while predicate is true", ->
+    expectEvents(
+      Bacon.sequentially(1000, [1, 2, 3, 1]).takeWhile((x) -> x < 3)
+      [1, 2])
+
+
 expectEvents = (src, expectedEvents) ->
   events = []
   verify = -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
