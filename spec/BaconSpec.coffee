@@ -18,6 +18,12 @@ describe "filter", ->
       Bacon.sequentially(1000, ["lol", "wut"]).filter((x) -> x == "wut")
       ["wut"])
 
+describe "map", ->
+  it "should map with given function", ->
+    expectEvents(
+      Bacon.sequentially(1000, ["lol", "wut"]).map((x) -> x + "!")
+      ["lol!", "wut!"])
+
 expectEvents = (src, expectedEvents) ->
   events = []
   verify = -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
