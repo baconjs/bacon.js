@@ -49,8 +49,18 @@ class EventStream
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
-      left.subscribe(sink)
-      right.subscribe(sink)
+      ends = 0
+      smartSink = (event) ->
+        if event == Bacon.end
+          ends++
+          if ends == 2
+            sink Bacon.end
+          else
+            Bacon.more
+        else
+          sink event
+      left.subscribe(smartSink)
+      right.subscribe(smartSink)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
