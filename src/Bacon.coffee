@@ -14,13 +14,14 @@ Bacon.later = (delay, value) ->
 
 Bacon.sequentially = (delay, values) ->
   new EventStream ((sink) ->
+      schedule = (xs) -> setTimeout (-> push xs) delay
       push = (xs) -> 
-        sink (head xs)
         if empty xs
           sink Bacon.end
         else
-          Bacon.sequentially(delay, tail values)
-      setTimeout (-> push values) delay
+          sink (head xs)
+          schedule (tail xs)
+      schedule values
   )
 
 class EventStream
