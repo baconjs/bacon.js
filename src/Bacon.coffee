@@ -44,6 +44,8 @@ class EventStream
                                  @push event
                                else
                                  @push (f event)
+  merge: (other) -> this
+
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"

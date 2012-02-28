@@ -30,6 +30,13 @@ describe "takeWhile", ->
       Bacon.sequentially(1000, [1, 2, 3, 1]).takeWhile((x) -> x < 3)
       [1, 2])
 
+describe "merge", ->
+  it "merges two streams and ends when both are exhausted", ->
+    left = Bacon.sequentially(100, [1, 2, 3])
+    right = Bacon.sequentially(1000, [4, 5, 6])
+    expectEvents(
+      left.merge(right)
+      [1, 2, 3, 4, 5, 6])
 
 expectEvents = (src, expectedEvents) ->
   events = []
