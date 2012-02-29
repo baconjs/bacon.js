@@ -50,8 +50,7 @@ describe "pushStream", ->
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
     s = Bacon.pushStream()
-    p = s.toProperty()
-    s.push "a"
+    p = s.toProperty("a")
     soon ->
       s.push "b"
       s.end()

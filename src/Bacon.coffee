@@ -69,12 +69,23 @@ class EventStream
       left.subscribe(smartSink)
       right.subscribe(smartSink)
 
-  toProperty: ->
-    this
+  toProperty: (initValue) ->
+    new Property(this, initValue)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
+
+class Property
+  constructor: (stream, initValue) ->
+    currentValue = initValue
+    handleEvent = (event) -> 
+      currentValue = event unless event == Bacon.end
+      @push event
+    d = new Dispatcher(stream.subscribe, handleEvent)
+    @subscribe = (sink) ->
+      sink currentValue if currentValue?
+      d.subscribe(sink)
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
