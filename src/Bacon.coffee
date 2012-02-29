@@ -2,15 +2,15 @@ Bacon = exports.Bacon = {
   taste : "delicious"
 }
 
-Bacon.end = "veggies"
+Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
 
 Bacon.later = (delay, value) ->
   new EventStream ((sink) ->
       push = -> 
-        sink value
-        sink Bacon.end
+        sink next(value)
+        sink end()
       setTimeout push delay
   )
 
@@ -18,12 +18,12 @@ Bacon.sequentially = (delay, values) ->
   new EventStream ((sink) ->
       schedule = (xs) -> 
         if empty xs
-          sink Bacon.end
+          sink end()
         else
           setTimeout (-> push xs), delay
       push = (xs) -> 
-        reply = sink (head xs)
-        unless reply == Bacon.end
+        reply = sink (next(head xs))
+        unless reply == Bacon.noMore
           schedule (tail xs)
       schedule values
   )
@@ -31,37 +31,55 @@ Bacon.sequentially = (delay, values) ->
 Bacon.pushStream = ->
   d = new Dispatcher
   pushStream = d.toEventStream()
-  pushStream.push = (event) -> d.push event
-  pushStream.end = -> d.push Bacon.end
+  pushStream.push = (event) -> d.push next(event)
+  pushStream.end = -> d.push end()
   pushStream
+
+
+class Next
+  constructor: (@value) ->
+  isEnd: -> false
+  isInitial: -> false
+
+class Initial extends Next
+  isInitial: -> true
+
+class End
+  constructor: ->
+  isEnd: -> true
+  isInitial: -> false
+
+initial = (value) -> new Initial(value)
+next = (value) -> new Next(value)
+end = -> new End()
 
 class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
-    @withHandler (event) -> @push event if event == Bacon.end or f event
+    @withHandler (event) -> @push event if event.isEnd() or f event.value
   takeWhile: (f) ->
     @withHandler (event) -> 
-      if event == Bacon.end or f event
+      if event.isEnd() or f event.value
         @push event
       else
-        @push Bacon.end
-        Bacon.end
+        @push end()
+        Bacon.noMore
   map: (f) ->
     @withHandler (event) -> 
-      if event == Bacon.end
+      if event.isEnd()
         @push event
       else
-        @push (f event)
+        @push next(f event.value)
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
       ends = 0
       smartSink = (event) ->
-        if event == Bacon.end
+        if event.isEnd()
           ends++
           if ends == 2
-            sink Bacon.end
+            sink end()
           else
             Bacon.more
         else
@@ -80,11 +98,11 @@ class Property
   constructor: (stream, initValue) ->
     currentValue = initValue
     handleEvent = (event) -> 
-      currentValue = event unless event == Bacon.end
+      currentValue = event.value unless event.isEnd
       @push event
     d = new Dispatcher(stream.subscribe, handleEvent)
     @subscribe = (sink) ->
-      sink currentValue if currentValue?
+      sink initial(currentValue) if currentValue?
       d.subscribe(sink)
 
 class Dispatcher

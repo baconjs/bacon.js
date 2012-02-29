@@ -1,5 +1,4 @@
 Bacon = (require "../src/Bacon").Bacon
-
 describe "later", ->
   it "should send single event and end", ->
     expectEvents(
@@ -58,9 +57,15 @@ describe "Property", ->
 
 expectEvents = (src, expectedEvents) ->
   events = []
-  streamEnded = -> events.length > 0 and events[events.length - 1] == Bacon.end
-  runs -> src.subscribe (event) -> events.push(event)
+  ended = false
+  streamEnded = -> ended
+  runs -> src.subscribe (event) -> 
+    if event.isEnd()
+      ended = true
+    else
+      events.push(event.value)
+
   waitsFor streamEnded, 1000
-  runs -> expect(events).toEqual(expectedEvents.concat([Bacon.end]))
+  runs -> expect(events).toEqual(expectedEvents)
 
 soon = (f) -> setTimeout f, 100
