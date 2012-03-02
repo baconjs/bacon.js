@@ -2,8 +2,16 @@
   <head>
     <script src="../../lib/jquery.js"></script>
     <script src="../../lib/Bacon.js"></script>
+    <script>
+      $(function() {
+        $("#clikme").asEventStream("click").subscribe(function(event) {
+          alert("mmmm... bacon!")
+        })
+      })
+    </script>
   </head>
   <body>
     <h1>bacon.js test page</h1>
+    <span id="clikme">click me</span>
   </body>
 </html>
