@@ -49,6 +49,7 @@ class Next
 
 class Initial extends Next
   isInitial: -> true
+  isEnd: -> false
 
 class End
   constructor: ->

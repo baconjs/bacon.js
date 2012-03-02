@@ -7,11 +7,36 @@
         $("#clikme").asEventStream("click").subscribe(function(event) {
           alert("mmmm... bacon!")
         })
+
+        function always(value) { return function() { return value }}
+        
+        function keyCodeIs(keyCode) { 
+          return function(event) { return event.keyCode == keyCode }
+        }
+
+        function keyDowns(keyCode) { 
+          return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
+        }
+
+        function keyUps(keyCode) { 
+          return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
+        }
+
+        function keyState(keyCode) { 
+          return keyDowns(keyCode).map(always(true))
+            .merge(keyUps(keyCode).map(always(false))).toProperty(false)
+        }
+
+        keyState(32).subscribe(function(state) {
+          $("#state").text(state.value)
+        })
+
       })
     </script>
   </head>
   <body>
     <h1>bacon.js test page</h1>
-    <span id="clikme">click me</span>
+    <div id="clikme">click me</div>
+    <div id="state"></div>
   </body>
 </html>
