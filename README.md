@@ -32,18 +32,18 @@ EventStream
 
 `EventStream` a stream of events. See methods below.
 
+`stream.subscribe(f)` subscribes given side-effect function to
+event stream. Function will receive Event objects (see below)
+
 `stream.map(f)` maps values using given function
 
 `stream.filter(f)` filters values using given predicate
 
-`stream.subscribe(f)` subscribes given side-effect function to
-event stream. Function will receive Event objects
+`stream.merge(stream2)` merges two streams into on that delivers events
+from both
 
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
-
-`stream.merge(stream2)` merges two streams into on that delivers events
-from both
 
 Property
 --------
