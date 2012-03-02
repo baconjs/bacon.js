@@ -2,7 +2,7 @@ jQuery?.fn.asEventStream = (eventName) ->
   element = this
   new EventStream (sink) ->
     element[eventName] (event) ->
-      sink event
+      sink (next event)
 
 Bacon = @Bacon = {
   taste : "delicious"
@@ -41,8 +41,10 @@ Bacon.pushStream = ->
   pushStream.end = -> d.push end()
   pushStream
 
+class Event
+  isEvent: -> true
 
-class Next
+class Next extends Event
   constructor: (@value) ->
   isEnd: -> false
   isInitial: -> false
@@ -51,7 +53,7 @@ class Initial extends Next
   isInitial: -> true
   isEnd: -> false
 
-class End
+class End extends Event
   constructor: ->
   isEnd: -> true
   isInitial: -> false
@@ -121,12 +123,15 @@ class Dispatcher
     subscribe ?= (event) ->
     sinks = []
     @push = (event) =>
+      assertEvent event
       for sink in sinks
         reply = sink event
-        remove(sink, sinks) if reply == Bacon.end
-      if (sinks.length > 0) then Bacon.more else Bacon.end
+        remove(sink, sinks) if reply == Bacon.noMore
+      if (sinks.length > 0) then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
-    @handleEvent = (event) => handleEvent.apply(this, [event])
+    @handleEvent = (event) => 
+      assertEvent event
+      handleEvent.apply(this, [event])
     @subscribe = (sink) =>
       sinks.push(sink)
       if sinks.length == 1
@@ -141,3 +146,8 @@ remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0
     xs.splice(i, 1)
+assert = (message, condition) ->
+  throw message unless condition
+assertEvent = (event) -> 
+  assert "not an event : " + event, event.isEvent?
+  assert "not event", event.isEvent()
