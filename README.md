@@ -1,4 +1,4 @@
-bacon.js
+Bacon.js
 ========
 
 A small reactive programming lib for js.
@@ -10,8 +10,6 @@ More docs and stuff coming up later.
 
 API
 ===
-
-Current functionality is just
 
 Creating streams
 ----------------
@@ -67,7 +65,7 @@ to a Property.
 `Event.value` the value associated with a Next or Initial event
 
 
-examples
+Examples
 ========
 
 See examples/examples.html
@@ -101,7 +99,7 @@ See examples/examples.html
         })
 ~~~
 
-build
+Build
 =====
 
 Build the coffeescript source into javascript:
@@ -110,14 +108,14 @@ Build the coffeescript source into javascript:
 
 Result javascript file will be generated in `lib` directory.
 
-test
+Test
 ====
 
 Run unit tests:
 
     npm install&&npm test
 
-contribute
+Contribute
 ==========
 
 Use GitHub issues and Pull Requests.
