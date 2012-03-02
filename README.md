@@ -45,10 +45,16 @@ EventStream. You can optionally pass an initial value
 `stream.merge(stream2)` merges two streams into on that delivers events
 from both
 
+Property
+--------
+
 `Property` a reactive property. Has the concept of "current value"
 
 `property.subscribe(f)` subscribes side-effeect to property. If there's
 a current value, an `Initial` event will be pushed immediately.
+
+Event
+-----
 
 `Event` has subclasses `Next`, `End` and `Initial`
 
