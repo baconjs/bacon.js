@@ -35,10 +35,13 @@ produces given value after given delay (milliseconds).
 using the `push` function of the pushable stream. You can only push
 Event objects though.
 
+`new Bacon.EventStream(subscribe)` creates an event stream with the given 
+subscribe function.
+
 EventStream
 -----------
 
-`EventStream` a stream of events. See methods below.
+`Bacon.EventStream` a stream of events. See methods below.
 
 `stream.subscribe(f)` subscribes given side-effect function to
 event stream. Function will receive Event objects (see below)
@@ -56,7 +59,7 @@ EventStream. You can optionally pass an initial value
 Property
 --------
 
-`Property` a reactive property. Has the concept of "current value"
+`Bacon.Property` a reactive property. Has the concept of "current value"
 
 `property.subscribe(f)` subscribes side-effeect to property. If there's
 a current value, an `Initial` event will be pushed immediately.
@@ -64,15 +67,15 @@ a current value, an `Initial` event will be pushed immediately.
 Event
 -----
 
-`Event` has subclasses `Next`, `End` and `Initial`
+`Bacon.Event` has subclasses `Next`, `End` and `Initial`
 
-`Next` next value in an EventStream of a Property. Call isNext() to
+`Bacon.Next` next value in an EventStream of a Property. Call isNext() to
 distinguish a Next event from other eventss.
 
-`End` an end-of-stream event of EventStream or Property. Call isEnd() to
+`Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
 distinguish an End from other events.
 
-`Initial` the initial (current) value of a Property. Call isInitial() to
+`Bacon.Initial` the initial (current) value of a Property. Call isInitial() to
 distinguish from other events. Only sent immediately after subscription
 to a Property.
 
