@@ -43,20 +43,20 @@ Bacon.pushStream = ->
 
 class Event
   isEvent: -> true
+  isEnd: -> false
+  isInitial: -> false
+  isNext: -> false
 
 class Next extends Event
   constructor: (@value) ->
-  isEnd: -> false
-  isInitial: -> false
+  isNext: -> true
 
 class Initial extends Next
   isInitial: -> true
-  isEnd: -> false
 
 class End extends Event
   constructor: ->
   isEnd: -> true
-  isInitial: -> false
 
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
@@ -138,6 +138,12 @@ class Dispatcher
         subscribe @handleEvent
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
+
+Bacon.EventStream = EventStream
+Bacon.Property = Property
+Bacon.Initial = Initial
+Bacon.Next = Next
+Bacon.End = End
 
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
