@@ -1,7 +1,7 @@
 <html>
   <head>
-    <script src="../../lib/jquery.js"></script>
-    <script src="../../lib/Bacon.js"></script>
+    <script src="../lib/jquery.js"></script>
+    <script src="../lib/Bacon.js"></script>
     <script>
       $(function() {
         $("#clikme").asEventStream("click").subscribe(function(event) {
@@ -23,8 +23,8 @@
         }
 
         function keyState(keyCode) { 
-          return keyDowns(keyCode).map(always(true))
-            .merge(keyUps(keyCode).map(always(false))).toProperty(false)
+          return keyDowns(keyCode).map(always("DOWN"))
+            .merge(keyUps(keyCode).map(always("UP"))).toProperty("UP")
         }
 
         keyState(32).subscribe(function(state) {
@@ -35,8 +35,14 @@
     </script>
   </head>
   <body>
-    <h1>bacon.js test page</h1>
-    <div id="clikme">click me</div>
-    <div id="state"></div>
+    <h1>bacon.js example page</h1>
+    <div>
+      <h2>Simplest example:</h2>
+      <span id="clikme">click me</span>
+    </div>
+    <div>
+      <h2>Combinators example</h2>
+      SPACEBAR status=<span id="state"></span>
+    </div>
   </body>
 </html>
