@@ -13,6 +13,25 @@ API
 
 Current functionality is just
 
+Creating streams
+----------------
+
+`$.asEventStream("click")` creates an EventStream from events on a
+jQuery object
+
+`Bacon.sequentially(interval, values)` creates a stream containing given
+values (given as array). Delivered with given interval (in milliseconds)
+
+`Bacon.later(delay, value)` creates a single-element stream that
+produces given value after given delay (milliseconds).
+
+`Bacon.pushStream()` creates a pushable stream. You can push events by
+using the `push` function of the pushable stream. You can only push
+Event objects though.
+
+EventStream
+-----------
+
 `EventStream` a stream of events. See methods below.
 
 `stream.map(f)` maps values using given function
@@ -47,18 +66,6 @@ to a Property.
 
 `Event.value` the value associated with a Next or Initial event
 
-`$.asEventStream("click")` creates an EventStream from events on a
-jQuery object
-
-`Bacon.sequentially(interval, values)` creates a stream containing given
-values (given as array). Delivered with given interval (in milliseconds)
-
-`Bacon.later(delay, value)` creates a single-element stream that
-produces given value after given delay (milliseconds).
-
-`Bacon.pushStream()` creates a pushable stream. You can push events by
-using the `push` function of the pushable stream. You can only push
-Event objects though.
 
 examples
 ========
