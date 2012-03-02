@@ -1,3 +1,9 @@
+jQuery?.fn.asEventStream = (eventName) ->
+  element = this
+  new EventStream (sink) ->
+    element[eventName] (event) ->
+      sink event
+
 Bacon = @Bacon = {
   taste : "delicious"
 }
