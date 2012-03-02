@@ -3,10 +3,12 @@ Bacon.js
 
 A small reactive programming lib for js.
 
-Inspired largely on RxJs, but includes the `EventStream` and `Property`
+Inspired largely by RxJs, but includes the `EventStream` and `Property`
 concepts from [reactive-bacon](https://github.com/raimohanska/reactive-bacon).
-Currently has a very limited feature set. So at this stage, comparing bacon.js 
-to RxJs is like comparing a bacon sandwich to a three-course dinner with Steve Ballmer.
+
+Please note that Bacon.js is in a very early stage and has a very limited feature set as of yet. 
+So at this stage, comparing bacon.js to RxJs is like comparing a bacon sandwich to a 
+three-course dinner with Steve Ballmer. 
 
 But hey, where's the bacon?
 
