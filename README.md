@@ -14,32 +14,48 @@ API
 Current functionality is just
 
 `EventStream` a stream of events. See methods below.
+
 `stream.map(f)` maps values using given function
+
 `stream.filter(f)` filters values using given predicate
+
 `stream.subscribe(f)` subscribes given side-effect function to
 event stream. Function will receive Event objects
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
+
 `stream.merge(stream2)` merges two streams into on that delivers events
 from both
+
 `Property` a reactive property. Has the concept of "current value"
+
 `property.subscribe(f)` subscribes side-effeect to property. If there's
 a current value, an `Initial` event will be pushed immediately.
+
 `Event` has subclasses `Next`, `End` and `Initial`
+
 `Next` next value in an EventStream of a Property. Call isNext() to
 distinguish a Next event from other eventss.
+
 `End` an end-of-stream event of EventStream or Property. Call isEnd() to
 distinguish an End from other events.
+
 `Initial` the initial (current) value of a Property. Call isInitial() to
 distinguish from other events. Only sent immediately after subscription
 to a Property.
+
 `Event.value` the value associated with a Next or Initial event
+
 `$.asEventStream("click")` creates an EventStream from events on a
 jQuery object
+
 `Bacon.sequentially(interval, values)` creates a stream containing given
 values (given as array). Delivered with given interval (in milliseconds)
+
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
+
 `Bacon.pushStream()` creates a pushable stream. You can push events by
 using the `push` function of the pushable stream. You can only push
 Event objects though.
