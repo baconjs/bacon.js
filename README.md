@@ -10,9 +10,9 @@ to RxJs is like comparing a bacon sandwich to a three-course dinner with Steve B
 
 But hey, where's the bacon?
 
-- [CoffeeScript src](src/Bacon.coffee)
-- [Generated js](lib/Bacon.js)
-- [Specs](spec/BaconSpec.coffee)
+- [CoffeeScript src](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
+- [Generated js](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js)
+- [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 
 API
 ===
