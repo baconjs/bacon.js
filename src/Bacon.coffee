@@ -1,4 +1,4 @@
-Bacon = exports.Bacon = {
+Bacon = @Bacon = {
   taste : "delicious"
 }
 
