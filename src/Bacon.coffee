@@ -57,7 +57,11 @@ class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
   filter: (f) ->
-    @withHandler (event) -> @push event if event.isEnd() or f event.value
+    @withHandler (event) -> 
+      if event.isEnd() or f event.value
+        @push event
+      else
+        Bacon.more
   takeWhile: (f) ->
     @withHandler (event) -> 
       if event.isEnd() or f event.value
