@@ -127,6 +127,12 @@ Run unit tests:
 
     npm install&&npm test
 
+Dependencies
+============
+
+Runtime: jQuery (optional)
+Build/test: node.js, npm, cake
+
 Contribute
 ==========
 
