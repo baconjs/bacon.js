@@ -1,4 +1,4 @@
-jQuery?.fn.asEventStream = (eventName) ->
+(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName) ->
   element = this
   new EventStream (sink) ->
     handler = (event) ->
