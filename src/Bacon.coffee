@@ -2,9 +2,12 @@
   element = this
   new EventStream (sink) ->
     handler = (event) ->
-      sink (next event)
+      reply = sink (next event)
+      if (reply == Bacon.noMore)
+        unbind
+    unbind = -> element.unbind(eventName, handler)
     element.bind(eventName, handler)
-    -> element.unbind(eventName, handler)
+    unbind
 
 Bacon = @Bacon = {
   taste : "delicious"
