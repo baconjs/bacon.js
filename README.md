@@ -15,6 +15,7 @@ But hey, where's the bacon?
 - [CoffeeScript src](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
 - [Generated js](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
+- [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
 API
 ===
@@ -104,7 +105,7 @@ welcome you to contribute your stuff to the frying pan here.
 Examples
 ========
 
-See examples/examples.html
+See [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
 ~~~ coffeescript
         $("#clikme").asEventStream("click").subscribe(function(event) {
