@@ -31,9 +31,8 @@ values (given as array). Delivered with given interval (in milliseconds)
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
-`Bacon.pushStream()` creates a pushable stream. You can push events by
-using the `push` function of the pushable stream. You can only push
-Event objects though.
+`Bacon.pushStream()` creates a pushable stream. You can push values by
+using the `push` function of the pushable stream. You can send the End event by calling `end`
 
 `new Bacon.EventStream(subscribe)` creates an event stream with the given 
 subscribe function.
