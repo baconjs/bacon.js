@@ -166,3 +166,20 @@ TODO
 ====
 
 - How to test that unsub occurs correctly?
+- Browser tests
+- Interactive examples, like in my devday-rx presentation
+- API doc with interactive examples
+- An animated gif of frying bacon
+- More combinators
+    - selectMany (what would be the most descriptive name?)
+    - takeUntil
+    - switch
+    - delay
+    - combineLatest
+    - scan
+- Property combinators
+    - map
+    - scan
+    - combineLatest
+    - sampledBy
+- Timer
