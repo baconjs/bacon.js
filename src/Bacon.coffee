@@ -1,8 +1,10 @@
 jQuery?.fn.asEventStream = (eventName) ->
   element = this
   new EventStream (sink) ->
-    element[eventName] (event) ->
+    handler = (event) ->
       sink (next event)
+    element.bind(eventName, handler)
+    -> element.unbind(eventName, handler)
 
 Bacon = @Bacon = {
   taste : "delicious"
@@ -46,10 +48,12 @@ class Event
   isEnd: -> false
   isInitial: -> false
   isNext: -> false
+  hasValue: -> false
 
 class Next extends Event
   constructor: (@value) ->
   isNext: -> true
+  hasValue: -> true
 
 class Initial extends Next
   isInitial: -> true
@@ -61,6 +65,8 @@ class End extends Event
 class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
+  onValue: (f) -> @subscribe (event) ->
+    f event.value if event.hasValue()
   filter: (f) ->
     @withHandler (event) -> 
       if event.isEnd() or f event.value
@@ -116,13 +122,19 @@ class Property
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
-    subscribe ?= (event) ->
+    subscribe ?= -> nop
     sinks = []
+    unsubscribeFromSource = nop
+    removeSink = (sink) ->
+      remove(sink, sinks)
+      # TODO: currently fails
+      # TODO: assert that subscribe returns a function, but how?
+      #unsubscribeFromSource() if (sinks.length == 0)
     @push = (event) =>
       assertEvent event
       for sink in sinks
         reply = sink event
-        remove(sink, sinks) if reply == Bacon.noMore
+        removeSink sink if reply == Bacon.noMore
       if (sinks.length > 0) then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
@@ -131,7 +143,8 @@ class Dispatcher
     @subscribe = (sink) =>
       sinks.push(sink)
       if sinks.length == 1
-        subscribe @handleEvent
+        unsubscribeFromSource = subscribe @handleEvent
+      -> removeSink sink
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
 
@@ -141,6 +154,7 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 
+nop = ->
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
 end = -> new End()

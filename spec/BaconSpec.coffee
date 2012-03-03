@@ -61,6 +61,17 @@ describe "Property", ->
       s.end()
     expectEvents p, ["a", "b"]
 
+
+describe "subscribe and onValue", ->
+  it "returns a dispose() for unsubscribing", ->
+    s = Bacon.pushStream()
+    values = []
+    dispose = s.onValue (value) -> values.push value
+    s.push "lol"
+    dispose()
+    s.push "wut"
+    expect(values).toEqual(["lol"])
+
 lessThan = (limit) -> 
   (x) -> x < limit
 
