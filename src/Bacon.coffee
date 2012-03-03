@@ -58,10 +58,6 @@ class End extends Event
   constructor: ->
   isEnd: -> true
 
-initial = (value) -> new Initial(value)
-next = (value) -> new Next(value)
-end = -> new End()
-
 class EventStream
   constructor: (subscribe) ->
     @subscribe = new Dispatcher(subscribe).subscribe
@@ -145,6 +141,9 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 
+initial = (value) -> new Initial(value)
+next = (value) -> new Next(value)
+end = -> new End()
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
