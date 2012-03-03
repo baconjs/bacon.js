@@ -23,7 +23,7 @@ Creating streams
 ----------------
 
 `$.asEventStream("click")` creates an EventStream from events on a
-jQuery object
+jQuery or Zepto.js object
 
 `Bacon.sequentially(interval, values)` creates a stream containing given
 values (given as array). Delivered with given interval (in milliseconds)
@@ -136,7 +136,7 @@ Run unit tests:
 Dependencies
 ============
 
-Runtime: jQuery (optional)
+Runtime: jQuery or Zepto.js (optional)
 Build/test: node.js, npm, cake
 
 Contribute
