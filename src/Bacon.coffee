@@ -94,6 +94,9 @@ class EventStream
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
+      unsubLeft = nop
+      unsubRight = nop
+      unsubBoth = -> unsubLeft() ; unsubRight()
       ends = 0
       smartSink = (event) ->
         if event.isEnd()
@@ -103,9 +106,12 @@ class EventStream
           else
             Bacon.more
         else
-          sink event
-      left.subscribe(smartSink)
-      right.subscribe(smartSink)
+          reply = sink event
+          unsubBoth() if reply == Bacon.noMore
+          reply
+      unsubLeft = left.subscribe(smartSink)
+      unsubRight = right.subscribe(smartSink)
+      unsubBoth
 
   toProperty: (initValue) ->
     new Property(this, initValue)
