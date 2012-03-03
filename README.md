@@ -48,7 +48,9 @@ event stream. Function will receive Event objects (see below)
 
 `stream.map(f)` maps values using given function
 
-`stream.filter(f)` filters values using given predicate
+`stream.filter(f)` filters values using given predicate function
+
+`stream.takeWhile(f)` takes while given predicate function holds true
 
 `stream.merge(stream2)` merges two streams into on that delivers events
 from both
@@ -142,3 +144,9 @@ Contribute
 ==========
 
 Use GitHub issues and Pull Requests.
+
+TODO
+====
+
+- test for merge.takeWhile (should fail currently, requires dispose)
+- jQuery dispose support
