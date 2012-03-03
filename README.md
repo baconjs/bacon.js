@@ -42,8 +42,11 @@ EventStream
 
 `Bacon.EventStream` a stream of events. See methods below.
 
-`stream.subscribe(f)` subscribes given side-effect function to
-event stream. Function will receive Event objects (see below)
+`stream.subscribe(f)` subscribes given handler function to
+event stream. Function will receive Event objects (see below).
+The subscribe() call returns a `unsubscribe` function that you can
+call to unsubscribe. You can also unsubscribe by returning
+`Bacon.noMore` from the handler function as a reply to an Event.
 
 `stream.map(f)` maps values using given function
 
@@ -82,6 +85,21 @@ to a Property.
 
 `Event.value` the value associated with a Next or Initial event
 
+Cleaning up the frying pan
+--------------------------
+
+As described above, a subscriber can signal the loss of interest in new events 
+in any of these two ways:
+
+1. Return `Bacon.noMore` from the handler function
+2. Call the `dispose()` function that was returned by the `subscribe()`
+   call.
+
+Based on my experience on RxJs coding, an actual side-effect subscriber
+in application-code never does this. So the business of unsubscribing is
+mostly internal business and you can ignore it unless you're working on
+a custom stream implementation or a stream combinator. In that case, I
+welcome you to contribute your stuff to the frying pan here.
 
 Examples
 ========
@@ -136,7 +154,7 @@ Run unit tests:
 Dependencies
 ============
 
-Runtime: jQuery or Zepto.js (optional)
+Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
 Build/test: node.js, npm, cake
 
 Contribute
@@ -147,5 +165,4 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
-- test for merge.takeWhile (should fail currently, requires dispose)
-- jQuery dispose support
+- How to test that unsub occurs correctly?
