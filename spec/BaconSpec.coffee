@@ -14,19 +14,19 @@ describe "sequentially", ->
 describe "filter", -> 
   it "should filter values", ->
     expectEvents(
-      Bacon.sequentially(10, ["lol", "wut"]).filter((x) -> x == "wut")
-      ["wut"])
+      Bacon.sequentially(10, [1, 2, 3]).filter(lessThan(3))
+      [1, 2])
 
 describe "map", ->
   it "should map with given function", ->
     expectEvents(
-      Bacon.sequentially(10, ["lol", "wut"]).map((x) -> x + "!")
-      ["lol!", "wut!"])
+      Bacon.sequentially(10, [1, 2, 3]).map((x) -> x * 2)
+      [2, 4, 6])
 
 describe "takeWhile", ->
   it "should take while predicate is true", ->
     expectEvents(
-      Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile((x) -> x < 3)
+      Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
       [1, 2])
 
 describe "merge", ->
@@ -36,6 +36,12 @@ describe "merge", ->
     expectEvents(
       left.merge(right)
       [1, 2, 3, 4, 5, 6])
+  it "respects subscriber return value", ->
+    left = Bacon.sequentially(20, [1, 3])
+    right = Bacon.sequentially(30, [2])
+    expectEvents(
+      left.merge(right).takeWhile(lessThan(2))
+      [1])
 
 describe "pushStream", ->
   it "delivers pushed events", ->
@@ -54,6 +60,9 @@ describe "Property", ->
       s.push "b"
       s.end()
     expectEvents p, ["a", "b"]
+
+lessThan = (limit) -> 
+  (x) -> x < limit
 
 expectEvents = (src, expectedEvents) ->
   events = []
