@@ -20,6 +20,7 @@ Bacon.later = (delay, value) ->
         sink next(value)
         sink end()
       setTimeout push delay
+      nop
   )
 
 Bacon.sequentially = (delay, values) ->
@@ -34,6 +35,7 @@ Bacon.sequentially = (delay, values) ->
         unless reply == Bacon.noMore
           schedule (tail xs)
       schedule values
+      nop
   )
 
 Bacon.pushStream = ->
@@ -127,9 +129,6 @@ class Dispatcher
     unsubscribeFromSource = nop
     removeSink = (sink) ->
       remove(sink, sinks)
-      # TODO: currently fails
-      # TODO: assert that subscribe returns a function, but how?
-      #unsubscribeFromSource() if (sinks.length == 0)
     @push = (event) =>
       assertEvent event
       for sink in sinks
@@ -144,7 +143,10 @@ class Dispatcher
       sinks.push(sink)
       if sinks.length == 1
         unsubscribeFromSource = subscribe @handleEvent
-      -> removeSink sink
+      assertFunction unsubscribeFromSource
+      ->
+        removeSink sink
+        unsubscribeFromSource() if (sinks.length == 0)
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
 
@@ -166,7 +168,10 @@ remove = (x, xs) ->
   if i >= 0
     xs.splice(i, 1)
 assert = (message, condition) ->
-  throw message unless condition
+  unless condition
+    throw message
 assertEvent = (event) -> 
   assert "not an event : " + event, event.isEvent?
   assert "not event", event.isEvent()
+assertFunction = (f) ->
+  assert "not a function : " + f, typeof f == "function"
