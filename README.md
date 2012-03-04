@@ -26,6 +26,9 @@ Creating streams
 `$.asEventStream("click")` creates an EventStream from events on a
 jQuery or Zepto.js object
 
+`Bacon.interval(interval, value)` repeats the single element
+indefinitely with the given interval (in milliseconds)
+
 `Bacon.sequentially(interval, values)` creates a stream containing given
 values (given as array). Delivered with given interval (in milliseconds)
 
@@ -196,4 +199,3 @@ TODO
     - scan
     - combineLatest
     - sampledBy
-- Timer
