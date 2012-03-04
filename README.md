@@ -89,6 +89,10 @@ ignored
 
 `stream.delay(delay)` delays the stream by given amount of milliseconds
 
+`stream.throttle(delay)` throttles stream by given amount of
+milliseconds. This means that event is only emitted after the given
+"quiet period".
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 

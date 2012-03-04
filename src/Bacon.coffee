@@ -155,6 +155,9 @@ class EventStream extends Observable
   delay: (delay) ->
     @flatMap (value) ->
       Bacon.later delay, value
+  throttle: (delay) ->
+    @switch (value) ->
+      Bacon.later delay, value
   merge: (right) -> 
     left = this
     new EventStream (sink) ->

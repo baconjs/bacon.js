@@ -41,6 +41,7 @@ describe "flatMap", ->
       -> repeat(10, [1, 2]).take(2).flatMap (value) ->
         Bacon.sequentially(100, [value, value])
       [1, 2, 1, 2])
+
 describe "switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
@@ -72,6 +73,12 @@ describe "delay", ->
         right = repeat(10, [4, 5, 6]).delay(100).take(3)
         left.merge(right)
       [1, 2, 3, 4, 5, 6])
+
+describe "throttle", ->
+  it "throttles input by given delay", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2]).take(2).throttle(20)
+      [2])
 
 describe "takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
