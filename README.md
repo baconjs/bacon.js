@@ -223,11 +223,8 @@ TODO
 ====
 
 - Should property be updated on actually changed values only?
+    - More probably a "distict()" method to filter out duplicates
 - Browser tests
 - Interactive examples, like in my devday-rx presentation
 - API doc with interactive examples
 - An animated gif of frying bacon
-- More combinators
-    - combineLatest
-- Property combinators
-    - scan?
