@@ -157,6 +157,10 @@ class EventStream
     root = this
     @flatMap (value) ->
       f(value).takeUntil(root)
+  delay: (delay) ->
+    root = this
+    @flatMap (value) ->
+      Bacon.later delay, value
   merge: (right) -> 
     left = this
     new EventStream (sink) ->

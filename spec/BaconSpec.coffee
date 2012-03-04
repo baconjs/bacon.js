@@ -64,6 +64,15 @@ describe "merge", ->
         left.merge(right).takeWhile(lessThan(2))
       [1])
 
+describe "delay", ->
+  it "delays all events by given delay in milliseconds", ->
+    expectStreamEvents(
+      ->
+        left = repeat(20, [1, 2, 3]).take(3)
+        right = repeat(10, [4, 5, 6]).delay(100).take(3)
+        left.merge(right)
+      [1, 2, 3, 4, 5, 6])
+
 describe "takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectStreamEvents(
