@@ -26,7 +26,7 @@ describe "filter", ->
 describe "map", ->
   it "should map with given function", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3]).take(3).map((x) -> x * 2)
+      -> repeat(10, [1, 2, 3]).take(3).map(times(2))
       [2, 4, 6])
 
 describe "takeWhile", ->
@@ -106,6 +106,17 @@ describe "Property", ->
         p
       ["a", "b"])
 
+describe "Property.map", ->
+  it "maps property values", ->
+    expectPropertyEvents(
+      ->
+        s = Bacon.pushStream()
+        p = s.toProperty(1).map(times(2))
+        soon ->
+          s.push 2
+          s.end()
+        p
+      [2, 4])
 
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
@@ -119,6 +130,9 @@ describe "subscribe and onValue", ->
 
 lessThan = (limit) -> 
   (x) -> x < limit
+
+times = (factor) ->
+  (x) -> x * factor
 
 expectPropertyEvents = (src, expectedEvents) ->
   runs -> verifySingleSubscriber src(), expectedEvents

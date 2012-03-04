@@ -222,6 +222,8 @@ class EventStream extends Observable
 
 class Property extends Observable
   constructor: (@subscribe) ->
+  map: (f) => new Property (sink) =>
+    @subscribe (event) => sink(event.fmap(f))
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
