@@ -153,6 +153,10 @@ class EventStream
           children.push unsubChild
       unsubRoot = root.subscribe(spawner)
       unbind
+  switch: (f) ->
+    root = this
+    @flatMap (value) ->
+      f(value).takeUntil(root)
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
@@ -225,7 +229,7 @@ class Dispatcher
       remove(sink, sinks)
     @push = (event) =>
       assertEvent event
-      for sink in sinks
+      for sink in (cloneArray(sinks))
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
       if @hasSubscribers() then Bacon.more else Bacon.noMore
@@ -257,6 +261,7 @@ end = -> new End()
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
+cloneArray = (xs) -> xs.slice(0)
 remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0

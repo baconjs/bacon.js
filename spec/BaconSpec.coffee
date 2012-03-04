@@ -41,6 +41,12 @@ describe "flatMap", ->
       -> repeat(10, [1, 2]).take(2).flatMap (value) ->
         Bacon.sequentially(100, [value, value])
       [1, 2, 1, 2])
+describe "switch", ->
+  it "spawns new streams but collects values from the latest spawned stream only", ->
+    expectStreamEvents(
+      -> repeat(30, [1, 2]).take(2).switch (value) ->
+        Bacon.sequentially(20, [value, value])
+      [1, 2, 2])
 
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
