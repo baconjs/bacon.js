@@ -74,13 +74,16 @@ class Next extends Event
   constructor: (@value) ->
   isNext: -> true
   hasValue: -> true
+  fmap: (f) -> next(f(this.value))
 
 class Initial extends Next
   isInitial: -> true
+  fmap: (f) -> initial(f(this.value))
 
 class End extends Event
   constructor: ->
   isEnd: -> true
+  fmap: -> this
 
 class Observable
   onValue: (f) -> @subscribe (event) ->
@@ -114,10 +117,7 @@ class EventStream extends Observable
         Bacon.noMore
   map: (f) ->
     @withHandler (event) -> 
-      if event.isEnd()
-        @push event
-      else
-        @push next(f event.value)
+      @push event.fmap(f)
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->
