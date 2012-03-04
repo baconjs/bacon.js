@@ -82,13 +82,15 @@ class End extends Event
   constructor: ->
   isEnd: -> true
 
-class EventStream
+class Observable
+  onValue: (f) -> @subscribe (event) ->
+    f event.value if event.hasValue()
+
+class EventStream extends Observable
   constructor: (subscribe) ->
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
     @hasSubscribers = dispatcher.hasSubscribers
-  onValue: (f) -> @subscribe (event) ->
-    f event.value if event.hasValue()
   filter: (f) ->
     @withHandler (event) -> 
       if event.isEnd() or f event.value
@@ -210,7 +212,7 @@ class EventStream
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
 
-class Property
+class Property extends Observable
   constructor: (stream, initValue) ->
     currentValue = initValue
     handleEvent = (event) -> 
@@ -220,8 +222,6 @@ class Property
     @subscribe = (sink) ->
       sink initial(currentValue) if currentValue?
       d.subscribe(sink)
-  onValue: (f) -> @subscribe (event) ->
-    f event.value unless event.isEnd()
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
