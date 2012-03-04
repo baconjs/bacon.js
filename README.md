@@ -66,6 +66,10 @@ call to unsubscribe. You can also unsubscribe by returning
 `stream.merge(stream2)` merges two streams into on that delivers events
 from both
 
+`stream.flatMap(f)` for each element in the source stream, spawn a new
+stream using the function `f`. Collect events from each of the spawned
+streams into the result stream
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 
@@ -179,7 +183,6 @@ TODO
 - API doc with interactive examples
 - An animated gif of frying bacon
 - More combinators
-    - flatMap (like selectMany in RxJs)
     - takeUntil
     - switch
     - delay
