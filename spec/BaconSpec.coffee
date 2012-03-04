@@ -14,34 +14,34 @@ describe "sequentially", ->
 describe "filter", -> 
   it "should filter values", ->
     expectStreamEvents(
-      -> Bacon.sequentially(10, [1, 2, 3]).filter(lessThan(3))
+      -> seq(10, [1, 2, 3]).filter(lessThan(3))
       [1, 2])
 
 describe "map", ->
   it "should map with given function", ->
     expectStreamEvents(
-      -> Bacon.sequentially(10, [1, 2, 3]).map((x) -> x * 2)
+      -> seq(10, [1, 2, 3]).map((x) -> x * 2)
       [2, 4, 6])
 
 describe "takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
-      -> Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
+      -> seq(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
       [1, 2])
 
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
       ->
-        left = Bacon.sequentially(10, [1, 2, 3])
-        right = Bacon.sequentially(100, [4, 5, 6])
+        left = seq(10, [1, 2, 3])
+        right = seq(100, [4, 5, 6])
         left.merge(right)
       [1, 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
     expectStreamEvents(
       ->
-        left = Bacon.sequentially(20, [1, 3])
-        right = Bacon.sequentially(30, [2])
+        left = seq(20, [1, 3])
+        right = seq(30, [2])
         left.merge(right).takeWhile(lessThan(2))
       [1])
 
@@ -122,3 +122,5 @@ verifySwitching = (src, expectedEvents) ->
   runs -> expect(events).toEqual(expectedEvents)
 
 soon = (f) -> setTimeout f, 100
+seq = (interval, values) ->
+  Bacon.sequentially(interval, values)
