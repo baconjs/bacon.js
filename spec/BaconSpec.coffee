@@ -134,7 +134,7 @@ seq = (interval, values) ->
 
 verifyCleanup = ->
   for seq in seqs
-    console.log("verify cleanup: #{seq.values}")
+    #console.log("verify cleanup: #{seq.values}")
     expect(seq.source.hasSubscribers()).toEqual(false)
   seqs = []
 

@@ -145,7 +145,7 @@ class Dispatcher
       assertEvent event
       for sink in sinks
         reply = sink event
-        removeSink sink if reply == Bacon.noMore
+        removeSink sink if reply == Bacon.noMore or event.isEnd()
       if @hasSubscribers() then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
