@@ -130,6 +130,15 @@ describe "Property.changes", ->
         p
       ["b"])
 
+describe "Property.combine", ->
+  it "combines latest values of two properties", ->
+    expectPropertyEvents( 
+      ->
+        left = repeat(20, [1, 2, 3]).take(3).toProperty()
+        right = repeat(20, [4, 5, 6]).delay(10).take(3).toProperty()
+        left.combine(right, add)
+      [5, 6, 7, 8, 9])
+
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = Bacon.pushStream()
@@ -145,6 +154,8 @@ lessThan = (limit) ->
 
 times = (factor) ->
   (x) -> x * factor
+
+add = (x, y) -> x + y
 
 expectPropertyEvents = (src, expectedEvents) ->
   runs -> verifySingleSubscriber src(), expectedEvents

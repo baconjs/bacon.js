@@ -75,10 +75,12 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   fmap: (f) -> next(f(this.value))
+  apply: (value) -> next(value)
 
 class Initial extends Next
   isInitial: -> true
   fmap: (f) -> initial(f(this.value))
+  apply: (value) -> initial(value)
 
 class End extends Event
   constructor: ->
@@ -227,6 +229,39 @@ class Property extends Observable
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
+  combine: (other, combinator) => 
+    myVal = undefined
+    otherVal = undefined
+    new Property (sink) =>
+      unsubMe = nop
+      unsubOther = nop
+      unsubBoth = -> unsubMe() ; unsubOther()
+      myEnd = false
+      otherEnd = false
+      checkEnd = ->
+        if myEnd and otherEnd
+          sink end()
+      combiningSink = (markEnd, setValue) =>
+        (event) =>
+          if (event.isEnd())
+            markEnd()
+            checkEnd()
+            Bacon.noMore
+          else
+            setValue(event.value)
+            if (myVal? and otherVal?)
+              reply = sink(event.apply(combinator(myVal, otherVal)))
+              unsubBoth if reply == Bacon.noMore
+              reply
+            else
+              Bacon.more
+
+      mySink = combiningSink (-> myEnd = true), ((value) -> myVal = value)
+      otherSink = combiningSink (-> otherEnd = true), ((value) -> otherVal = value)
+      unsubMe = this.subscribe mySink
+      unsubOther = other.subscribe otherSink
+      unsubBoth
+
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
