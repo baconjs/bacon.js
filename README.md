@@ -224,6 +224,8 @@ TODO
 
 - Should property be updated on actually changed values only?
     - More probably a "distict()" method to filter out duplicates
+- Improve Property test by also subscribing at each value, ensuring that
+  an immediate matching Initial event is sent to the new Subscriber
 - Browser tests
 - Interactive examples, like in my devday-rx presentation
 - API doc with interactive examples
