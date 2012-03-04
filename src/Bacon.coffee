@@ -221,7 +221,7 @@ class EventStream extends Observable
       else
         acc = f(acc, event.value)
         @push event.apply(acc)
-    scanStream.toProperty()
+    scanStream.toProperty(seed)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()

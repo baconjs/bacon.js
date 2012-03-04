@@ -167,7 +167,7 @@ describe "scan", ->
   it "accumulates values with given seed and accumulator function", ->
     expectPropertyEvents(
       -> repeat(10, [1, 2, 3]).take(3).scan(0, add)
-      [1, 3, 6])
+      [0, 1, 3, 6])
 
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
