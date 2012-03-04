@@ -207,6 +207,7 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Should property be updated on actually changed values only?
 - Browser tests
 - Interactive examples, like in my devday-rx presentation
 - API doc with interactive examples

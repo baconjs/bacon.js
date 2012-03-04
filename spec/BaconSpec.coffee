@@ -139,6 +139,15 @@ describe "Property.combine", ->
         left.combine(right, add)
       [5, 6, 7, 8, 9])
 
+describe "Property.sampledBy", -> 
+  it "samples property at events, resulting to EventStream", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, [1, 2]).take(2).toProperty()
+        stream = repeat(30, ["troll"]).take(4)
+        prop.sampledBy(stream)
+      [1, 2, 2, 2])
+
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = Bacon.pushStream()
@@ -148,6 +157,7 @@ describe "subscribe and onValue", ->
     dispose()
     s.push "wut"
     expect(values).toEqual(["lol"])
+
 
 lessThan = (limit) -> 
   (x) -> x < limit

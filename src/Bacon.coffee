@@ -216,43 +216,49 @@ class EventStream extends Observable
 
 class Property extends Observable
   constructor: (@subscribe) ->
+    combine = (other, leftSink, rightSink) => 
+      myVal = undefined
+      otherVal = undefined
+      new Property (sink) =>
+        unsubMe = nop
+        unsubOther = nop
+        unsubBoth = -> unsubMe() ; unsubOther()
+        myEnd = false
+        otherEnd = false
+        checkEnd = ->
+          if myEnd and otherEnd
+            sink end()
+        combiningSink = (markEnd, setValue, thisSink) =>
+          (event) =>
+            if (event.isEnd())
+              markEnd()
+              checkEnd()
+              Bacon.noMore
+            else
+              setValue(event.value)
+              if (myVal? and otherVal?)
+                reply = thisSink(sink, event, myVal, otherVal)
+                unsubBoth if reply == Bacon.noMore
+                reply
+              else
+                Bacon.more
+
+        mySink = combiningSink (-> myEnd = true), ((value) -> myVal = value), leftSink
+        otherSink = combiningSink (-> otherEnd = true), ((value) -> otherVal = value), rightSink
+        unsubMe = this.subscribe mySink
+        unsubOther = other.subscribe otherSink
+        unsubBoth
+    @combine = (other, combinator) =>
+      combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
+      combine(other, combineAndPush, combineAndPush)
+    @sampledBy = (sampler) =>
+      pushPropertyValue = (sink, event, myVal, _) -> sink(event.apply(myVal))
+      combine(sampler, nop, pushPropertyValue)
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
-  combine: (other, combinator) => 
-    myVal = undefined
-    otherVal = undefined
-    new Property (sink) =>
-      unsubMe = nop
-      unsubOther = nop
-      unsubBoth = -> unsubMe() ; unsubOther()
-      myEnd = false
-      otherEnd = false
-      checkEnd = ->
-        if myEnd and otherEnd
-          sink end()
-      combiningSink = (markEnd, setValue) =>
-        (event) =>
-          if (event.isEnd())
-            markEnd()
-            checkEnd()
-            Bacon.noMore
-          else
-            setValue(event.value)
-            if (myVal? and otherVal?)
-              reply = sink(event.apply(combinator(myVal, otherVal)))
-              unsubBoth if reply == Bacon.noMore
-              reply
-            else
-              Bacon.more
-
-      mySink = combiningSink (-> myEnd = true), ((value) -> myVal = value)
-      otherSink = combiningSink (-> otherEnd = true), ((value) -> otherVal = value)
-      unsubMe = this.subscribe mySink
-      unsubOther = other.subscribe otherSink
-      unsubBoth
 
 
 class Dispatcher
