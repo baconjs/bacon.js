@@ -70,6 +70,10 @@ from both
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream
 
+`stream.takeUntil(stream2)` takes elements from source until a Next event 
+appears in the other stream. If other stream ends without value, it is
+ignored
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 
@@ -183,7 +187,6 @@ TODO
 - API doc with interactive examples
 - An animated gif of frying bacon
 - More combinators
-    - takeUntil
     - switch
     - delay
     - combineLatest
