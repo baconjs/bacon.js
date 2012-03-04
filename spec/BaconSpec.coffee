@@ -1,65 +1,73 @@
 Bacon = (require "../src/Bacon").Bacon
 describe "later", ->
   it "should send single event and end", ->
-    expectEvents(
-      Bacon.later(10, "lol")
+    expectEvents_(
+      -> Bacon.later(10, "lol")
       ["lol"])
 
 describe "sequentially", ->
   it "should send given events and end", ->
-    expectEvents(
-      Bacon.sequentially(10, ["lol", "wut"])
+    expectEvents_(
+      -> Bacon.sequentially(10, ["lol", "wut"])
       ["lol", "wut"])
 
 describe "filter", -> 
   it "should filter values", ->
-    expectEvents(
-      Bacon.sequentially(10, [1, 2, 3]).filter(lessThan(3))
+    expectEvents_(
+      -> Bacon.sequentially(10, [1, 2, 3]).filter(lessThan(3))
       [1, 2])
 
 describe "map", ->
   it "should map with given function", ->
-    expectEvents(
-      Bacon.sequentially(10, [1, 2, 3]).map((x) -> x * 2)
+    expectEvents_(
+      -> Bacon.sequentially(10, [1, 2, 3]).map((x) -> x * 2)
       [2, 4, 6])
 
 describe "takeWhile", ->
   it "should take while predicate is true", ->
-    expectEvents(
-      Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
+    expectEvents_(
+      -> Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
       [1, 2])
 
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
-    left = Bacon.sequentially(10, [1, 2, 3])
-    right = Bacon.sequentially(100, [4, 5, 6])
-    expectEvents(
-      left.merge(right)
+    expectEvents_( 
+      ->
+        left = Bacon.sequentially(10, [1, 2, 3])
+        right = Bacon.sequentially(100, [4, 5, 6])
+        left.merge(right)
       [1, 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
-    left = Bacon.sequentially(20, [1, 3])
-    right = Bacon.sequentially(30, [2])
-    expectEvents(
-      left.merge(right).takeWhile(lessThan(2))
+    expectEvents_(
+      ->
+        left = Bacon.sequentially(20, [1, 3])
+        right = Bacon.sequentially(30, [2])
+        left.merge(right).takeWhile(lessThan(2))
       [1])
 
 describe "pushStream", ->
   it "delivers pushed events", ->
-    s = Bacon.pushStream()
-    s.push "pullMe"
-    soon ->
-      s.push "pushMe"
-      s.end()
-    expectEvents s, ["pushMe"]
+    expectEvents_(
+      ->
+        s = Bacon.pushStream()
+        s.push "pullMe"
+        soon ->
+          s.push "pushMe"
+          s.end()
+        s
+      ["pushMe"])
 
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
-    s = Bacon.pushStream()
-    p = s.toProperty("a")
-    soon ->
-      s.push "b"
-      s.end()
-    expectEvents p, ["a", "b"]
+    expectEvents_(
+      ->
+        s = Bacon.pushStream()
+        p = s.toProperty("a")
+        soon ->
+          s.push "b"
+          s.end()
+        p
+      ["a", "b"])
 
 
 describe "subscribe and onValue", ->
@@ -75,7 +83,11 @@ describe "subscribe and onValue", ->
 lessThan = (limit) -> 
   (x) -> x < limit
 
-expectEvents = (src, expectedEvents) ->
+expectEvents_ = (src, expectedEvents) ->
+  verifySingleSubscriber src(), expectedEvents
+  #verifySwitching src(), expectedEvents
+
+verifySingleSubscriber = (src, expectedEvents) ->
   events = []
   ended = false
   streamEnded = -> ended
@@ -85,6 +97,24 @@ expectEvents = (src, expectedEvents) ->
     else
       events.push(event.value)
 
+  waitsFor streamEnded, 1000
+  runs -> expect(events).toEqual(expectedEvents)
+
+# get each event with new subscriber
+verifySwitching = (src, expectedEvents) ->
+  events = []
+  ended = false
+  streamEnded = -> ended
+  newSink = -> 
+    (event) ->
+      if event.isEnd()
+        ended = true
+      else
+        events.push(event.value)
+        src.subscribe(newSink())
+        Bacon.noMore
+  runs -> 
+    src.subscribe(newSink())
   waitsFor streamEnded, 1000
   runs -> expect(events).toEqual(expectedEvents)
 
