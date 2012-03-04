@@ -81,6 +81,8 @@ You can think this as switching from stream to stream
 appears in the other stream. If other stream ends without value, it is
 ignored
 
+`stream.delay(delay)` delays the stream by given amount of milliseconds
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 
@@ -194,7 +196,6 @@ TODO
 - API doc with interactive examples
 - An animated gif of frying bacon
 - More combinators
-    - delay
     - combineLatest
     - scan
 - Property combinators
