@@ -1,6 +1,3 @@
-# TODO: use endless streams where applicable to verify cleanup better
-# TODO: use repeatedly(delay, values)
-
 Bacon = (require "../src/Bacon").Bacon
 describe "later", ->
   it "should send single event and end", ->

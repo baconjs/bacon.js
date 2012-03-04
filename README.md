@@ -166,7 +166,6 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
-- How to test that unsub occurs correctly?
 - Browser tests
 - Interactive examples, like in my devday-rx presentation
 - API doc with interactive examples
