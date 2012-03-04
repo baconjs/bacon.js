@@ -1,44 +1,44 @@
 Bacon = (require "../src/Bacon").Bacon
 describe "later", ->
   it "should send single event and end", ->
-    expectEvents_(
+    expectStreamEvents(
       -> Bacon.later(10, "lol")
       ["lol"])
 
 describe "sequentially", ->
   it "should send given events and end", ->
-    expectEvents_(
+    expectStreamEvents(
       -> Bacon.sequentially(10, ["lol", "wut"])
       ["lol", "wut"])
 
 describe "filter", -> 
   it "should filter values", ->
-    expectEvents_(
+    expectStreamEvents(
       -> Bacon.sequentially(10, [1, 2, 3]).filter(lessThan(3))
       [1, 2])
 
 describe "map", ->
   it "should map with given function", ->
-    expectEvents_(
+    expectStreamEvents(
       -> Bacon.sequentially(10, [1, 2, 3]).map((x) -> x * 2)
       [2, 4, 6])
 
 describe "takeWhile", ->
   it "should take while predicate is true", ->
-    expectEvents_(
+    expectStreamEvents(
       -> Bacon.sequentially(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
       [1, 2])
 
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
-    expectEvents_( 
+    expectStreamEvents( 
       ->
         left = Bacon.sequentially(10, [1, 2, 3])
         right = Bacon.sequentially(100, [4, 5, 6])
         left.merge(right)
       [1, 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
-    expectEvents_(
+    expectStreamEvents(
       ->
         left = Bacon.sequentially(20, [1, 3])
         right = Bacon.sequentially(30, [2])
@@ -47,7 +47,7 @@ describe "merge", ->
 
 describe "pushStream", ->
   it "delivers pushed events", ->
-    expectEvents_(
+    expectStreamEvents(
       ->
         s = Bacon.pushStream()
         s.push "pullMe"
@@ -59,7 +59,7 @@ describe "pushStream", ->
 
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
-    expectEvents_(
+    expectPropertyEvents(
       ->
         s = Bacon.pushStream()
         p = s.toProperty("a")
@@ -83,9 +83,12 @@ describe "subscribe and onValue", ->
 lessThan = (limit) -> 
   (x) -> x < limit
 
-expectEvents_ = (src, expectedEvents) ->
-  verifySingleSubscriber src(), expectedEvents
-  #verifySwitching src(), expectedEvents
+expectPropertyEvents = (src, expectedEvents) ->
+  runs -> verifySingleSubscriber src(), expectedEvents
+
+expectStreamEvents = (src, expectedEvents) ->
+  runs -> verifySingleSubscriber src(), expectedEvents
+  runs -> verifySwitching src(), expectedEvents
 
 verifySingleSubscriber = (src, expectedEvents) ->
   events = []
