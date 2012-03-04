@@ -55,6 +55,8 @@ call to unsubscribe. You can also unsubscribe by returning
 
 `stream.takeWhile(f)` takes while given predicate function holds true
 
+`stream.take(n)` takes at most n elements from the stream
+
 `stream.merge(stream2)` merges two streams into on that delivers events
 from both
 
