@@ -101,7 +101,9 @@ verifySingleSubscriber = (src, expectedEvents) ->
       events.push(event.value)
 
   waitsFor streamEnded, 1000
-  runs -> expect(events).toEqual(expectedEvents)
+  runs -> 
+    expect(events).toEqual(expectedEvents)
+    verifyCleanup()
 
 # get each event with new subscriber
 verifySwitching = (src, expectedEvents) ->
@@ -119,11 +121,20 @@ verifySwitching = (src, expectedEvents) ->
   runs -> 
     src.subscribe(newSink())
   waitsFor streamEnded, 1000
-  runs -> expect(events).toEqual(expectedEvents)
+  runs -> 
+    expect(events).toEqual(expectedEvents)
+    verifyCleanup()
 
-sources = []
+seqs = []
 soon = (f) -> setTimeout f, 100
 seq = (interval, values) ->
   source = Bacon.sequentially(interval, values)
-  sources.push(source)
+  seqs.push({ values : values, source : source })
   source
+
+verifyCleanup = ->
+  for seq in seqs
+    console.log("verify cleanup: #{seq.values}")
+    expect(seq.source.hasSubscribers()).toEqual(false)
+  seqs = []
+
