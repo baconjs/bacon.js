@@ -27,22 +27,17 @@ Bacon.later = (delay, value) ->
   )
 
 Bacon.sequentially = (delay, values) ->
-  new EventStream ((sink) ->
-      schedule = (xs) -> 
-        if empty xs
-          sink end()
-        else
-          setTimeout (-> push xs), delay
-      push = (xs) -> 
-        reply = sink (next(head xs))
-        unless reply == Bacon.noMore
-          schedule (tail xs)
-      schedule values
-      nop
-  )
+  valuesLeft = values 
+  poll = ->
+    if valuesLeft.length == 0
+      end()
+    else
+      value = head(valuesLeft)
+      valuesLeft = tail(valuesLeft)
+      next(value)
+  Bacon.fromPoll(delay, poll)
 
 Bacon.fromPoll = (delay, poll) ->
-  # TODO: copy pasta
   new EventStream (sink) ->
     id = undefined
     handler = ->
