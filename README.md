@@ -103,6 +103,9 @@ a current value, an `Initial` event will be pushed immediately.
 `property.map(f)` maps property values with given function, returing a
 new Property
 
+`property.combine(f, property2)` combines the latest values of the two
+properties using a two-arg function.
+
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial
 events.
@@ -213,5 +216,4 @@ TODO
     - scan
 - Property combinators
     - scan
-    - combineLatest
     - sampledBy
