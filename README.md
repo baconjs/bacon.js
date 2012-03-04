@@ -29,6 +29,12 @@ jQuery or Zepto.js object
 `Bacon.sequentially(interval, values)` creates a stream containing given
 values (given as array). Delivered with given interval (in milliseconds)
 
+`Bacon.repeatedly(interval, values)` repeats given elements indefinitely
+with given interval (in millis)
+
+`Bacon.fromPoll(interval, f)` polls given function with given interval.
+Function should return Events: either Next or End.
+
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
