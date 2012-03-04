@@ -21,15 +21,7 @@ Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
 Bacon.sequentially = (delay, values) ->
-  valuesLeft = values 
-  poll = ->
-    if valuesLeft.length == 0
-      end()
-    else
-      value = head(valuesLeft)
-      valuesLeft = tail(valuesLeft)
-      next(value)
-  Bacon.fromPoll(delay, poll)
+  Bacon.repeatedly(delay, values).take(values.length)
 
 Bacon.repeatedly = (delay, values) ->
   index = -1
