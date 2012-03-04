@@ -224,6 +224,9 @@ class Property extends Observable
   constructor: (@subscribe) ->
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
+  changes: => new EventStream (sink) =>
+    @subscribe (event) =>
+      sink event unless event.isInitial()
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->

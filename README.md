@@ -103,6 +103,10 @@ a current value, an `Initial` event will be pushed immediately.
 `property.map(f)` maps property values with given function, returing a
 new Property
 
+`property.changes()` returns an EventStream of property value changes.
+Returns exactly same events as the property itself, except any Initial
+events.
+
 Event
 -----
 

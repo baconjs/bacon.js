@@ -118,6 +118,18 @@ describe "Property.map", ->
         p
       [2, 4])
 
+describe "Property.changes", ->
+  it "yields property change events", ->
+    expectPropertyEvents(
+      ->
+        s = Bacon.pushStream()
+        p = s.toProperty("a").changes()
+        soon ->
+          s.push "b"
+          s.end()
+        p
+      ["b"])
+
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = Bacon.pushStream()
