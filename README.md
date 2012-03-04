@@ -106,8 +106,11 @@ new Property
 `property.combine(f, property2)` combines the latest values of the two
 properties using a two-arg function.
 
+`property.sample(interval)` creates an EventStream by sampling the
+property value at given interval (in milliseconds)
+
 `property.sampledBy(stream)` creates an EventStream by sampling the
-property value at each event from the given stream.
+property value at each event from the given stream
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial

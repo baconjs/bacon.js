@@ -253,7 +253,9 @@ class Property extends Observable
       combine(other, combineAndPush, combineAndPush)
     @sampledBy = (sampler) =>
       pushPropertyValue = (sink, event, myVal, _) -> sink(event.apply(myVal))
-      combine(sampler, nop, pushPropertyValue)
+      combine(sampler, nop, pushPropertyValue).changes()
+    @sample = (interval) =>
+      @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
   changes: => new EventStream (sink) =>

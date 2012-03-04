@@ -148,6 +148,14 @@ describe "Property.sampledBy", ->
         prop.sampledBy(stream)
       [1, 2, 2, 2])
 
+describe "Property.sample", -> 
+  it "samples property by given interval", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, [1, 2]).take(2).toProperty()
+        prop.sample(30).take(4)
+      [1, 2, 2, 2])
+
 describe "subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = Bacon.pushStream()
