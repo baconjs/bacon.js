@@ -206,22 +206,22 @@ class EventStream extends Observable
       unsubBoth
 
   toProperty: (initValue) ->
-    new Property(this, initValue)
+    currentValue = initValue
+    handleEvent = (event) -> 
+      currentValue = event.value unless event.isEnd
+      @push event
+    d = new Dispatcher(@subscribe, handleEvent)
+    subscribe = (sink) ->
+      sink initial(currentValue) if currentValue?
+      d.subscribe(sink)
+    new Property(subscribe)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
 
 class Property extends Observable
-  constructor: (stream, initValue) ->
-    currentValue = initValue
-    handleEvent = (event) -> 
-      currentValue = event.value unless event.isEnd
-      @push event
-    d = new Dispatcher(stream.subscribe, handleEvent)
-    @subscribe = (sink) ->
-      sink initial(currentValue) if currentValue?
-      d.subscribe(sink)
+  constructor: (@subscribe) ->
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
