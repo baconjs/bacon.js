@@ -65,6 +65,11 @@ call to unsubscribe. You can also unsubscribe by returning
 `stream.map(f)` maps values using given function, returning a new
 EventStream
 
+`stream.scan(seed, f)` scans stream with given seed value and
+accumulator function, resulting to a Property. For example, you might
+use zero as seed and a "plus" function as the accumulator to create
+an "integral" property.
+
 `stream.filter(f)` filters values using given predicate function
 
 `stream.takeWhile(f)` takes while given predicate function holds true
@@ -224,6 +229,5 @@ TODO
 - An animated gif of frying bacon
 - More combinators
     - combineLatest
-    - scan
 - Property combinators
-    - scan
+    - scan?

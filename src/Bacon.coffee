@@ -213,6 +213,16 @@ class EventStream extends Observable
       d.subscribe(sink)
     new Property(subscribe)
 
+  scan: (seed, f) -> 
+    acc = seed
+    scanStream = @withHandler (event) ->
+      if event.isEnd()
+        @push event
+      else
+        acc = f(acc, event.value)
+        @push event.apply(acc)
+    scanStream.toProperty()
+
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
@@ -257,8 +267,8 @@ class Property extends Observable
     @sampledBy = (sampler) =>
       pushPropertyValue = (sink, event, myVal, _) -> sink(event.apply(myVal))
       combine(sampler, nop, pushPropertyValue).changes()
-    @sample = (interval) =>
-      @sampledBy Bacon.interval(interval, {})
+  sample: (interval) =>
+    @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
   changes: => new EventStream (sink) =>
