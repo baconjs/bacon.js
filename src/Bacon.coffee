@@ -78,6 +78,7 @@ class End extends Event
   constructor: ->
   isEnd: -> true
   fmap: -> this
+  apply: -> this
 
 class Observable
   onValue: (f) -> @subscribe (event) ->
@@ -203,25 +204,18 @@ class EventStream extends Observable
       unsubBoth
 
   toProperty: (initValue) ->
-    currentValue = initValue
-    handleEvent = (event) -> 
-      currentValue = event.value unless event.isEnd
-      @push event
-    d = new Dispatcher(@subscribe, handleEvent)
-    subscribe = (sink) ->
-      sink initial(currentValue) if currentValue?
-      d.subscribe(sink)
-    new Property(subscribe)
+   @scan(initValue, latter)
 
   scan: (seed, f) -> 
     acc = seed
-    scanStream = @withHandler (event) ->
-      if event.isEnd()
-        @push event
-      else
-        acc = f(acc, event.value)
-        @push event.apply(acc)
-    scanStream.toProperty(seed)
+    handleEvent = (event) -> 
+      acc = f(acc, event.value) unless event.isEnd()
+      @push event.apply(acc)
+    d = new Dispatcher(@subscribe, handleEvent)
+    subscribe = (sink) ->
+      sink initial(acc) if acc?
+      d.subscribe(sink)
+    new Property(subscribe)
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
@@ -312,6 +306,7 @@ Bacon.Next = Next
 Bacon.End = End
 
 nop = ->
+latter = (_, x) -> x
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
 end = -> new End()
