@@ -179,7 +179,7 @@ TODO
 - API doc with interactive examples
 - An animated gif of frying bacon
 - More combinators
-    - selectMany (what would be the most descriptive name?)
+    - flatMap (like selectMany in RxJs)
     - takeUntil
     - switch
     - delay

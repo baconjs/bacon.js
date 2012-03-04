@@ -116,6 +116,43 @@ class EventStream
         @push event
       else
         @push next(f event.value)
+  flatMap: (f) ->
+    root = this
+    new EventStream (sink) ->
+      children = []
+      rootEnd = false
+      unsubRoot = ->
+      unbind = ->
+        unsubRoot()
+        for unsubChild in children
+          unsubChild()
+        children = []
+      checkEnd = ->
+        if rootEnd and (children.length == 0)
+          sink end()
+      spawner = (event) ->
+        if event.isEnd()
+          rootEnd = true
+          checkEnd()
+        else
+          child = f event.value
+          unsubChild = undefined
+          removeChild = ->
+            remove(unsubChild, children) if unsubChild?
+            checkEnd()
+          handler = (event) ->
+            if event.isEnd()
+              removeChild()
+              Bacon.noMore
+            else
+              reply = sink event
+              if reply == Bacon.noMore
+                unbind()
+              reply
+          unsubChild = child.subscribe handler
+          children.push unsubChild
+      unsubRoot = root.subscribe(spawner)
+      unbind
   merge: (right) -> 
     left = this
     new EventStream (sink) ->

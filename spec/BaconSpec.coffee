@@ -35,6 +35,13 @@ describe "takeWhile", ->
       -> repeat(10, [1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
 
+describe "flatMap", ->
+  it "should spawn new stream for each value and collect results into a single stream", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2]).take(2).flatMap (value) ->
+        Bacon.later(10, value)
+      [1, 2])
+
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
