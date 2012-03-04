@@ -18,13 +18,7 @@ Bacon.noMore = "veggies"
 Bacon.more = "moar bacon!"
 
 Bacon.later = (delay, value) ->
-  new EventStream ((sink) ->
-      push = -> 
-        sink next(value)
-        sink end()
-      setTimeout push delay
-      nop
-  )
+  Bacon.sequentially(delay, [value])
 
 Bacon.sequentially = (delay, values) ->
   valuesLeft = values 
