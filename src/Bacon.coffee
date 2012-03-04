@@ -41,18 +41,24 @@ Bacon.sequentially = (delay, values) ->
       nop
   )
 
-Bacon.interval = (delay, value) ->
-  value = {} unless value?
+Bacon.fromPoll = (delay, poll) ->
+  # TODO: copy pasta
   new EventStream (sink) ->
     id = undefined
     handler = ->
-      reply = sink (next value)
-      if (reply == Bacon.noMore)
+      value = poll()
+      reply = sink value
+      if (reply == Bacon.noMore or value.isEnd())
         unbind()
     unbind = -> 
       clearInterval id
     id = setInterval(handler, delay)
     unbind
+
+Bacon.interval = (delay, value) ->
+  value = {} unless value?
+  poll = -> next(value)
+  Bacon.fromPoll(delay, poll)
 
 Bacon.pushStream = ->
   d = new Dispatcher
