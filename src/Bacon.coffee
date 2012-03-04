@@ -153,12 +153,10 @@ class EventStream
           children.push unsubChild
       unsubRoot = root.subscribe(spawner)
       unbind
-  switch: (f) ->
-    root = this
-    @flatMap (value) ->
-      f(value).takeUntil(root)
+  switch: (f) =>
+    @flatMap (value) =>
+      f(value).takeUntil(this)
   delay: (delay) ->
-    root = this
     @flatMap (value) ->
       Bacon.later delay, value
   merge: (right) -> 
