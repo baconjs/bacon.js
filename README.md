@@ -62,7 +62,8 @@ The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
 
-`stream.map(f)` maps values using given function
+`stream.map(f)` maps values using given function, returning a new
+EventStream
 
 `stream.filter(f)` filters values using given predicate function
 
@@ -97,6 +98,9 @@ Property
 
 `property.subscribe(f)` subscribes side-effeect to property. If there's
 a current value, an `Initial` event will be pushed immediately.
+
+`property.map(f)` maps property values with given function, returing a
+new Property
 
 Event
 -----
@@ -203,7 +207,6 @@ TODO
     - combineLatest
     - scan
 - Property combinators
-    - map
     - scan
     - combineLatest
     - sampledBy
