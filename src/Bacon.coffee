@@ -175,6 +175,28 @@ class EventStream
       unsubRight = right.subscribe(smartSink)
       unsubBoth
 
+  takeUntil: (stopper) ->
+    src = this
+    new EventStream (sink) ->
+      unsubSrc = nop
+      unsubStopper = nop
+      unsubBoth = -> unsubSrc() ; unsubStopper()
+      srcSink = (event) ->
+        if event.isEnd()
+          unsubStopper()
+        reply = sink event
+        if reply == Bacon.noMore
+          unsubStopper()
+        reply
+      stopperSink = (event) ->
+        unless event.isEnd()
+          unsubSrc()
+          sink end()
+        Bacon.noMore
+      unsubSrc = src.subscribe(srcSink)
+      unsubStopper = stopper.subscribe(stopperSink)
+      unsubBoth
+
   toProperty: (initValue) ->
     new Property(this, initValue)
 

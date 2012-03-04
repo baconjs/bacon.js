@@ -58,6 +58,15 @@ describe "merge", ->
         left.merge(right).takeWhile(lessThan(2))
       [1])
 
+describe "takeUntil", ->
+  it "takes elements from source until an event appears in the other stream", ->
+    expectStreamEvents(
+      ->
+        src = repeat(30, [1, 2, 3])
+        stopper = repeat(70, ["stop!"])
+        src.takeUntil(stopper)
+      [1, 2])
+
 describe "pushStream", ->
   it "delivers pushed events", ->
     expectStreamEvents(
