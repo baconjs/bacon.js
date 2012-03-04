@@ -121,6 +121,9 @@ verifySwitching = (src, expectedEvents) ->
   waitsFor streamEnded, 1000
   runs -> expect(events).toEqual(expectedEvents)
 
+sources = []
 soon = (f) -> setTimeout f, 100
 seq = (interval, values) ->
-  Bacon.sequentially(interval, values)
+  source = Bacon.sequentially(interval, values)
+  sources.push(source)
+  source

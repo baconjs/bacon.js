@@ -69,7 +69,9 @@ class End extends Event
 
 class EventStream
   constructor: (subscribe) ->
-    @subscribe = new Dispatcher(subscribe).subscribe
+    dispatcher = new Dispatcher(subscribe)
+    @subscribe = dispatcher.subscribe
+    @hasSubscribers = dispatcher.hasSubscribers
   onValue: (f) -> @subscribe (event) ->
     f event.value if event.hasValue()
   filter: (f) ->
@@ -135,6 +137,7 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     sinks = []
+    @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
       remove(sink, sinks)
@@ -143,7 +146,7 @@ class Dispatcher
       for sink in sinks
         reply = sink event
         removeSink sink if reply == Bacon.noMore
-      if (sinks.length > 0) then Bacon.more else Bacon.noMore
+      if @hasSubscribers() then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
       assertEvent event
@@ -153,9 +156,9 @@ class Dispatcher
       if sinks.length == 1
         unsubscribeFromSource = subscribe @handleEvent
       assertFunction unsubscribeFromSource
-      ->
+      =>
         removeSink sink
-        unsubscribeFromSource() if (sinks.length == 0)
+        unsubscribeFromSource() unless @hasSubscribers()
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
 
