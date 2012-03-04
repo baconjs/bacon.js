@@ -31,6 +31,13 @@ Bacon.sequentially = (delay, values) ->
       next(value)
   Bacon.fromPoll(delay, poll)
 
+Bacon.repeatedly = (delay, values) ->
+  index = -1
+  poll = ->
+    index++
+    next values[index % values.length]
+  Bacon.fromPoll(delay, poll)
+
 Bacon.fromPoll = (delay, poll) ->
   new EventStream (sink) ->
     id = undefined

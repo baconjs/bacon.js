@@ -1,4 +1,5 @@
 # TODO: use endless streams where applicable to verify cleanup better
+# TODO: use repeatedly(delay, values)
 
 Bacon = (require "../src/Bacon").Bacon
 describe "later", ->
@@ -22,34 +23,34 @@ describe "interval", ->
 describe "filter", -> 
   it "should filter values", ->
     expectStreamEvents(
-      -> seq(10, [1, 2, 3]).filter(lessThan(3))
+      -> seq(10, [1, 2, 3]).take(3).filter(lessThan(3))
       [1, 2])
 
 describe "map", ->
   it "should map with given function", ->
     expectStreamEvents(
-      -> seq(10, [1, 2, 3]).map((x) -> x * 2)
+      -> seq(10, [1, 2, 3]).take(3).map((x) -> x * 2)
       [2, 4, 6])
 
 describe "takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
-      -> seq(10, [1, 2, 3, 1]).takeWhile(lessThan(3))
+      -> seq(10, [1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
 
 describe "merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
       ->
-        left = seq(10, [1, 2, 3])
-        right = seq(100, [4, 5, 6])
+        left = seq(10, [1, 2, 3]).take(3)
+        right = seq(100, [4, 5, 6]).take(3)
         left.merge(right)
       [1, 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
     expectStreamEvents(
       ->
-        left = seq(20, [1, 3])
-        right = seq(30, [2])
+        left = seq(20, [1, 3]).take(3)
+        right = seq(30, [2]).take(3)
         left.merge(right).takeWhile(lessThan(2))
       [1])
 
@@ -136,7 +137,7 @@ verifySwitching = (src, expectedEvents) ->
 seqs = []
 soon = (f) -> setTimeout f, 100
 seq = (interval, values) ->
-  source = Bacon.sequentially(interval, values)
+  source = Bacon.repeatedly(interval, values)
   seqs.push({ values : values, source : source })
   source
 
