@@ -27,8 +27,8 @@
             .merge(keyUps(keyCode).map(always("UP"))).toProperty("UP")
         }
 
-        keyState(32).subscribe(function(state) {
-          $("#state").text(state.value)
+        keyState(32).onValue(function(state) {
+          $("#state").text(state)
         })
 
       })

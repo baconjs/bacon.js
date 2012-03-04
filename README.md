@@ -52,6 +52,10 @@ EventStream
 
 `Bacon.EventStream` a stream of events. See methods below.
 
+`stream.onValue(f)` subscribes a given callback function to event
+stream. Function will be called for each new value in the stream. This
+is the simplest way to assign a side-effect to a stream.
+
 `stream.subscribe(f)` subscribes given handler function to
 event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
@@ -156,8 +160,8 @@ See [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/exam
             .merge(keyUps(keyCode).map(always("UP"))).toProperty("UP")
         }
 
-        keyState(32).subscribe(function(state) {
-          $("#state").text(state.value)
+        keyState(32).onValue(function(state) {
+          $("#state").text(state)
         })
 ~~~
 

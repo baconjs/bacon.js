@@ -220,6 +220,8 @@ class Property
     @subscribe = (sink) ->
       sink initial(currentValue) if currentValue?
       d.subscribe(sink)
+  onValue: (f) -> @subscribe (event) ->
+    f event.value unless event.isEnd()
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
