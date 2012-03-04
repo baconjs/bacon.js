@@ -73,6 +73,10 @@ from both
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream
 
+`stream.switch(f)` like flatMap, but instead of including events from
+all spawned streams, only includes them from the latest spawned stream.
+You can think this as switching from stream to stream
+
 `stream.takeUntil(stream2)` takes elements from source until a Next event 
 appears in the other stream. If other stream ends without value, it is
 ignored
@@ -190,7 +194,6 @@ TODO
 - API doc with interactive examples
 - An animated gif of frying bacon
 - More combinators
-    - switch
     - delay
     - combineLatest
     - scan
