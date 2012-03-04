@@ -1,3 +1,5 @@
+# TODO: use endless streams where applicable to verify cleanup better
+
 Bacon = (require "../src/Bacon").Bacon
 describe "later", ->
   it "should send single event and end", ->
@@ -10,6 +12,12 @@ describe "sequentially", ->
     expectStreamEvents(
       -> Bacon.sequentially(10, ["lol", "wut"])
       ["lol", "wut"])
+
+describe "interval", ->
+  it "repeats single element indefinitely", ->
+    expectStreamEvents(
+      -> Bacon.interval(10, "x").take(3)
+      ["x", "x", "x"])
 
 describe "filter", -> 
   it "should filter values", ->

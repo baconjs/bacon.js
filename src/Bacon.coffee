@@ -4,7 +4,7 @@
     handler = (event) ->
       reply = sink (next event)
       if (reply == Bacon.noMore)
-        unbind
+        unbind()
     unbind = -> element.unbind(eventName, handler)
     element.bind(eventName, handler)
     unbind
@@ -40,6 +40,19 @@ Bacon.sequentially = (delay, values) ->
       schedule values
       nop
   )
+
+Bacon.interval = (delay, value) ->
+  value = {} unless value?
+  new EventStream (sink) ->
+    id = undefined
+    handler = ->
+      reply = sink (next value)
+      if (reply == Bacon.noMore)
+        unbind()
+    unbind = -> 
+      clearInterval id
+    id = setInterval(handler, delay)
+    unbind
 
 Bacon.pushStream = ->
   d = new Dispatcher
@@ -83,6 +96,14 @@ class EventStream
   takeWhile: (f) ->
     @withHandler (event) -> 
       if event.isEnd() or f event.value
+        @push event
+      else
+        @push end()
+        Bacon.noMore
+  take: (count) ->
+    @withHandler (event) ->
+      if event.isEnd() or count > 0
+        count--
         @push event
       else
         @push end()
