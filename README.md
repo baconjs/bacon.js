@@ -1,7 +1,7 @@
 Bacon.js
 ========
 
-A small (< 14k) reactive programming lib for js.
+A small (< 20k) reactive programming lib for js.
 
 Inspired largely by RxJs, but includes the `EventStream` and `Property`
 concepts from [reactive-bacon](https://github.com/raimohanska/reactive-bacon).
