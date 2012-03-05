@@ -1,55 +1,55 @@
 Bacon = (require "../src/Bacon").Bacon
-describe "later", ->
+describe "Bacon.later", ->
   it "should send single event and end", ->
     expectStreamEvents(
       -> Bacon.later(10, "lol")
       ["lol"])
 
-describe "sequentially", ->
+describe "Bacon.sequentially", ->
   it "should send given events and end", ->
     expectStreamEvents(
       -> Bacon.sequentially(10, ["lol", "wut"])
       ["lol", "wut"])
 
-describe "interval", ->
+describe "Bacon.interval", ->
   it "repeats single element indefinitely", ->
     expectStreamEvents(
       -> Bacon.interval(10, "x").take(3)
       ["x", "x", "x"])
 
-describe "filter", -> 
+describe "EventStream.filter", -> 
   it "should filter values", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3]).take(3).filter(lessThan(3))
       [1, 2])
 
-describe "map", ->
+describe "EventStream.map", ->
   it "should map with given function", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3]).take(3).map(times(2))
       [2, 4, 6])
 
-describe "takeWhile", ->
+describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
 
-describe "flatMap", ->
+describe "EventStream.flatMap", ->
   it "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
       -> repeat(10, [1, 2]).take(2).flatMap (value) ->
         Bacon.sequentially(100, [value, value])
       [1, 2, 1, 2])
 
-describe "switch", ->
+describe "EventStream.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
       -> repeat(30, [1, 2]).take(2).switch (value) ->
         Bacon.sequentially(20, [value, value])
       [1, 2, 2])
 
-describe "merge", ->
+describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
       ->
@@ -65,7 +65,7 @@ describe "merge", ->
         left.merge(right).takeWhile(lessThan(2))
       [1])
 
-describe "delay", ->
+describe "EventStream.delay", ->
   it "delays all events by given delay in milliseconds", ->
     expectStreamEvents(
       ->
@@ -74,13 +74,13 @@ describe "delay", ->
         left.merge(right)
       [1, 2, 3, 4, 5, 6])
 
-describe "throttle", ->
+describe "EventStream.throttle", ->
   it "throttles input by given delay", ->
     expectStreamEvents(
       -> repeat(10, [1, 2]).take(2).throttle(20)
       [2])
 
-describe "takeUntil", ->
+describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectStreamEvents(
       ->
@@ -89,7 +89,7 @@ describe "takeUntil", ->
         src.takeUntil(stopper)
       [1, 2])
 
-describe "pushStream", ->
+describe "Bacon.pushStream", ->
   it "delivers pushed events", ->
     expectStreamEvents(
       ->
@@ -163,13 +163,13 @@ describe "Property.sample", ->
         prop.sample(30).take(4)
       [1, 2, 2, 2])
 
-describe "scan", ->
+describe "EventStream.scan", ->
   it "accumulates values with given seed and accumulator function", ->
     expectPropertyEvents(
       -> repeat(10, [1, 2, 3]).take(3).scan(0, add)
       [0, 1, 3, 6])
 
-describe "subscribe and onValue", ->
+describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = Bacon.pushStream()
     values = []
