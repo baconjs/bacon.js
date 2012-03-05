@@ -104,7 +104,9 @@ EventStream. You can optionally pass an initial value
 Property
 --------
 
-`Bacon.Property` a reactive property. Has the concept of "current value"
+`Bacon.Property` a reactive property. Has the concept of "current value".
+You can create a Property from an EventStream by using either toProperty 
+or scan method.
 
 `property.subscribe(f)` subscribes side-effeect to property. If there's
 a current value, an `Initial` event will be pushed immediately.
@@ -141,6 +143,21 @@ distinguish from other events. Only sent immediately after subscription
 to a Property.
 
 `Event.value` the value associated with a Next or Initial event
+
+For RxJs Users
+--------------
+
+Bacon.js is quite similar to RxJs, so it should be pretty easy to pick up. The
+major difference is that in bacon, there are two distinct kinds of Observables:
+the EventStream and the Property. The former is for discrete events while the 
+latter is for observable properties that have the concept of "current value".
+
+Also, there are no "cold observables", which
+means also that all EventStreams and Properties are consistent among subscribers:
+when as event occurs, all subscribers will observe the same event. If you're
+experienced with RxJs, you've probably bumped into some wtf's related to cold
+observables and inconsistent output from streams constructed using scan and startWith.
+None of that will happen with bacon.js. Happy frying!
 
 Cleaning up the frying pan
 --------------------------
