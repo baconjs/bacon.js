@@ -17,6 +17,8 @@ But hey, where's the bacon?
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
+You can also check out my entertaining (LOL), interactive, solid-ass [slideshow)[http://raimohanska.github.com/bacon.js-slides/].
+
 API
 ===
 
