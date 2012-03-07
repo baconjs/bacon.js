@@ -103,13 +103,17 @@ class EventStream extends Observable
         @push end()
         Bacon.noMore
   take: (count) ->
+    assert "take: count must >= 1", (count>=1)
     @withHandler (event) ->
-      if event.isEnd() or count > 0
-        count--
+      if event.isEnd()
         @push event
-      else
+      else if (count == 1)
+        @push event
         @push end()
         Bacon.noMore
+      else
+        count--
+        @push event
   map: (f) ->
     @withHandler (event) -> 
       @push event.fmap(f)
