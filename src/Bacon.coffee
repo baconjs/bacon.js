@@ -159,6 +159,18 @@ class EventStream extends Observable
   throttle: (delay) ->
     @switch (value) ->
       Bacon.later delay, value
+  bufferWithTime: (delay) ->
+    values = []
+    storeAndMaybeTrigger = (value) ->
+      values.push value
+      values.length == 1
+    flush = ->
+      output = values
+      values = []
+      output
+    buffer = ->
+      Bacon.later(delay).map(flush)
+    @filter(storeAndMaybeTrigger).flatMap(buffer)
   merge: (right) -> 
     left = this
     new EventStream (sink) ->

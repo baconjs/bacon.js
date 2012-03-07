@@ -1,4 +1,5 @@
 Bacon = (require "../src/Bacon").Bacon
+
 describe "Bacon.later", ->
   it "should send single event and end", ->
     expectStreamEvents(
@@ -79,6 +80,12 @@ describe "EventStream.throttle", ->
     expectStreamEvents(
       -> repeat(10, [1, 2]).take(2).throttle(20)
       [2])
+
+describe "EventStream.bufferWithTime", ->
+  it "returns events in bursts", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(33)
+      [[1, 2, 3, 4], [5, 6, 7]])
 
 describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
