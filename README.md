@@ -100,6 +100,11 @@ ignored
 milliseconds. This means that event is only emitted after the given
 "quiet period".
 
+`stream.bufferWithTime(delay)` buffers stream events with given delay.
+The buffer is flushed at most once in the given delay. So, if your input
+contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
+and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 
