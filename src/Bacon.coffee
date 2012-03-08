@@ -233,6 +233,28 @@ class EventStream extends Observable
       d.subscribe(sink)
     new Property(subscribe)
 
+  distinctUntilChanged: ->
+    @withStateMachine undefined, (prev, event) ->
+      if event.isEnd() or prev isnt event.value
+        [event.value, [event]]
+      else
+        [prev, []]
+
+  withStateMachine: (initState, f)->
+    state = initState
+    @withHandler (event) ->
+      fromF = f(state, event)
+      assertArray fromF
+      [newState, outputs] = fromF
+      assertArray outputs
+      state = newState
+      reply = Bacon.more
+      for output in outputs
+        reply = @push output
+        if reply == Bacon.noMore
+          return reply
+      reply
+
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
   toString: -> "EventStream"
@@ -342,3 +364,5 @@ assertEvent = (event) ->
   assert "not event", event.isEvent()
 assertFunction = (f) ->
   assert "not a function : " + f, typeof f == "function"
+assertArray = (xs) ->
+  assert "not an array : " + xs, xs instanceof Array

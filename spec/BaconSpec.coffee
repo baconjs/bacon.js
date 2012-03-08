@@ -36,6 +36,12 @@ describe "EventStream.takeWhile", ->
       -> repeat(10, [1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
 
+describe "EventStream.distinctUntilChanged", ->
+  it "drops duplicates", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, 2, 3, 1]).take(5).distinctUntilChanged()
+    [1, 2, 3, 1])
+
 describe "EventStream.flatMap", ->
   it "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
