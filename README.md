@@ -246,6 +246,7 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Performance tests (compare with RxJs for example)
 - Should property be updated on actually changed values only?
     - More probably a "distict()" method to filter out duplicates
 - Improve Property test by also subscribing at each value, ensuring that
