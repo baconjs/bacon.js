@@ -249,6 +249,8 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Take equality seriosly: how should values be compared in, for
+  instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
 - Should property be updated on actually changed values only?
     - More probably a "distict()" method to filter out duplicates
