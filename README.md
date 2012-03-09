@@ -1,7 +1,7 @@
 Bacon.js
 ========
 
-A small (< 20k) reactive programming lib for js.
+A small (< 20k) reactive programming lib for JavaScript. Written in CoffeeScript.
 
 Inspired largely by RxJs, but includes the `EventStream` and `Property`
 concepts from [reactive-bacon](https://github.com/raimohanska/reactive-bacon).
@@ -12,8 +12,8 @@ three-course dinner with Steve Ballmer.
 
 But hey, where's the bacon?
 
-- [CoffeeScript src](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
-- [Generated js](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js)
+- [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
+- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js) (see below for building the js yourself)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
@@ -22,6 +22,7 @@ You can also check out my entertaining (LOL), interactive, solid-ass [slideshow]
 And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
+
 
 API
 ===
