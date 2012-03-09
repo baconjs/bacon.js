@@ -19,6 +19,10 @@ But hey, where's the bacon?
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
+And remember to give me feedback on the bacon! Let me know if you've
+used it. Tell me how it worked for you. What's missing? What's wrong?
+Please contribute!
+
 API
 ===
 
