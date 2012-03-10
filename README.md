@@ -246,6 +246,47 @@ mostly internal business and you can ignore it unless you're working on
 a custom stream implementation or a stream combinator. In that case, I
 welcome you to contribute your stuff to the frying pan here.
 
+EventStream and Property semantics
+----------------------------------
+
+The state of an EventStream can be defined as (t, os) where `t` is time
+and `os` the list of current subscribers. This state should define the
+behavior of the stream in the sense that
+
+1. When a Next event is emitted, the same event is emitted to all subscribers
+2. After an event has been emitted, it will never be emitted again, even
+if a new subscriber is registered. A new event with the same value may
+of course be emitted later.
+3. When a new subscriber is registered, it will get exactly the same
+events as the other subscriber, after registration. This means that the
+stream cannot emit any "initial" events to the new subscriber, unless it
+emits them to all of its subscribers.
+4. A stream must never emit eny other events after End (not even another End)
+
+The rules are deliberately redundant, explaining the constraints from
+different perspectives. The contract between an EventStream and its
+subscriber is as follows:
+
+1. For each new value, the subscriber function is called. The new
+   value is wrapped into a `Next` event.
+2. The subscriber unction returns a result which is either `Bacon.noMore` or
+`Bacon.More`. The `undefined` value is handled like `Bacon.more`.
+3. In case of `Bacon.noMore` the source must never call the subscriber again.
+4. When the stream ends, the subscriber function will be called with
+   and `End` event. The return value of the subscribe function is
+   ignored in this case.
+
+A `Property` behaves similarly to an `EventStream` except that 
+
+1. On a call to `subscribe`, it will deliver its current value 
+(if any) to the provided subscriber function wrapped into an `Initial`
+event.
+2. This means that if the Property has previously emitted the value `x`
+to its subscribers and that is the latest value emitted, it will deliver
+this value to the new subscriber.
+3. Property may or may not have a current value to start with. Depends
+on how the Property was created.
+
 For RxJs Users
 --------------
 
