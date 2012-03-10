@@ -71,6 +71,7 @@ class Next extends Event
 
 class Initial extends Next
   isInitial: -> true
+  isNext: -> false
   fmap: (f) -> initial(f(this.value))
   apply: (value) -> initial(value)
 
