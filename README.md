@@ -44,19 +44,32 @@ filter and combine these streams in a multitude of ways (see API below). The met
 (like underscore.js). So, if you say
 
     function always(value) { return function() { value } }
-    function add(x, y) { return x + y }
     
     var plus = $("#plus").asEventStream("click").map(always(1))
     var minus = $("#minus").asEventStream("click").map(always(-1))
     var both = plus.merge(minus)
-    var counter = both.scan(0, add)
-    counter.onValue(function(sum) { $("#sum").text(sum)})
-    
+
 .. you'll have a stream that will output the number 1 when the "plus" button is clicked
 and another stream outputting -1 when the "minus" button is clicked. The `both` stream will
-be a merged stream containing events from both the plus and minus streams. The `counter` stream
-will contain the sum of the values in the `both` stream, so it's practically a counter that
-can be increased and decreased using the plus and minus buttons.
+be a merged stream containing events from both the plus and minus streams. 
+    
+In addition to EventStreams, bacon.js has a thing called `Property`, that is almost like an
+EventStream, but has a "current value". So things that change and have a current state are 
+Properties, while things that consist of discrete events are EventStreams. You could think
+mouse clicks as an EventStream and mouse position as a Property. You can create a Property from
+an EventStream with `scan` or `toProperty` methods. So, let's say
+
+    function add(x, y) { return x + y }
+    var counter = both.scan(0, add)
+    counter.onValue(function(sum) { $("#sum").text(sum)})
+
+
+The `counter` property will contain the sum of the values in the `both` stream, so it's practically 
+a counter that can be increased and decreased using the plus and minus buttons. The `scan` method 
+was used here to calculate the "current sum" of events in the `both` stream, by giving a "seed value"
+`0` and an "accumulator function" `add`. The scan method creates a property that starts with the given
+seed value and on each event in the source stream applies the accumulator function to the current
+property value and the new value from the stream.
 
 API
 ===
@@ -87,6 +100,8 @@ using the `push` function of the pushable stream. You can send the End event by 
 
 `new Bacon.EventStream(subscribe)` creates an event stream with the given 
 subscribe function.
+
+`property.changes()` creates a stream of changes to the Property (see Property API below)
 
 EventStream
 -----------
