@@ -23,6 +23,40 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
+Intro
+=====
+
+Bacon.js is a library for functional reactive programming. Or let's say it's a library for
+working with events. Anyways, you can wrap an event source, 
+say "mouse clicks on an element" into an `EventStream` by saying
+
+    var cliks = $("h1").asEventStream("click")
+    
+Each EventStream represents a stream of events. It is an Observable object, meaning
+that you can listen to events in the stream using, for instance, the `onValue` method 
+with a callback. Like this:
+
+    cliks.onValue(function() { alert("you clicked the h1 element") })
+    
+But you can do neater stuff too. The Bacon of bacon.js is in that you can transform, 
+filter and combine these streams in a multitude of ways (see API below). The methods `map`,
+`filter`, for example, are similar to same functions in functional list programming
+(like underscore.js). So, if you say
+
+    function always(value) { return function() { value } }
+    function add(x, y) { return x + y }
+    
+    var plus = $("#plus").asEventStream("click").map(always(1))
+    var minus = $("#minus").asEventStream("click").map(always(-1))
+    var both = plus.merge(minus)
+    var counter = both.scan(0, add)
+    counter.onValue(function(sum) { $("#sum").text(sum)})
+    
+.. you'll have a stream that will output the number 1 when the "plus" button is clicked
+and another stream outputting -1 when the "minus" button is clicked. The `both` stream will
+be a merged stream containing events from both the plus and minus streams. The `counter` stream
+will contain the sum of the values in the `both` stream, so it's practically a counter that
+can be increased and decreased using the plus and minus buttons.
 
 API
 ===
@@ -59,9 +93,11 @@ EventStream
 
 `Bacon.EventStream` a stream of events. See methods below.
 
-`stream.onValue(f)` subscribes a given callback function to event
+`stream.onValue(f)` subscribes a given handler function to event
 stream. Function will be called for each new value in the stream. This
-is the simplest way to assign a side-effect to a stream.
+is the simplest way to assign a side-effect to a stream. The difference
+to the `subscribe` method is that the actual stream values are
+received, instead of Event objects.
 
 `stream.subscribe(f)` subscribes given handler function to
 event stream. Function will receive Event objects (see below).
@@ -123,8 +159,18 @@ Property
 You can create a Property from an EventStream by using either toProperty 
 or scan method.
 
-`property.subscribe(f)` subscribes side-effeect to property. If there's
-a current value, an `Initial` event will be pushed immediately.
+`property.onValue(f)` subscribes a given handler function to the property.
+Function will be called for each new value in the stream, as well as for 
+the current value (if any) at the time of calling onValue. This
+is the simplest way to assign a side-effect to a property. The handler
+will get actual property values only, instead of Event objects.
+
+`property.subscribe(f)` subscribes a handler function to property. If there's
+a current value, an `Initial` event will be pushed immediately. `Next` 
+event will be pushed on updates and an `End` event in case the source 
+EventStream ends.
+
+`property.onValue(f)` 
 
 `property.map(f)` maps property values with given function, returing a
 new Property
@@ -148,7 +194,7 @@ Event
 `Bacon.Event` has subclasses `Next`, `End` and `Initial`
 
 `Bacon.Next` next value in an EventStream of a Property. Call isNext() to
-distinguish a Next event from other eventss.
+distinguish a Next event from other events.
 
 `Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
 distinguish an End from other events.
@@ -157,7 +203,17 @@ distinguish an End from other events.
 distinguish from other events. Only sent immediately after subscription
 to a Property.
 
-`Event.value` the value associated with a Next or Initial event
+Event properties and methods:
+
+`event.value` the value associated with a Next or Initial event
+
+`event.hasValue()` returns true for events of type Initial and Next
+
+`event.isNext()` true for Next events
+
+`event.isInitial()` true for Initial events
+
+`event.isEnd()` true for End events
 
 For RxJs Users
 --------------
