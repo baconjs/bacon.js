@@ -230,21 +230,6 @@ Event properties and methods:
 
 `event.isEnd()` true for End events
 
-For RxJs Users
---------------
-
-Bacon.js is quite similar to RxJs, so it should be pretty easy to pick up. The
-major difference is that in bacon, there are two distinct kinds of Observables:
-the EventStream and the Property. The former is for discrete events while the 
-latter is for observable properties that have the concept of "current value".
-
-Also, there are no "cold observables", which
-means also that all EventStreams and Properties are consistent among subscribers:
-when as event occurs, all subscribers will observe the same event. If you're
-experienced with RxJs, you've probably bumped into some wtf's related to cold
-observables and inconsistent output from streams constructed using scan and startWith.
-None of that will happen with bacon.js. Happy frying!
-
 Cleaning up the frying pan
 --------------------------
 
@@ -260,6 +245,21 @@ in application-code never does this. So the business of unsubscribing is
 mostly internal business and you can ignore it unless you're working on
 a custom stream implementation or a stream combinator. In that case, I
 welcome you to contribute your stuff to the frying pan here.
+
+For RxJs Users
+--------------
+
+Bacon.js is quite similar to RxJs, so it should be pretty easy to pick up. The
+major difference is that in bacon, there are two distinct kinds of Observables:
+the EventStream and the Property. The former is for discrete events while the 
+latter is for observable properties that have the concept of "current value".
+
+Also, there are no "cold observables", which
+means also that all EventStreams and Properties are consistent among subscribers:
+when as event occurs, all subscribers will observe the same event. If you're
+experienced with RxJs, you've probably bumped into some wtf's related to cold
+observables and inconsistent output from streams constructed using scan and startWith.
+None of that will happen with bacon.js. Happy frying!
 
 Examples
 ========
@@ -316,6 +316,19 @@ Dependencies
 
 Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
 Build/test: node.js, npm, cake
+
+Why Bacon?
+==========
+
+Why not RxJs or something else?
+
+- There is no "something else"
+- I want by bacon to be open-source
+- I want good documentation for my bacon
+- I think the Observable abstraction is not a good enough. It leaves too much room for variations in 
+behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
+- Bacon needs automatic tests. They also serve as documentation.
+- Because.
 
 Contribute
 ==========
