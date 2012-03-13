@@ -338,6 +338,27 @@ class Dispatcher
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
 
+class Bus extends EventStream
+  constructor: ->
+    sink = undefined
+    inputs = []
+    subscribeAll = (newSink) =>
+      sink = newSink
+      for input in inputs
+        input.subscribe(sink)
+    dispatcher = new Dispatcher(subscribeAll)
+    subscribeThis = (sink) =>
+      dispatcher.subscribe(sink)
+    super(subscribeThis)
+    @plug = (inputStream) =>
+      inputs.push(inputStream)
+      if (sink)
+        inputStream.subscribe(sink)
+    @push = (event) =>
+      sink event if sink
+
+# TODO: spec for Bus
+
 Bacon.EventStream = EventStream
 Bacon.Property = Property
 Bacon.Initial = Initial
