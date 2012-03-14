@@ -55,6 +55,11 @@ Bacon.pushStream = ->
   pushStream.end = -> d.push end()
   pushStream
 
+Bacon.constant = (value) ->
+  new Property (sink) ->
+    sink(initial(value))
+    sink(end())
+
 class Event
   isEvent: -> true
   isEnd: -> false
@@ -241,7 +246,7 @@ class EventStream extends Observable
       else
         [prev, []]
 
-  withStateMachine: (initState, f)->
+  withStateMachine: (initState, f) ->
     state = initState
     @withHandler (event) ->
       fromF = f(state, event)
@@ -255,6 +260,22 @@ class EventStream extends Observable
         if reply == Bacon.noMore
           return reply
       reply
+
+  decorateWith: (label, property) ->
+    property.sampledBy(this, (propertyValue, streamValue) ->
+        result = cloneObject(streamValue)
+        result[label] = propertyValue
+        result
+      )
+
+  end: (value = "end") ->
+    @withHandler (event) ->
+      if event.isEnd()
+        @push next(value)
+        @push end()
+        Bacon.noMore
+      else
+        Bacon.more
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
@@ -297,9 +318,9 @@ class Property extends Observable
     @combine = (other, combinator) =>
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
-    @sampledBy = (sampler) =>
-      pushPropertyValue = (sink, event, myVal, _) -> sink(event.apply(myVal))
-      combine(sampler, nop, pushPropertyValue).changes()
+    @sampledBy = (sampler, combinator = former) =>
+      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
+      combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.end())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
@@ -367,6 +388,7 @@ Bacon.End = End
 
 nop = ->
 latter = (_, x) -> x
+former = (x, _) -> x
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
 end = -> new End()
@@ -374,6 +396,11 @@ empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
 cloneArray = (xs) -> xs.slice(0)
+cloneObject = (src) ->
+  clone = {}
+  for key, value of src
+    clone[key] = value
+  clone
 remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0

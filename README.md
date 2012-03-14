@@ -167,12 +167,18 @@ and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 
+`stream.decorateWith(name, property)` decorates stream values (must be
+objects) with a new property with the given name and a value taken from
+the given Property.
+
 Property
 --------
 
 `Bacon.Property` a reactive property. Has the concept of "current value".
 You can create a Property from an EventStream by using either toProperty 
 or scan method.
+
+`Bacon.constant(x)` creates a constant property with value x.
 
 `property.onValue(f)` subscribes a given handler function to the property.
 Function will be called for each new value in the stream, as well as for 
@@ -197,7 +203,13 @@ properties using a two-arg function.
 property value at given interval (in milliseconds)
 
 `property.sampledBy(stream)` creates an EventStream by sampling the
-property value at each event from the given stream
+property value at each event from the given stream. The result
+EventStream will contain the property value at each event in the source
+stream.
+
+`property.sampledBy(stream, f)` samples the property on stream events.
+The result EventStream values will be formed using the given function
+`f(propertyValue, streamValue)`
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial

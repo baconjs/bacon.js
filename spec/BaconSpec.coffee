@@ -30,6 +30,16 @@ describe "EventStream.map", ->
       -> repeat(10, [1, 2, 3]).take(3).map(times(2))
       [2, 4, 6])
 
+describe "EventStream.end", ->
+  it "produces single-element stream on stream end", ->
+    expectStreamEvents(
+      -> repeat(10, [""]).take(2).end("the end")
+      ["the end"])
+  it "defaults to the string 'end' if no value given", ->
+    expectStreamEvents(
+      -> repeat(10, [""]).take(2).end()
+      ["end"])
+
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
@@ -102,6 +112,13 @@ describe "EventStream.takeUntil", ->
         src.takeUntil(stopper)
       [1, 2])
 
+describe "EventStream.decorateWithProperty", ->
+  it "decorates stream event with Property value", ->
+    expectStreamEvents(
+      ->
+        repeat(10, [{i:0}, {i:1}]).decorateWith("label", Bacon.constant("lol")).take(2)
+      [{i:0, label:"lol"}, {i:1, label:"lol"}])
+
 describe "Bacon.pushStream", ->
   it "delivers pushed events", ->
     expectStreamEvents(
@@ -125,6 +142,12 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
+
+describe "Bacon.constant", ->
+  it "creates a constant property", ->
+    expectPropertyEvents(
+      -> Bacon.constant("lol")
+    ["lol"])
 
 describe "Property.map", ->
   it "maps property values", ->
@@ -167,6 +190,20 @@ describe "Property.sampledBy", ->
         stream = repeat(30, ["troll"]).take(4)
         prop.sampledBy(stream)
       [1, 2, 2, 2])
+  it "ends when sampling stream ends", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, [1, 2]).toProperty()
+        stream = repeat(20, [""]).delay(10).take(4)
+        prop.sampledBy(stream)
+      [1, 2, 1, 2])
+  it "accepts optional combinator function f(Vp, Vs)", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, ["a", "b"]).take(2).toProperty()
+        stream = repeat(20, ["1", "2"]).delay(10).take(4)
+        prop.sampledBy(stream, add)
+      ["a1", "b2", "b1", "b2"])
 
 describe "Property.sample", -> 
   it "samples property by given interval", ->
