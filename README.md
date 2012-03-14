@@ -379,6 +379,7 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Try converting Worzone to bacon as a proof-of-concept (in progress)
 - Take equality seriosly: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
