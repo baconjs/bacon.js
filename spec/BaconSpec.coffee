@@ -173,6 +173,22 @@ describe "Property.map", ->
         p
       [2, 4])
 
+describe "Property.filter", -> 
+  it "should filter values", ->
+    expectPropertyEvents(
+      -> repeat(10, [1, 2, 3]).take(3).toProperty().filter(lessThan(3))
+      [1, 2])
+
+
+describe "Property.takeUntil", ->
+  it "takes elements from source until an event appears in the other stream", ->
+    expectPropertyEvents(
+      ->
+        src = repeat(30, [1, 2, 3])
+        stopper = repeat(70, ["stop!"])
+        src.toProperty().takeUntil(stopper)
+      [1, 2])
+
 describe "Property.changes", ->
   it "yields property change events", ->
     expectPropertyEvents(

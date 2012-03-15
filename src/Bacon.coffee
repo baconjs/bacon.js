@@ -371,6 +371,13 @@ class Property extends Observable
     @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
+  filter: (f) => new Property (sink) =>
+    @subscribe (event) =>
+      if event.isEnd() or f(event.value)
+        sink(event)
+      else
+        Bacon.more
+  takeUntil: (stopper) => @sampledBy(@changes().takeUntil(stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
@@ -425,8 +432,8 @@ class Bus extends EventStream
       inputs.push(inputStream)
       if (sink)
         inputStream.subscribe(sink)
-    @push = (event) =>
-      sink event if sink
+    @push = (value) =>
+      sink next(value)
 
 # TODO: spec for Bus
 # TODO: Bus should clean up inputs when they end
