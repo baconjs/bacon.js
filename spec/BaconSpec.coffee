@@ -283,11 +283,23 @@ describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
     values = []
-    bus.onValue (value) -> values.push value
+    dispose = bus.onValue (value) -> values.push value
     push = Bacon.pushStream()
     bus.plug(push)
     push.push("lol")
     expect(values).toEqual(["lol"])
+    dispose()
+    verifyCleanup()
+  it "works with looped streams", ->
+    expectStreamEvents(
+      ->
+        bus = new Bacon.Bus()
+        bus.plug(Bacon.later(20, "lol"))
+        #bus.plug(bus.filter(=> false))
+        Bacon.later(40).onValue(=> bus.end())
+        bus
+      ["lol"])
+
 
 lessThan = (limit) -> 
   (x) -> x < limit

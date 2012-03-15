@@ -17,6 +17,9 @@ Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
 
+Bacon.never = => new EventStream (sink) =>
+  => nop
+
 Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
@@ -51,7 +54,7 @@ Bacon.interval = (delay, value) ->
 Bacon.pushStream = ->
   d = new Dispatcher
   pushStream = d.toEventStream()
-  pushStream.push = (event) -> d.push next(event)
+  pushStream.push = (value) -> d.push next(value)
   pushStream.end = -> d.push end()
   pushStream
 
@@ -415,13 +418,19 @@ class Dispatcher
 
 class Bus extends EventStream
   constructor: ->
-    sink = nop
+    sink = undefined
+    unsubFuncs = []
     inputs = []
+    guardedSink = (event) =>
+      if (event.isEnd())
+        Bacon.noMore
+      else
+        sink event
     subscribeAll = (newSink) =>
       sink = newSink
       unsubFuncs = []
       for input in inputs
-        unsubFuncs.push(input.subscribe(sink))
+        unsubFuncs.push(input.subscribe(guardedSink))
       unsubAll = => f() for f in unsubFuncs
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
@@ -430,12 +439,13 @@ class Bus extends EventStream
     super(subscribeThis)
     @plug = (inputStream) =>
       inputs.push(inputStream)
-      if (sink)
-        inputStream.subscribe(sink)
+      if (sink?)
+        unsubFuncs.push(inputStream.subscribe(guardedSink))
     @push = (value) =>
       sink next(value)
+    @end = =>
+      sink end()
 
-# TODO: spec for Bus
 # TODO: Bus should clean up inputs when they end
 
 Bacon.EventStream = EventStream
