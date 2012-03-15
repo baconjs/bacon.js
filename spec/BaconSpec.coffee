@@ -247,6 +247,15 @@ describe "Observable.subscribe and onValue", ->
     s.push "wut"
     expect(values).toEqual(["lol"])
 
+describe "Bacon.Bus", ->
+  it "merges plugged-in streams", ->
+    bus = new Bacon.Bus()
+    values = []
+    bus.onValue (value) -> values.push value
+    push = Bacon.pushStream()
+    bus.plug(push)
+    push.push("lol")
+    expect(values).toEqual(["lol"])
 
 lessThan = (limit) -> 
   (x) -> x < limit

@@ -108,6 +108,7 @@ class Observable
 
 class EventStream extends Observable
   constructor: (subscribe) ->
+    assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
     @hasSubscribers = dispatcher.hasSubscribers
@@ -365,6 +366,7 @@ class Dispatcher
       assertEvent event
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
+      assertFunction sink
       sinks.push(sink)
       if sinks.length == 1
         unsubscribeFromSource = subscribe @handleEvent
@@ -377,12 +379,15 @@ class Dispatcher
 
 class Bus extends EventStream
   constructor: ->
-    sink = undefined
+    sink = nop
     inputs = []
     subscribeAll = (newSink) =>
       sink = newSink
+      unsubFuncs = []
       for input in inputs
-        input.subscribe(sink)
+        unsubFuncs.push(input.subscribe(sink))
+      unsubAll = => f() for f in unsubFuncs
+      unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
       dispatcher.subscribe(sink)
@@ -395,9 +400,11 @@ class Bus extends EventStream
       sink event if sink
 
 # TODO: spec for Bus
+# TODO: Bus should clean up inputs when they end
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property
+Bacon.Bus = Bus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
