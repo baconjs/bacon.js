@@ -76,6 +76,12 @@ Bacon.combineAsArray = (streams) ->
   Bacon.combineAll(streams, (s1, s2) ->
     s1.toProperty().combine(s2, concatArrays))
 
+Bacon.latestValue = (src) ->
+  latest = undefined
+  src.subscribe (event) ->
+    latest = event.value if event.hasValue()
+  => latest
+
 class Event
   isEvent: -> true
   isEnd: -> false

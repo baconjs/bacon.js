@@ -231,6 +231,10 @@ describe "Property.sample", ->
         prop.sample(30).take(4)
       [1, 2, 2, 2])
 
+describe "Bacon.latestBalue(property)()", ->
+  it "returns current value of property", ->
+    expect(Bacon.latestValue(Bacon.constant(1))()).toEqual(1)
+
 describe "EventStream.scan", ->
   it "accumulates values with given seed and accumulator function", ->
     expectPropertyEvents(

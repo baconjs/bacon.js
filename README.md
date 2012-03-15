@@ -232,6 +232,14 @@ fold-like fashion: the first two streams are given to the function
 first. Then the result of this operation is combined with the third
 stream and so on.
 
+Latest value of Property or EventStream
+---------------------------------------
+
+`Bacon.latestValue(stream)` will return a function that will return the
+latest value from the given stream or property. Notice that the
+side-effect of this is that there will be an unremovable subscriber for
+the stream that takes care of storing the latest value.
+
 Event
 -----
 
