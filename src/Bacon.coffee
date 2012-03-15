@@ -143,6 +143,17 @@ class EventStream extends Observable
       else
         count--
         @push event
+  skip : (count) ->
+    assert "skip: count must >= 0", (count>=0)
+    @withHandler (event) ->
+      if event.isEnd()
+        @push event
+      else if (count > 0)
+        count--
+        Bacon.more
+      else
+        @push event
+
   map: (f) ->
     @withHandler (event) -> 
       @push event.fmap(f)

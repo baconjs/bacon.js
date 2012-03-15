@@ -46,6 +46,12 @@ describe "EventStream.takeWhile", ->
       -> repeat(10, [1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
 
+describe "EventStream.skip", ->
+  it "should skip first N items", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, 3]).take(3).skip(1)
+    [2, 3])
+
 describe "EventStream.distinctUntilChanged", ->
   it "drops duplicates", ->
     expectStreamEvents(

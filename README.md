@@ -134,6 +134,8 @@ an "integral" property.
 
 `stream.take(n)` takes at most n elements from the stream
 
+`stream.skip(n)` skips the first n elements from the stream
+
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
 
