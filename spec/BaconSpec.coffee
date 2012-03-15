@@ -182,6 +182,24 @@ describe "Property.combine", ->
         left.combine(right, add)
       [5, 6, 7, 8, 9])
 
+describe "Bacon.combineAsArray", -> 
+  it "combines properties and latest values of streams, into a Property having arrays as values", ->
+    expectPropertyEvents(
+      ->
+        stream = repeat(10, ["a", "b"]).take(2)
+        Bacon.combineAsArray([Bacon.constant(1), Bacon.constant(2), stream])
+      [[1, 2, "a"], [1, 2, "b"]])
+
+describe "Bacon.mergeAll", ->
+  it ("merges all given streams"), ->
+    expectStreamEvents(
+      ->
+        Bacon.mergeAll([
+          repeat(30, [1, 2]).take(2)
+          repeat(30, [3, 4]).delay(10).take(2)
+          repeat(30, [5, 6]).delay(20).take(2)])
+      [1, 3, 5, 2, 4, 6])
+
 describe "Property.sampledBy", -> 
   it "samples property at events, resulting to EventStream", ->
     expectStreamEvents(

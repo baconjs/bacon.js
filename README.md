@@ -215,6 +215,23 @@ The result EventStream values will be formed using the given function
 Returns exactly same events as the property itself, except any Initial
 events.
 
+Combining multiple streams and properties
+-----------------------------------------
+
+`Bacon.combineAsArray(streams)` combines Properties and EventStreams so 
+that the result Property will have an array of all property values as its value.
+The input array may contain both Properties and EventStreams. In the
+latter case, the stream is first converted into a Property and then
+combined with the other properties.
+
+`Bacon.mergeAll(streams)` merges all given EventStreams.
+
+`Bacon.combineAll(streams, f)` combines given list of streams/properties
+using the given combinator function `f(s1, s2)`. The function is applied in a
+fold-like fashion: the first two streams are given to the function
+first. Then the result of this operation is combined with the third
+stream and so on.
+
 Event
 -----
 

@@ -60,6 +60,22 @@ Bacon.constant = (value) ->
     sink(initial(value))
     sink(end())
 
+Bacon.combineAll = (streams, f) ->
+  assertArray streams
+  stream = head streams
+  for next in (tail streams)
+    stream = f(stream, next)
+  stream
+
+Bacon.mergeAll = (streams) ->
+  Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
+
+Bacon.combineAsArray = (streams) ->
+  toArray = (x) -> if x? then (if (x instanceof Array) then x else [x]) else []
+  concatArrays = (a1, a2) -> toArray(a1).concat(toArray(a2))
+  Bacon.combineAll(streams, (s1, s2) ->
+    s1.toProperty().combine(s2, concatArrays))
+
 class Event
   isEvent: -> true
   isEnd: -> false
@@ -328,7 +344,7 @@ class Property extends Observable
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
-
+  toProperty: => this
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
