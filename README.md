@@ -166,6 +166,11 @@ The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
+`stream.bufferWithCount(count)` buffers stream events with given cound.
+The bufer is flushed when it contains given number of elements. So, if
+you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
+events with values [1, 2], [3, 4] and [5].
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
 

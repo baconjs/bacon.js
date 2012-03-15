@@ -109,6 +109,12 @@ describe "EventStream.bufferWithTime", ->
       -> repeat(10, [1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(33)
       [[1, 2, 3, 4], [5, 6, 7]])
 
+describe "EventStream.bufferWithCount", ->
+  it "returns events in chunks of fixed size", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, 3, 4, 5]).take(5).bufferWithCount(2)
+      [[1, 2], [3, 4], [5]])
+
 describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectStreamEvents(

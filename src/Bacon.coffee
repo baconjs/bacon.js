@@ -215,6 +215,18 @@ class EventStream extends Observable
     buffer = ->
       Bacon.later(delay).map(flush)
     @filter(storeAndMaybeTrigger).flatMap(buffer)
+  bufferWithCount: (count) ->
+    values = []
+    @withHandler (event) ->
+      flush = =>
+        @push next(values)
+        values = []
+      if (event.isEnd())
+        flush()
+        @push event
+      else
+        values.push(event.value)
+        flush() if values.length == count
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
