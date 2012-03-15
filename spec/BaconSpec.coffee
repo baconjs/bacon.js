@@ -295,7 +295,7 @@ describe "Bacon.Bus", ->
       ->
         bus = new Bacon.Bus()
         bus.plug(Bacon.later(20, "lol"))
-        #bus.plug(bus.filter(=> false))
+        bus.plug(bus.filter(=> false))
         Bacon.later(40).onValue(=> bus.end())
         bus
       ["lol"])
