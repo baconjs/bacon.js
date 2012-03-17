@@ -17,6 +17,9 @@ Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
 
+Bacon.never = => new EventStream (sink) =>
+  => nop
+
 Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
@@ -48,12 +51,32 @@ Bacon.interval = (delay, value) ->
   poll = -> next(value)
   Bacon.fromPoll(delay, poll)
 
-Bacon.pushStream = ->
-  d = new Dispatcher
-  pushStream = d.toEventStream()
-  pushStream.push = (event) -> d.push next(event)
-  pushStream.end = -> d.push end()
-  pushStream
+Bacon.constant = (value) ->
+  new Property (sink) ->
+    sink(initial(value))
+    sink(end())
+
+Bacon.combineAll = (streams, f) ->
+  assertArray streams
+  stream = head streams
+  for next in (tail streams)
+    stream = f(stream, next)
+  stream
+
+Bacon.mergeAll = (streams) ->
+  Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
+
+Bacon.combineAsArray = (streams) ->
+  toArray = (x) -> if x? then (if (x instanceof Array) then x else [x]) else []
+  concatArrays = (a1, a2) -> toArray(a1).concat(toArray(a2))
+  Bacon.combineAll(streams, (s1, s2) ->
+    s1.toProperty().combine(s2, concatArrays))
+
+Bacon.latestValue = (src) ->
+  latest = undefined
+  src.subscribe (event) ->
+    latest = event.value if event.hasValue()
+  => latest
 
 class Event
   isEvent: -> true
@@ -87,6 +110,7 @@ class Observable
 
 class EventStream extends Observable
   constructor: (subscribe) ->
+    assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
     @hasSubscribers = dispatcher.hasSubscribers
@@ -115,6 +139,17 @@ class EventStream extends Observable
       else
         count--
         @push event
+  skip : (count) ->
+    assert "skip: count must >= 0", (count>=0)
+    @withHandler (event) ->
+      if event.isEnd()
+        @push event
+      else if (count > 0)
+        count--
+        Bacon.more
+      else
+        @push event
+
   map: (f) ->
     @withHandler (event) -> 
       @push event.fmap(f)
@@ -176,6 +211,18 @@ class EventStream extends Observable
     buffer = ->
       Bacon.later(delay).map(flush)
     @filter(storeAndMaybeTrigger).flatMap(buffer)
+  bufferWithCount: (count) ->
+    values = []
+    @withHandler (event) ->
+      flush = =>
+        @push next(values)
+        values = []
+      if (event.isEnd())
+        flush()
+        @push event
+      else
+        values.push(event.value)
+        flush() if values.length == count
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
@@ -198,27 +245,8 @@ class EventStream extends Observable
       unsubRight = right.subscribe(smartSink)
       unsubBoth
 
-  takeUntil: (stopper) ->
-    src = this
-    new EventStream (sink) ->
-      unsubSrc = nop
-      unsubStopper = nop
-      unsubBoth = -> unsubSrc() ; unsubStopper()
-      srcSink = (event) ->
-        if event.isEnd()
-          unsubStopper()
-        reply = sink event
-        if reply == Bacon.noMore
-          unsubStopper()
-        reply
-      stopperSink = (event) ->
-        unless event.isEnd()
-          unsubSrc()
-          sink end()
-        Bacon.noMore
-      unsubSrc = src.subscribe(srcSink)
-      unsubStopper = stopper.subscribe(stopperSink)
-      unsubBoth
+  takeUntil: (stopper) =>
+    new EventStream(takeUntilSubscribe(this, stopper))
 
   toProperty: (initValue) ->
    @scan(initValue, latter)
@@ -241,7 +269,7 @@ class EventStream extends Observable
       else
         [prev, []]
 
-  withStateMachine: (initState, f)->
+  withStateMachine: (initState, f) ->
     state = initState
     @withHandler (event) ->
       fromF = f(state, event)
@@ -255,6 +283,22 @@ class EventStream extends Observable
         if reply == Bacon.noMore
           return reply
       reply
+
+  decorateWith: (label, property) ->
+    property.sampledBy(this, (propertyValue, streamValue) ->
+        result = cloneObject(streamValue)
+        result[label] = propertyValue
+        result
+      )
+
+  end: (value = "end") ->
+    @withHandler (event) ->
+      if event.isEnd()
+        @push next(value)
+        @push end()
+        Bacon.noMore
+      else
+        Bacon.more
 
   withHandler: (handler) ->
     new Dispatcher(@subscribe, handler).toEventStream()
@@ -297,17 +341,30 @@ class Property extends Observable
     @combine = (other, combinator) =>
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
-    @sampledBy = (sampler) =>
-      pushPropertyValue = (sink, event, myVal, _) -> sink(event.apply(myVal))
-      combine(sampler, nop, pushPropertyValue).changes()
+    @sampledBy = (sampler, combinator = former) =>
+      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
+      combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.end())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
+  filter: (f) => 
+    previousMathing = undefined
+    new Property (sink) =>
+      @subscribe (event) =>
+        if event.isEnd() or f(event.value)
+          sink(event)
+          previousMathing = event.value if event.hasValue()
+        else if event.isInitial() and previousMathing?
+          # non-matching Initial
+          sink(initial(previousMathing))
+        else
+          Bacon.more
+  takeUntil: (stopper) => new Property(takeUntilSubscribe(this, stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
-
+  toProperty: => this
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
@@ -328,6 +385,7 @@ class Dispatcher
       assertEvent event
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
+      assertFunction sink
       sinks.push(sink)
       if sinks.length == 1
         unsubscribeFromSource = subscribe @handleEvent
@@ -338,14 +396,71 @@ class Dispatcher
   toEventStream: -> new EventStream(@subscribe)
   toString: -> "Dispatcher"
 
+class Bus extends EventStream
+  constructor: ->
+    sink = undefined
+    unsubFuncs = []
+    inputs = []
+    guardedSink = (input) => (event) =>
+      if (event.isEnd())
+        remove(input, inputs)
+        Bacon.noMore
+      else
+        sink event
+    unsubAll = => 
+      f() for f in unsubFuncs
+      unsubFuncs = []
+    subscribeAll = (newSink) =>
+      sink = newSink
+      unsubFuncs = []
+      for input in inputs
+        unsubFuncs.push(input.subscribe(guardedSink(input)))
+      unsubAll
+    dispatcher = new Dispatcher(subscribeAll)
+    subscribeThis = (sink) =>
+      dispatcher.subscribe(sink)
+    super(subscribeThis)
+    @plug = (inputStream) =>
+      inputs.push(inputStream)
+      if (sink?)
+        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
+    @push = (value) =>
+      sink next(value) if sink?
+    @end = =>
+      unsubAll()
+      sink end()
+
 Bacon.EventStream = EventStream
 Bacon.Property = Property
+Bacon.Bus = Bus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 
+takeUntilSubscribe = (src, stopper) -> 
+  (sink) ->
+    unsubSrc = nop
+    unsubStopper = nop
+    unsubBoth = -> unsubSrc() ; unsubStopper()
+    srcSink = (event) ->
+      if event.isEnd()
+        unsubStopper()
+      reply = sink event
+      if reply == Bacon.noMore
+        unsubStopper()
+      reply
+    stopperSink = (event) ->
+      unless event.isEnd()
+        unsubSrc()
+        sink end()
+      Bacon.noMore
+    unsubSrc = src.subscribe(srcSink)
+    unsubStopper = stopper.subscribe(stopperSink)
+    unsubBoth
+
 nop = ->
 latter = (_, x) -> x
+former = (x, _) -> x
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
 end = -> new End()
@@ -353,17 +468,16 @@ empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
 cloneArray = (xs) -> xs.slice(0)
+cloneObject = (src) ->
+  clone = {}
+  for key, value of src
+    clone[key] = value
+  clone
 remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0
     xs.splice(i, 1)
-assert = (message, condition) ->
-  unless condition
-    throw message
-assertEvent = (event) -> 
-  assert "not an event : " + event, event.isEvent?
-  assert "not event", event.isEvent()
-assertFunction = (f) ->
-  assert "not a function : " + f, typeof f == "function"
-assertArray = (xs) ->
-  assert "not an array : " + xs, xs instanceof Array
+assert = (message, condition) -> throw message unless condition
+assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
+assertFunction = (f) -> assert "not a function : " + f, typeof f == "function"
+assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array

@@ -14,6 +14,7 @@ But hey, where's the bacon?
 
 - [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
 - [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js) (see below for building the js yourself)
+- [Generated javascript (minified, no asserts)](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.min.js)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
@@ -95,13 +96,13 @@ Function should return Events: either Next or End.
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
-`Bacon.pushStream()` creates a pushable stream. You can push values by
-using the `push` function of the pushable stream. You can send the End event by calling `end`
-
 `new Bacon.EventStream(subscribe)` creates an event stream with the given 
 subscribe function.
 
 `property.changes()` creates a stream of changes to the Property (see Property API below)
+
+`new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
+below)
 
 EventStream
 -----------
@@ -134,6 +135,8 @@ an "integral" property.
 
 `stream.take(n)` takes at most n elements from the stream
 
+`stream.skip(n)` skips the first n elements from the stream
+
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
 
@@ -164,8 +167,17 @@ The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
+`stream.bufferWithCount(count)` buffers stream events with given cound.
+The bufer is flushed when it contains given number of elements. So, if
+you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
+events with values [1, 2], [3, 4] and [5].
+
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream. You can optionally pass an initial value
+
+`stream.decorateWith(name, property)` decorates stream values (must be
+objects) with a new property with the given name and a value taken from
+the given Property.
 
 Property
 --------
@@ -173,6 +185,8 @@ Property
 `Bacon.Property` a reactive property. Has the concept of "current value".
 You can create a Property from an EventStream by using either toProperty 
 or scan method.
+
+`Bacon.constant(x)` creates a constant property with value x.
 
 `property.onValue(f)` subscribes a given handler function to the property.
 Function will be called for each new value in the stream, as well as for 
@@ -197,11 +211,66 @@ properties using a two-arg function.
 property value at given interval (in milliseconds)
 
 `property.sampledBy(stream)` creates an EventStream by sampling the
-property value at each event from the given stream
+property value at each event from the given stream. The result
+EventStream will contain the property value at each event in the source
+stream.
+
+`property.sampledBy(stream, f)` samples the property on stream events.
+The result EventStream values will be formed using the given function
+`f(propertyValue, streamValue)`
+
+`property.filter(f)` returns a filtered Property, using given predicate
+function. Behaves as if the non-matching values did not exists. This
+means that the result property is not updated if the source value does
+not match.
+
+`property.takeUntil(stopper)` returns a Property that is updated until 
+a Next event appears in the 'stopper' stream. If stoper stream ends 
+without value, it is ignored
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial
 events.
+
+Combining multiple streams and properties
+-----------------------------------------
+
+`Bacon.combineAsArray(streams)` combines Properties and EventStreams so 
+that the result Property will have an array of all property values as its value.
+The input array may contain both Properties and EventStreams. In the
+latter case, the stream is first converted into a Property and then
+combined with the other properties.
+
+`Bacon.mergeAll(streams)` merges all given EventStreams.
+
+`Bacon.combineAll(streams, f)` combines given list of streams/properties
+using the given combinator function `f(s1, s2)`. The function is applied in a
+fold-like fashion: the first two streams are given to the function
+first. Then the result of this operation is combined with the third
+stream and so on.
+
+Latest value of Property or EventStream
+---------------------------------------
+
+`Bacon.latestValue(stream)` will return a function that will return the
+latest value from the given stream or property. Notice that the
+side-effect of this is that there will be an unremovable subscriber for
+the stream that takes care of storing the latest value.
+
+Bus
+---
+
+`new Bacon.Bus()` returns a Bus object that is a "pushable" and
+"pluggable" EventStream with the following extra methods:
+
+`bus.push(x)` pushes the given value to the stream. All subscribers will
+receive this value.
+`bus.end()` ends the stream. Sends an End event to all subscribers
+`bus.plug(stream)` plugs the given stream to the Bus. All events from
+the given stream will be delivered to the subscribers of the Bus.
+
+The plug method practially allows you to merge in other streams after
+the creation of the Bus. I found this quite useful in the Worzone game.
 
 Event
 -----
