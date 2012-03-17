@@ -14,6 +14,7 @@ But hey, where's the bacon?
 
 - [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
 - [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js) (see below for building the js yourself)
+- [Generated javascript (minified, no asserts)](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.min.js)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 
@@ -432,7 +433,6 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
-- Build an assertion-less and uglified version
 - Take equality seriosly: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)

@@ -483,13 +483,7 @@ remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0
     xs.splice(i, 1)
-assert = (message, condition) ->
-  unless condition
-    throw message
-assertEvent = (event) -> 
-  assert "not an event : " + event, event.isEvent?
-  assert "not event", event.isEvent()
-assertFunction = (f) ->
-  assert "not a function : " + f, typeof f == "function"
-assertArray = (xs) ->
-  assert "not an array : " + xs, xs instanceof Array
+assert = (message, condition) -> throw message unless condition
+assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
+assertFunction = (f) -> assert "not a function : " + f, typeof f == "function"
+assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
