@@ -379,7 +379,9 @@ Examples
 ========
 
 See [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
+
 See [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
+
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 
 Build
