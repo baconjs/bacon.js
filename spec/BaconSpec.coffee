@@ -160,6 +160,8 @@ describe "Property", ->
       [1, undefined, 2])
   it "delivers also 'undefined' as Initial value", ->
     # TODO: how to test this?
+    # TODO: document Bus. Re-consider API (vs pushStream)
+    
 
 describe "Bacon.constant", ->
   it "creates a constant property", ->
@@ -184,6 +186,15 @@ describe "Property.filter", ->
     expectPropertyEvents(
       -> repeat(10, [1, 2, 3]).take(3).toProperty().filter(lessThan(3))
       [1, 2])
+  it "preserves old current value if the updated value is non-matching", ->
+    s = Bacon.pushStream()
+    p = s.toProperty().filter(lessThan(2))
+    p.onValue(=>) # to ensure that property is actualy updated
+    s.push(1)
+    s.push(2)
+    values = []
+    p.onValue((v) => values.push(v))
+    expect(values).toEqual([1])
 
 
 describe "Property.takeUntil", ->

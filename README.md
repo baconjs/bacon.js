@@ -218,6 +218,15 @@ stream.
 The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`
 
+`property.filter(f)` returns a filtered Property, using given predicate
+function. Behaves as if the non-matching values did not exists. This
+means that the result property is not updated if the source value does
+not match.
+
+`property.takeUntil(stopper)` returns a Property that is updated until 
+a Next event appears in the 'stopper' stream. If stoper stream ends 
+without value, it is ignored
+
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial
 events.

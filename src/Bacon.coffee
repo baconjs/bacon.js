@@ -355,12 +355,18 @@ class Property extends Observable
     @sampledBy Bacon.interval(interval, {})
   map: (f) => new Property (sink) =>
     @subscribe (event) => sink(event.fmap(f))
-  filter: (f) => new Property (sink) =>
-    @subscribe (event) =>
-      if event.isEnd() or f(event.value)
-        sink(event)
-      else
-        Bacon.more
+  filter: (f) => 
+    previousMathing = undefined
+    new Property (sink) =>
+      @subscribe (event) =>
+        if event.isEnd() or f(event.value)
+          sink(event)
+          previousMathing = event.value if event.hasValue()
+        else if event.isInitial() and previousMathing?
+          # non-matching Initial
+          sink(initial(previousMathing))
+        else
+          Bacon.more
   takeUntil: (stopper) => new Property(takeUntilSubscribe(this, stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
