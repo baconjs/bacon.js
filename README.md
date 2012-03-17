@@ -273,7 +273,7 @@ receive this value.
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
 
-The plug method practially allows you to merge in other streams after
+The plug method practically allows you to merge in other streams after
 the creation of the Bus. I found this quite useful in the Worzone game.
 
 Event
