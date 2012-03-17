@@ -160,7 +160,6 @@ describe "Property", ->
       [1, undefined, 2])
   it "delivers also 'undefined' as Initial value", ->
     # TODO: how to test this?
-    # TODO: document Bus. Re-consider API (vs pushStream)
     
 
 describe "Bacon.constant", ->
@@ -322,7 +321,7 @@ describe "Bacon.Bus", ->
     bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
     dispose = bus.onValue(=>)
     dispose()
-  it "cleans up input list on end", ->
+  it "Removes input from input list on End event", ->
     subscribed = 0
     bus = new Bacon.Bus()
     input = Bacon.pushStream()
@@ -337,6 +336,22 @@ describe "Bacon.Bus", ->
     dispose()
     bus.onValue(=>) # this latter subscription should not go to the ended source anymore
     expect(subscribed).toEqual(1)
+  it "unsubscribes inputs on end() call", ->
+    bus = new Bacon.Bus()
+    input = new Bacon.pushStream()
+    events = []
+    bus.plug(input)
+    bus.subscribe((e) => events.push(e))
+    input.push("a")
+    bus.end()
+    input.push("b")
+    expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+  it "Bus delivers pushed events", ->
+    bus = new Bacon.Bus()
+    values = []
+    bus.onValue((v) => values.push(v))
+    bus.push(1)
+    expect(values).toEqual([1])
 
 lessThan = (limit) -> 
   (x) -> x < limit

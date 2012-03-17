@@ -51,12 +51,7 @@ Bacon.interval = (delay, value) ->
   poll = -> next(value)
   Bacon.fromPoll(delay, poll)
 
-Bacon.pushStream = ->
-  d = new Dispatcher
-  pushStream = d.toEventStream()
-  pushStream.push = (value) -> d.push next(value)
-  pushStream.end = -> d.push end()
-  pushStream
+Bacon.pushStream = -> new Bus()
 
 Bacon.constant = (value) ->
   new Property (sink) ->
@@ -414,14 +409,14 @@ class Bus extends EventStream
         Bacon.noMore
       else
         sink event
+    unsubAll = => 
+      f() for f in unsubFuncs
+      unsubFuncs = []
     subscribeAll = (newSink) =>
       sink = newSink
       unsubFuncs = []
       for input in inputs
         unsubFuncs.push(input.subscribe(guardedSink(input)))
-      unsubAll = => 
-        f() for f in unsubFuncs
-        unsubFuncs = []
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
@@ -432,8 +427,9 @@ class Bus extends EventStream
       if (sink?)
         unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
     @push = (value) =>
-      sink next(value)
+      sink next(value) if sink?
     @end = =>
+      unsubAll()
       sink end()
 
 Bacon.EventStream = EventStream
