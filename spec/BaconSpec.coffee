@@ -154,6 +154,12 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
+  it "passes through also 'undefined' values", ->
+    expectPropertyEvents(
+      -> repeat(10, [1, undefined, 2]).take(3).toProperty()
+      [1, undefined, 2])
+  it "delivers also 'undefined' as Initial value", ->
+    # TODO: how to test this?
 
 describe "Bacon.constant", ->
   it "creates a constant property", ->
@@ -184,13 +190,13 @@ describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
       ->
-        src = repeat(30, [1, 2, 3])
+        src = repeat(30, [1, undefined, 3])
         stopper = repeat(70, ["stop!"])
-        src.toProperty().takeUntil(stopper)
-      [1, 2])
+        src.toProperty(0).takeUntil(stopper)
+      [0, 1, undefined])
 
 describe "Property.changes", ->
-  it "yields property change events", ->
+  it "sends property change events", ->
     expectPropertyEvents(
       ->
         s = Bacon.pushStream()
@@ -299,6 +305,12 @@ describe "Bacon.Bus", ->
         Bacon.later(40).onValue(=> bus.end())
         bus
       ["lol", "wut"])
+  it "dispose works with looped streams", ->
+    bus = new Bacon.Bus()
+    bus.plug(Bacon.later(20, "lol"))
+    bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
+    dispose = bus.onValue(=>)
+    dispose()
 
 
 lessThan = (limit) -> 

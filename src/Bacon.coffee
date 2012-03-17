@@ -252,27 +252,8 @@ class EventStream extends Observable
       unsubRight = right.subscribe(smartSink)
       unsubBoth
 
-  takeUntil: (stopper) ->
-    src = this
-    new EventStream (sink) ->
-      unsubSrc = nop
-      unsubStopper = nop
-      unsubBoth = -> unsubSrc() ; unsubStopper()
-      srcSink = (event) ->
-        if event.isEnd()
-          unsubStopper()
-        reply = sink event
-        if reply == Bacon.noMore
-          unsubStopper()
-        reply
-      stopperSink = (event) ->
-        unless event.isEnd()
-          unsubSrc()
-          sink end()
-        Bacon.noMore
-      unsubSrc = src.subscribe(srcSink)
-      unsubStopper = stopper.subscribe(stopperSink)
-      unsubBoth
+  takeUntil: (stopper) =>
+    new EventStream(takeUntilSub(this, stopper))
 
   toProperty: (initValue) ->
    @scan(initValue, latter)
@@ -380,7 +361,7 @@ class Property extends Observable
         sink(event)
       else
         Bacon.more
-  takeUntil: (stopper) => @sampledBy(@changes().takeUntil(stopper))
+  takeUntil: (stopper) => new Property(takeUntilSub(this, stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
@@ -431,7 +412,9 @@ class Bus extends EventStream
       unsubFuncs = []
       for input in inputs
         unsubFuncs.push(input.subscribe(guardedSink))
-      unsubAll = => f() for f in unsubFuncs
+      unsubAll = => 
+        f() for f in unsubFuncs
+        unsubFuncs = []
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
@@ -454,6 +437,27 @@ Bacon.Bus = Bus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
+
+takeUntilSub = (src, stopper) -> 
+  (sink) ->
+    unsubSrc = nop
+    unsubStopper = nop
+    unsubBoth = -> unsubSrc() ; unsubStopper()
+    srcSink = (event) ->
+      if event.isEnd()
+        unsubStopper()
+      reply = sink event
+      if reply == Bacon.noMore
+        unsubStopper()
+      reply
+    stopperSink = (event) ->
+      unless event.isEnd()
+        unsubSrc()
+        sink end()
+      Bacon.noMore
+    unsubSrc = src.subscribe(srcSink)
+    unsubStopper = stopper.subscribe(stopperSink)
+    unsubBoth
 
 nop = ->
 latter = (_, x) -> x
