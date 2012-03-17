@@ -249,6 +249,8 @@ fold-like fashion: the first two streams are given to the function
 first. Then the result of this operation is combined with the third
 stream and so on.
 
+You can also merge multiple streams using Bus (see below).
+
 Latest value of Property or EventStream
 ---------------------------------------
 
@@ -265,7 +267,9 @@ Bus
 
 `bus.push(x)` pushes the given value to the stream. All subscribers will
 receive this value.
+
 `bus.end()` ends the stream. Sends an End event to all subscribers
+
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
 
