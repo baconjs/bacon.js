@@ -432,6 +432,7 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Build an assertion-less and uglified version
 - Take equality seriosly: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
