@@ -131,23 +131,11 @@ describe "EventStream.decorateWithProperty", ->
         repeat(10, [{i:0}, {i:1}]).decorateWith("label", Bacon.constant("lol")).take(2)
       [{i:0, label:"lol"}, {i:1, label:"lol"}])
 
-describe "Bacon.pushStream", ->
-  it "delivers pushed events", ->
-    expectStreamEvents(
-      ->
-        s = Bacon.pushStream()
-        s.push "pullMe"
-        soon ->
-          s.push "pushMe"
-          s.end()
-        s
-      ["pushMe"])
-
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
     expectPropertyEvents(
       ->
-        s = Bacon.pushStream()
+        s = new Bacon.Bus()
         p = s.toProperty("a")
         soon ->
           s.push "b"
@@ -172,7 +160,7 @@ describe "Property.map", ->
   it "maps property values", ->
     expectPropertyEvents(
       ->
-        s = Bacon.pushStream()
+        s = new Bacon.Bus()
         p = s.toProperty(1).map(times(2))
         soon ->
           s.push 2
@@ -186,7 +174,7 @@ describe "Property.filter", ->
       -> repeat(10, [1, 2, 3]).take(3).toProperty().filter(lessThan(3))
       [1, 2])
   it "preserves old current value if the updated value is non-matching", ->
-    s = Bacon.pushStream()
+    s = new Bacon.Bus()
     p = s.toProperty().filter(lessThan(2))
     p.onValue(=>) # to ensure that property is actualy updated
     s.push(1)
@@ -209,7 +197,7 @@ describe "Property.changes", ->
   it "sends property change events", ->
     expectPropertyEvents(
       ->
-        s = Bacon.pushStream()
+        s = new Bacon.Bus()
         p = s.toProperty("a").changes()
         soon ->
           s.push "b"
@@ -287,7 +275,7 @@ describe "EventStream.scan", ->
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
-    s = Bacon.pushStream()
+    s = new Bacon.Bus()
     values = []
     dispose = s.onValue (value) -> values.push value
     s.push "lol"
@@ -300,7 +288,7 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     values = []
     dispose = bus.onValue (value) -> values.push value
-    push = Bacon.pushStream()
+    push = new Bacon.Bus()
     bus.plug(push)
     push.push("lol")
     expect(values).toEqual(["lol"])
@@ -324,7 +312,7 @@ describe "Bacon.Bus", ->
   it "Removes input from input list on End event", ->
     subscribed = 0
     bus = new Bacon.Bus()
-    input = Bacon.pushStream()
+    input = new Bacon.Bus()
     # override subscribe to increase the subscribed-count
     inputSubscribe = input.subscribe
     input.subscribe = (sink) ->
@@ -338,7 +326,7 @@ describe "Bacon.Bus", ->
     expect(subscribed).toEqual(1)
   it "unsubscribes inputs on end() call", ->
     bus = new Bacon.Bus()
-    input = new Bacon.pushStream()
+    input = new Bacon.Bus()
     events = []
     bus.plug(input)
     bus.subscribe((e) => events.push(e))
@@ -352,6 +340,16 @@ describe "Bacon.Bus", ->
     bus.onValue((v) => values.push(v))
     bus.push(1)
     expect(values).toEqual([1])
+  it "delivers pushed events (test2)", ->
+    expectStreamEvents(
+      ->
+        s = new Bacon.Bus()
+        s.push "pullMe"
+        soon ->
+          s.push "pushMe"
+          s.end()
+        s
+      ["pushMe"])
 
 lessThan = (limit) -> 
   (x) -> x < limit

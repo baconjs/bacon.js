@@ -51,8 +51,6 @@ Bacon.interval = (delay, value) ->
   poll = -> next(value)
   Bacon.fromPoll(delay, poll)
 
-Bacon.pushStream = -> new Bus()
-
 Bacon.constant = (value) ->
   new Property (sink) ->
     sink(initial(value))

@@ -96,14 +96,13 @@ Function should return Events: either Next or End.
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
-`Bacon.pushStream()` creates a pushable stream. You can push values by
-using the `push` function of the pushable stream. You can send the End 
-event by calling `end`
-
 `new Bacon.EventStream(subscribe)` creates an event stream with the given 
 subscribe function.
 
 `property.changes()` creates a stream of changes to the Property (see Property API below)
+
+`new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
+below)
 
 EventStream
 -----------
@@ -261,14 +260,17 @@ the stream that takes care of storing the latest value.
 Bus
 ---
 
-`new Bacon.Bus()` returns a Bus object that is an EventStream with the
-following functions:
+`new Bacon.Bus()` returns a Bus object that is a "pushable" and
+"pluggable" EventStream with the following extra methods:
 
 `bus.push(x)` pushes the given value to the stream. All subscribers will
 receive this value.
 `bus.end()` ends the stream. Sends an End event to all subscribers
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
+
+The plug method practially allows you to merge in other streams after
+the creation of the Bus. I found this quite useful in the Worzone game.
 
 Event
 -----
