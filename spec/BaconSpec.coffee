@@ -311,7 +311,21 @@ describe "Bacon.Bus", ->
     bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
     dispose = bus.onValue(=>)
     dispose()
-
+  it "cleans up input list on end", ->
+    subscribed = 0
+    bus = new Bacon.Bus()
+    input = Bacon.pushStream()
+    # override subscribe to increase the subscribed-count
+    inputSubscribe = input.subscribe
+    input.subscribe = (sink) ->
+      subscribed++
+      inputSubscribe(sink)
+    bus.plug(input)
+    dispose = bus.onValue(=>)
+    input.end()
+    dispose()
+    bus.onValue(=>) # this latter subscription should not go to the ended source anymore
+    expect(subscribed).toEqual(1)
 
 lessThan = (limit) -> 
   (x) -> x < limit

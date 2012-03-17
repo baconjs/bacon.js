@@ -402,8 +402,9 @@ class Bus extends EventStream
     sink = undefined
     unsubFuncs = []
     inputs = []
-    guardedSink = (event) =>
+    guardedSink = (input) => (event) =>
       if (event.isEnd())
+        remove(input, inputs)
         Bacon.noMore
       else
         sink event
@@ -411,7 +412,7 @@ class Bus extends EventStream
       sink = newSink
       unsubFuncs = []
       for input in inputs
-        unsubFuncs.push(input.subscribe(guardedSink))
+        unsubFuncs.push(input.subscribe(guardedSink(input)))
       unsubAll = => 
         f() for f in unsubFuncs
         unsubFuncs = []
@@ -423,13 +424,11 @@ class Bus extends EventStream
     @plug = (inputStream) =>
       inputs.push(inputStream)
       if (sink?)
-        unsubFuncs.push(inputStream.subscribe(guardedSink))
+        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
     @push = (value) =>
       sink next(value)
     @end = =>
       sink end()
-
-# TODO: Bus should clean up inputs when they end
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property
