@@ -253,7 +253,7 @@ class EventStream extends Observable
       unsubBoth
 
   takeUntil: (stopper) =>
-    new EventStream(takeUntilSub(this, stopper))
+    new EventStream(takeUntilSubscribe(this, stopper))
 
   toProperty: (initValue) ->
    @scan(initValue, latter)
@@ -361,7 +361,7 @@ class Property extends Observable
         sink(event)
       else
         Bacon.more
-  takeUntil: (stopper) => new Property(takeUntilSub(this, stopper))
+  takeUntil: (stopper) => new Property(takeUntilSubscribe(this, stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
@@ -438,7 +438,7 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 
-takeUntilSub = (src, stopper) -> 
+takeUntilSubscribe = (src, stopper) -> 
   (sink) ->
     unsubSrc = nop
     unsubStopper = nop
