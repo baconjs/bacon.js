@@ -334,13 +334,7 @@ describe "Bacon.Bus", ->
     bus.end()
     input.push("b")
     expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
-  it "Bus delivers pushed events", ->
-    bus = new Bacon.Bus()
-    values = []
-    bus.onValue((v) => values.push(v))
-    bus.push(1)
-    expect(values).toEqual([1])
-  it "delivers pushed events (test2)", ->
+  it "delivers pushed events", ->
     expectStreamEvents(
       ->
         s = new Bacon.Bus()
