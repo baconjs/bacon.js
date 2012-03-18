@@ -427,15 +427,10 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
-- Try converting Worzone to bacon as a proof-of-concept (in progress)
 - Take equality seriosly: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
-- Should property be updated on actually changed values only?
-    - More probably a "distict()" method to filter out duplicates
 - Improve Property test by also subscribing at each value, ensuring that
   an immediate matching Initial event is sent to the new Subscriber
 - Browser tests
-- Interactive examples, like in my devday-rx presentation
-- API doc with interactive examples
-- An animated gif of frying bacon
+- Web site with interactive examples
