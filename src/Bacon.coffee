@@ -360,6 +360,17 @@ class Property extends Observable
           sink(initial(previousMathing))
         else
           Bacon.more
+  distinctUntilChanged: => 
+    new Property (sink) =>
+      previous = undefined
+      @subscribe (event) =>
+        if event.isEnd()
+          sink(event)
+        else if event.value == previous
+          Bacon.more
+        else
+          previous= event.value
+          sink(event)
   takeUntil: (stopper) => new Property(takeUntilSubscribe(this, stopper))
   changes: => new EventStream (sink) =>
     @subscribe (event) =>

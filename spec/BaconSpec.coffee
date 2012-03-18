@@ -193,6 +193,12 @@ describe "Property.takeUntil", ->
         src.toProperty(0).takeUntil(stopper)
       [0, 1, undefined])
 
+describe "Property.distinctUntilChanged", ->
+  it "drops duplicates", ->
+    expectPropertyEvents(
+      -> repeat(10, [1, 2, 2, 3, 1]).take(5).toProperty(0).distinctUntilChanged()
+    [0, 1, 2, 3, 1])
+
 describe "Property.changes", ->
   it "sends property change events", ->
     expectPropertyEvents(

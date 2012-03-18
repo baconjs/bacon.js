@@ -228,6 +228,9 @@ not match.
 a Next event appears in the 'stopper' stream. If stoper stream ends 
 without value, it is ignored
 
+`property.distinctUntilChanged()` drops consecutive equal values. So,
+from [1, 2, 2, 1] you'd get [1, 2, 1]
+
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly same events as the property itself, except any Initial
 events.
