@@ -262,6 +262,20 @@ latest value from the given stream or property. Notice that the
 side-effect of this is that there will be an unremovable subscriber for
 the stream that takes care of storing the latest value.
 
+Errors
+------
+
+Error events are always passed through all stream combinators. So, even
+if you filter all values out, the error events will pass though. If you
+use flatMap, the result stream will contain Error events from the source
+as well as all the spawned stream.
+
+You can take action on errors by using the `streamOrProperty.onError(f)`
+callback.
+
+`streamOrProperty.errors()` returns a stream containing Error events only.
+Same as filtering with a function that always returns false.
+
 Bus
 ---
 
@@ -273,6 +287,8 @@ receive this value.
 
 `bus.end()` ends the stream. Sends an End event to all subscribers
 
+`bus.error(e)` sends an Error with given message to all subscribers
+
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
 
@@ -282,13 +298,17 @@ the creation of the Bus. I found this quite useful in the Worzone game.
 Event
 -----
 
-`Bacon.Event` has subclasses `Next`, `End` and `Initial`
+`Bacon.Event` has subclasses `Next`, `End`, `Error` and `Initial`
 
 `Bacon.Next` next value in an EventStream of a Property. Call isNext() to
 distinguish a Next event from other events.
 
 `Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
 distinguish an End from other events.
+
+`Bacon.Error` an error event. Call isError() to distinguish these events
+in your subscriber, or use `onError` to react to error events only.
+`errorEvent.error` returns the associated error object (usually string).
 
 `Bacon.Initial` the initial (current) value of a Property. Call isInitial() to
 distinguish from other events. Only sent immediately after subscription
@@ -377,6 +397,9 @@ when as event occurs, all subscribers will observe the same event. If you're
 experienced with RxJs, you've probably bumped into some wtf's related to cold
 observables and inconsistent output from streams constructed using scan and startWith.
 None of that will happen with bacon.js. Happy frying!
+
+Error-handling is also a bit different: the Error event does not
+terminate a stream. So, a stream may contain multiple errors.
 
 Examples
 ========

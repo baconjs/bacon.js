@@ -24,13 +24,13 @@ Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
 Bacon.sequentially = (delay, values) ->
-  Bacon.repeatedly(delay, values).take(values.length)
+  Bacon.repeatedly(delay, values).take(filter(((e) -> e.hasValue()), map(toEvent, values)).length)
 
 Bacon.repeatedly = (delay, values) ->
   index = -1
   poll = ->
     index++
-    next values[index % values.length]
+    toEvent values[index % values.length]
   Bacon.fromPoll(delay, poll)
 
 Bacon.fromPoll = (delay, poll) ->
@@ -55,6 +55,7 @@ Bacon.constant = (value) ->
   new Property (sink) ->
     sink(initial(value))
     sink(end())
+    nop
 
 Bacon.combineAll = (streams, f) ->
   assertArray streams
@@ -83,7 +84,9 @@ class Event
   isEnd: -> false
   isInitial: -> false
   isNext: -> false
+  isError: -> false
   hasValue: -> false
+  filter: (f) -> true
 
 class Next extends Event
   constructor: (@value) ->
@@ -91,6 +94,7 @@ class Next extends Event
   hasValue: -> true
   fmap: (f) -> next(f(this.value))
   apply: (value) -> next(value)
+  filter: (f) -> f(@value)
 
 class Initial extends Next
   isInitial: -> true
@@ -99,14 +103,22 @@ class Initial extends Next
   apply: (value) -> initial(value)
 
 class End extends Event
-  constructor: ->
   isEnd: -> true
+  fmap: -> this
+  apply: -> this
+
+class Error extends Event
+  constructor: (@error) ->
+  isError: -> true
   fmap: -> this
   apply: -> this
 
 class Observable
   onValue: (f) -> @subscribe (event) ->
     f event.value if event.hasValue()
+  onError: (f) -> @subscribe (event) ->
+    f event.error if event.isError()
+  errors: -> @filter(-> false)
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -116,13 +128,13 @@ class EventStream extends Observable
     @hasSubscribers = dispatcher.hasSubscribers
   filter: (f) ->
     @withHandler (event) -> 
-      if event.isEnd() or f event.value
+      if event.filter(f)
         @push event
       else
         Bacon.more
   takeWhile: (f) ->
     @withHandler (event) -> 
-      if event.isEnd() or f event.value
+      if event.filter(f)
         @push event
       else
         @push end()
@@ -130,7 +142,7 @@ class EventStream extends Observable
   take: (count) ->
     assert "take: count must >= 1", (count>=1)
     @withHandler (event) ->
-      if event.isEnd()
+      if !event.hasValue()
         @push event
       else if (count == 1)
         @push event
@@ -142,7 +154,7 @@ class EventStream extends Observable
   skip : (count) ->
     assert "skip: count must >= 0", (count>=0)
     @withHandler (event) ->
-      if event.isEnd()
+      if !event.hasValue()
         @push event
       else if (count > 0)
         count--
@@ -171,6 +183,8 @@ class EventStream extends Observable
         if event.isEnd()
           rootEnd = true
           checkEnd()
+        else if event.isError()
+          sink event
         else
           child = f event.value
           unsubChild = undefined
@@ -217,7 +231,9 @@ class EventStream extends Observable
       flush = =>
         @push next(values)
         values = []
-      if (event.isEnd())
+      if event.isError()
+        @push event
+      else if event.isEnd()
         flush()
         @push event
       else
@@ -254,7 +270,7 @@ class EventStream extends Observable
   scan: (seed, f) -> 
     acc = seed
     handleEvent = (event) -> 
-      acc = f(acc, event.value) unless event.isEnd()
+      acc = f(acc, event.value) if event.hasValue()
       @push event.apply(acc)
     d = new Dispatcher(@subscribe, handleEvent)
     subscribe = (sink) ->
@@ -264,7 +280,9 @@ class EventStream extends Observable
 
   distinctUntilChanged: ->
     @withStateMachine undefined, (prev, event) ->
-      if event.isEnd() or prev isnt event.value
+      if !event.hasValue()
+        [prev, [event]]
+      else if prev isnt event.value
         [event.value, [event]]
       else
         [prev, []]
@@ -324,6 +342,10 @@ class Property extends Observable
               markEnd()
               checkEnd()
               Bacon.noMore
+            else if event.isError()
+                reply = sink event
+                unsubBoth if reply == Bacon.noMore
+                reply
             else
               setValue(event.value)
               if (myVal? and otherVal?)
@@ -352,7 +374,7 @@ class Property extends Observable
     previousMathing = undefined
     new Property (sink) =>
       @subscribe (event) =>
-        if event.isEnd() or f(event.value)
+        if event.filter(f)
           sink(event)
           previousMathing = event.value if event.hasValue()
         else if event.isInitial() and previousMathing?
@@ -364,7 +386,7 @@ class Property extends Observable
     new Property (sink) =>
       previous = undefined
       @subscribe (event) =>
-        if event.isEnd()
+        if !event.hasValue()
           sink(event)
         else if event.value == previous
           Bacon.more
@@ -437,6 +459,8 @@ class Bus extends EventStream
         unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
     @push = (value) =>
       sink next(value) if sink?
+    @error = (error) =>
+      sink new Error(error) if sink?
     @end = =>
       unsubAll()
       sink end()
@@ -447,6 +471,7 @@ Bacon.Bus = Bus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
+Bacon.Error = Error
 
 takeUntilSubscribe = (src, stopper) -> 
   (sink) ->
@@ -461,10 +486,14 @@ takeUntilSubscribe = (src, stopper) ->
         unsubStopper()
       reply
     stopperSink = (event) ->
-      unless event.isEnd()
+      if event.isError()
+        Bacon.more
+      else if event.isEnd()
+        Bacon.noMore
+      else
         unsubSrc()
         sink end()
-      Bacon.noMore
+        Bacon.noMore
     unsubSrc = src.subscribe(srcSink)
     unsubStopper = stopper.subscribe(stopperSink)
     unsubBoth
@@ -475,9 +504,22 @@ former = (x, _) -> x
 initial = (value) -> new Initial(value)
 next = (value) -> new Next(value)
 end = -> new End()
+isEvent = (x) -> x? and x.isEvent? and x.isEvent()
+toEvent = (x) -> 
+  if isEvent x
+    x
+  else
+    next x
 empty = (xs) -> xs.length == 0
 head = (xs) -> xs[0]
 tail = (xs) -> xs[1...xs.length]
+filter = (f, xs) ->
+  filtered = []
+  for x in xs
+    filtered.push(x) if f(x)
+  filtered
+map = (f, xs) ->
+  f(x) for x in xs
 cloneArray = (xs) -> xs.slice(0)
 cloneObject = (src) ->
   clone = {}

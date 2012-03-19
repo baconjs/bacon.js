@@ -11,6 +11,10 @@ describe "Bacon.sequentially", ->
     expectStreamEvents(
       -> Bacon.sequentially(10, ["lol", "wut"])
       ["lol", "wut"])
+  it "include error events", ->
+    expectStreamEvents(
+      -> Bacon.sequentially(10, [error(), "lol"])
+      [error(), "lol"])
 
 describe "Bacon.interval", ->
   it "repeats single element indefinitely", ->
@@ -21,8 +25,8 @@ describe "Bacon.interval", ->
 describe "EventStream.filter", -> 
   it "should filter values", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3]).take(3).filter(lessThan(3))
-      [1, 2])
+      -> repeat(10, [1, 2, error(), 3]).take(3).filter(lessThan(3))
+      [1, 2, error()])
 
 describe "EventStream.map", ->
   it "should map with given function", ->
@@ -33,7 +37,7 @@ describe "EventStream.map", ->
 describe "EventStream.end", ->
   it "produces single-element stream on stream end", ->
     expectStreamEvents(
-      -> repeat(10, [""]).take(2).end("the end")
+      -> repeat(10, ["", error()]).take(2).end("the end")
       ["the end"])
   it "defaults to the string 'end' if no value given", ->
     expectStreamEvents(
@@ -43,43 +47,48 @@ describe "EventStream.end", ->
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3]).takeWhile(lessThan(3))
-      [1, 2])
+      -> repeat(10, [1, error("wat"), 2, 3]).takeWhile(lessThan(3))
+      [1, error("wat"), 2])
 
 describe "EventStream.skip", ->
   it "should skip first N items", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3]).take(3).skip(1)
-    [2, 3])
+      -> repeat(10, [1, error(), 2, error(), 3]).take(3).skip(1)
+    [error(), 2, error(), 3])
 
 describe "EventStream.distinctUntilChanged", ->
   it "drops duplicates", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 2, 3, 1]).take(5).distinctUntilChanged()
-    [1, 2, 3, 1])
+      -> repeat(10, [1, 2, error(), 2, 3, 1]).take(5).distinctUntilChanged()
+    [1, 2, error(), 3, 1])
 
 describe "EventStream.flatMap", ->
   it "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
       -> repeat(10, [1, 2]).take(2).flatMap (value) ->
-        Bacon.sequentially(100, [value, value])
-      [1, 2, 1, 2])
+        Bacon.sequentially(100, [value, error(), value])
+      [1, 2, error(), error(), 1, 2])
+  it "should pass source errors through to the result", ->
+    expectStreamEvents(
+      -> repeat(10, [error(), 1]).take(1).flatMap (value) ->
+        Bacon.later(10, value)
+      [error(), 1])
 
 describe "EventStream.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
       -> repeat(30, [1, 2]).take(2).switch (value) ->
-        Bacon.sequentially(20, [value, value])
-      [1, 2, 2])
+        Bacon.sequentially(20, [value, error(), value])
+      [1, 2, error(), 2])
 
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
       ->
-        left = repeat(10, [1, 2, 3]).take(3)
+        left = repeat(10, [1, error(), 2, 3]).take(3)
         right = repeat(100, [4, 5, 6]).take(3)
         left.merge(right)
-      [1, 2, 3, 4, 5, 6])
+      [1, error(), 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
     expectStreamEvents(
       ->
@@ -89,31 +98,31 @@ describe "EventStream.merge", ->
       [1])
 
 describe "EventStream.delay", ->
-  it "delays all events by given delay in milliseconds", ->
+  it "delays all events (except errors) by given delay in milliseconds", ->
     expectStreamEvents(
       ->
         left = repeat(20, [1, 2, 3]).take(3)
-        right = repeat(10, [4, 5, 6]).delay(100).take(3)
+        right = repeat(10, [error(), 4, 5, 6]).take(3).delay(100)
         left.merge(right)
-      [1, 2, 3, 4, 5, 6])
+      [error(), 1, 2, 3, 4, 5, 6])
 
 describe "EventStream.throttle", ->
-  it "throttles input by given delay", ->
+  it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2]).take(2).throttle(20)
-      [2])
+      -> repeat(10, [1, error(), 2]).take(2).throttle(20)
+      [error(), 2])
 
 describe "EventStream.bufferWithTime", ->
-  it "returns events in bursts", ->
+  it "returns events in bursts, passing through errors", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(33)
-      [[1, 2, 3, 4], [5, 6, 7]])
+      -> repeat(10, [error(), 1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(33)
+      [error(), [1, 2, 3, 4], [5, 6, 7]])
 
 describe "EventStream.bufferWithCount", ->
-  it "returns events in chunks of fixed size", ->
+  it "returns events in chunks of fixed size, passing through errors", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, 3, 4, 5]).take(5).bufferWithCount(2)
-      [[1, 2], [3, 4], [5]])
+      -> repeat(10, [1, 2, 3, error(), 4, 5]).take(5).bufferWithCount(2)
+      [[1, 2], error(), [3, 4], [5]])
 
 describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
@@ -123,13 +132,28 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(70, ["stop!"])
         src.takeUntil(stopper)
       [1, 2])
+  it "includes source errors, ignores stopper errors", ->
+    expectStreamEvents(
+      ->
+        src = repeat(20, [1, error(), 2, 3])
+        stopper = repeat(70, ["stop!"]).merge(repeat(10, [error()]))
+        src.takeUntil(stopper)
+      [1, error(), 2])
+
+describe "Bacon.constant", ->
+  it "creates a constant property", ->
+    expectPropertyEvents(
+      -> Bacon.constant("lol")
+    ["lol"])
+  it "ignores unsubscribe", ->
+    Bacon.constant("lol").onValue(=>)()
 
 describe "EventStream.decorateWithProperty", ->
   it "decorates stream event with Property value", ->
     expectStreamEvents(
       ->
-        repeat(10, [{i:0}, {i:1}]).decorateWith("label", Bacon.constant("lol")).take(2)
-      [{i:0, label:"lol"}, {i:1, label:"lol"}])
+        repeat(10, [{i:0}, error(), {i:1}]).decorateWith("label", Bacon.constant("lol")).take(2)
+      [{i:0, label:"lol"}, error(), {i:1, label:"lol"}])
 
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
@@ -142,19 +166,13 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
-  it "passes through also 'undefined' values", ->
+  it "passes through also 'undefined' values and Errors", ->
     expectPropertyEvents(
-      -> repeat(10, [1, undefined, 2]).take(3).toProperty()
-      [1, undefined, 2])
+      -> repeat(10, [1, undefined, error(), 2]).take(3).toProperty()
+      [1, undefined, error(), 2])
   it "delivers also 'undefined' as Initial value", ->
     # TODO: how to test this?
     
-
-describe "Bacon.constant", ->
-  it "creates a constant property", ->
-    expectPropertyEvents(
-      -> Bacon.constant("lol")
-    ["lol"])
 
 describe "Property.map", ->
   it "maps property values", ->
@@ -164,15 +182,16 @@ describe "Property.map", ->
         p = s.toProperty(1).map(times(2))
         soon ->
           s.push 2
+          s.error()
           s.end()
         p
-      [2, 4])
+      [2, 4, error()])
 
 describe "Property.filter", -> 
   it "should filter values", ->
     expectPropertyEvents(
-      -> repeat(10, [1, 2, 3]).take(3).toProperty().filter(lessThan(3))
-      [1, 2])
+      -> repeat(10, [1, error(), 2, 3]).take(3).toProperty().filter(lessThan(3))
+      [1, error(), 2])
   it "preserves old current value if the updated value is non-matching", ->
     s = new Bacon.Bus()
     p = s.toProperty().filter(lessThan(2))
@@ -188,16 +207,16 @@ describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
       ->
-        src = repeat(30, [1, undefined, 3])
+        src = repeat(20, [1, undefined, error(), 3])
         stopper = repeat(70, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
-      [0, 1, undefined])
+      [0, 1, undefined, error()])
 
 describe "Property.distinctUntilChanged", ->
   it "drops duplicates", ->
     expectPropertyEvents(
-      -> repeat(10, [1, 2, 2, 3, 1]).take(5).toProperty(0).distinctUntilChanged()
-    [0, 1, 2, 3, 1])
+      -> repeat(10, [1, 2, error(), 2, 3, 1]).take(5).toProperty(0).distinctUntilChanged()
+    [0, 1, 2, error(), 3, 1])
 
 describe "Property.changes", ->
   it "sends property change events", ->
@@ -207,18 +226,19 @@ describe "Property.changes", ->
         p = s.toProperty("a").changes()
         soon ->
           s.push "b"
+          s.error()
           s.end()
         p
-      ["b"])
+      ["b", error()])
 
 describe "Property.combine", ->
-  it "combines latest values of two properties", ->
+  it "combines latest values of two properties, passing through errors", ->
     expectPropertyEvents( 
       ->
-        left = repeat(20, [1, 2, 3]).take(3).toProperty()
-        right = repeat(20, [4, 5, 6]).delay(10).take(3).toProperty()
+        left = repeat(20, [1, error(), 2, 3]).take(3).toProperty()
+        right = repeat(20, [4, error(), 5, 6]).delay(10).take(3).toProperty()
         left.combine(right, add)
-      [5, 6, 7, 8, 9])
+      [5, error(), error(), 6, 7, 8, 9])
 
 describe "Bacon.combineAsArray", -> 
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
@@ -246,6 +266,13 @@ describe "Property.sampledBy", ->
         stream = repeat(30, ["troll"]).take(4)
         prop.sampledBy(stream)
       [1, 2, 2, 2])
+  it "includes errors from both Property and EventStream", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, [error(), 2]).take(1).toProperty()
+        stream = repeat(30, [error(), "troll"]).take(1)
+        prop.sampledBy(stream)
+      [error(), error(), 2])
   it "ends when sampling stream ends", ->
     expectStreamEvents(
       ->
@@ -268,16 +295,22 @@ describe "Property.sample", ->
         prop = repeat(20, [1, 2]).take(2).toProperty()
         prop.sample(30).take(4)
       [1, 2, 2, 2])
+  it "includes all errors", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(20, [1, error(), 2]).take(2).toProperty()
+        prop.sample(30).take(2)
+      [1, error(), 2])
 
-describe "Bacon.latestBalue(property)()", ->
+describe "Bacon.latestValue(property)()", ->
   it "returns current value of property", ->
     expect(Bacon.latestValue(Bacon.constant(1))()).toEqual(1)
 
 describe "EventStream.scan", ->
-  it "accumulates values with given seed and accumulator function", ->
+  it "accumulates values with given seed and accumulator function, passing through errors", ->
     expectPropertyEvents(
-      -> repeat(10, [1, 2, 3]).take(3).scan(0, add)
-      [0, 1, 3, 6])
+      -> repeat(10, [1, 2, error(), 3]).take(3).scan(0, add)
+      [0, 1, 3, error(), 6])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
@@ -340,16 +373,17 @@ describe "Bacon.Bus", ->
     bus.end()
     input.push("b")
     expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
-  it "delivers pushed events", ->
+  it "delivers pushed events and errors", ->
     expectStreamEvents(
       ->
         s = new Bacon.Bus()
         s.push "pullMe"
         soon ->
           s.push "pushMe"
+          s.error()
           s.end()
         s
-      ["pushMe"])
+      ["pushMe", error()])
 
 lessThan = (limit) -> 
   (x) -> x < limit
@@ -374,11 +408,11 @@ verifySingleSubscriber = (src, expectedEvents) ->
     if event.isEnd()
       ended = true
     else
-      events.push(event.value)
+      events.push(toValue(event))
 
   waitsFor streamEnded, 1000
   runs -> 
-    expect(events).toEqual(expectedEvents)
+    expect(events).toEqual(toValues(expectedEvents))
     verifyCleanup()
 
 # get each event with new subscriber
@@ -391,16 +425,17 @@ verifySwitching = (src, expectedEvents) ->
       if event.isEnd()
         ended = true
       else
-        events.push(event.value)
+        events.push(toValue(event))
         src.subscribe(newSink())
         Bacon.noMore
   runs -> 
     src.subscribe(newSink())
   waitsFor streamEnded, 1000
   runs -> 
-    expect(events).toEqual(expectedEvents)
+    expect(events).toEqual(toValues(expectedEvents))
     verifyCleanup()
 
+error = (msg) -> new Bacon.Error(msg)
 seqs = []
 soon = (f) -> setTimeout f, 100
 repeat = (interval, values) ->
@@ -414,3 +449,16 @@ verifyCleanup = ->
     expect(seq.source.hasSubscribers()).toEqual(false)
   seqs = []
 
+toValues = (xs) ->
+  values = []
+  for x in xs
+    values.push(toValue(x))
+  values
+toValue = (x) ->
+  if x? and x.isEvent?
+    if x.isError()
+      "<error>"
+    else
+      x.value
+  else
+    x
