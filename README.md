@@ -464,6 +464,9 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
+- Refactor Property. Now seems to duplicate a lot of EventStream
+  code. Common implementations may be possible by implementing
+withHandler method to both.
 - Take equality seriosly: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
