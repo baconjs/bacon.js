@@ -126,6 +126,13 @@ class EventStream extends Observable
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
     @hasSubscribers = dispatcher.hasSubscribers
+  endOnError: ->
+    @withHandler (event) ->
+      if event.isError()
+        @push event
+        @push end()
+      else
+        @push event
   filter: (f) ->
     @withHandler (event) -> 
       if event.filter(f)
@@ -382,6 +389,16 @@ class Property extends Observable
           sink(initial(previousMathing))
         else
           Bacon.more
+  endOnError: =>
+    new Property (sink) =>
+      @subscribe (event) =>
+        if event.isError()
+          reply = sink event
+          if reply != Bacon.noMore
+            sink end()
+          Bacon.noMore
+        else
+          sink event
   distinctUntilChanged: => 
     new Property (sink) =>
       previous = undefined
@@ -494,8 +511,8 @@ takeUntilSubscribe = (src, stopper) ->
         unsubSrc()
         sink end()
         Bacon.noMore
-    unsubSrc = src.subscribe(srcSink)
     unsubStopper = stopper.subscribe(stopperSink)
+    unsubSrc = src.subscribe(srcSink)
     unsubBoth
 
 nop = ->

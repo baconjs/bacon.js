@@ -132,6 +132,13 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(70, ["stop!"])
         src.takeUntil(stopper)
       [1, 2])
+  it "works on self-derived stopper", ->
+    expectStreamEvents(
+      ->
+        src = repeat(30, [3, 2, 1])
+        stopper = src.filter(lessThan(3))
+        src.takeUntil(stopper)
+      [3])
   it "includes source errors, ignores stopper errors", ->
     expectStreamEvents(
       ->
@@ -139,6 +146,12 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(70, ["stop!"]).merge(repeat(10, [error()]))
         src.takeUntil(stopper)
       [1, error(), 2])
+
+describe "EventStream.endOnError", ->
+  it "terminates on error", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, error(), 3]).endOnError()
+      [1, 2, error()])
 
 describe "Bacon.constant", ->
   it "creates a constant property", ->
@@ -211,6 +224,12 @@ describe "Property.takeUntil", ->
         stopper = repeat(70, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, undefined, error()])
+
+describe "Property.endOnError", ->
+  it "terminates on Error", ->
+    expectPropertyEvents(
+      -> repeat(20, [1, error(), 2]).take(2).toProperty().endOnError()
+      [1, error()])
 
 describe "Property.distinctUntilChanged", ->
   it "drops duplicates", ->
