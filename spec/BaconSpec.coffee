@@ -308,6 +308,11 @@ describe "Property.sampledBy", ->
     expectStreamEvents(
       ->
         src = repeat(20, [1, 2]).take(2)
+        src.toProperty().sampledBy(src)
+      [1, 2])
+    expectStreamEvents(
+      ->
+        src = repeat(20, [1, 2]).take(2)
         src.toProperty().sampledBy(src.map(times(2)))
       [1, 2])
 

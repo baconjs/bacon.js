@@ -80,6 +80,21 @@ Bacon.latestValue = (src) ->
   => latest
 
 class Event
+  done : -> 
+    if @waiters?
+      waiters = @waiters
+      @waiters = undefined
+      listener() for listener in waiters
+  onDone : (listener) ->
+    if @waiters? and not contains(@waiters, listener)
+      @waiters.push(listener)
+    else
+      @waiters = [listener]
+  getOriginalEvent: -> 
+    if @sourceEvent? 
+      @sourceEvent.getOriginalEvent() 
+    else 
+      this
   isEvent: -> true
   isEnd: -> false
   isInitial: -> false
@@ -89,18 +104,18 @@ class Event
   filter: (f) -> true
 
 class Next extends Event
-  constructor: (@value) ->
+  constructor: (@value, sourceEvent) ->
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> next(f(this.value))
-  apply: (value) -> next(value)
+  fmap: (f) -> @apply(f(this.value))
+  apply: (value) -> next(value, @getOriginalEvent())
   filter: (f) -> f(@value)
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  fmap: (f) -> initial(f(this.value))
-  apply: (value) -> initial(value)
+  apply: (value) -> initial(value, @getOriginalEvent())
+  onDone : (listener) -> listener()
 
 class End extends Event
   isEnd: -> true
@@ -164,10 +179,15 @@ class Observable
       srcSink = (event) ->
         if event.isEnd()
           unsubStopper()
-        reply = sink event
-        if reply == Bacon.noMore
-          unsubStopper()
-        reply
+          sink event
+          Bacon.noMore
+        else
+          event.getOriginalEvent().onDone ->
+            if !unsubscribed
+              reply = sink event
+              if reply == Bacon.noMore
+                unsubBoth()
+          Bacon.more
       stopperSink = (event) ->
         if event.isError()
           Bacon.more
@@ -177,8 +197,8 @@ class Observable
           unsubSrc()
           sink end()
           Bacon.noMore
-      unsubStopper = stopper.subscribe(stopperSink)
-      unsubSrc = src.subscribe(srcSink) unless unsubscribed
+      unsubSrc = src.subscribe(srcSink)
+      unsubStopper = stopper.subscribe(stopperSink) unless unsubscribed
       unsubBoth
   skip : (count) ->
     assert "skip: count must >= 0", (count>=0)
@@ -284,7 +304,7 @@ class EventStream extends Observable
     values = []
     @withHandler (event) ->
       flush = =>
-        @push next(values)
+        @push next(values, event)
         values = []
       if event.isError()
         @push event
@@ -341,7 +361,7 @@ class EventStream extends Observable
   end: (value = "end") ->
     @withHandler (event) ->
       if event.isEnd()
-        @push next(value)
+        @push next(value, event)
         @push end()
         Bacon.noMore
       else
@@ -399,7 +419,6 @@ class Property extends Observable
         unsubMe = this.subscribe mySink
         unsubOther = other.subscribe otherSink unless unsubscribed
         unsubBoth
-
     @combine = (other, combinator) =>
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
@@ -429,6 +448,7 @@ class Dispatcher
       for sink in (cloneArray(sinks))
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
+      event.done()
       if @hasSubscribers() then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
@@ -537,6 +557,7 @@ remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0
     xs.splice(i, 1)
+contains = (xs, x) -> xs.indexOf(x) >= 0
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
 assertFunction = (f) -> assert "not a function : " + f, typeof f == "function"
