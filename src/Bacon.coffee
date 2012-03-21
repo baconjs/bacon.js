@@ -80,21 +80,6 @@ Bacon.latestValue = (src) ->
   => latest
 
 class Event
-  done : -> 
-    if @waiters?
-      waiters = @waiters
-      @waiters = undefined
-      listener() for listener in waiters
-  onDone : (listener) ->
-    if @waiters? and not contains(@waiters, listener)
-      @waiters.push(listener)
-    else
-      @waiters = [listener]
-  getOriginalEvent: -> 
-    if @sourceEvent? 
-      @sourceEvent.getOriginalEvent() 
-    else 
-      this
   isEvent: -> true
   isEnd: -> false
   isInitial: -> false
@@ -102,6 +87,12 @@ class Event
   isError: -> false
   hasValue: -> false
   filter: (f) -> true
+  getOriginalEvent: -> 
+    if @sourceEvent? 
+      @sourceEvent.getOriginalEvent() 
+    else 
+      this
+  onDone : (listener) -> listener()
 
 class Next extends Event
   constructor: (@value, sourceEvent) ->
@@ -115,7 +106,6 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> initial(value, @getOriginalEvent())
-  onDone : (listener) -> listener()
 
 class End extends Event
   isEnd: -> true
@@ -444,11 +434,23 @@ class Dispatcher
     removeSink = (sink) ->
       remove(sink, sinks)
     @push = (event) =>
+      waiters = undefined
+      done = -> 
+        if waiters?
+          ws = waiters
+          waiters = undefined
+          w() for w in ws
+        event.onDone = Event.prototype.onDone
+      event.onDone = (listener) ->
+        if waiters? and not contains(waiters, listener)
+          waiters.push(listener)
+        else
+          waiters = [listener]
       assertEvent event
       for sink in (cloneArray(sinks))
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
-      event.done()
+      done()
       if @hasSubscribers() then Bacon.more else Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
