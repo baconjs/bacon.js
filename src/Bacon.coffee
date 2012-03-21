@@ -157,29 +157,29 @@ class Observable
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->
-        unsubscribed = false
-        unsubSrc = nop
-        unsubStopper = nop
-        unsubBoth = -> unsubSrc() ; unsubStopper() ; unsubscribed = true
-        srcSink = (event) ->
-          if event.isEnd()
-            unsubStopper()
-          reply = sink event
-          if reply == Bacon.noMore
-            unsubStopper()
-          reply
-        stopperSink = (event) ->
-          if event.isError()
-            Bacon.more
-          else if event.isEnd()
-            Bacon.noMore
-          else
-            unsubSrc()
-            sink end()
-            Bacon.noMore
-        unsubStopper = stopper.subscribe(stopperSink)
-        unsubSrc = src.subscribe(srcSink) unless unsubscribed
-        unsubBoth
+      unsubscribed = false
+      unsubSrc = nop
+      unsubStopper = nop
+      unsubBoth = -> unsubSrc() ; unsubStopper() ; unsubscribed = true
+      srcSink = (event) ->
+        if event.isEnd()
+          unsubStopper()
+        reply = sink event
+        if reply == Bacon.noMore
+          unsubStopper()
+        reply
+      stopperSink = (event) ->
+        if event.isError()
+          Bacon.more
+        else if event.isEnd()
+          Bacon.noMore
+        else
+          unsubSrc()
+          sink end()
+          Bacon.noMore
+      unsubStopper = stopper.subscribe(stopperSink)
+      unsubSrc = src.subscribe(srcSink) unless unsubscribed
+      unsubBoth
   skip : (count) ->
     assert "skip: count must >= 0", (count>=0)
     @withHandler (event) ->
@@ -213,7 +213,6 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-
 
 class EventStream extends Observable
   constructor: (subscribe) ->
