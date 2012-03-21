@@ -179,13 +179,11 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
-  it "passes through also 'undefined' values and Errors", ->
+  
+  it "passes through also Errors", ->
     expectPropertyEvents(
-      -> repeat(10, [1, undefined, error(), 2]).take(3).toProperty()
-      [1, undefined, error(), 2])
-  it "delivers also 'undefined' as Initial value", ->
-    # TODO: how to test this?
-    
+      -> repeat(10, [1, error(), 2]).take(2).toProperty()
+      [1, error(), 2])
 
 describe "Property.map", ->
   it "maps property values", ->
@@ -220,10 +218,10 @@ describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
       ->
-        src = repeat(20, [1, undefined, error(), 3])
-        stopper = repeat(70, ["stop!"])
+        src = repeat(20, [1, error(), 3])
+        stopper = repeat(50, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
-      [0, 1, undefined, error()])
+      [0, 1, error()])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
@@ -239,7 +237,7 @@ describe "Property.distinctUntilChanged", ->
 
 describe "Property.changes", ->
   it "sends property change events", ->
-    expectPropertyEvents(
+    expectStreamEvents(
       ->
         s = new Bacon.Bus()
         p = s.toProperty("a").changes()
@@ -413,7 +411,26 @@ times = (factor) ->
 add = (x, y) -> x + y
 
 expectPropertyEvents = (src, expectedEvents) ->
-  runs -> verifySingleSubscriber src(), expectedEvents
+  events = []
+  events2 = []
+  ended = false
+  streamEnded = -> ended
+  property = src()
+  runs -> property.subscribe (event) -> 
+    if event.isEnd()
+      ended = true
+    else
+      events.push(toValue(event))
+      if event.hasValue()
+        property.subscribe (event) ->
+          if event.isInitial()
+            events2.push(event.value)
+          Bacon.noMore
+  waitsFor streamEnded, 1000
+  runs -> 
+    expect(events).toEqual(toValues(expectedEvents))
+    expect(events2).toEqual(justValues(expectedEvents))
+    verifyCleanup()
 
 expectStreamEvents = (src, expectedEvents) ->
   runs -> verifySingleSubscriber src(), expectedEvents
@@ -481,3 +498,12 @@ toValue = (x) ->
       x.value
   else
     x
+filter = (f, xs) ->
+  filtered = []
+  for x in xs
+    filtered.push(x) if f(x)
+  filtered
+justValues = (xs) ->
+  filter hasValue, xs
+hasValue = (x) ->
+  toValue(x) != "<error>"

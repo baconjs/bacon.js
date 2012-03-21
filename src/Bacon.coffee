@@ -251,7 +251,8 @@ class EventStream extends Observable
     new EventStream (sink) ->
       unsubLeft = nop
       unsubRight = nop
-      unsubBoth = -> unsubLeft() ; unsubRight()
+      unsubscribed = false
+      unsubBoth = -> unsubLeft() ; unsubRight() ; unsubscribed = true
       ends = 0
       smartSink = (event) ->
         if event.isEnd()
@@ -265,7 +266,7 @@ class EventStream extends Observable
           unsubBoth() if reply == Bacon.noMore
           reply
       unsubLeft = left.subscribe(smartSink)
-      unsubRight = right.subscribe(smartSink)
+      unsubRight = right.subscribe(smartSink) unless unsubscribed
       unsubBoth
 
   takeUntil: (stopper) =>
@@ -281,8 +282,8 @@ class EventStream extends Observable
       @push event.apply(acc)
     d = new Dispatcher(@subscribe, handleEvent)
     subscribe = (sink) ->
-      sink initial(acc) if acc?
-      d.subscribe(sink)
+      reply = sink initial(acc) if acc?
+      d.subscribe(sink) unless reply == Bacon.noMore
     new Property(subscribe)
 
   distinctUntilChanged: ->
@@ -335,14 +336,18 @@ class Property extends Observable
       myVal = undefined
       otherVal = undefined
       new Property (sink) =>
+        unsubscribed = false
         unsubMe = nop
         unsubOther = nop
-        unsubBoth = -> unsubMe() ; unsubOther()
+        unsubBoth = -> unsubMe() ; unsubOther() ; unsubscribed = true
         myEnd = false
         otherEnd = false
         checkEnd = ->
           if myEnd and otherEnd
-            sink end()
+            reply = sink end()
+            unsubBoth() if reply == Bacon.noMore
+            reply
+        initialSent = false
         combiningSink = (markEnd, setValue, thisSink) =>
           (event) =>
             if (event.isEnd())
@@ -356,16 +361,21 @@ class Property extends Observable
             else
               setValue(event.value)
               if (myVal? and otherVal?)
-                reply = thisSink(sink, event, myVal, otherVal)
-                unsubBoth if reply == Bacon.noMore
-                reply
+                if initialSent and event.isInitial()
+                  # don't send duplicate Initial
+                  Bacon.more
+                else
+                  initialSent = true
+                  reply = thisSink(sink, event, myVal, otherVal)
+                  unsubBoth if reply == Bacon.noMore
+                  reply
               else
                 Bacon.more
 
         mySink = combiningSink (-> myEnd = true), ((value) -> myVal = value), leftSink
         otherSink = combiningSink (-> otherEnd = true), ((value) -> otherVal = value), rightSink
         unsubMe = this.subscribe mySink
-        unsubOther = other.subscribe otherSink
+        unsubOther = other.subscribe otherSink unless unsubscribed
         unsubBoth
     @combine = (other, combinator) =>
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
@@ -492,9 +502,10 @@ Bacon.Error = Error
 
 takeUntilSubscribe = (src, stopper) -> 
   (sink) ->
+    unsubscribed = false
     unsubSrc = nop
     unsubStopper = nop
-    unsubBoth = -> unsubSrc() ; unsubStopper()
+    unsubBoth = -> unsubSrc() ; unsubStopper() ; unsubscribed = true
     srcSink = (event) ->
       if event.isEnd()
         unsubStopper()
@@ -512,7 +523,7 @@ takeUntilSubscribe = (src, stopper) ->
         sink end()
         Bacon.noMore
     unsubStopper = stopper.subscribe(stopperSink)
-    unsubSrc = src.subscribe(srcSink)
+    unsubSrc = src.subscribe(srcSink) unless unsubscribed
     unsubBoth
 
 nop = ->
