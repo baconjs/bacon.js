@@ -304,6 +304,12 @@ describe "Property.sampledBy", ->
         stream = repeat(20, ["1", "2"]).delay(10).take(4)
         prop.sampledBy(stream, add)
       ["a1", "b2", "b1", "b2"])
+  it "works with same origin", ->
+    expectStreamEvents(
+      ->
+        src = repeat(20, [1, 2]).take(2)
+        src.toProperty().sampledBy(src.map(times(2)))
+      [1, 2])
 
 describe "Property.sample", -> 
   it "samples property by given interval", ->
