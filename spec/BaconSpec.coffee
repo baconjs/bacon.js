@@ -400,7 +400,7 @@ describe "Bacon.Bus", ->
     input.push("a")
     bus.end()
     input.push("b")
-    expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+    expect(toValues(events)).toEqual(["a", "<end>"])
   it "delivers pushed events and errors", ->
     expectStreamEvents(
       ->
@@ -505,6 +505,8 @@ toValue = (x) ->
   if x? and x.isEvent?
     if x.isError()
       "<error>"
+    else if x.isEnd()
+      "<end>"
     else
       x.value
   else

@@ -79,7 +79,11 @@ Bacon.latestValue = (src) ->
     latest = event.value if event.hasValue()
   => latest
 
+idCounter = 0
+
 class Event
+  constructor: ->
+    @id = idCounter++
   isEvent: -> true
   isEnd: -> false
   isInitial: -> false
@@ -95,7 +99,7 @@ class Event
   onDone : (listener) -> listener()
 
 class Next extends Event
-  constructor: (@value, sourceEvent) ->
+  constructor: (@value, sourceEvent) -> super()
   isNext: -> true
   hasValue: -> true
   fmap: (f) -> @apply(f(this.value))
@@ -113,7 +117,7 @@ class End extends Event
   apply: -> this
 
 class Error extends Event
-  constructor: (@error) ->
+  constructor: (@error) -> super()
   isError: -> true
   fmap: -> this
   apply: -> this
@@ -125,11 +129,11 @@ class Observable
     f event.error if event.isError()
   errors: -> @filter(-> false)
   filter: (f) ->
-    @withHandler (event) -> 
+    @withHandlerF (event) -> 
       if event.filter(f)
-        @push event
+        -> @push event
       else
-        Bacon.more
+        -> Bacon.more
   takeWhile: (f) ->
     @withHandler (event) -> 
       if event.filter(f)
@@ -223,6 +227,15 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
+
+  withHandlerF: (handlerF) ->
+    prevEventId = undefined
+    handler = undefined
+    @withHandler (event) ->
+      if event.id != prevEventId
+        handler = handlerF(event)
+        prevEventId = event.id
+      reply = handler.apply(this, [event])
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -360,6 +373,7 @@ class EventStream extends Observable
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
     new EventStream(dispatcher.subscribe)
+
   withSubscribe: (subscribe) -> new EventStream(subscribe)
 
 class Property extends Observable
