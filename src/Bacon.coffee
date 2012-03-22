@@ -135,12 +135,13 @@ class Observable
       else
         -> Bacon.more
   takeWhile: (f) ->
-    @withHandler (event) -> 
+    @withHandlerF (event) -> 
       if event.filter(f)
-        @push event
+        -> @push event
       else
-        @push end()
-        Bacon.noMore
+        -> 
+          @push end()
+          Bacon.noMore
   endOnError: ->
     @withHandler (event) ->
       if event.isError()
@@ -150,19 +151,21 @@ class Observable
         @push event
   take: (count) ->
     assert "take: count must >= 1", (count>=1)
-    @withHandler (event) ->
+    @withHandlerF (event) ->
       if !event.hasValue()
-        @push event
+        -> @push event
       else if (count == 1)
-        @push event
-        @push end()
-        Bacon.noMore
+        -> 
+           @push event
+           @push end()
+           Bacon.noMore
       else
         count--
-        @push event
+        -> @push event
   map: (f) ->
-    @withHandler (event) -> 
-      @push event.fmap(f)
+    @withHandlerF (event) -> 
+      mapped = event.fmap(f)
+      -> @push mapped
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->
@@ -196,14 +199,14 @@ class Observable
       unsubBoth
   skip : (count) ->
     assert "skip: count must >= 0", (count>=0)
-    @withHandler (event) ->
+    @withHandlerF (event) ->
       if !event.hasValue()
-        @push event
+        -> @push event
       else if (count > 0)
         count--
-        Bacon.more
+        -> Bacon.more
       else
-        @push event
+        -> @push event
   distinctUntilChanged: ->
     @withStateMachine undefined, (prev, event) ->
       if !event.hasValue()
@@ -215,18 +218,19 @@ class Observable
 
   withStateMachine: (initState, f) ->
     state = initState
-    @withHandler (event) ->
+    @withHandlerF (event) ->
       fromF = f(state, event)
       assertArray fromF
       [newState, outputs] = fromF
       assertArray outputs
       state = newState
-      reply = Bacon.more
-      for output in outputs
-        reply = @push output
-        if reply == Bacon.noMore
-          return reply
-      reply
+      ->
+        reply = Bacon.more
+        for output in outputs
+          reply = @push output
+          if reply == Bacon.noMore
+            return reply
+        reply
 
   withHandlerF: (handlerF) ->
     prevEventId = undefined
@@ -305,18 +309,26 @@ class EventStream extends Observable
     @filter(storeAndMaybeTrigger).flatMap(buffer)
   bufferWithCount: (count) ->
     values = []
-    @withHandler (event) ->
+    @withHandlerF (event) ->
       flush = =>
-        @push next(values, event)
+        toBeSent = values
         values = []
+        next(toBeSent, event)
       if event.isError()
-        @push event
+        -> @push event
       else if event.isEnd()
-        flush()
-        @push event
+        output = flush()
+        ->
+          @push output
+          @push event
       else
         values.push(event.value)
-        flush() if values.length == count
+        if values.length == count
+          output = flush()
+          -> @push output
+        else
+          nop
+
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
