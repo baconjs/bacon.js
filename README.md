@@ -122,7 +122,8 @@ call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
 
 `stream.map(f)` maps values using given function, returning a new
-EventStream
+EventStream. If f is not a function, returns a streams where all input
+values are mapped into the value `f`.
 
 `stream.scan(seed, f)` scans stream with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -201,8 +202,9 @@ EventStream ends.
 
 `property.onValue(f)` 
 
-`property.map(f)` maps property values with given function, returing a
-new Property
+`property.map(f)` maps property values with given function, retunring a
+new Property. If f is not a function, returns any value into the value
+`f`.
 
 `property.combine(f, property2)` combines the latest values of the two
 properties using a two-arg function.

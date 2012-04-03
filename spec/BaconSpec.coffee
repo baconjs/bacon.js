@@ -33,6 +33,10 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3]).take(3).map(times(2))
       [2, 4, 6])
+  it "also accepts a constant value", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2, 3,]).take(3).map("lol")
+      ["lol", "lol", "lol"])
 
 describe "EventStream.end", ->
   it "produces single-element stream on stream end", ->

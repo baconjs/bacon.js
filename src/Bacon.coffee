@@ -157,8 +157,12 @@ class Observable
         count--
         @push event
   map: (f) ->
-    @withHandler (event) -> 
-      @push event.fmap(f)
+    if isFunction(f)
+      @withHandler (event) -> 
+        @push event.fmap(f)
+    else
+      @withHandler (event) ->
+        @push event.apply(f)
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->
@@ -562,5 +566,6 @@ remove = (x, xs) ->
 contains = (xs, x) -> xs.indexOf(x) >= 0
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
-assertFunction = (f) -> assert "not a function : " + f, typeof f == "function"
+assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
+isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
