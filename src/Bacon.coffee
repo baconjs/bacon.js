@@ -73,6 +73,10 @@ Bacon.combineAsArray = (streams) ->
   Bacon.combineAll(streams, (s1, s2) ->
     s1.toProperty().combine(s2, concatArrays))
 
+Bacon.combineWith = (streams, f) ->
+  Bacon.combineAll(streams, (s1, s2) ->
+    s1.toProperty().combine(s2, f))
+
 Bacon.latestValue = (src) ->
   latest = undefined
   src.subscribe (event) ->
@@ -410,7 +414,8 @@ class Property extends Observable
         unsubMe = this.subscribe mySink
         unsubOther = other.subscribe otherSink unless unsubscribed
         unsubBoth
-    @combine = (other, combinator) =>
+    @combine = (other, f) =>
+      combinator = toCombinator(f)
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
     @sampledBy = (sampler, combinator = former) =>
@@ -570,8 +575,8 @@ always = (x) -> (-> x)
 toExtractor = (f) ->
   if isFunction f
     f
-  else if (typeof f == "string") and f.length > 1 and f[0] == "."
-    key = f.slice(1)
+  else if isFieldKey(f) 
+    key = toFieldKey(f)
     (value) ->
       fieldValue = value[key]
       if isFunction(fieldValue)
@@ -580,3 +585,16 @@ toExtractor = (f) ->
         fieldValue
   else
     always f
+isFieldKey = (f) ->
+  (typeof f == "string") and f.length > 1 and f[0] == "."
+toFieldKey = (f) ->
+  f.slice(1)
+toCombinator = (f) ->
+  if isFunction f
+    f
+  else if isFieldKey f
+    key = toFieldKey(f)
+    (left, right) ->
+      left[key](right)
+  else
+    assert "not a function or a field key: " + f, false

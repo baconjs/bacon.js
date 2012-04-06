@@ -249,7 +249,15 @@ combined with the other properties.
 using the given combinator function `f(s1, s2)`. The function is applied in a
 fold-like fashion: the first two streams are given to the function
 first. Then the result of this operation is combined with the third
-stream and so on.
+stream and so on. In this variant, the combinator function is applied to
+the streams themselves, not the stream values.
+
+`Bacon.combineWith(streams, f)` combines given list of streams/properties
+using the given combinator function `f(v1, v2)`. In this variant, the
+combinator function is used for combining two stream values, not the
+streams themselves. This is equivalent to combining the
+streams/properties using the combine method like a.combine(b,
+f).combine(c.f) etc.
 
 You can also merge multiple streams using Bus (see below).
 
