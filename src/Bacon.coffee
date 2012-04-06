@@ -129,6 +129,7 @@ class Observable
     f event.error if event.isError()
   errors: -> @filter(-> false)
   filter: (f) ->
+    f = toExtractor(f)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
@@ -161,9 +162,9 @@ class Observable
         count--
         @push event
   map: (f) ->
-    extractor = toExtractor(f)
+    f = toExtractor(f)
     @withHandler (event) -> 
-      @push event.fmap(extractor)
+      @push event.fmap(f)
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->
@@ -581,7 +582,7 @@ toExtractor = (f) ->
     (value) ->
       fieldValue = value[key]
       if isFunction(fieldValue)
-        fieldValue()
+        value[key]()
       else
         fieldValue
   else
