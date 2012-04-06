@@ -336,6 +336,7 @@ class EventStream extends Observable
    @scan(initValue, latter)
 
   scan: (seed, f) -> 
+    f = toCombinator(f)
     acc = seed
     handleEvent = (event) -> 
       acc = f(acc, event.value) if event.hasValue()

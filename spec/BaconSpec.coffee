@@ -369,6 +369,10 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> repeat(10, [1, 2, error(), 3]).take(3).scan(0, add)
       [0, 1, 3, error(), 6])
+  it "also works with method name", ->
+    expectPropertyEvents(
+      -> repeat(10, [[1], [2]]).take(2).scan([], ".concat")
+      [[], [1], [1, 2]])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->

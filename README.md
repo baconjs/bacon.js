@@ -145,7 +145,8 @@ call to unsubscribe. You can also unsubscribe by returning
 `stream.scan(seed, f)` scans stream with given seed value and
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
-an "integral" property.
+an "integral" property. Instead of a function, you can also supply a
+method name such as ".concat".
 
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
@@ -257,7 +258,9 @@ using the given combinator function `f(v1, v2)`. In this variant, the
 combinator function is used for combining two stream values, not the
 streams themselves. This is equivalent to combining the
 streams/properties using the combine method like a.combine(b,
-f).combine(c.f) etc.
+f).combine(c.f) etc. For example, you can combine properties containing
+arrays into a single array property, with Bacon.combineWith(properties,
+".concat").
 
 You can also merge multiple streams using Bus (see below).
 
