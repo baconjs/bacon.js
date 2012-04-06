@@ -157,12 +157,9 @@ class Observable
         count--
         @push event
   map: (f) ->
-    if isFunction(f)
-      @withHandler (event) -> 
-        @push event.fmap(f)
-    else
-      @withHandler (event) ->
-        @push event.apply(f)
+    extractor = toExtractor(f)
+    @withHandler (event) -> 
+      @push event.fmap(extractor)
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->
@@ -569,3 +566,17 @@ assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; asse
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
+always = (x) -> (-> x)
+toExtractor = (f) ->
+  if isFunction f
+    f
+  else if (typeof f == "string") and f.length > 1 and f[0] == "."
+    key = f.slice(1)
+    (value) ->
+      fieldValue = value[key]
+      if isFunction(fieldValue)
+        fieldValue()
+      else
+        fieldValue
+  else
+    always f

@@ -104,6 +104,19 @@ subscribe function.
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
 
+Common methods in EventStreams and Properties
+---------------------------------------------
+
+`stream.map(f)` maps values using given function, returning a new
+EventStream. Also, if f is a string starting with a
+dot, the elements will be mapped to the corresponding field/function in the event
+value. For instance map(".keyCode") will pluck the keyCode field from
+the input values. If keyCode was a function, the result stream would
+contain the values returned by the function. If f is not a function nor
+a string
+starting with a dot, all input will be mapped into this constant value.
+
+
 EventStream
 -----------
 
@@ -120,10 +133,6 @@ event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
-
-`stream.map(f)` maps values using given function, returning a new
-EventStream. If f is not a function, returns a streams where all input
-values are mapped into the value `f`.
 
 `stream.scan(seed, f)` scans stream with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -200,11 +209,8 @@ a current value, an `Initial` event will be pushed immediately. `Next`
 event will be pushed on updates and an `End` event in case the source 
 EventStream ends.
 
-`property.onValue(f)` 
-
-`property.map(f)` maps property values with given function, retunring a
-new Property. If f is not a function, returns any value into the value
-`f`.
+`property.onValue(f)` similar to eventStream.onValue, except that also
+pushes the initial value of the property.
 
 `property.combine(f, property2)` combines the latest values of the two
 properties using a two-arg function.

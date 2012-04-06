@@ -37,6 +37,17 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3,]).take(3).map("lol")
       ["lol", "lol", "lol"])
+  it "..and a property value, starting with .", ->
+    o = { lol : "wut" }
+    expectStreamEvents(
+      -> repeat(10, [o]).take(3).map(".lol")
+      ["wut", "wut", "wut"])
+  it "..and a property value, starting with ., where property is a function", ->
+    o = { lol : -> "wut" }
+    expectStreamEvents(
+      -> repeat(10, [o]).take(3).map(".lol")
+      ["wut", "wut", "wut"])
+
 
 describe "EventStream.end", ->
   it "produces single-element stream on stream end", ->
