@@ -136,6 +136,7 @@ class Observable
       else
         Bacon.more
   takeWhile: (f) ->
+    f = toExtractor(f)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
