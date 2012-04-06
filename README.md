@@ -107,7 +107,7 @@ below)
 Common methods in EventStreams and Properties
 ---------------------------------------------
 
-`stream.map(f)` maps values using given function, returning a new
+`streamOrProperty.map(f)` maps values using given function, returning a new
 EventStream. Also, if f is a string starting with a
 dot, the elements will be mapped to the corresponding field/function in the event
 value. For instance map(".keyCode") will pluck the keyCode field from
@@ -115,6 +115,14 @@ the input values. If keyCode was a function, the result stream would
 contain the values returned by the function. If f is not a function nor
 a string
 starting with a dot, all input will be mapped into this constant value.
+
+`streamOrProperty.filter(f)` filters values using given predicate function
+
+`streamOrProperty.takeWhile(f)` takes while given predicate function holds true
+
+`streamOrProperty.take(n)` takes at most n elements from the stream
+
+`streamOrProperty.skip(n)` skips the first n elements from the stream
 
 
 EventStream
@@ -138,14 +146,6 @@ call to unsubscribe. You can also unsubscribe by returning
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
 an "integral" property.
-
-`stream.filter(f)` filters values using given predicate function
-
-`stream.takeWhile(f)` takes while given predicate function holds true
-
-`stream.take(n)` takes at most n elements from the stream
-
-`stream.skip(n)` skips the first n elements from the stream
 
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
@@ -226,15 +226,6 @@ stream.
 `property.sampledBy(stream, f)` samples the property on stream events.
 The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`
-
-`property.filter(f)` returns a filtered Property, using given predicate
-function. Behaves as if the non-matching values did not exists. This
-means that the result property is not updated if the source value does
-not match.
-
-`property.takeUntil(stopper)` returns a Property that is updated until 
-a Next event appears in the 'stopper' stream. If stoper stream ends 
-without value, it is ignored
 
 `property.distinctUntilChanged()` drops consecutive equal values. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
