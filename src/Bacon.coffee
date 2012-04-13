@@ -73,6 +73,10 @@ Bacon.combineAsArray = (streams) ->
   Bacon.combineAll(streams, (s1, s2) ->
     s1.toProperty().combine(s2, concatArrays))
 
+Bacon.combineWith = (streams, f) ->
+  Bacon.combineAll(streams, (s1, s2) ->
+    s1.toProperty().combine(s2, f))
+
 Bacon.latestValue = (src) ->
   latest = undefined
   src.subscribe (event) ->
@@ -125,12 +129,14 @@ class Observable
     f event.error if event.isError()
   errors: -> @filter(-> false)
   filter: (f) ->
+    f = toExtractor(f)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
       else
         Bacon.more
   takeWhile: (f) ->
+    f = toExtractor(f)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
@@ -157,12 +163,9 @@ class Observable
         count--
         @push event
   map: (f) ->
-    if isFunction(f)
-      @withHandler (event) -> 
-        @push event.fmap(f)
-    else
-      @withHandler (event) ->
-        @push event.apply(f)
+    f = toExtractor(f)
+    @withHandler (event) -> 
+      @push event.fmap(f)
   do: (f) ->
     @withHandler (event) ->
       f(event.value) if event.hasValue()
@@ -339,6 +342,7 @@ class EventStream extends Observable
    @scan(initValue, latter)
 
   scan: (seed, f) -> 
+    f = toCombinator(f)
     acc = seed
     handleEvent = (event) -> 
       acc = f(acc, event.value) if event.hasValue()
@@ -417,7 +421,8 @@ class Property extends Observable
         unsubMe = this.subscribe mySink
         unsubOther = other.subscribe otherSink unless unsubscribed
         unsubBoth
-    @combine = (other, combinator) =>
+    @combine = (other, f) =>
+      combinator = toCombinator(f)
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
     @sampledBy = (sampler, combinator = former) =>
@@ -573,3 +578,30 @@ assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; asse
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
+always = (x) -> (-> x)
+toExtractor = (f) ->
+  if isFunction f
+    f
+  else if isFieldKey(f) 
+    key = toFieldKey(f)
+    (value) ->
+      fieldValue = value[key]
+      if isFunction(fieldValue)
+        value[key]()
+      else
+        fieldValue
+  else
+    always f
+isFieldKey = (f) ->
+  (typeof f == "string") and f.length > 1 and f[0] == "."
+toFieldKey = (f) ->
+  f.slice(1)
+toCombinator = (f) ->
+  if isFunction f
+    f
+  else if isFieldKey f
+    key = toFieldKey(f)
+    (left, right) ->
+      left[key](right)
+  else
+    assert "not a function or a field key: " + f, false

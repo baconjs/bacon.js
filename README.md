@@ -1,7 +1,7 @@
 Bacon.js
 ========
 
-A small (< 11k minified) reactive programming lib for JavaScript. Written in CoffeeScript.
+A small (< 13k minified) reactive programming lib for JavaScript. Written in CoffeeScript.
 
 Inspired largely by RxJs, but includes the `EventStream` and `Property`
 concepts from [reactive-bacon](https://github.com/raimohanska/reactive-bacon).
@@ -104,6 +104,27 @@ subscribe function.
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
 
+Common methods in EventStreams and Properties
+---------------------------------------------
+
+`streamOrProperty.map(f)` maps values using given function, returning a new
+EventStream. Also, if f is a string starting with a
+dot, the elements will be mapped to the corresponding field/function in the event
+value. For instance map(".keyCode") will pluck the keyCode field from
+the input values. If keyCode was a function, the result stream would
+contain the values returned by the function. If f is not a function nor
+a string
+starting with a dot, all input will be mapped into this constant value.
+
+`streamOrProperty.filter(f)` filters values using given predicate function
+
+`streamOrProperty.takeWhile(f)` takes while given predicate function holds true
+
+`streamOrProperty.take(n)` takes at most n elements from the stream
+
+`streamOrProperty.skip(n)` skips the first n elements from the stream
+
+
 EventStream
 -----------
 
@@ -121,22 +142,11 @@ The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
 
-`stream.map(f)` maps values using given function, returning a new
-EventStream. If f is not a function, returns a streams where all input
-values are mapped into the value `f`.
-
 `stream.scan(seed, f)` scans stream with given seed value and
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
-an "integral" property.
-
-`stream.filter(f)` filters values using given predicate function
-
-`stream.takeWhile(f)` takes while given predicate function holds true
-
-`stream.take(n)` takes at most n elements from the stream
-
-`stream.skip(n)` skips the first n elements from the stream
+an "integral" property. Instead of a function, you can also supply a
+method name such as ".concat".
 
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
@@ -200,11 +210,8 @@ a current value, an `Initial` event will be pushed immediately. `Next`
 event will be pushed on updates and an `End` event in case the source 
 EventStream ends.
 
-`property.onValue(f)` 
-
-`property.map(f)` maps property values with given function, retunring a
-new Property. If f is not a function, returns any value into the value
-`f`.
+`property.onValue(f)` similar to eventStream.onValue, except that also
+pushes the initial value of the property.
 
 `property.combine(f, property2)` combines the latest values of the two
 properties using a two-arg function.
@@ -220,15 +227,6 @@ stream.
 `property.sampledBy(stream, f)` samples the property on stream events.
 The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`
-
-`property.filter(f)` returns a filtered Property, using given predicate
-function. Behaves as if the non-matching values did not exists. This
-means that the result property is not updated if the source value does
-not match.
-
-`property.takeUntil(stopper)` returns a Property that is updated until 
-a Next event appears in the 'stopper' stream. If stoper stream ends 
-without value, it is ignored
 
 `property.distinctUntilChanged()` drops consecutive equal values. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]
@@ -252,7 +250,17 @@ combined with the other properties.
 using the given combinator function `f(s1, s2)`. The function is applied in a
 fold-like fashion: the first two streams are given to the function
 first. Then the result of this operation is combined with the third
-stream and so on.
+stream and so on. In this variant, the combinator function is applied to
+the streams themselves, not the stream values.
+
+`Bacon.combineWith(streams, f)` combines given list of streams/properties
+using the given combinator function `f(v1, v2)`. In this variant, the
+combinator function is used for combining two stream values, not the
+streams themselves. This is equivalent to combining the
+streams/properties using the combine method like a.combine(b,
+f).combine(c.f) etc. For example, you can combine properties containing
+arrays into a single array property, with Bacon.combineWith(properties,
+".concat").
 
 You can also merge multiple streams using Bus (see below).
 

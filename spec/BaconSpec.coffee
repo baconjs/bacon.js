@@ -37,6 +37,17 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> repeat(10, [1, 2, 3,]).take(3).map("lol")
       ["lol", "lol", "lol"])
+  it "..and a property value, starting with .", ->
+    o = { lol : "wut" }
+    expectStreamEvents(
+      -> repeat(10, [o]).take(3).map(".lol")
+      ["wut", "wut", "wut"])
+  it "..and a property value, starting with ., where property is a function", ->
+    o = { lol : -> "wut" }
+    expectStreamEvents(
+      -> repeat(10, [o]).take(3).map(".lol")
+      ["wut", "wut", "wut"])
+
 
 describe "EventStream.do", ->
   it "does not alter the stream", ->
@@ -267,13 +278,20 @@ describe "Property.changes", ->
       ["b", error()])
 
 describe "Property.combine", ->
-  it "combines latest values of two properties, passing through errors", ->
+  it "combines latest values of two properties, with given combinator function, passing through errors", ->
     expectPropertyEvents( 
       ->
         left = repeat(20, [1, error(), 2, 3]).take(3).toProperty()
         right = repeat(20, [4, error(), 5, 6]).delay(10).take(3).toProperty()
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
+  it "also accepts a field name instead of combinator function", ->
+    expectPropertyEvents(
+      ->
+        left = repeat(20, [[1]]).take(1).toProperty()
+        right = repeat(20, [[2]]).take(1).toProperty()
+        left.combine(right, ".concat")
+      [[1, 2]])
 
 describe "Bacon.combineAsArray", -> 
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
@@ -282,6 +300,14 @@ describe "Bacon.combineAsArray", ->
         stream = repeat(10, ["a", "b"]).take(2)
         Bacon.combineAsArray([Bacon.constant(1), Bacon.constant(2), stream])
       [[1, 2, "a"], [1, 2, "b"]])
+
+describe "Bacon.combineWith", ->
+  it "combines properties by applying the combinator function to values", ->
+    expectPropertyEvents(
+      ->
+        stream = repeat(10, [[1]]).take(1)
+        Bacon.combineWith([stream, Bacon.constant([2]), Bacon.constant([3])], ".concat")
+      [[1, 2, 3]])
 
 describe "Bacon.mergeAll", ->
   it ("merges all given streams"), ->
@@ -357,6 +383,10 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> repeat(10, [1, 2, error(), 3]).take(3).scan(0, add)
       [0, 1, 3, error(), 6])
+  it "also works with method name", ->
+    expectPropertyEvents(
+      -> repeat(10, [[1], [2]]).take(2).scan([], ".concat")
+      [[], [1], [1, 2]])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
