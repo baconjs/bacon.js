@@ -124,6 +124,9 @@ starting with a dot, all input will be mapped into this constant value.
 
 `streamOrProperty.skip(n)` skips the first n elements from the stream
 
+`streamOrProperty.do(f)` returns a stream/property where the function f
+is executed for each value, before dispatching to subscribers
+
 
 EventStream
 -----------
