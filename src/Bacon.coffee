@@ -163,6 +163,10 @@ class Observable
     else
       @withHandler (event) ->
         @push event.apply(f)
+  do: (f) ->
+    @withHandler (event) ->
+      f(event.value) if event.hasValue()
+      @push event
   takeUntil: (stopper) =>
     src = this
     @withSubscribe (sink) ->

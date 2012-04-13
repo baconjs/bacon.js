@@ -38,6 +38,20 @@ describe "EventStream.map", ->
       -> repeat(10, [1, 2, 3,]).take(3).map("lol")
       ["lol", "lol", "lol"])
 
+describe "EventStream.do", ->
+  it "does not alter the stream", ->
+    expectStreamEvents(
+      -> repeat(10, [1, 2]).take(2).do(->)
+      [1, 2])
+  it "calls function before sending value to listeners", ->
+    called = []
+    bus = new Bacon.Bus()
+    s = bus.do((x) -> called.push(x))
+    s.onValue(->)
+    s.onValue(->)
+    bus.push(1)
+    expect(called).toEqual([1])
+
 describe "EventStream.end", ->
   it "produces single-element stream on stream end", ->
     expectStreamEvents(
