@@ -42,9 +42,9 @@ with a callback. Like this:
 But you can do neater stuff too. The Bacon of bacon.js is in that you can transform, 
 filter and combine these streams in a multitude of ways (see API below). The methods `map`,
 `filter`, for example, are similar to same functions in functional list programming
-(like underscore.js). So, if you say
+(like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
 
-    function always(value) { return function() { value } }
+    function always(value) { return function() { return value } }
     
     var plus = $("#plus").asEventStream("click").map(always(1))
     var minus = $("#minus").asEventStream("click").map(always(-1))
@@ -52,18 +52,20 @@ filter and combine these streams in a multitude of ways (see API below). The met
 
 .. you'll have a stream that will output the number 1 when the "plus" button is clicked
 and another stream outputting -1 when the "minus" button is clicked. The `both` stream will
-be a merged stream containing events from both the plus and minus streams. 
-    
+be a merged stream containing events from both the plus and minus streams. This allows
+you to subscribe to both streams with one handler:
+
+    both.onValue(function(val) { /* val will be 1 or -1 */ })
+
 In addition to EventStreams, bacon.js has a thing called `Property`, that is almost like an
 EventStream, but has a "current value". So things that change and have a current state are 
 Properties, while things that consist of discrete events are EventStreams. You could think
-mouse clicks as an EventStream and mouse position as a Property. You can create a Property from
+mouse clicks as an EventStream and mouse position as a Property. You can create Properties from
 an EventStream with `scan` or `toProperty` methods. So, let's say
 
     function add(x, y) { return x + y }
     var counter = both.scan(0, add)
-    counter.onValue(function(sum) { $("#sum").text(sum)})
-
+    counter.onValue(function(sum) { $("#sum").text(sum) })
 
 The `counter` property will contain the sum of the values in the `both` stream, so it's practically 
 a counter that can be increased and decreased using the plus and minus buttons. The `scan` method 
@@ -88,7 +90,7 @@ indefinitely with the given interval (in milliseconds)
 values (given as array). Delivered with given interval (in milliseconds)
 
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
-with given interval (in millis)
+with given interval (in milliseconds)
 
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Next or End.
@@ -152,10 +154,11 @@ an "integral" property. Instead of a function, you can also supply a
 method name such as ".concat".
 
 `stream.distinctUntilChanged()` drops consecutive equal elements. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]
+from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
+checking.
 
-`stream.merge(stream2)` merges two streams into on that delivers events
-from both
+`stream.merge(stream2)` merges two streams into one stream that delivers
+events from both
 
 `stream.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
@@ -181,8 +184,8 @@ The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
-`stream.bufferWithCount(count)` buffers stream events with given cound.
-The bufer is flushed when it contains given number of elements. So, if
+`stream.bufferWithCount(count)` buffers stream events with given count.
+The buffer is flushed when it contains the given number of elements. So, if
 you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
 events with values [1, 2], [3, 4] and [5].
 
@@ -232,10 +235,11 @@ The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`
 
 `property.distinctUntilChanged()` drops consecutive equal values. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]
+from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
+checking.
 
 `property.changes()` returns an EventStream of property value changes.
-Returns exactly same events as the property itself, except any Initial
+Returns exactly the same events as the property itself, except any Initial
 events.
 
 Combining multiple streams and properties
@@ -247,7 +251,7 @@ The input array may contain both Properties and EventStreams. In the
 latter case, the stream is first converted into a Property and then
 combined with the other properties.
 
-`Bacon.mergeAll(streams)` merges all given EventStreams.
+`Bacon.mergeAll(streams)` merges given array of EventStreams.
 
 `Bacon.combineAll(streams, f)` combines given list of streams/properties
 using the given combinator function `f(s1, s2)`. The function is applied in a
@@ -272,7 +276,7 @@ Latest value of Property or EventStream
 
 `Bacon.latestValue(stream)` will return a function that will return the
 latest value from the given stream or property. Notice that the
-side-effect of this is that there will be an unremovable subscriber for
+side-effect of this is that there will be an irremovable subscriber for
 the stream that takes care of storing the latest value.
 
 Bus
@@ -292,7 +296,8 @@ receive this value.
 the given stream will be delivered to the subscribers of the Bus.
 
 The plug method practically allows you to merge in other streams after
-the creation of the Bus. I found this quite useful in the Worzone game.
+the creation of the Bus. I found this quite useful in the
+[Worzone](https://github.com/raimohanska/worzone) game.
 
 Event
 -----
@@ -339,7 +344,7 @@ callback.
 `streamOrProperty.errors()` returns a stream containing Error events only.
 Same as filtering with a function that always returns false.
 
-An Error does not terminate the stream. The method`streamOrProperty.endOnError()`
+An Error does not terminate the stream. The method `streamOrProperty.endOnError()`
 returns a stream/property that ends immediately after first error.
 
 Bacon.js doesn't currently generate any Error events itself. Error
@@ -377,7 +382,7 @@ of course be emitted later.
 events as the other subscriber, after registration. This means that the
 stream cannot emit any "initial" events to the new subscriber, unless it
 emits them to all of its subscribers.
-4. A stream must never emit eny other events after End (not even another End)
+4. A stream must never emit any other events after End (not even another End)
 
 The rules are deliberately redundant, explaining the constraints from
 different perspectives. The contract between an EventStream and its
@@ -418,7 +423,7 @@ experienced with RxJs, you've probably bumped into some wtf's related to cold
 observables and inconsistent output from streams constructed using scan and startWith.
 None of that will happen with bacon.js. Happy frying!
 
-Error-handling is also a bit different: the Error event does not
+Error handling is also a bit different: the Error event does not
 terminate a stream. So, a stream may contain multiple errors. To me,
 this makes more sense than always terminating the stream on error; this
 way the application developer has more direct control over error
@@ -462,7 +467,7 @@ Why Bacon?
 Why not RxJs or something else?
 
 - There is no "something else"
-- I want by bacon to be open-source
+- I want by bacon to be open source
 - I want good documentation for my bacon
 - I think the Observable abstraction is not a good enough. It leaves too much room for variations in 
 behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
@@ -480,7 +485,7 @@ TODO
 - Refactor Property. Now seems to duplicate a lot of EventStream
   code. Common implementations may be possible by implementing
 withHandler method to both.
-- Take equality seriosly: how should values be compared in, for
+- Take equality seriously: how should values be compared in, for
   instance, distinctUntilChanged
 - Performance tests (compare with RxJs for example)
 - Improve Property test by also subscribing at each value, ensuring that
