@@ -23,7 +23,7 @@ describe "Bacon.interval", ->
       -> Bacon.interval(10, "x").take(3)
       ["x", "x", "x"])
 
-describe "Bacon.asEventStream", ->
+describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->
     emitter = new EventEmitter()
     element =
