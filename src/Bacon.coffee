@@ -46,6 +46,35 @@ Bacon.fromPoll = (delay, poll) ->
     id = setInterval(handler, delay)
     unbind
 
+# Wrap DOM EventTarget or Node EventEmitter as EventStream
+#
+# target - EventTarget or EventEmitter, source of events
+# eventName - event name to bind
+#
+# Examples
+#
+#   Bacon.fromEventTarget(document.body, "click")
+#   # => EventStream
+#
+#   Bacon.fromEventTarget (new EventEmitter(), "data")
+#   # => EventStream
+#
+# Returns EventStream
+Bacon.fromEventTarget = (target, eventName) ->
+  new EventStream (sink) ->
+    handler = (event) ->
+      reply = sink (next event)
+      if reply == Bacon.noMore
+        unbind()
+
+    if target.addEventListener
+      unbind = -> target.removeEventListener(eventName, handler, false)
+      target.addEventListener(eventName, handler, false)
+    else
+      unbind = -> target.removeListener(eventName, handler)
+      target.addListener(eventName, handler)
+    unbind
+
 Bacon.interval = (delay, value) ->
   value = {} unless value?
   poll = -> next(value)

@@ -1,4 +1,5 @@
 Bacon = (require "../src/Bacon").Bacon
+EventEmitter = require("events").EventEmitter
 
 describe "Bacon.later", ->
   it "should send single event and end", ->
@@ -21,6 +22,32 @@ describe "Bacon.interval", ->
     expectStreamEvents(
       -> Bacon.interval(10, "x").take(3)
       ["x", "x", "x"])
+
+describe "Bacon.asEventStream", ->
+  it "should create EventStream from DOM object", ->
+    emitter = new EventEmitter()
+    element =
+      addEventListener: (event, handler) ->
+        emitter.on event, handler
+        emitter.emit 'click', "x"
+      removeEventListener: (event, handler) ->
+        emitter.removeListener(event, handler)
+
+    expectStreamEvents(
+      -> Bacon.fromEventTarget(element, "click").take(1)
+      ["x"]
+    )
+
+  it "should create EventStream from EventEmitter", ->
+    emitter = new EventEmitter()
+    emitter.on "newListener", ->
+      runs ->
+        emitter.emit "data", "x"
+
+    expectStreamEvents(
+      -> Bacon.fromEventTarget(emitter, "data").take(1)
+      ["x"]
+    )
 
 describe "EventStream.filter", -> 
   it "should filter values", ->
