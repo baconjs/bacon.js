@@ -92,6 +92,9 @@ values (given as array). Delivered with given interval (in milliseconds)
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
 with given interval (in milliseconds)
 
+`Bacon.fromEventTarget(target, event)` creates an EventStream from events
+on a DOM EventTarget or Node.JS EventEmitter object.
+
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Next or End.
 

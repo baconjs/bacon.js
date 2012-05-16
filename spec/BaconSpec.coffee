@@ -1,4 +1,5 @@
 Bacon = (require "../src/Bacon").Bacon
+EventEmitter = require("events").EventEmitter
 
 describe "Bacon.later", ->
   it "should send single event and end", ->
@@ -21,6 +22,44 @@ describe "Bacon.interval", ->
     expectStreamEvents(
       -> Bacon.interval(10, "x").take(3)
       ["x", "x", "x"])
+
+describe "Bacon.fromEventTarget", ->
+  it "should create EventStream from DOM object", ->
+    emitter = new EventEmitter()
+    emitter.on "newListener", ->
+      runs ->
+        emitter.emit "click", "x"
+
+    element = toEventTarget emitter
+
+    expectStreamEvents(
+      -> Bacon.fromEventTarget(element, "click").take(1)
+      ["x"]
+    )
+
+  it "should create EventStream from EventEmitter", ->
+    emitter = new EventEmitter()
+    emitter.on "newListener", ->
+      runs ->
+        emitter.emit "data", "x"
+
+    expectStreamEvents(
+      -> Bacon.fromEventTarget(emitter, "data").take(1)
+      ["x"]
+    )
+
+  it "should clean up event listeners from EventEmitter", ->
+    emitter = new EventEmitter()
+    Bacon.fromEventTarget(emitter, "data").take(1).subscribe ->
+    emitter.emit "data", "x"
+    expect(emitter.listeners("data").length).toEqual(0)
+
+  it "should clean up event listeners from DOM object", ->
+    emitter = new EventEmitter()
+    element = toEventTarget emitter
+    dispose = Bacon.fromEventTarget(element, "click").subscribe ->
+    dispose()
+    expect(emitter.listeners("click").length).toEqual(0)
 
 describe "EventStream.filter", -> 
   it "should filter values", ->
@@ -566,3 +605,8 @@ justValues = (xs) ->
   filter hasValue, xs
 hasValue = (x) ->
   toValue(x) != "<error>"
+
+# Wrap EventEmitter as EventTarget
+toEventTarget = (emitter) ->
+  addEventListener: (event, handler) -> emitter.addListener(event, handler)
+  removeEventListener: (event, handler) -> emitter.removeListener(event, handler)
