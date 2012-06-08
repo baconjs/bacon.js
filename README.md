@@ -208,12 +208,6 @@ or scan method.
 
 `Bacon.constant(x)` creates a constant property with value x.
 
-`property.onValue(f)` subscribes a given handler function to the property.
-Function will be called for each new value in the stream, as well as for 
-the current value (if any) at the time of calling onValue. This
-is the simplest way to assign a side-effect to a property. The handler
-will get actual property values only, instead of Event objects.
-
 `property.subscribe(f)` subscribes a handler function to property. If there's
 a current value, an `Initial` event will be pushed immediately. `Next` 
 event will be pushed on updates and an `End` event in case the source 
