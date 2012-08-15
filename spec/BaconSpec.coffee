@@ -410,8 +410,8 @@ describe "Property.sample", ->
     expectStreamEvents(
       ->
         prop = repeat(20, [1, error(), 2]).take(2).toProperty()
-        prop.sample(30).take(2)
-      [1, error(), 2])
+        prop.sample(50).take(2)
+      [error(), 1, 2])
 
 describe "Bacon.latestValue(property)()", ->
   it "returns current value of property", ->
