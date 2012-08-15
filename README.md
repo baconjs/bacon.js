@@ -79,6 +79,8 @@ Creating streams
 `$.asEventStream("click")` creates an EventStream from events on a
 jQuery or Zepto.js object
 
+`Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
+
 `Bacon.interval(interval, value)` repeats the single element
 indefinitely with the given interval (in milliseconds)
 
