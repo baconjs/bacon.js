@@ -177,7 +177,7 @@ describe "EventStream.delay", ->
 describe "EventStream.throttle", ->
   it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
-      -> repeat(10, [1, error(), 2]).take(2).throttle(20)
+      -> repeat(10, [1, error(), 2]).take(2).throttle(30)
       [error(), 2])
 
 describe "EventStream.bufferWithTime", ->
