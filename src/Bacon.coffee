@@ -13,6 +13,19 @@ Bacon = @Bacon = {
   taste : "delicious"
 }
 
+Bacon.fromPromise = (promise) ->
+  new Bacon.EventStream(
+    (sink) ->
+      onSuccess = (value) ->
+        sink (new Next value)
+        sink (new End)
+      onError = (e) ->
+        sink (new Error e)
+        sink (new End)
+      promise.then(onSuccess, onError)
+      nop
+  )
+
 Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
