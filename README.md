@@ -140,6 +140,9 @@ is the simplest way to assign a side-effect to a stream. The difference
 to the `subscribe` method is that the actual stream values are
 received, instead of Event objects.
 
+`stream.onEnd(f)` subscribes a callback to stream end. The function will
+be called when the stream ends.
+
 `stream.subscribe(f)` subscribes given handler function to
 event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
@@ -211,6 +214,9 @@ EventStream ends.
 
 `property.onValue(f)` similar to eventStream.onValue, except that also
 pushes the initial value of the property.
+
+`property.onEnd(f)` subscribes a callback to stream end. The function will
+be called when the source stream of the property ends.
 
 `property.combine(f, property2)` combines the latest values of the two
 properties using a two-arg function.
