@@ -437,6 +437,16 @@ describe "Observable.subscribe and onValue", ->
     s.push "wut"
     expect(values).toEqual(["lol"])
 
+describe "Observable.onEnd", ->
+  it "is called on stream end", ->
+    s = new Bacon.Bus()
+    ended = false
+    s.onEnd(-> ended = true)
+    s.push("LOL")
+    expect(ended).toEqual(false)
+    s.end()
+    expect(ended).toEqual(true)
+
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
