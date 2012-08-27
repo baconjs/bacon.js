@@ -155,7 +155,7 @@ use zero as seed and a "plus" function as the accumulator to create
 an "integral" property. Instead of a function, you can also supply a
 method name such as ".concat".
 
-`stream.distinctUntilChanged()` drops consecutive equal elements. So,
+`stream.skipDuplicates()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
 checking.
 
@@ -233,7 +233,7 @@ stream.
 The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`
 
-`property.distinctUntilChanged()` drops consecutive equal values. So,
+`property.skipDuplicates()` drops consecutive equal values. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
 checking.
 
@@ -485,7 +485,7 @@ TODO
   code. Common implementations may be possible by implementing
 withHandler method to both.
 - Take equality seriously: how should values be compared in, for
-  instance, distinctUntilChanged
+  instance, skipDuplicates
 - Performance tests (compare with RxJs for example)
 - Improve Property test by also subscribing at each value, ensuring that
   an immediate matching Initial event is sent to the new Subscriber

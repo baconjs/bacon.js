@@ -124,10 +124,10 @@ describe "EventStream.skip", ->
       -> repeat(10, [1, error(), 2, error(), 3]).take(3).skip(1)
     [error(), 2, error(), 3])
 
-describe "EventStream.distinctUntilChanged", ->
+describe "EventStream.skipDuplicates", ->
   it "drops duplicates", ->
     expectStreamEvents(
-      -> repeat(10, [1, 2, error(), 2, 3, 1]).take(5).distinctUntilChanged()
+      -> repeat(10, [1, 2, error(), 2, 3, 1]).take(5).skipDuplicates()
     [1, 2, error(), 3, 1])
 
 describe "EventStream.flatMap", ->

@@ -255,7 +255,8 @@ class Observable
         Bacon.more
       else
         @push event
-  distinctUntilChanged: ->
+  distinctUntilChanged: -> @skipDuplicates()
+  skipDuplicates: ->
     @withStateMachine undefined, (prev, event) ->
       if !event.hasValue()
         [prev, [event]]
