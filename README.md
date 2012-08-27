@@ -351,7 +351,7 @@ callback.
 `streamOrProperty.errors()` returns a stream containing Error events only.
 Same as filtering with a function that always returns false.
 
-See also the `mapErrors()` function above.
+See also the `mapError()` function above.
 
 An Error does not terminate the stream. The method `streamOrProperty.endOnError()`
 returns a stream/property that ends immediately after first error.
