@@ -87,6 +87,15 @@ describe "EventStream.map", ->
       -> repeat(10, [o]).take(3).map(".lol")
       ["wut", "wut", "wut"])
 
+describe "EventStream.mapError", ->
+  it "should map error events with given function", ->
+    expectStreamEvents(
+        -> repeat(10, [1, error()]).mapError(always 2).take(2)
+        [1, 2])
+  it "also accepts a constant value", ->
+    expectStreamEvents(
+        -> repeat(10, [1, error()]).mapError("ERR").take(2)
+        [1, "ERR"])
 
 describe "EventStream.do", ->
   it "does not alter the stream", ->
@@ -522,6 +531,8 @@ times = (factor) ->
   (x) -> x * factor
 
 add = (x, y) -> x + y
+
+always = (x) -> (-> x)
 
 expectPropertyEvents = (src, expectedEvents) ->
   events = []

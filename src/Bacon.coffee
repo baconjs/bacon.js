@@ -210,6 +210,13 @@ class Observable
     f = toExtractor(f)
     @withHandler (event) -> 
       @push event.fmap(f)
+  mapError : (f) ->
+    f = toExtractor(f)
+    @withHandler (event) ->
+      if event.isError()
+        @push next (f event.error)
+      else
+        @push event
   do: (f) ->
     @withHandler (event) ->
       f(event.value) if event.hasValue()
