@@ -575,7 +575,7 @@ class Bus extends EventStream
       sink new Error(error) if sink?
     @end = =>
       unsubAll()
-      sink end()
+      sink end() if sink?
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property
