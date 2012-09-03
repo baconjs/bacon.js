@@ -115,13 +115,13 @@ Common methods in EventStreams and Properties
 ---------------------------------------------
 
 `streamOrProperty.map(f)` maps values using given function, returning a new
-EventStream. Also, if f is a string starting with a
+EventStream. Instead of a function, you can also provide a constant
+value. Further, you can use a property extractor string like
+".keyCode". So, if f is a string starting with a
 dot, the elements will be mapped to the corresponding field/function in the event
 value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
-contain the values returned by the function. If f is not a function nor
-a string
-starting with a dot, all input will be mapped into this constant value.
+contain the values returned by the function.
 
 `streamOrProperty.mapError(f)` maps errors using given function. More
 spedifically, feeds the "error" field of the error event to the function
@@ -129,7 +129,10 @@ and produces a "Next" event based on the return value. Similarly to
 `map`, you cal also use constant values and property extractor strings
 for working with the error objects.
 
-`streamOrProperty.filter(f)` filters values using given predicate function
+`streamOrProperty.filter(f)` filters values using given predicate function. 
+Instead of a function, you can use a constant value (true/false) or a
+property extractor string (like ".isValuable") instead. Just like with
+`map`, indeed.
 
 `streamOrProperty.takeWhile(f)` takes while given predicate function holds true
 
