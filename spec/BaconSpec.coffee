@@ -498,6 +498,11 @@ describe "Bacon.Bus", ->
     bus.end()
     input.push("b")
     expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+
+  it "handles end() calls even when there are no subscribers", ->
+    bus = new Bacon.Bus()
+    bus.end()
+
   it "delivers pushed events and errors", ->
     expectStreamEvents(
       ->
