@@ -23,8 +23,12 @@ Please contribute!
 Intro
 =====
 
+The idea of Function Reactive Programming is quite described by Conal Elliot at [Stack Overflow](http://stackoverflow.com/questions/1028250/what-is-functional-reactive-programming/1030631#1030631).
+
 Bacon.js is a library for functional reactive programming. Or let's say it's a library for
-working with events. Anyways, you can wrap an event source, 
+working with events and dynamic values (which are called Properties in Bacon.js). 
+
+Anyways, you can wrap an event source, 
 say "mouse clicks on an element" into an `EventStream` by saying
 
     var cliks = $("h1").asEventStream("click")
