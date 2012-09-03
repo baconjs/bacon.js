@@ -210,12 +210,11 @@ EventStream. You can optionally pass an initial value
 objects) with a new property with the given name and a value taken from
 the given Property.
 
-`stream.mapEnd(f)` creates a single-element stream which
-consists of a single Next event and an End. The value event is created
+`stream.mapEnd(f)` Adds an extra Next event just before End.
+The value is created
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used. You can even omit the argument if
 you don't care about the actual value.
-
 
 Property
 --------

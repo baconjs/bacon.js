@@ -421,7 +421,7 @@ class EventStream extends Observable
         @push end()
         Bacon.noMore
       else
-        Bacon.more
+        @push event
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
@@ -481,7 +481,7 @@ class Property extends Observable
       combine(other, combineAndPush, combineAndPush)
     @sampledBy = (sampler, combinator = former) =>
       pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
-      combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.mapEnd())
+      combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
   changes: => new EventStream (sink) =>

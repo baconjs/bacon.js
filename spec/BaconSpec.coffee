@@ -112,18 +112,18 @@ describe "EventStream.do", ->
     expect(called).toEqual([1])
 
 describe "EventStream.mapEnd", ->
-  it "produces single-element stream on stream end", ->
+  it "produces an extra element on stream end", ->
     expectStreamEvents(
-      -> repeat(10, ["", error()]).take(2).mapEnd("the end")
-      ["the end"])
+      -> repeat(10, ["1", error()]).take(2).mapEnd("the end")
+      ["1", error(), "1", "the end"])
   it "accepts either a function or a constant value", ->
     expectStreamEvents(
-      -> repeat(10, ["", error()]).take(2).mapEnd(-> "the end")
-      ["the end"])
+      -> repeat(10, ["1", error()]).take(2).mapEnd(-> "the end")
+      ["1", error(), "1", "the end"])
   it "works with undefined value as well", ->
     expectStreamEvents(
-      -> repeat(10, [""]).take(2).mapEnd()
-      [undefined])
+      -> repeat(10, ["1", error()]).take(2).mapEnd()
+      ["1", error(), "1", undefined])
 
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
