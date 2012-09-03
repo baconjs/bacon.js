@@ -119,6 +119,10 @@ contain the values returned by the function. If f is not a function nor
 a string
 starting with a dot, all input will be mapped into this constant value.
 
+`streamOrProperty.mapError(f)` maps errors using a given function. The function will get
+one argument, namely the value of the `error` field in the Error event. Like `map`, you
+can also use a constant value or a property extractor string instead of a function.
+
 `streamOrProperty.filter(f)` filters values using given predicate function
 
 `streamOrProperty.takeWhile(f)` takes while given predicate function holds true
