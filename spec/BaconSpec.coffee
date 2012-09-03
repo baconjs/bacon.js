@@ -111,15 +111,19 @@ describe "EventStream.do", ->
     bus.push(1)
     expect(called).toEqual([1])
 
-describe "EventStream.end", ->
+describe "EventStream.mapEnd", ->
   it "produces single-element stream on stream end", ->
     expectStreamEvents(
-      -> repeat(10, ["", error()]).take(2).end("the end")
+      -> repeat(10, ["", error()]).take(2).mapEnd("the end")
       ["the end"])
-  it "defaults to the string 'end' if no value given", ->
+  it "accepts either a function or a constant value", ->
     expectStreamEvents(
-      -> repeat(10, [""]).take(2).end()
-      ["end"])
+      -> repeat(10, ["", error()]).take(2).mapEnd(-> "the end")
+      ["the end"])
+  it "works with undefined value as well", ->
+    expectStreamEvents(
+      -> repeat(10, [""]).take(2).mapEnd()
+      [undefined])
 
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
