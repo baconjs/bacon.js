@@ -119,7 +119,7 @@ contain the values returned by the function. If f is not a function nor
 a string
 starting with a dot, all input will be mapped into this constant value.
 
-'streamOrProperty.mapError(f)` maps errors using given function. More
+`streamOrProperty.mapError(f)` maps errors using given function. More
 spedifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Similarly to
 `map`, you cal also use constant values and property extractor strings
@@ -205,6 +205,13 @@ EventStream. You can optionally pass an initial value
 `stream.decorateWith(name, property)` decorates stream values (must be
 objects) with a new property with the given name and a value taken from
 the given Property.
+
+`stream.mapEnd(f)` creates a single-element stream which
+consists of a single Next event and an End. The value event is created
+by calling the given function when the source stream ends. Instead of a
+function, a static value can be used. You can even omit the argument if
+you don't care about the actual value.
+
 
 Property
 --------

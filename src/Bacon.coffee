@@ -217,15 +217,6 @@ class Observable
         @push next (f event.error)
       else
         @push event
-  mapEnd : (f) ->
-    f = toExtractor(f)
-    @withHandler (event) ->
-      if (event.isEnd())
-        @push next(f(event))
-        @push end()
-        Bacon.noMore
-      else
-        Bacon.more
 
   do: (f) ->
     @withHandler (event) ->
@@ -421,6 +412,16 @@ class EventStream extends Observable
         result[label] = propertyValue
         result
       )
+
+  mapEnd : (f) ->
+    f = toExtractor(f)
+    @withHandler (event) ->
+      if (event.isEnd())
+        @push next(f(event))
+        @push end()
+        Bacon.noMore
+      else
+        Bacon.more
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
