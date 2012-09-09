@@ -219,6 +219,7 @@ class Observable
         @push event
 
   do: (f) ->
+    f = toExtractor(f)
     @withHandler (event) ->
       f(event.value) if event.hasValue()
       @push event
