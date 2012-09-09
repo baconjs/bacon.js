@@ -141,7 +141,11 @@ property extractor string (like ".isValuable") instead. Just like with
 `streamOrProperty.skip(n)` skips the first n elements from the stream
 
 `streamOrProperty.do(f)` returns a stream/property where the function f
-is executed for each value, before dispatching to subscribers
+is executed for each value, before dispatching to subscribers. This is
+useful for debugging, but also for stuff like calling the
+preventDefault() method for events. In fact, you can
+also use a property-extractor string instead of a function, as in
+".preventDefault".
 
 
 EventStream
