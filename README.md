@@ -293,7 +293,25 @@ f).combine(c.f) etc. For example, you can combine properties containing
 arrays into a single array property, with Bacon.combineWith(properties,
 ".concat").
 
-You can also merge multiple streams using Bus (see below).
+`Bacon.combineTemplate(template)` combines streams using a template
+object. For instance, assuming you've got streams or properties named
+`password`, `username`, `firstname` and `lastname`, you can do
+
+    var loginInfo = Bacon.combineTemplate({userid: username, passwd:
+password, name: { first: firstname, last: lastname }})
+
+
+.. and your new loginInfo property will combine values from all these
+streams using that template, whenever any of the streams/properties 
+get a new value. For instance, it could yield a value such as
+
+    { userid: "juha", 
+      passwd: "easy", 
+      name : { first: "juha", last: "paananen"
+    }}
+
+In addition to combining data from streams, you can include constant
+values in your templates.
 
 Latest value of Property or EventStream
 ---------------------------------------
