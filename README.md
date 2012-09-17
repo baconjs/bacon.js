@@ -435,7 +435,7 @@ subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
    value is wrapped into a `Next` event.
-2. The subscriber unction returns a result which is either `Bacon.noMore` or
+2. The subscriber function returns a result which is either `Bacon.noMore` or
 `Bacon.More`. The `undefined` value is handled like `Bacon.more`.
 3. In case of `Bacon.noMore` the source must never call the subscriber again.
 4. When the stream ends, the subscriber function will be called with
@@ -512,9 +512,9 @@ Why Bacon?
 Why not RxJs or something else?
 
 - There is no "something else"
-- I want by bacon to be open source
+- I want my bacon to be open source
 - I want good documentation for my bacon
-- I think the Observable abstraction is not a good enough. It leaves too much room for variations in 
+- I think the Observable abstraction is not good enough. It leaves too much room for variations in
 behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
 - Bacon needs automatic tests. They also serve as documentation.
 - Because.
