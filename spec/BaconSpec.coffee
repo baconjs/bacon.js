@@ -440,6 +440,16 @@ describe "EventStream.scan", ->
       -> repeat(10, [[1], [2]]).take(2).scan([], ".concat")
       [[], [1], [1, 2]])
 
+describe "combineTemplate", ->
+  it "combines streams according to a template object", ->
+    expectPropertyEvents(
+      -> 
+         firstName = Bacon.constant("juha")
+         lastName = Bacon.constant("paananen")
+         userName = Bacon.constant("mr.bacon")
+         Bacon.combineTemplate({ userName: userName, password: "*****", fullName: { firstName: firstName, lastName: lastName }})
+      [{ userName: "mr.bacon", password: "*****", fullName: { firstName: "juha", lastName: "paananen" } }])
+
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = new Bacon.Bus()

@@ -119,6 +119,38 @@ Bacon.combineWith = (streams, f) ->
   Bacon.combineAll(streams, (s1, s2) ->
     s1.toProperty().combine(s2, f))
 
+Bacon.combineTemplate = (template) ->
+  funcs = []
+  streams = []
+  current = (ctxStack) -> ctxStack[ctxStack.length - 1]
+  setValue = (ctxStack, key, value) -> current(ctxStack)[key] = value
+  applyStreamValue = (key, index) -> (ctxStack, values) -> setValue(ctxStack, key, values[index])
+  constantValue = (key, value) -> (ctxStack, values) -> setValue(ctxStack, key, value)
+  compileTemplate = (template) ->
+    for key, value of template
+      if (value instanceof Observable)
+        streams.push(value)
+        funcs.push(applyStreamValue(key, streams.length - 1))
+      else if (typeof value == "object")
+        pushContext = (ctxStack, values) ->
+          newContext = {}
+          setValue(ctxStack, key, newContext)
+          ctxStack.push(newContext)
+        popContext = (ctxStack, values) -> ctxStack.pop()
+        funcs.push(pushContext)
+        compileTemplate(value)
+        funcs.push(popContext)
+      else
+        funcs.push(constantValue(key, value))
+  compileTemplate template
+  combinator = (values) ->
+    rootContext = {}
+    ctxStack = [rootContext]
+    for f in funcs 
+       f(ctxStack, values)
+    rootContext
+  Bacon.combineAsArray(streams).map(combinator)
+
 Bacon.latestValue = (src) ->
   latest = undefined
   src.subscribe (event) ->
