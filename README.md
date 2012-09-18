@@ -243,7 +243,7 @@ pushes the initial value of the property.
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.
 
-`property.combine(f, property2)` combines the latest values of the two
+`property.combine(property2, f)` combines the latest values of the two
 properties using a two-arg function.
 
 `property.sample(interval)` creates an EventStream by sampling the
