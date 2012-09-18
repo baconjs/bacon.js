@@ -445,6 +445,25 @@ class EventStream extends Observable
       d.subscribe(sink) unless reply == Bacon.noMore
     new Property(subscribe)
 
+  concat: (right) ->
+    left = this
+    new EventStream (sink) ->
+      unsub = nop
+      handler = (onEnd) ->
+        (e) ->
+          if e.isEnd() and onEnd
+            onEnd()
+          else
+            reply = sink(e)
+            unsub() if reply == Bacon.noMore
+            reply
+      unsub = left.subscribe handler ->
+        unsub = right.subscribe handler()
+      -> unsub()
+
+  startWith: (seed) ->
+    Bacon.once(seed).concat(this)
+
   decorateWith: (label, property) ->
     property.sampledBy(this, (propertyValue, streamValue) ->
         result = cloneObject(streamValue)

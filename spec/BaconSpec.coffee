@@ -248,6 +248,37 @@ describe "Bacon.once", ->
       -> Bacon.once("pow")
       ["pow"])
 
+describe "EventStream.concat", ->
+  it "provides values from streams in given order and ends when both are exhausted", ->
+    expectStreamEvents(
+      ->
+        left = repeat(20, [1, error(), 2, 3]).take(3)
+        right = repeat(10, [4, 5, 6]).take(3)
+        left.concat(right)
+      [1, error(), 2, 3, 4, 5, 6])
+  it "respects subscriber return value when providing events from left stream", ->
+    expectStreamEvents(
+      ->
+        left = repeat(30, [1, 3]).take(3)
+        right = repeat(20, [1]).take(3)
+        left.concat(right).takeWhile(lessThan(2))
+      [1])
+  it "respects subscriber return value when providing events from right stream", ->
+    expectStreamEvents(
+      ->
+        left = repeat(30, [1, 2]).take(2)
+        right = repeat(20, [2, 4, 6]).take(3)
+        left.concat(right).takeWhile(lessThan(4))
+      [1, 2, 2])
+
+describe "EventStream.startWith", ->
+  it "provides seed value, then the rest", ->
+    expectStreamEvents(
+      ->
+        left = repeat(10, [1, 2, 3]).take(3)
+        left.startWith('pow')
+      ['pow', 1, 2, 3])
+
 describe "EventStream.decorateWithProperty", ->
   it "decorates stream event with Property value", ->
     expectStreamEvents(
