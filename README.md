@@ -417,7 +417,7 @@ subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
    value is wrapped into a `Next` event.
-2. The subscriber unction returns a result which is either `Bacon.noMore` or
+2. The subscriber function returns a result which is either `Bacon.noMore` or
 `Bacon.More`. The `undefined` value is handled like `Bacon.more`.
 3. In case of `Bacon.noMore` the source must never call the subscriber again.
 4. When the stream ends, the subscriber function will be called with
