@@ -439,6 +439,11 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> repeat(10, [[1], [2]]).take(2).scan([], ".concat")
       [[], [1], [1, 2]])
+  it "yields the seed value immediately", ->
+    outputs = []
+    bus = new Bacon.Bus()
+    bus.scan(0, -> 1).onValue((value) -> outputs.push(value))
+    expect(outputs).toEqual([0])
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
