@@ -99,6 +99,12 @@ Bacon.constant = (value) ->
     sink(end())
     nop
 
+Bacon.once = (value) ->
+  new EventStream (sink) ->
+    sink (next value)
+    sink(end())
+    nop
+
 Bacon.combineAll = (streams, f) ->
   assertArray streams
   stream = head streams

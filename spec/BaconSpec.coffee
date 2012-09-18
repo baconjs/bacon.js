@@ -242,6 +242,12 @@ describe "Bacon.constant", ->
   it "ignores unsubscribe", ->
     Bacon.constant("lol").onValue(=>)()
 
+describe "Bacon.once", ->
+  it "should send single event and end", ->
+    expectStreamEvents(
+      -> Bacon.once("pow")
+      ["pow"])
+
 describe "EventStream.decorateWithProperty", ->
   it "decorates stream event with Property value", ->
     expectStreamEvents(
