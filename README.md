@@ -243,7 +243,7 @@ pushes the initial value of the property.
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.
 
-`property.combine(f, property2)` combines the latest values of the two
+`property.combine(property2, f)` combines the latest values of the two
 properties using a two-arg function.
 
 `property.sample(interval)` creates an EventStream by sampling the
@@ -297,9 +297,10 @@ arrays into a single array property, with Bacon.combineWith(properties,
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
 
-    var loginInfo = Bacon.combineTemplate({userid: username, passwd:
-password, name: { first: firstname, last: lastname }})
-
+    var loginInfo = Bacon.combineTemplate({
+        userid: username, 
+        passwd: password, 
+        name: { first: firstname, last: lastname }})
 
 .. and your new loginInfo property will combine values from all these
 streams using that template, whenever any of the streams/properties 
@@ -307,8 +308,7 @@ get a new value. For instance, it could yield a value such as
 
     { userid: "juha", 
       passwd: "easy", 
-      name : { first: "juha", last: "paananen"
-    }}
+      name : { first: "juha", last: "paananen" }}
 
 In addition to combining data from streams, you can include constant
 values in your templates.
@@ -346,7 +346,7 @@ Event
 
 `Bacon.Event` has subclasses `Next`, `End`, `Error` and `Initial`
 
-`Bacon.Next` next value in an EventStream of a Property. Call isNext() to
+`Bacon.Next` next value in an EventStream or a Property. Call isNext() to
 distinguish a Next event from other events.
 
 `Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
@@ -435,7 +435,7 @@ subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
    value is wrapped into a `Next` event.
-2. The subscriber unction returns a result which is either `Bacon.noMore` or
+2. The subscriber function returns a result which is either `Bacon.noMore` or
 `Bacon.More`. The `undefined` value is handled like `Bacon.more`.
 3. In case of `Bacon.noMore` the source must never call the subscriber again.
 4. When the stream ends, the subscriber function will be called with
@@ -512,9 +512,9 @@ Why Bacon?
 Why not RxJs or something else?
 
 - There is no "something else"
-- I want by bacon to be open source
+- I want my bacon to be open source
 - I want good documentation for my bacon
-- I think the Observable abstraction is not a good enough. It leaves too much room for variations in 
+- I think the Observable abstraction is not good enough. It leaves too much room for variations in
 behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
 - Bacon needs automatic tests. They also serve as documentation.
 - Because.
