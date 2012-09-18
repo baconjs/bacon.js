@@ -346,7 +346,7 @@ Event
 
 `Bacon.Event` has subclasses `Next`, `End`, `Error` and `Initial`
 
-`Bacon.Next` next value in an EventStream of a Property. Call isNext() to
+`Bacon.Next` next value in an EventStream or a Property. Call isNext() to
 distinguish a Next event from other events.
 
 `Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
