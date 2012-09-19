@@ -389,6 +389,11 @@ describe "Bacon.combineAsArray", ->
         stream = repeat(10, ["a", "b"]).take(2)
         Bacon.combineAsArray([Bacon.constant(1), Bacon.constant(2), stream])
       [[1, 2, "a"], [1, 2, "b"]])
+  it "works with single stream", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineAsArray([Bacon.constant(1)])
+      [[1]])
 
 describe "Bacon.combineWith", ->
   it "combines properties by applying the combinator function to values", ->
@@ -491,6 +496,12 @@ describe "combineTemplate", ->
          userName = Bacon.constant("mr.bacon")
          Bacon.combineTemplate({ userName: userName, password: "*****", fullName: { firstName: firstName, lastName: lastName }})
       [{ userName: "mr.bacon", password: "*****", fullName: { firstName: "juha", lastName: "paananen" } }])
+  it "works with a single-stream template", ->
+    expectPropertyEvents(
+      ->
+        bacon = Bacon.constant("bacon")
+        Bacon.combineTemplate({ favoriteFood: bacon })
+      [{ favoriteFood: "bacon" }])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
