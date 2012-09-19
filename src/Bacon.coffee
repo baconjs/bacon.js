@@ -451,17 +451,11 @@ class EventStream extends Observable
   concat: (right) ->
     left = this
     new EventStream (sink) ->
-      unsub = nop
-      handler = (onEnd) ->
-        (e) ->
-          if e.isEnd() and onEnd
-            onEnd()
-          else
-            reply = sink(e)
-            unsub() if reply == Bacon.noMore
-            reply
-      unsub = left.subscribe handler ->
-        unsub = right.subscribe handler()
+      unsub = left.subscribe (e) ->
+        if e.isEnd()
+          unsub = right.subscribe sink
+        else
+          sink(e)
       -> unsub()
 
   startWith: (seed) ->
