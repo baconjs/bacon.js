@@ -94,15 +94,15 @@ Bacon.interval = (delay, value) ->
   Bacon.fromPoll(delay, poll)
 
 Bacon.constant = (value) ->
-  new Property (sink) ->
-    sink(initial(value))
-    sink(end())
-    nop
+  new Property(just(initial, value))
 
 Bacon.once = (value) ->
-  new EventStream (sink) ->
-    sink (next value)
-    sink(end())
+  new EventStream(just(next, value))
+
+just = (wrapper, value) ->
+  (sink) ->
+    sink (wrapper value)
+    sink (end())
     nop
 
 Bacon.combineAll = (streams, f) ->
