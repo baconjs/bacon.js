@@ -1,12 +1,12 @@
-(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName) ->
+(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector) ->
   element = this
   new EventStream (sink) ->
     handler = (event) ->
       reply = sink (next event)
       if (reply == Bacon.noMore)
         unbind()
-    unbind = -> element.unbind(eventName, handler)
-    element.bind(eventName, handler)
+    unbind = -> element.off(eventName, selector, handler)
+    element.on(eventName, selector, handler)
     unbind
 
 Bacon = @Bacon = {
@@ -96,6 +96,12 @@ Bacon.interval = (delay, value) ->
 Bacon.constant = (value) ->
   new Property (sink) ->
     sink(initial(value))
+    sink(end())
+    nop
+
+Bacon.once = (value) ->
+  new EventStream (sink) ->
+    sink (next value)
     sink(end())
     nop
 
@@ -438,6 +444,25 @@ class EventStream extends Observable
       reply = sink initial(acc) if acc?
       d.subscribe(sink) unless reply == Bacon.noMore
     new Property(subscribe)
+
+  concat: (right) ->
+    left = this
+    new EventStream (sink) ->
+      unsub = nop
+      handler = (onEnd) ->
+        (e) ->
+          if e.isEnd() and onEnd
+            onEnd()
+          else
+            reply = sink(e)
+            unsub() if reply == Bacon.noMore
+            reply
+      unsub = left.subscribe handler ->
+        unsub = right.subscribe handler()
+      -> unsub()
+
+  startWith: (seed) ->
+    Bacon.once(seed).concat(this)
 
   decorateWith: (label, property) ->
     property.sampledBy(this, (propertyValue, streamValue) ->
