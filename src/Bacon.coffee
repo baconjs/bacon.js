@@ -329,6 +329,7 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
+  not: -> @map((x) -> !x)
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -546,6 +547,8 @@ class Property extends Observable
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
   toProperty: => this
+  and: (other) -> @combine(other, (x, y) -> x && y)
+  or:  (other) -> @combine(other, (x, y) -> x || y)
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->

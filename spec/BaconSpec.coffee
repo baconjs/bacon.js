@@ -403,6 +403,20 @@ describe "Bacon.combineWith", ->
         Bacon.combineWith([stream, Bacon.constant([2]), Bacon.constant([3])], ".concat")
       [[1, 2, 3]])
 
+describe "Boolean logic", ->
+  it "combines Properties with and()", ->
+    expectPropertyEvents(
+      -> Bacon.constant(true).and(Bacon.constant(false))
+      [false])
+  it "combines Properties with or()", ->
+    expectPropertyEvents(
+      -> Bacon.constant(true).or(Bacon.constant(false))
+      [true])
+  it "inverts property with not()", ->
+    expectPropertyEvents(
+      -> Bacon.constant(true).not()
+      [false])
+
 describe "Bacon.mergeAll", ->
   it ("merges all given streams"), ->
     expectStreamEvents(

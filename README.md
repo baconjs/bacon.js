@@ -147,6 +147,9 @@ preventDefault() method for events. In fact, you can
 also use a property-extractor string instead of a function, as in
 ".preventDefault".
 
+`streamOrProperty.not()` returns a stream/property that inverts boolean
+values
+
 
 EventStream
 -----------
@@ -265,6 +268,10 @@ checking.
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly the same events as the property itself, except any Initial
 events.
+
+`property.and(other)` combines properties with the `&&` operator.
+
+`property.or(other)` combines properties with the `||` operator.
 
 Combining multiple streams and properties
 -----------------------------------------
