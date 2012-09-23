@@ -681,7 +681,7 @@ verifySwitching = (src, expectedEvents) ->
 error = (msg) -> new Bacon.Error(msg)
 seqs = []
 soon = (f) -> setTimeout f, t(10)
-timeUnitMillisecs = 10
+timeUnitMillisecs = 5
 series = (interval, values) ->
   Bacon.sequentially(t(interval), values)
 repeat = (interval, values) ->
