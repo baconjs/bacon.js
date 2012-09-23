@@ -37,7 +37,14 @@ Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
 Bacon.sequentially = (delay, values) ->
-  Bacon.repeatedly(delay, values).take(filter(((e) -> e.hasValue()), map(toEvent, values)).length)
+  index = -1
+  poll = ->
+    index++
+    if index < values.length
+      toEvent values[index]
+    else
+      end()
+  Bacon.fromPoll(delay, poll)
 
 Bacon.repeatedly = (delay, values) ->
   index = -1
