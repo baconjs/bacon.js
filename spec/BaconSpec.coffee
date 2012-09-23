@@ -537,6 +537,15 @@ describe "Observable.onEnd", ->
     s.end()
     expect(ended).toEqual(true)
 
+describe "Property.assign", ->
+  it "calls given objects given method with property values", ->
+    called = undefined
+    target = {
+      pow: (value) -> called = value
+    }
+    Bacon.constant("kaboom").assign(target, "pow")
+    expect(called).toEqual("kaboom")
+
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()

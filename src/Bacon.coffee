@@ -556,6 +556,7 @@ class Property extends Observable
   toProperty: => this
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
+  assign: (obj, method) -> @onValue (value) -> obj[method](value)
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
