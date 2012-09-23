@@ -246,7 +246,7 @@ pushes the initial value of the property.
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.
 
-'property.assign(obj, method, [param...])` calls the method of the given
+`property.assign(obj, method, [param...])` calls the method of the given
 object with each value of this Property. You can optionally supply
 arguments which will be used as the first arguments of the method call.
 For instance, if you want to assign your Property to the "disabled"
