@@ -655,6 +655,7 @@ class Bus extends EventStream
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property
+Bacon.Observable = Observable
 Bacon.Bus = Bus
 Bacon.Initial = Initial
 Bacon.Next = Next
