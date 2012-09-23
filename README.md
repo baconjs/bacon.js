@@ -246,6 +246,22 @@ pushes the initial value of the property.
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.
 
+'property.assign(obj, method, [param...])` calls the method of the given
+object with each value of this Property. You can optionally supply
+arguments which will be used as the first arguments of the method call.
+For instance, if you want to assign your Property to the "disabled"
+attribute of a JQuery object, you can do this:
+
+    myProperty.assign($("#my-button"), "attr", "disabled")
+
+A simpler example would be to toggle the visibility of an element based
+on a Property:
+
+    myProperty.assign($("#my-button"), "toggle")
+
+Note that the `assign` method is just a handy shortcut for using
+`onValue`.
+
 `property.combine(property2, f)` combines the latest values of the two
 properties using a two-arg function.
 
