@@ -123,10 +123,10 @@ Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
 Bacon.combineAsArray = (streams) ->
+  toArray = (x) -> if x? then (if (x instanceof Array) then x else [x]) else []
   if streams.length == 1
     streams[0].map((x) -> [x])
   else
-    toArray = (x) -> if x? then (if (x instanceof Array) then x else [x]) else []
     concatArrays = (a1, a2) -> toArray(a1).concat(toArray(a2))
     Bacon.combineAll(streams, (s1, s2) ->
       s1.toProperty().combine(s2, concatArrays))
@@ -556,7 +556,8 @@ class Property extends Observable
   toProperty: => this
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
-  assign: (obj, method) -> @onValue (value) -> obj[method](value)
+  assign: (obj, method, params...) -> @onValue (value) -> 
+    obj[method]((params.concat([value]))...)
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->

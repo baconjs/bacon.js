@@ -545,6 +545,26 @@ describe "Property.assign", ->
     }
     Bacon.constant("kaboom").assign(target, "pow")
     expect(called).toEqual("kaboom")
+  it "allows partial application of method (i.e. adding fixed args)", ->
+    arg1 = undefined
+    arg2 = undefined
+    target = {
+      pow: (a, b) -> arg1 = a; arg2 = b
+    }
+    Bacon.constant("kaboom").assign(target, "pow", "smack")
+    expect(arg1).toEqual("smack")
+    expect(arg2).toEqual("kaboom")
+  it "allows partial application of method with 2 args (i.e. adding fixed args)", ->
+    arg1 = undefined
+    arg2 = undefined
+    arg3 = undefined
+    target = {
+      pow: (a, b, c) -> arg1 = a; arg2 = b; arg3 = c
+    }
+    Bacon.constant("kaboom").assign(target, "pow", "smack", "whack")
+    expect(arg1).toEqual("smack")
+    expect(arg2).toEqual("whack")
+    expect(arg3).toEqual("kaboom")
 
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
