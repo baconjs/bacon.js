@@ -550,12 +550,9 @@ Use GitHub issues and Pull Requests.
 TODO
 ====
 
-- Refactor Property. Now seems to duplicate a lot of EventStream
-  code. Common implementations may be possible by implementing
-withHandler method to both.
 - Take equality seriously: how should values be compared in, for
   instance, skipDuplicates
-- Performance tests (compare with RxJs for example)
+- Performance tests
 - Improve Property test by also subscribing at each value, ensuring that
   an immediate matching Initial event is sent to the new Subscriber
 - Browser tests
