@@ -64,17 +64,17 @@ describe "Bacon.fromEventTarget", ->
 describe "EventStream.filter", -> 
   it "should filter values", ->
     expectStreamEvents(
-      -> repeat(1, [1, 2, error(), 3]).take(3).filter(lessThan(3))
+      -> series(1, [1, 2, error(), 3]).filter(lessThan(3))
       [1, 2, error()])
 
 describe "EventStream.map", ->
   it "should map with given function", ->
     expectStreamEvents(
-      -> repeat(1, [1, 2, 3]).take(3).map(times(2))
+      -> series(1, [1, 2, 3]).map(times(2))
       [2, 4, 6])
   it "also accepts a constant value", ->
     expectStreamEvents(
-      -> repeat(1, [1, 2, 3,]).take(3).map("lol")
+      -> series(1, [1, 2, 3,]).map("lol")
       ["lol", "lol", "lol"])
   it "..and a property value, starting with .", ->
     o = { lol : "wut" }
@@ -100,7 +100,7 @@ describe "EventStream.mapError", ->
 describe "EventStream.do", ->
   it "does not alter the stream", ->
     expectStreamEvents(
-      -> repeat(1, [1, 2]).take(2).do(->)
+      -> series(1, [1, 2]).do(->)
       [1, 2])
   it "calls function before sending value to listeners", ->
     called = []
@@ -682,6 +682,8 @@ error = (msg) -> new Bacon.Error(msg)
 seqs = []
 soon = (f) -> setTimeout f, t(10)
 timeUnitMillisecs = 10
+series = (interval, values) ->
+  Bacon.sequentially(t(interval), values)
 repeat = (interval, values) ->
   source = Bacon.repeatedly(interval * timeUnitMillisecs, values)
   seqs.push({ values : values, source : source })
