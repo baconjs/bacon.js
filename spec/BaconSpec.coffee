@@ -159,7 +159,7 @@ describe "EventStream.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
       -> repeat(30, [1, 2]).take(2).switch (value) ->
-        Bacon.sequentially(20, [value, error(), value])
+        Bacon.sequentially(t(20), [value, error(), value])
       [1, 2, error(), 2])
 
 describe "EventStream.merge", ->
@@ -190,13 +190,13 @@ describe "EventStream.delay", ->
 describe "EventStream.throttle", ->
   it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
-      -> repeat(10, [1, error(), 2]).take(2).throttle(30)
+      -> repeat(20, [1, error(), 2]).take(2).throttle(t(70))
       [error(), 2])
 
 describe "EventStream.bufferWithTime", ->
   it "returns events in bursts, passing through errors", ->
     expectStreamEvents(
-      -> repeat(10, [error(), 1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(33)
+      -> repeat(20, [error(), 1, 2, 3, 4, 5, 6, 7]).take(7).bufferWithTime(t(70))
       [error(), [1, 2, 3, 4], [5, 6, 7]])
 
 describe "EventStream.bufferWithCount", ->
@@ -377,7 +377,7 @@ describe "Property.combine", ->
   it "also accepts a field name instead of combinator function", ->
     expectPropertyEvents(
       ->
-        left = repeat(20, [[1]]).take(1).toProperty()
+        left = repeat(10, [[1]]).take(1).toProperty()
         right = repeat(20, [[2]]).take(1).toProperty()
         left.combine(right, ".concat")
       [[1, 2]])
@@ -473,13 +473,13 @@ describe "Property.sample", ->
     expectStreamEvents(
       ->
         prop = repeat(20, [1, 2]).take(2).toProperty()
-        prop.sample(30).take(4)
+        prop.sample(t(30)).take(4)
       [1, 2, 2, 2])
   it "includes all errors", ->
     expectStreamEvents(
       ->
         prop = repeat(20, [1, error(), 2]).take(2).toProperty()
-        prop.sample(50).take(2)
+        prop.sample(t(50)).take(2)
       [error(), 1, 2])
 
 describe "Bacon.latestValue(property)()", ->
@@ -681,10 +681,12 @@ verifySwitching = (src, expectedEvents) ->
 error = (msg) -> new Bacon.Error(msg)
 seqs = []
 soon = (f) -> setTimeout f, 100
+timeFactor = 1
 repeat = (interval, values) ->
-  source = Bacon.repeatedly(interval, values)
+  source = Bacon.repeatedly(interval * timeFactor, values)
   seqs.push({ values : values, source : source })
   source
+t = (time) -> time * timeFactor
 
 verifyCleanup = ->
   for seq in seqs
