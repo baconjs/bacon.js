@@ -147,7 +147,7 @@ describe "EventStream.flatMap", ->
   it "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->
-        Bacon.sequentially(t(10), [value, error(), value])
+        Bacon.sequentially(t(2), [value, error(), value])
       [1, 2, error(), error(), 1, 2])
   it "should pass source errors through to the result", ->
     expectStreamEvents(
@@ -167,7 +167,7 @@ describe "EventStream.merge", ->
     expectStreamEvents( 
       ->
         left = series(1, [1, error(), 2, 3])
-        right = series(10, [4, 5, 6])
+        right = series(1, [4, 5, 6]).delay(t(4))
         left.merge(right)
       [1, error(), 2, 3, 4, 5, 6])
   it "respects subscriber return value", ->
@@ -183,7 +183,7 @@ describe "EventStream.delay", ->
     expectStreamEvents(
       ->
         left = series(2, [1, 2, 3])
-        right = series(1, [error(), 4, 5, 6]).delay(t(10))
+        right = series(1, [error(), 4, 5, 6]).delay(t(6))
         left.merge(right)
       [error(), 1, 2, 3, 4, 5, 6])
 
@@ -633,7 +633,7 @@ expectPropertyEvents = (src, expectedEvents) ->
           if event.isInitial()
             events2.push(event.value)
           Bacon.noMore
-  waitsFor streamEnded, t(100)
+  waitsFor streamEnded, t(50)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     expect(events2).toEqual(justValues(expectedEvents))
@@ -653,7 +653,7 @@ verifySingleSubscriber = (src, expectedEvents) ->
     else
       events.push(toValue(event))
 
-  waitsFor streamEnded, t(100)
+  waitsFor streamEnded, t(50)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyCleanup()
@@ -673,14 +673,14 @@ verifySwitching = (src, expectedEvents) ->
         Bacon.noMore
   runs -> 
     src.subscribe(newSink())
-  waitsFor streamEnded, t(100)
+  waitsFor streamEnded, t(50)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyCleanup()
 
 error = (msg) -> new Bacon.Error(msg)
 seqs = []
-soon = (f) -> setTimeout f, t(10)
+soon = (f) -> setTimeout f, t(1)
 timeUnitMillisecs = 5
 series = (interval, values) ->
   Bacon.sequentially(t(interval), values)
