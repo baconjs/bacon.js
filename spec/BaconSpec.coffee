@@ -516,6 +516,14 @@ describe "combineTemplate", ->
         bacon = Bacon.constant("bacon")
         Bacon.combineTemplate({ favoriteFood: bacon })
       [{ favoriteFood: "bacon" }])
+  it "works with more complex example", ->
+    expectPropertyEvents(
+      ->
+        username = Bacon.constant("raimohanska")
+        password = Bacon.constant("easy")
+        Bacon.combineTemplate({url: "/user/login",
+        data: { username: username, password: password }, type: "post"})
+      [url: "/user/login", data: {username: "raimohanska", password: "easy"}, type: "post"])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->

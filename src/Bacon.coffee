@@ -148,12 +148,12 @@ Bacon.combineTemplate = (template) ->
         streams.push(value)
         funcs.push(applyStreamValue(key, streams.length - 1))
       else if (typeof value == "object")
-        pushContext = (ctxStack, values) ->
+        pushContext = (key) -> (ctxStack, values) ->
           newContext = {}
           setValue(ctxStack, key, newContext)
           ctxStack.push(newContext)
         popContext = (ctxStack, values) -> ctxStack.pop()
-        funcs.push(pushContext)
+        funcs.push(pushContext(key))
         compileTemplate(value)
         funcs.push(popContext)
       else
