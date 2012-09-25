@@ -123,13 +123,11 @@ Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
 Bacon.combineAsArray = (streams) ->
-  toArray = (x) -> if x? then (if (x instanceof Array) then x else [x]) else []
-  if streams.length == 1
-    streams[0].map((x) -> [x])
-  else
-    concatArrays = (a1, a2) -> toArray(a1).concat(toArray(a2))
-    Bacon.combineAll(streams, (s1, s2) ->
-      s1.toProperty().combine(s2, concatArrays))
+  assertArray streams
+  stream = (head streams).toProperty().map((x) -> [x])
+  for next in (tail streams)
+    stream = stream.combine(next, (xs, x) -> xs.concat([x]))
+  stream
 
 Bacon.combineWith = (streams, f) ->
   Bacon.combineAll(streams, (s1, s2) ->

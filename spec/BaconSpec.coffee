@@ -394,6 +394,16 @@ describe "Bacon.combineAsArray", ->
       ->
         Bacon.combineAsArray([Bacon.constant(1)])
       [[1]])
+  it "works with arrays as values, with first array being empty", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineAsArray([Bacon.constant([]), Bacon.constant([1])])
+    ([[[], [1]]]))
+  it "works with arrays as values, with first array being non-empty", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineAsArray([Bacon.constant([1]), Bacon.constant([2])])
+    ([[[1], [2]]]))
 
 describe "Bacon.combineWith", ->
   it "combines properties by applying the combinator function to values", ->
