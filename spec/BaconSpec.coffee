@@ -394,12 +394,12 @@ describe "Bacon.combineAsArray", ->
       ->
         Bacon.combineAsArray([Bacon.constant(1)])
       [[1]])
-  it "works with arrays as values, with first array being empty", ->
+  it "works with arrays as values, with first array being empty (bug fix)", ->
     expectPropertyEvents(
       ->
         Bacon.combineAsArray([Bacon.constant([]), Bacon.constant([1])])
     ([[[], [1]]]))
-  it "works with arrays as values, with first array being non-empty", ->
+  it "works with arrays as values, with first array being non-empty (bug fix)", ->
     expectPropertyEvents(
       ->
         Bacon.combineAsArray([Bacon.constant([1]), Bacon.constant([2])])
@@ -639,7 +639,7 @@ describe "Bacon.Bus", ->
     bus.end()
     input.push("b")
     expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
-  it "handles single-event streams correctly", ->
+  it "handles cold single-event streams correctly (bug fix)", ->
     values = []
     bus = new Bacon.Bus()
     bus.plug(Bacon.once("x"))
