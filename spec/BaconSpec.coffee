@@ -526,7 +526,7 @@ describe "combineTemplate", ->
         bacon = Bacon.constant("bacon")
         Bacon.combineTemplate({ favoriteFood: bacon })
       [{ favoriteFood: "bacon" }])
-  it "works with more complex example", ->
+  it "works when dynamic part is not the last part (bug fix)", ->
     expectPropertyEvents(
       ->
         username = Bacon.constant("raimohanska")
@@ -534,6 +534,10 @@ describe "combineTemplate", ->
         Bacon.combineTemplate({url: "/user/login",
         data: { username: username, password: password }, type: "post"})
       [url: "/user/login", data: {username: "raimohanska", password: "easy"}, type: "post"])
+  it "works with arrays as data (bug fix)", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate( { x : Bacon.constant([]), y : Bacon.constant([[]]), z : Bacon.constant(["z"])})
+      [{ x : [], y : [[]], z : ["z"]}])
 
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
