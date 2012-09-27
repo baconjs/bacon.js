@@ -1,7 +1,7 @@
 Bacon.js
 ========
 
-A small (< 13k minified) reactive programming lib for JavaScript. Written in CoffeeScript.
+A small (< 15k minified) reactive programming lib for JavaScript. Written in CoffeeScript.
 
 Inspired largely by RxJs, but includes the `EventStream` and `Property`
 concepts from [reactive-bacon](https://github.com/raimohanska/reactive-bacon).
