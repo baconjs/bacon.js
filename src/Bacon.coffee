@@ -632,7 +632,7 @@ class Bus extends EventStream
     subscribeAll = (newSink) =>
       sink = newSink
       unsubFuncs = []
-      for input in inputs
+      for input in cloneArray(inputs)
         unsubFuncs.push(input.subscribe(guardedSink(input)))
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)

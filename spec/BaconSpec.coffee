@@ -635,6 +635,13 @@ describe "Bacon.Bus", ->
     bus.end()
     input.push("b")
     expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+  it "handles single-event streams correctly", ->
+    values = []
+    bus = new Bacon.Bus()
+    bus.plug(Bacon.once("x"))
+    bus.plug(Bacon.once("y"))
+    bus.onValue((x) -> values.push(x))
+    expect(values).toEqual(["x", "y"])
 
   it "handles end() calls even when there are no subscribers", ->
     bus = new Bacon.Bus()
