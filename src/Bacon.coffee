@@ -702,8 +702,10 @@ assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; asse
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
+assertString = (x) -> assert "not a string : " + x, typeof x == "string"
 always = (x) -> (-> x)
 methodCall = (obj, method, args) ->
+  assertString(method)
   if args == undefined then args = []
   (value) -> obj[method]((args.concat([value]))...)
 partiallyApplied = (f, args) ->
