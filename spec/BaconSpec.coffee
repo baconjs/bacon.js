@@ -562,11 +562,21 @@ describe "Observable.onEnd", ->
     s.end()
     expect(ended).toEqual(true)
 
+# TODO: generalize these tests to EventStream.onValue, Property.assign etc
 describe "Property.onValue", ->
   it "(f) calls function with property value", ->
     f = mockFunction()
     Bacon.constant("kaboom").onValue(f)
     f.verify("kaboom")
+  it "(f, param) calls function, partially applied with param", ->
+    f = mockFunction()
+    Bacon.constant("kaboom").onValue(f, "pow")
+    f.verify("pow", "kaboom")
+  it "('.method') calls event value object method", ->
+    value = mock("get")
+    value.when().get().thenReturn("pow")
+    Bacon.constant(value).onValue(".get")
+    value.verify().get()
   it "(object, method) calls object method with property value", ->
     target = mock("pow")
     Bacon.constant("kaboom").onValue(target, "pow")

@@ -211,22 +211,26 @@ class Error extends Event
   apply: -> this
 
 class Observable
-  onValue: (f) -> @subscribe (event) ->
-    f event.value if event.hasValue()
+  constructor: ->
+    @assign = @onValue
+  onValue: (f, args...) -> 
+    f = makeFunction(f, args)
+    @subscribe (event) ->
+      f event.value if event.hasValue()
   onError: (f) -> @subscribe (event) ->
     f event.error if event.isError()
   onEnd: (f) -> @subscribe (event) ->
     f() if event.isEnd()
   errors: -> @filter(-> false)
-  filter: (f) ->
-    f = toExtractor(f)
+  filter: (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
       else
         Bacon.more
-  takeWhile: (f) ->
-    f = toExtractor(f)
+  takeWhile: (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) -> 
       if event.filter(f)
         @push event
@@ -252,20 +256,20 @@ class Observable
       else
         count--
         @push event
-  map: (f) ->
-    f = toExtractor(f)
+  map: (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) -> 
       @push event.fmap(f)
-  mapError : (f) ->
-    f = toExtractor(f)
+  mapError : (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) ->
       if event.isError()
         @push next (f event.error)
       else
         @push event
 
-  do: (f) ->
-    f = toExtractor(f)
+  do: (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) ->
       f(event.value) if event.hasValue()
       @push event
@@ -338,6 +342,7 @@ class Observable
 
 class EventStream extends Observable
   constructor: (subscribe) ->
+    super()
     assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
@@ -474,8 +479,8 @@ class EventStream extends Observable
         result
       )
 
-  mapEnd : (f) ->
-    f = toExtractor(f)
+  mapEnd : (f, args...) ->
+    f = makeFunction(f, args)
     @withHandler (event) ->
       if (event.isEnd())
         @push next(f(event))
@@ -491,6 +496,7 @@ class EventStream extends Observable
 
 class Property extends Observable
   constructor: (@subscribe) ->
+    super()
     combine = (other, leftSink, rightSink) => 
       myVal = undefined
       otherVal = undefined
@@ -554,8 +560,6 @@ class Property extends Observable
   toProperty: => this
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
-  assign: (obj, method, params...) -> @onValue (value) -> 
-    obj[method]((params.concat([value]))...)
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
@@ -699,9 +703,14 @@ assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
 always = (x) -> (-> x)
-toExtractor = (f) ->
+methodCall = (obj, method, args) ->
+  if args == undefined then args = []
+  (value) -> obj[method]((args.concat([value]))...)
+partiallyApplied = (f, args) ->
+  (value) -> f((args.concat([value]))...)
+makeFunction = (f, args) ->
   if isFunction f
-    f
+    if args.length then partiallyApplied(f, args) else f
   else if isFieldKey(f) 
     key = toFieldKey(f)
     (value) ->
@@ -710,6 +719,8 @@ toExtractor = (f) ->
         value[key]()
       else
         fieldValue
+  else if typeof f == "object" and args.length
+    methodCall(f, head(args), tail(args))
   else
     always f
 isFieldKey = (f) ->
