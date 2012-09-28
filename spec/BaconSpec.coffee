@@ -1,4 +1,5 @@
 Bacon = (require "../src/Bacon").Bacon
+mock = (require "./Mock").mock
 EventEmitter = require("events").EventEmitter
 
 describe "Bacon.later", ->
@@ -561,32 +562,17 @@ describe "Observable.onEnd", ->
 
 describe "Property.assign", ->
   it "calls given objects given method with property values", ->
-    called = undefined
-    target = {
-      pow: (value) -> called = value
-    }
+    target = mock("pow")
     Bacon.constant("kaboom").assign(target, "pow")
-    expect(called).toEqual("kaboom")
+    target.verify().pow("kaboom")
   it "allows partial application of method (i.e. adding fixed args)", ->
-    arg1 = undefined
-    arg2 = undefined
-    target = {
-      pow: (a, b) -> arg1 = a; arg2 = b
-    }
+    target = mock("pow")
     Bacon.constant("kaboom").assign(target, "pow", "smack")
-    expect(arg1).toEqual("smack")
-    expect(arg2).toEqual("kaboom")
+    target.verify().pow("smack", "kaboom")
   it "allows partial application of method with 2 args (i.e. adding fixed args)", ->
-    arg1 = undefined
-    arg2 = undefined
-    arg3 = undefined
-    target = {
-      pow: (a, b, c) -> arg1 = a; arg2 = b; arg3 = c
-    }
+    target = mock("pow")
     Bacon.constant("kaboom").assign(target, "pow", "smack", "whack")
-    expect(arg1).toEqual("smack")
-    expect(arg2).toEqual("whack")
-    expect(arg3).toEqual("kaboom")
+    target.verify().pow("smack", "whack", "kaboom")
 
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
