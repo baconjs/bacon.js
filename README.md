@@ -121,13 +121,13 @@ value. Further, you can use a property extractor string like
 dot, the elements will be mapped to the corresponding field/function in the event
 value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
-contain the values returned by the function.
+contain the values returned by the function. The Function Construction
+rules below apply here.
 
 `streamOrProperty.mapError(f)` maps errors using given function. More
 spedifically, feeds the "error" field of the error event to the function
-and produces a "Next" event based on the return value. Similarly to
-`map`, you cal also use constant values and property extractor strings
-for working with the error objects.
+and produces a "Next" event based on the return value. Function
+Construction rules apply.
 
 `streamOrProperty.filter(f)` filters values using given predicate function. 
 Instead of a function, you can use a constant value (true/false) or a
@@ -160,7 +160,8 @@ EventStream
 stream. Function will be called for each new value in the stream. This
 is the simplest way to assign a side-effect to a stream. The difference
 to the `subscribe` method is that the actual stream values are
-received, instead of Event objects.
+received, instead of Event objects. Function Construction rules below
+apply here.
 
 `stream.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the stream ends.
@@ -241,7 +242,8 @@ event will be pushed on updates and an `End` event in case the source
 EventStream ends.
 
 `property.onValue(f)` similar to eventStream.onValue, except that also
-pushes the initial value of the property.
+pushes the initial value of the property. See Function Construction
+rules below.
 
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.
@@ -259,8 +261,7 @@ on a Property:
 
     myProperty.assign($("#my-button"), "toggle")
 
-Note that the `assign` method is just a handy shortcut for using
-`onValue`.
+Note that the `assign` method is actually just a synonym for `onValue`:)
 
 `property.combine(property2, f)` combines the latest values of the two
 properties using a two-arg function.
@@ -335,6 +336,62 @@ get a new value. For instance, it could yield a value such as
 
 In addition to combining data from streams, you can include constant
 values in your templates.
+
+Function Construction rules
+---------------------------
+
+Many methods in Bacon have a single function as their argument. Many of these
+actually accept a wider range of different arguments that they use for
+constructing the function.
+
+Here are the different forms you can use, as examples. The basic form
+would be
+
+`stream.map(f)` maps values using the function f(x)
+
+In addition, you can use partial application:
+
+`stream.map(f, "bacon")` maps values using the function f(x, y), using
+"bacon" as the first argument, and stream value as the second argument
+
+`stream.map(f, "pow", "smack") maps values using the function f(x, y,
+z), using "pow" and "smack" as the first two arguments and stream value
+as the third argument.
+
+Then, you can create method calls like this:
+
+`stream.onValue(object, method)` calls the method having the given name,
+with stream value as the argument.
+
+`titleText.onValue($("#title"), "text")` which would call the "text" method
+of the jQuery object matching to the HTML element with the id "title"
+
+You can also partially-appy method calls:
+
+`disableButton.onValue($("#send"), "attr", "disabled")` which would call
+the attr method of the #send element, with "disabled" as the first
+argument. So if your property has the value `true`, it would call
+$("#send").attr("disabled", true)
+
+You can call methods or return field values using a "property extractor"
+syntax. With this syntax, Bacon checks the type of the field and if it's indeed
+a method, it calls it. Otherwise it just returns field value. For
+example:
+
+`stream.map(".length")` would return the value of the "length" field of
+stream values. Would make sense for a stream of arrays
+
+`stream.do(".preventDefault") would call the "preventDefault" method of
+stream values. 
+
+If none of the above applies, Bacon will return a constant value. For
+instance:
+
+`mouseClicks.map({ isMouseClick: true })` would map all events to the
+object `{ isMouseClick: true }`
+
+Methods that support function construction include 
+at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError`, `do`.
 
 Latest value of Property or EventStream
 ---------------------------------------

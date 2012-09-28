@@ -217,10 +217,14 @@ class Observable
     f = makeFunction(f, args)
     @subscribe (event) ->
       f event.value if event.hasValue()
-  onError: (f) -> @subscribe (event) ->
-    f event.error if event.isError()
-  onEnd: (f) -> @subscribe (event) ->
-    f() if event.isEnd()
+  onError: (f, args...) -> 
+    f = makeFunction(f, args)
+    @subscribe (event) ->
+      f event.error if event.isError()
+  onEnd: (f, args...) -> 
+    f = makeFunction(f, args)
+    @subscribe (event) ->
+      f() if event.isEnd()
   errors: -> @filter(-> false)
   filter: (f, args...) ->
     f = makeFunction(f, args)
