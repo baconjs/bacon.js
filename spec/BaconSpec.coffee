@@ -1,5 +1,7 @@
 Bacon = (require "../src/Bacon").Bacon
-mock = (require "./Mock").mock
+Mocks = (require "./Mock")
+mock = Mocks.mock
+mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
 
 describe "Bacon.later", ->
@@ -559,6 +561,24 @@ describe "Observable.onEnd", ->
     expect(ended).toEqual(false)
     s.end()
     expect(ended).toEqual(true)
+
+describe "Property.onValue", ->
+  it "(f) calls function with property value", ->
+    f = mockFunction()
+    Bacon.constant("kaboom").onValue(f)
+    f.verify("kaboom")
+  it "(object, method) calls object method with property value", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").onValue(target, "pow")
+    target.verify().pow("kaboom")
+  it "(object, method, param) partially applies object method with param", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").onValue(target, "pow", "smack")
+    target.verify().pow("smack", "kaboom")
+  it "(object, method, param1, param2) partially applies with 2 args", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").onValue(target, "pow", "smack", "whack")
+    target.verify().pow("smack", "whack", "kaboom")
 
 describe "Property.assign", ->
   it "calls given objects given method with property values", ->
