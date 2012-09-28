@@ -69,11 +69,15 @@ describe "EventStream.filter", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 3]).filter(lessThan(3))
       [1, 2, error()])
+  it "extracts field values", ->
+    expectStreamEvents(
+      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}]).filter(".good").map(".value")
+      ["yes"])
 
 describe "EventStream.map", ->
   it "should map with given function", ->
     expectStreamEvents(
-      -> series(1, [1, 2, 3]).map(times(2))
+      -> series(1, [1, 2, 3]).map(times, 2)
       [2, 4, 6])
   it "also accepts a constant value", ->
     expectStreamEvents(
@@ -89,6 +93,11 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> repeat(1, [o]).take(3).map(".lol")
       ["wut", "wut", "wut"])
+  it "works with method call on given object, with partial application", ->
+    multiplier = { multiply: (x, y) -> x * y }
+    expectStreamEvents(
+      -> series(1, [1,2,3]).map(multiplier, "multiply", 2)
+      [2,4,6])
 
 describe "EventStream.mapError", ->
   it "should map error events with given function", ->
@@ -311,7 +320,7 @@ describe "Property.map", ->
     expectPropertyEvents(
       ->
         s = new Bacon.Bus()
-        p = s.toProperty(1).map(times(2))
+        p = s.toProperty(1).map(times, 2)
         soon ->
           s.push 2
           s.error()
@@ -478,7 +487,7 @@ describe "Property.sampledBy", ->
     expectStreamEvents(
       ->
         src = series(2, [1, 2])
-        src.toProperty().sampledBy(src.map(times(2)))
+        src.toProperty().sampledBy(src.map(times, 2))
       [1, 2])
 
 describe "Property.sample", -> 
@@ -562,33 +571,37 @@ describe "Observable.onEnd", ->
     s.end()
     expect(ended).toEqual(true)
 
-# TODO: generalize these tests to EventStream.onValue, Property.assign etc
-describe "Property.onValue", ->
-  it "(f) calls function with property value", ->
-    f = mockFunction()
-    Bacon.constant("kaboom").onValue(f)
-    f.verify("kaboom")
-  it "(f, param) calls function, partially applied with param", ->
-    f = mockFunction()
-    Bacon.constant("kaboom").onValue(f, "pow")
-    f.verify("pow", "kaboom")
-  it "('.method') calls event value object method", ->
-    value = mock("get")
-    value.when().get().thenReturn("pow")
-    Bacon.constant(value).onValue(".get")
-    value.verify().get()
-  it "(object, method) calls object method with property value", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").onValue(target, "pow")
-    target.verify().pow("kaboom")
-  it "(object, method, param) partially applies object method with param", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").onValue(target, "pow", "smack")
-    target.verify().pow("smack", "kaboom")
-  it "(object, method, param1, param2) partially applies with 2 args", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").onValue(target, "pow", "smack", "whack")
-    target.verify().pow("smack", "whack", "kaboom")
+testSideEffects = (wrapper, method) ->
+  ->
+    it "(f) calls function with property value", ->
+      f = mockFunction()
+      wrapper("kaboom")[method](f)
+      f.verify("kaboom")
+    it "(f, param) calls function, partially applied with param", ->
+      f = mockFunction()
+      wrapper("kaboom")[method](f, "pow")
+      f.verify("pow", "kaboom")
+    it "('.method') calls event value object method", ->
+      value = mock("get")
+      value.when().get().thenReturn("pow")
+      wrapper(value)[method](".get")
+      value.verify().get()
+    it "(object, method) calls object method with property value", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow")
+      target.verify().pow("kaboom")
+    it "(object, method, param) partially applies object method with param", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow", "smack")
+      target.verify().pow("smack", "kaboom")
+    it "(object, method, param1, param2) partially applies with 2 args", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow", "smack", "whack")
+      target.verify().pow("smack", "whack", "kaboom")
+
+describe "Property.onValue", testSideEffects(Bacon.constant, "onValue")
+describe "Property.assign", testSideEffects(Bacon.constant, "assign")
+describe "EventStream.onValue", testSideEffects(Bacon.once, "onValue")
 
 describe "Property.assign", ->
   it "calls given objects given method with property values", ->
@@ -682,8 +695,7 @@ describe "Bacon.Bus", ->
 lessThan = (limit) -> 
   (x) -> x < limit
 
-times = (factor) ->
-  (x) -> x * factor
+times = (x, y) -> x * y
 
 add = (x, y) -> x + y
 
