@@ -416,6 +416,9 @@ latest value from the given stream or property. Notice that the
 side-effect of this is that there will be an irremovable subscriber for
 the stream that takes care of storing the latest value.
 
+This is not really recommended. Usually you'll do better by using
+combinators such as `combine`, `sampledBy` and `combineTemplate`.
+
 Bus
 ---
 
