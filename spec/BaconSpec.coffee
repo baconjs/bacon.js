@@ -83,16 +83,15 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> series(1, [1, 2, 3,]).map("lol")
       ["lol", "lol", "lol"])
-  it "..and a property value, starting with .", ->
+  it "extracts property from value object", ->
     o = { lol : "wut" }
     expectStreamEvents(
       -> repeat(1, [o]).take(3).map(".lol")
       ["wut", "wut", "wut"])
-  it "..and a property value, starting with ., where property is a function", ->
-    o = { lol : -> "wut" }
+  it "in case of a function property, calls the function with no args", ->
     expectStreamEvents(
-      -> repeat(1, [o]).take(3).map(".lol")
-      ["wut", "wut", "wut"])
+      -> Bacon.once([1,2,3]).map(".length")
+      [3])
   it "works with method call on given object, with partial application", ->
     multiplier = { multiply: (x, y) -> x * y }
     expectStreamEvents(

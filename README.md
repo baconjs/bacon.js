@@ -390,9 +390,7 @@ argument. So if your property has the value `true`, it would call
 $("#send").attr("disabled", true)
 
 You can call methods or return field values using a "property extractor"
-syntax. With this syntax, Bacon checks the type of the field and if it's indeed
-a method, it calls it. Otherwise it just returns field value. For
-example:
+syntax. With this syntax, Bacon checks the type of the field and if it's indeed a method, it calls it. Otherwise it just returns field value. For example:
 
 `stream.map(".length")` would return the value of the "length" field of
 stream values. Would make sense for a stream of arrays
