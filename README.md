@@ -176,7 +176,20 @@ call to unsubscribe. You can also unsubscribe by returning
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
 an "integral" property. Instead of a function, you can also supply a
-method name such as ".concat".
+method name such as ".concat", in which case this method is called on
+the accumulator value and the new stream value is used as argument.
+
+Example:
+
+    var plus = function (a,b) { return a + b }
+    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+
+This would result to following elements in the result stream:
+
+    seed value = 0
+    0 + 1 = 1
+    1 + 2 = 3
+    3 + 3 = 6
 
 `stream.skipDuplicates()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
@@ -264,7 +277,9 @@ on a Property:
 Note that the `assign` method is actually just a synonym for `onValue`:)
 
 `property.combine(property2, f)` combines the latest values of the two
-properties using a two-arg function.
+properties using a two-arg function. Similarly to `scan`, you can use a
+method name instead, so you could do `a.combine(b, ".concat")` for two
+properties with array value.
 
 `property.sample(interval)` creates an EventStream by sampling the
 property value at given interval (in milliseconds)
