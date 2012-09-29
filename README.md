@@ -395,9 +395,9 @@ stream values. Would make sense for a stream of arrays
 `stream.do(".preventDefault")` would call the "preventDefault" method of
 stream values. 
 
-`stream.filter(".attr", "disabled")` would call `.attr("disabled")` on
+`stream.filter(".attr", "disabled").not()` would call `.attr("disabled")` on
 stream values and filter by the return value. This would practically
-exclude disabled jQuery elements from the stream.
+inlude only disabled jQuery elements to the result stream.
 
 If none of the above applies, Bacon will return a constant value. For
 instance:
