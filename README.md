@@ -398,6 +398,9 @@ stream values. Would make sense for a stream of arrays
 `stream.do(".preventDefault") would call the "preventDefault" method of
 stream values. 
 
+`stream.map(".attr", "disabled")` would call `.attr("disabled")` on
+stream values.
+
 If none of the above applies, Bacon will return a constant value. For
 instance:
 
