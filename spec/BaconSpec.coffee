@@ -478,6 +478,11 @@ describe "Property.sampledBy", ->
         stream = series(2, ["1", "2", "1", "2"]).delay(t(1))
         prop.sampledBy(stream, add)
       ["a1", "b2", "b1", "b2"])
+  it "allows method name instead of function too", ->
+    expectStreamEvents(
+      ->
+        Bacon.constant([1]).sampledBy(Bacon.once([2]), ".concat")
+      [[1, 2]])
   it "works with same origin", ->
     expectStreamEvents(
       ->

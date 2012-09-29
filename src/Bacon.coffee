@@ -551,6 +551,7 @@ class Property extends Observable
       combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
       combine(other, combineAndPush, combineAndPush)
     @sampledBy = (sampler, combinator = former) =>
+      combinator = toCombinator(combinator)
       pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
       combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>

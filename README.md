@@ -291,7 +291,8 @@ stream.
 
 `property.sampledBy(stream, f)` samples the property on stream events.
 The result EventStream values will be formed using the given function
-`f(propertyValue, streamValue)`
+`f(propertyValue, streamValue)`. You can use a method name (such as
+".concat") instead of a function too.
 
 `property.skipDuplicates()` drops consecutive equal values. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
