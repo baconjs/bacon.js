@@ -629,6 +629,7 @@ class Bus extends EventStream
     sink = undefined
     unsubFuncs = []
     inputs = []
+    ended = false
     guardedSink = (input) => (event) =>
       if (event.isEnd())
         remove(input, inputs)
@@ -649,6 +650,7 @@ class Bus extends EventStream
       dispatcher.subscribe(sink)
     super(subscribeThis)
     @plug = (inputStream) =>
+      return if ended
       inputs.push(inputStream)
       if (sink?)
         unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
@@ -657,6 +659,7 @@ class Bus extends EventStream
     @error = (error) =>
       sink new Error(error) if sink?
     @end = =>
+      ended = true
       unsubAll()
       sink end() if sink?
 

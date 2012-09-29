@@ -706,6 +706,22 @@ describe "Bacon.Bus", ->
         s
       ["pushMe", error()])
 
+  it "does not deliver pushed events after end() call", ->
+    called = false
+    bus = new Bacon.Bus()
+    bus.onValue(-> called = true)
+    bus.end()
+    bus.push("LOL")
+    expect(called).toEqual(false)
+
+  it "does not plug after end() call", ->
+    plugged = false
+    bus = new Bacon.Bus()
+    bus.end()
+    bus.plug(new Bacon.EventStream((sink) -> plugged = true; (->)))
+    bus.onValue(->)
+    expect(plugged).toEqual(false)
+
 lessThan = (limit) -> 
   (x) -> x < limit
 
