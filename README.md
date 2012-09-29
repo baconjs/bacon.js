@@ -360,17 +360,17 @@ Many methods in Bacon have a single function as their argument. Many of these
 actually accept a wider range of different arguments that they use for
 constructing the function.
 
-Here are the different forms you can use, as examples. The basic form
+Here are the different forms you can use, with examples. The basic form
 would be
 
 `stream.map(f)` maps values using the function f(x)
 
-In addition, you can use partial application:
+As an extension to the basic form, you can use partial application:
 
 `stream.map(f, "bacon")` maps values using the function f(x, y), using
-"bacon" as the first argument, and stream value as the second argument
+"bacon" as the first argument, and stream value as the second argument.
 
-`stream.map(f, "pow", "smack") maps values using the function f(x, y,
+`stream.map(f, "pow", "smack")` maps values using the function f(x, y,
 z), using "pow" and "smack" as the first two arguments and stream value
 as the third argument.
 
@@ -379,10 +379,7 @@ Then, you can create method calls like this:
 `stream.onValue(object, method)` calls the method having the given name,
 with stream value as the argument.
 
-`titleText.onValue($("#title"), "text")` which would call the "text" method
-of the jQuery object matching to the HTML element with the id "title"
-
-You can also partially-appy method calls:
+`titleText.onValue($("#title"), "text")` which would call the "text" method of the jQuery object matching to the HTML element with the id "title"
 
 `disableButton.onValue($("#send"), "attr", "disabled")` which would call
 the attr method of the #send element, with "disabled" as the first
@@ -395,11 +392,12 @@ syntax. With this syntax, Bacon checks the type of the field and if it's indeed 
 `stream.map(".length")` would return the value of the "length" field of
 stream values. Would make sense for a stream of arrays
 
-`stream.do(".preventDefault") would call the "preventDefault" method of
+`stream.do(".preventDefault")` would call the "preventDefault" method of
 stream values. 
 
-`stream.map(".attr", "disabled")` would call `.attr("disabled")` on
-stream values.
+`stream.filter(".attr", "disabled")` would call `.attr("disabled")` on
+stream values and filter by the return value. This would practically
+exclude disabled jQuery elements from the stream.
 
 If none of the above applies, Bacon will return a constant value. For
 instance:
@@ -408,7 +406,7 @@ instance:
 object `{ isMouseClick: true }`
 
 Methods that support function construction include 
-at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError`, `do`.
+at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError` and `do`.
 
 Latest value of Property or EventStream
 ---------------------------------------
