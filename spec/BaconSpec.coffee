@@ -92,6 +92,11 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> Bacon.once([1,2,3]).map(".length")
       [3])
+  it "allows arguments for methods", ->
+    thing = { square: (x) -> x * x }
+    expectStreamEvents(
+      -> Bacon.once(thing).map(".square", 2)
+      [4])
   it "works with method call on given object, with partial application", ->
     multiplier = { multiply: (x, y) -> x * y }
     expectStreamEvents(
@@ -590,6 +595,11 @@ testSideEffects = (wrapper, method) ->
       value.when().get().thenReturn("pow")
       wrapper(value)[method](".get")
       value.verify().get()
+    it "('.method', param) calls event value object method with param", ->
+      value = mock("get")
+      value.when().get("value").thenReturn("pow")
+      wrapper(value)[method](".get", "value")
+      value.verify().get("value")
     it "(object, method) calls object method with property value", ->
       target = mock("pow")
       wrapper("kaboom")[method](target, "pow")

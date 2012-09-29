@@ -723,7 +723,7 @@ makeFunction = (f, args) ->
     (value) ->
       fieldValue = value[key]
       if isFunction(fieldValue)
-        value[key]()
+        value[key](args...)
       else
         fieldValue
   else if typeof f == "object" and args.length
