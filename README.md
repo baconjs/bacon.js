@@ -422,13 +422,18 @@ combinators such as `combine`, `sampledBy` and `combineTemplate`.
 Bus
 ---
 
-`new Bacon.Bus()` returns a Bus object that is a "pushable" and
-"pluggable" EventStream with the following extra methods:
+Bus is an EventStream that allows you to `push` values into the stream.
+It also allows pluggin other streams into the Bus. The Bus practically
+merges all plugged-in streams and the values pushed using the `push`
+method.
 
-`bus.push(x)` pushes the given value to the stream. All subscribers will
-receive this value.
+`new Bacon.Bus()` returns a new Bus.
 
-`bus.end()` ends the stream. Sends an End event to all subscribers
+`bus.push(x)` pushes the given value to the stream.
+
+`bus.end()` ends the stream. Sends an End event to all subscribers.
+After this call, there'll be no more events to the subscribers. 
+Also, the Bus `push` and `plug` methods have no effect.
 
 `bus.error(e)` sends an Error with given message to all subscribers
 
@@ -436,8 +441,9 @@ receive this value.
 the given stream will be delivered to the subscribers of the Bus.
 
 The plug method practically allows you to merge in other streams after
-the creation of the Bus. I found this quite useful in the
-[Worzone](https://github.com/raimohanska/worzone) game.
+the creation of the Bus. I've found Bus quite useful as an event broadcast
+mechanism in the
+[Worzone](https://github.com/raimohanska/worzone) game, for instance.
 
 Event
 -----
