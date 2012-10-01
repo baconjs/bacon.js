@@ -608,7 +608,7 @@ Dependencies
 ============
 
 Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
-Build/test: node.js, npm, cake
+Build/test: node.js, npm, coffeescript
 
 Why Bacon?
 ==========
@@ -627,14 +627,3 @@ Contribute
 ==========
 
 Use GitHub issues and Pull Requests.
-
-TODO
-====
-
-- Take equality seriously: how should values be compared in, for
-  instance, skipDuplicates
-- Performance tests
-- Improve Property test by also subscribing at each value, ensuring that
-  an immediate matching Initial event is sent to the new Subscriber
-- Browser tests
-- Web site with interactive examples
