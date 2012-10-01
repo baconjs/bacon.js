@@ -9,9 +9,7 @@
     element.on(eventName, selector, handler)
     unbind
 
-Bacon = @Bacon = {
-  taste : "delicious"
-}
+Bacon = @Bacon = {}
 
 Bacon.fromPromise = (promise) ->
   new Bacon.EventStream(
