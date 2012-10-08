@@ -13,6 +13,7 @@ But hey, where's the bacon?
 - [Generated javascript (minified, no asserts)](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.min.js)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
+- [Diagrams](https://github.com/raimohanska/bacon.js/wiki) for the visual learners
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
