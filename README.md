@@ -75,6 +75,11 @@ was used here to calculate the "current sum" of events in the `both` stream, by 
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
+For populating values into JQuery objects use `assign`. See Property API definition below for more detailed description
+
+    selectedItem.map(itemValue).assign($("#summary .item"), "text")
+    messages.map(hiddenForEmptyValue).assign($("#summary .note"), "css", "visibility")
+    
 API
 ===
 
