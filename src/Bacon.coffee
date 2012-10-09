@@ -594,6 +594,8 @@ class Dispatcher
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
       assertEvent event
+      if event.isEnd()
+        subscribe = => nop
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
       assertFunction sink

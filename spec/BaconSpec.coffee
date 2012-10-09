@@ -772,6 +772,7 @@ verifySingleSubscriber = (src, expectedEvents) ->
   waitsFor streamEnded, t(50)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
+    verifyExhausted(src)
     verifyCleanup()
 
 # get each event with new subscriber
@@ -792,7 +793,14 @@ verifySwitching = (src, expectedEvents) ->
   waitsFor streamEnded, t(50)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
+    verifyExhausted(src)
     verifyCleanup()
+
+verifyExhausted = (src) ->
+  events = []
+  src.subscribe (event) ->
+    events.push(event)
+  expect(events).toEqual([])
 
 error = (msg) -> new Bacon.Error(msg)
 seqs = []
