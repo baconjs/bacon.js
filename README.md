@@ -334,6 +334,8 @@ f).combine(c.f) etc. For example, you can combine properties containing
 arrays into a single array property, with Bacon.combineWith(properties,
 ".concat").
 
+Note that Bacon.combineWith() produces a Property and not an EventStream. If you need the result as an EventStream you might want to use Bacon.combineWith().changes()
+
 `Bacon.combineTemplate(template)` combines streams using a template
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
