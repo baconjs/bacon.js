@@ -75,10 +75,19 @@ was used here to calculate the "current sum" of events in the `both` stream, by 
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
-For populating values into JQuery objects use `assign`. See Property API definition below for more detailed description
+Properties can be very conventiently used for assigning values and attributes to DOM elements with JQuery.
+Here we assign the value of a property as the text of a span element whenever it changes:
 
-    selectedItem.map(itemValue).assign($("#summary .item"), "text")
-    messages.map(hiddenForEmptyValue).assign($("#summary .note"), "css", "visibility")
+    property.assign($("span"), "text")
+
+Hiding and showing the same span depending on the content of the property value is equally straightforward
+
+    function hiddenForEmptyValue(value) { return value == "" ? "hidden" : "visible" }
+    property.map(hiddenForEmptyValue).assign($("span"), "css", "visibility")
+    
+In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
+
+    $("span).css("visibility", "visible")
     
 API
 ===
@@ -211,15 +220,10 @@ RxJs.
 
 stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
 
-Example:
+Example - converting strings to integers, skipping empty values:
 
-    touchEvents.flatMap(function(event) {
-        var touch = event.originalEvent.targetTouches[0]
-        var element = $(document.elementFromPoint(touch.clientX, touch.clientY))
-        if (element && element.tagName == "li") {
-          return Bacon.once(element)
-        }
-        return Bacon.never()
+    stream.flatMap(function(text) {
+        return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
     })
 
 `stream.switch(f)` like flatMap, but instead of including events from
@@ -352,8 +356,6 @@ f).combine(c.f) etc. For example, you can combine properties containing
 arrays into a single array property, with Bacon.combineWith(properties,
 ".concat").
 
-Note that Bacon.combineWith() produces a Property and not an EventStream. If you need the result as an EventStream you might want to use Bacon.combineWith().changes()
-
 `Bacon.combineTemplate(template)` combines streams using a template
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
@@ -373,6 +375,10 @@ get a new value. For instance, it could yield a value such as
 
 In addition to combining data from streams, you can include constant
 values in your templates.
+
+Note that all Bacon.combine* methods produce a Property instead of an EventStream. If you need the result as an EventStream you might want to use property.changes()
+
+    Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
 
 Function Construction rules
 ---------------------------
