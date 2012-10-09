@@ -202,7 +202,20 @@ events from both
 `stream.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream. This is very similar to selectMany in
-RxJs
+RxJs.
+
+stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
+
+Example:
+
+    touchEvents.flatMap(function(event) {
+        var touch = event.originalEvent.targetTouches[0]
+        var element = $(document.elementFromPoint(touch.clientX, touch.clientY))
+        if (element && element.tagName == "li") {
+          return Bacon.once(element)
+        }
+        return Bacon.never()
+    })
 
 `stream.switch(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
