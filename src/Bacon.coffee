@@ -262,6 +262,19 @@ class Observable
     f = makeFunction(f, args)
     @withHandler (event) -> 
       @push event.fmap(f)
+  scan: (seed, f) ->
+    subject = @
+    f = toCombinator(f)
+    acc = seed
+    handleEvent = (event) ->
+      acc = f(acc, event.value) if event.hasValue()
+      @push event.apply(acc)
+    d = new Dispatcher(@subscribe, handleEvent)
+    subscribe = (sink) ->
+      reply = sink initial(acc) if acc? and !(subject.changes?)
+      d.subscribe(sink) unless reply == Bacon.noMore
+    new Property(subscribe)
+
   mapError : (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
@@ -448,18 +461,6 @@ class EventStream extends Observable
 
   toProperty: (initValue) ->
    @scan(initValue, latter)
-
-  scan: (seed, f) -> 
-    f = toCombinator(f)
-    acc = seed
-    handleEvent = (event) -> 
-      acc = f(acc, event.value) if event.hasValue()
-      @push event.apply(acc)
-    d = new Dispatcher(@subscribe, handleEvent)
-    subscribe = (sink) ->
-      reply = sink initial(acc) if acc?
-      d.subscribe(sink) unless reply == Bacon.noMore
-    new Property(subscribe)
 
   concat: (right) ->
     left = this

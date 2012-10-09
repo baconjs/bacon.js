@@ -151,6 +151,26 @@ also use a property-extractor string instead of a function, as in
 `streamOrProperty.not()` returns a stream/property that inverts boolean
 values
 
+`streamOrProperty.scan(seed, f)` scans stream/property with given seed value and
+accumulator function, resulting to a Property. For example, you might
+use zero as seed and a "plus" function as the accumulator to create
+an "integral" property. Instead of a function, you can also supply a
+method name such as ".concat", in which case this method is called on
+the accumulator value and the new stream value is used as argument.
+
+Example:
+
+    var plus = function (a,b) { return a + b }
+    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+
+This would result to following elements in the result stream:
+
+    seed value = 0
+    0 + 1 = 1
+    1 + 2 = 3
+    3 + 3 = 6
+
+
 
 EventStream
 -----------
@@ -172,25 +192,6 @@ event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
-
-`stream.scan(seed, f)` scans stream with given seed value and
-accumulator function, resulting to a Property. For example, you might
-use zero as seed and a "plus" function as the accumulator to create
-an "integral" property. Instead of a function, you can also supply a
-method name such as ".concat", in which case this method is called on
-the accumulator value and the new stream value is used as argument.
-
-Example:
-
-    var plus = function (a,b) { return a + b }
-    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
-
-This would result to following elements in the result stream:
-
-    seed value = 0
-    0 + 1 = 1
-    1 + 2 = 3
-    3 + 3 = 6
 
 `stream.skipDuplicates()` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
