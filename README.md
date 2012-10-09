@@ -301,7 +301,7 @@ checking.
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly the same events as the property itself, except any Initial
-events.
+events. Note that property.changes() does NOT skip duplicate values, use .skipDuplicates() for that.
 
 `property.and(other)` combines properties with the `&&` operator.
 
