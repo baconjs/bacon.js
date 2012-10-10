@@ -75,6 +75,20 @@ was used here to calculate the "current sum" of events in the `both` stream, by 
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
+Properties can be very conventiently used for assigning values and attributes to DOM elements with JQuery.
+Here we assign the value of a property as the text of a span element whenever it changes:
+
+    property.assign($("span"), "text")
+
+Hiding and showing the same span depending on the content of the property value is equally straightforward
+
+    function hiddenForEmptyValue(value) { return value == "" ? "hidden" : "visible" }
+    property.map(hiddenForEmptyValue).assign($("span"), "css", "visibility")
+    
+In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
+
+    $("span).css("visibility", "visible")
+    
 API
 ===
 
@@ -202,7 +216,15 @@ events from both
 `stream.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream. This is very similar to selectMany in
-RxJs
+RxJs.
+
+stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
+
+Example - converting strings to integers, skipping empty values:
+
+    stream.flatMap(function(text) {
+        return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
+    })
 
 `stream.switch(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
@@ -301,7 +323,7 @@ checking.
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly the same events as the property itself, except any Initial
-events.
+events. Note that property.changes() does NOT skip duplicate values, use .skipDuplicates() for that.
 
 `property.and(other)` combines properties with the `&&` operator.
 
@@ -353,6 +375,10 @@ get a new value. For instance, it could yield a value such as
 
 In addition to combining data from streams, you can include constant
 values in your templates.
+
+Note that all Bacon.combine* methods produce a Property instead of an EventStream. If you need the result as an EventStream you might want to use property.changes()
+
+    Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
 
 Function Construction rules
 ---------------------------
