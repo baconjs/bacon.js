@@ -64,6 +64,10 @@ describe "Bacon.fromEventTarget", ->
     dispose()
     expect(emitter.listeners("click").length).toEqual(0)
 
+describe "Observable.log", ->
+  it "does not crash", ->
+    Bacon.constant(1).log
+
 describe "EventStream.filter", -> 
   it "should filter values", ->
     expectStreamEvents(

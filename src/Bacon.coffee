@@ -191,6 +191,7 @@ class Next extends Event
   fmap: (f) -> @apply(f(this.value))
   apply: (value) -> next(value, @getOriginalEvent())
   filter: (f) -> f(@value)
+  describe: -> @value
 
 class Initial extends Next
   isInitial: -> true
@@ -201,12 +202,14 @@ class End extends Event
   isEnd: -> true
   fmap: -> this
   apply: -> this
+  describe: -> "<end>"
 
 class Error extends Event
   constructor: (@error) ->
   isError: -> true
   fmap: -> this
   apply: -> this
+  describe: -> "<error> #{@error}"
 
 class Observable
   constructor: ->
@@ -341,6 +344,9 @@ class Observable
           return reply
       reply
   not: -> @map((x) -> !x)
+  log: -> 
+    @subscribe (event) -> console.log(event.describe())
+    undefined
 
 class EventStream extends Observable
   constructor: (subscribe) ->
