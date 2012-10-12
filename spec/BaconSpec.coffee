@@ -635,6 +635,19 @@ describe "Property.assign", ->
     Bacon.constant("kaboom").assign(target, "pow", "smack", "whack")
     target.verify().pow("smack", "whack", "kaboom")
 
+describe "Property.scan", ->
+  it "yields the initial result immediately", ->
+    outputs = []
+    bus = new Bacon.Bus()
+    bus.toProperty(42).scan(1, (a, b) -> a + b).onValue((value) -> outputs.push(value))
+    expect(outputs).toEqual([43])
+  it "accumulates changes", ->
+    outputs = []
+    bus = new Bacon.Bus()
+    bus.toProperty(42).scan(1, (a, b) -> a + b).onValue((value) -> outputs.push(value))
+    bus.push(2)
+    expect(outputs).toEqual([43, 45])
+
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
