@@ -360,6 +360,13 @@ class EventStream extends Observable
       p.sampledBy(this, former)
     else
       super(p, args...)
+  filter: (p, args...) ->
+    if (p instanceof Property)
+      p.sampledBy(this, (p,s) -> [p,s])
+       .filter(([p, s]) -> p)
+       .map(([p, s]) -> s)
+    else
+      super(p, args...)
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->

@@ -77,6 +77,13 @@ describe "EventStream.filter", ->
     expectStreamEvents(
       -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}]).filter(".good").map(".value")
       ["yes"])
+  it "can filter by Property value", ->
+    expectStreamEvents(
+      -> 
+        src = series(1, [1,1,2,3,4,4,8,7])
+        odd = src.map((x) -> x % 2).toProperty()
+        src.filter(odd)
+      [1,1,3,7])
 
 describe "EventStream.map", ->
   it "should map with given function", ->
