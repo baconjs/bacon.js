@@ -355,6 +355,11 @@ class EventStream extends Observable
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
     @hasSubscribers = dispatcher.hasSubscribers
+  map: (p, args...) ->
+    if (p instanceof Property)
+      p.sampledBy(this, former)
+    else
+      super(p, args...)
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->

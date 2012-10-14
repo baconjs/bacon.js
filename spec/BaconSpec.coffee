@@ -106,6 +106,10 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> series(1, [1,2,3]).map(multiplier, "multiply", 2)
       [2,4,6])
+  it "can map to a Property value", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3]).map(Bacon.constant(2))
+      [2,2,2])
 
 describe "EventStream.mapError", ->
   it "should map error events with given function", ->
