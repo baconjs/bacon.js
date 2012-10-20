@@ -765,4 +765,4 @@ toCombinator = (f) ->
   else
     assert "not a function or a field key: " + f, false
 
-define? -> Bacon
+if define.amd? then define? -> Bacon
