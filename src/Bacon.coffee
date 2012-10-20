@@ -764,3 +764,5 @@ toCombinator = (f) ->
       left[key](right)
   else
     assert "not a function or a field key: " + f, false
+
+if define.amd? then define? -> Bacon
