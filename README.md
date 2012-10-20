@@ -139,6 +139,9 @@ the input values. If keyCode was a function, the result stream would
 contain the values returned by the function. The Function Construction
 rules below apply here.
 
+`stream.map(property)` maps the stream events to the current value of
+the given property. This is equivalent to `property.sampledBy(stream)`.
+
 `streamOrProperty.mapError(f)` maps errors using given function. More
 spedifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
@@ -148,6 +151,10 @@ Construction rules apply.
 Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
 `map`, indeed.
+
+`stream.filter(property)` filters a stream based on the value of a
+property. Event will be included in output iff the property holds `true`
+at the time of the event.
 
 `streamOrProperty.takeWhile(f)` takes while given predicate function holds true
 
