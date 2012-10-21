@@ -361,6 +361,14 @@ describe "Property.filter", ->
     values = []
     p.onValue((v) => values.push(v))
     expect(values).toEqual([1])
+  it "preserves null values", ->
+    s = new Bacon.Bus()
+    p = s.toProperty().filter(-> true)
+    p.onValue(=>) # to ensure that property is actualy updated
+    s.push(null)
+    values = []
+    p.onValue((v) => values.push(v))
+    expect(values).toEqual([null])
 
 
 describe "Property.takeUntil", ->
@@ -412,6 +420,14 @@ describe "Property.combine", ->
         right = series(2, [[2]]).toProperty()
         left.combine(right, ".concat")
       [[1, 2]])
+
+  it "combines with null values", ->
+    expectPropertyEvents(
+      ->
+        left = series(1, [null]).toProperty()
+        right = series(1, [null]).toProperty()
+        left.combine(right, (l, r)-> [l, r])
+      [[null, null]])
 
 describe "Bacon.combineAsArray", -> 
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
@@ -546,6 +562,11 @@ describe "EventStream.scan", ->
     bus = new Bacon.Bus()
     bus.scan(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).toEqual([0])
+  it "yields null seed value", ->
+    outputs = []
+    bus = new Bacon.Bus()
+    bus.scan(null, -> 1).onValue((value) -> outputs.push(value))
+    expect(outputs).toEqual([null])
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
