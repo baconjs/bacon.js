@@ -24,7 +24,7 @@ Please contribute!
 Intro
 =====
 
-The idea of Function Reactive Programming is quite described by Conal Elliot at [Stack Overflow](http://stackoverflow.com/questions/1028250/what-is-functional-reactive-programming/1030631#1030631).
+The idea of Functional Reactive Programming is quite well described by Conal Elliot at [Stack Overflow](http://stackoverflow.com/questions/1028250/what-is-functional-reactive-programming/1030631#1030631).
 
 Bacon.js is a library for functional reactive programming. Or let's say it's a library for
 working with events and dynamic values (which are called Properties in Bacon.js). 
