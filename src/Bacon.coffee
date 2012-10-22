@@ -344,30 +344,6 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  not: -> @map((x) -> !x)
-  log: -> 
-    @subscribe (event) -> console.log(event.describe())
-    undefined
-
-class EventStream extends Observable
-  constructor: (subscribe) ->
-    super()
-    assertFunction subscribe
-    dispatcher = new Dispatcher(subscribe)
-    @subscribe = dispatcher.subscribe
-    @hasSubscribers = dispatcher.hasSubscribers
-  map: (p, args...) ->
-    if (p instanceof Property)
-      p.sampledBy(this, former)
-    else
-      super(p, args...)
-  filter: (p, args...) ->
-    if (p instanceof Property)
-      p.sampledBy(this, (p,s) -> [p,s])
-       .filter(([p, s]) -> p)
-       .map(([p, s]) -> s)
-    else
-      super(p, args...)
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->
@@ -409,6 +385,30 @@ class EventStream extends Observable
           children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
+  not: -> @map((x) -> !x)
+  log: -> 
+    @subscribe (event) -> console.log(event.describe())
+    undefined
+
+class EventStream extends Observable
+  constructor: (subscribe) ->
+    super()
+    assertFunction subscribe
+    dispatcher = new Dispatcher(subscribe)
+    @subscribe = dispatcher.subscribe
+    @hasSubscribers = dispatcher.hasSubscribers
+  map: (p, args...) ->
+    if (p instanceof Property)
+      p.sampledBy(this, former)
+    else
+      super(p, args...)
+  filter: (p, args...) ->
+    if (p instanceof Property)
+      p.sampledBy(this, (p,s) -> [p,s])
+       .filter(([p, s]) -> p)
+       .map(([p, s]) -> s)
+    else
+      super(p, args...)
   switch: (f) =>
     @flatMap (value) =>
       f(value).takeUntil(this)

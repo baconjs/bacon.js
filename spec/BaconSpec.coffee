@@ -191,6 +191,15 @@ describe "EventStream.flatMap", ->
          Bacon.once(value)
       [1, 2])
 
+describe "Property.flatMap", ->
+  it "should spawn new stream for all events including Init", ->
+    expectStreamEvents(
+      -> 
+        once = (x) -> Bacon.once(x)
+        series(1, [1, 2]).toProperty(0).flatMap(once)
+      [0, 1, 2])
+
+
 describe "EventStream.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
@@ -775,6 +784,7 @@ expectPropertyEvents = (src, expectedEvents) ->
   ended = false
   streamEnded = -> ended
   property = src()
+  expect(property instanceof Bacon.Property).toEqual(true)
   runs -> property.subscribe (event) -> 
     if event.isEnd()
       ended = true
@@ -796,6 +806,7 @@ expectStreamEvents = (src, expectedEvents) ->
   runs -> verifySwitching src(), expectedEvents
 
 verifySingleSubscriber = (src, expectedEvents) ->
+  expect(src instanceof Bacon.EventStream).toEqual(true)
   events = []
   ended = false
   streamEnded = -> ended
