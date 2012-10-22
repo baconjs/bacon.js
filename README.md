@@ -147,6 +147,10 @@ spedifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
 Construction rules apply.
 
+`streamOrProperty.mapEnd(f)` Adds an extra Next event just before End. The value is created
+by calling the given function when the source stream ends. Instead of a
+function, a static value can be used. You can even omit the argument if
+
 `streamOrProperty.filter(f)` filters values using given predicate function. 
 Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
@@ -159,6 +163,10 @@ at the time of the event.
 `streamOrProperty.takeWhile(f)` takes while given predicate function holds true
 
 `streamOrProperty.take(n)` takes at most n elements from the stream
+
+`streamOrProperty.takeUntil(stream2)` takes elements from source until a Next event 
+appears in the other stream. If other stream ends without value, it is
+ignored
 
 `streamOrProperty.skip(n)` skips the first n elements from the stream
 
@@ -237,10 +245,6 @@ checking.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
-`stream.takeUntil(stream2)` takes elements from source until a Next event 
-appears in the other stream. If other stream ends without value, it is
-ignored
-
 `stream.delay(delay)` delays the stream by given amount of milliseconds
 
 `stream.throttle(delay)` throttles stream by given amount of
@@ -263,12 +267,6 @@ EventStream. You can optionally pass an initial value
 `stream.decorateWith(name, property)` decorates stream values (must be
 objects) with a new property with the given name and a value taken from
 the given Property.
-
-`stream.mapEnd(f)` Adds an extra Next event just before End.
-The value is created
-by calling the given function when the source stream ends. Instead of a
-function, a static value can be used. You can even omit the argument if
-you don't care about the actual value.
 
 Property
 --------
