@@ -334,6 +334,11 @@ describe "Property", ->
       -> series(1, [1, error(), 2]).toProperty()
       [1, error(), 2])
 
+  it "supports null as value", ->
+    expectPropertyEvents(
+      -> series(1, [null, 1, null]).toProperty(null)
+      [null, null, 1, null])
+
 describe "Property.map", ->
   it "maps property values", ->
     expectPropertyEvents(
@@ -361,15 +366,6 @@ describe "Property.filter", ->
     values = []
     p.onValue((v) => values.push(v))
     expect(values).toEqual([1])
-  it "preserves null values", ->
-    s = new Bacon.Bus()
-    p = s.toProperty().filter(-> true)
-    p.onValue(=>) # to ensure that property is actualy updated
-    s.push(null)
-    values = []
-    p.onValue((v) => values.push(v))
-    expect(values).toEqual([null])
-
 
 describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
@@ -563,10 +559,9 @@ describe "EventStream.scan", ->
     bus.scan(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).toEqual([0])
   it "yields null seed value", ->
-    outputs = []
-    bus = new Bacon.Bus()
-    bus.scan(null, -> 1).onValue((value) -> outputs.push(value))
-    expect(outputs).toEqual([null])
+    expectPropertyEvents(
+      -> series(1, [1]).scan(null, ->1)
+      [null, 1])
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
@@ -841,7 +836,7 @@ verifyExhausted = (src) ->
 error = (msg) -> new Bacon.Error(msg)
 seqs = []
 soon = (f) -> setTimeout f, t(1)
-timeUnitMillisecs = 5
+timeUnitMillisecs = 10
 series = (interval, values) ->
   Bacon.sequentially(t(interval), values)
 repeat = (interval, values) ->
