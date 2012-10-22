@@ -185,6 +185,11 @@ describe "EventStream.flatMap", ->
       -> series(1, [error(), 1]).flatMap (value) ->
         Bacon.later(t(1), value)
       [error(), 1])
+  it "should work with a stream responding synchronously", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).flatMap (value) ->
+         Bacon.once(value)
+      [1, 2])
 
 describe "EventStream.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->

@@ -391,12 +391,14 @@ class EventStream extends Observable
         else
           child = f event.value
           unsubChild = undefined
+          childEnded = false
           removeChild = ->
             remove(unsubChild, children) if unsubChild?
             checkEnd()
           handler = (event) ->
             if event.isEnd()
               removeChild()
+              childEnded = true
               Bacon.noMore
             else
               reply = sink event
@@ -404,7 +406,7 @@ class EventStream extends Observable
                 unbind()
               reply
           unsubChild = child.subscribe handler
-          children.push unsubChild
+          children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
   switch: (f) =>
