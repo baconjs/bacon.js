@@ -467,7 +467,7 @@ class EventStream extends Observable
       unsubBoth
 
   toProperty: (initValue) ->
-    initValue = Bacon.None if arguments.length == 0
+    initValue = None if arguments.length == 0
     @scan(initValue, latter)
 
   scan: (seed, f) ->
@@ -632,7 +632,7 @@ class Dispatcher
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
     super(subscribe, handleEvent)
-    current = Bacon.None
+    current = None
     push = @push
     subscribe = @subscribe
     @push = (event) =>
@@ -711,8 +711,6 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
-Bacon.None = None
-Bacon.Some = Some
 
 nop = ->
 latter = (_, x) -> x
