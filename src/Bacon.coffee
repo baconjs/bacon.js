@@ -27,7 +27,6 @@ Bacon.fromPromise = (promise) ->
 Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
-Bacon.none = {nothing: true}
 
 Bacon.never = => new EventStream (sink) =>
   => nop
@@ -468,24 +467,19 @@ class EventStream extends Observable
       unsubBoth
 
   toProperty: (initValue) ->
-    initValue = Bacon.none if arguments.length == 0
+    initValue = Bacon.None if arguments.length == 0
     @scan(initValue, latter)
 
   scan: (seed, f) ->
-    if arguments.length == 1
-      acc = Bacon.none
-      f = seed
-    else
-      acc = seed
-
+    acc = toOption(seed)
     f = toCombinator(f)
 
-    handleEvent = (event) -> 
-      acc = f(acc, event.value) if event.hasValue()
-      @push event.apply(acc)
+    handleEvent = (event) ->
+      acc = new Some(f(acc.getOrElse(undefined), event.value)) if event.hasValue()
+      @push event.apply(acc.getOrElse(undefined))
     d = new Dispatcher(@subscribe, handleEvent)
     subscribe = (sink) ->
-      reply = sink initial(acc) if acc != Bacon.none
+      reply = acc.map((val) -> sink initial(val)).getOrElse Bacon.more
       d.subscribe(sink) unless reply == Bacon.noMore
     new Property(subscribe)
 
@@ -528,8 +522,8 @@ class Property extends Observable
   constructor: (@subscribe) ->
     super()
     combine = (other, leftSink, rightSink) => 
-      myVal = Bacon.none
-      otherVal = Bacon.none
+      myVal = None
+      otherVal = None
       new Property (sink) =>
         unsubscribed = false
         unsubMe = nop
@@ -554,14 +548,14 @@ class Property extends Observable
                 unsubBoth if reply == Bacon.noMore
                 reply
             else
-              setValue(event.value)
-              if (myVal != Bacon.none and otherVal != Bacon.none)
+              setValue(new Some(event.value))
+              if (myVal.isDefined and otherVal.isDefined)
                 if initialSent and event.isInitial()
                   # don't send duplicate Initial
                   Bacon.more
                 else
                   initialSent = true
-                  reply = thisSink(sink, event, myVal, otherVal)
+                  reply = thisSink(sink, event, myVal.value, otherVal.value)
                   unsubBoth if reply == Bacon.noMore
                   reply
               else
@@ -638,19 +632,19 @@ class Dispatcher
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
     super(subscribe, handleEvent)
-    current = Bacon.none
+    current = Bacon.None
     push = @push
     subscribe = @subscribe
     @push = (event) =>
       if event.hasValue()
-        current = event.value
+        current = new Some(event.value)
       push.apply(this, [event])
     @subscribe = (sink) =>
-      if @hasSubscribers() and current != Bacon.none
-        reply = sink initial(current)
-        if reply == Bacon.noMore
-          return nop
-      subscribe.apply(this, [sink])
+      reply = current.filter(@hasSubscribers).map((val) -> sink initial(val))
+      if reply.getOrElse(Bacon.more) == Bacon.noMore
+        nop
+      else
+        subscribe.apply(this, [sink])
 
 class Bus extends EventStream
   constructor: ->
@@ -691,6 +685,24 @@ class Bus extends EventStream
       unsubAll()
       sink end() if sink?
 
+class Some
+  constructor: (@value) ->
+  getOrElse: -> @value
+  filter: (f) ->
+    if f @value
+      new Some(@value)
+    else
+      None
+  map: (f) ->
+    new Some(f @value)
+  isDefined: true
+
+None =
+  getOrElse: (value) -> value
+  filter: -> None
+  map: -> None
+  isDefined: false
+
 Bacon.EventStream = EventStream
 Bacon.Property = Property
 Bacon.Observable = Observable
@@ -699,6 +711,8 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
+Bacon.None = None
+Bacon.Some = Some
 
 nop = ->
 latter = (_, x) -> x
@@ -774,5 +788,10 @@ toCombinator = (f) ->
       left[key](right)
   else
     assert "not a function or a field key: " + f, false
+toOption = (v) ->
+  if v instanceof Some || v == None
+    v
+  else
+    new Some(v)
 
 if define? and define.amd? then define? -> Bacon
