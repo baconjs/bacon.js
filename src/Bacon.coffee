@@ -27,6 +27,7 @@ Bacon.fromPromise = (promise) ->
 Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
+Bacon.none = {nothing: true}
 
 Bacon.never = => new EventStream (sink) =>
   => nop
@@ -465,17 +466,24 @@ class EventStream extends Observable
       unsubBoth
 
   toProperty: (initValue) ->
-   @scan(initValue, latter)
+    initValue = Bacon.none if arguments.length == 0
+    @scan(initValue, latter)
 
-  scan: (seed, f) -> 
+  scan: (seed, f) ->
+    if arguments.length == 1
+      acc = Bacon.none
+      f = seed
+    else
+      acc = seed
+
     f = toCombinator(f)
-    acc = seed
+
     handleEvent = (event) -> 
       acc = f(acc, event.value) if event.hasValue()
       @push event.apply(acc)
     d = new Dispatcher(@subscribe, handleEvent)
     subscribe = (sink) ->
-      reply = sink initial(acc) if acc?
+      reply = sink initial(acc) if acc != Bacon.none
       d.subscribe(sink) unless reply == Bacon.noMore
     new Property(subscribe)
 
@@ -518,8 +526,8 @@ class Property extends Observable
   constructor: (@subscribe) ->
     super()
     combine = (other, leftSink, rightSink) => 
-      myVal = undefined
-      otherVal = undefined
+      myVal = Bacon.none
+      otherVal = Bacon.none
       new Property (sink) =>
         unsubscribed = false
         unsubMe = nop
@@ -545,7 +553,7 @@ class Property extends Observable
                 reply
             else
               setValue(event.value)
-              if (myVal? and otherVal?)
+              if (myVal != Bacon.none and otherVal != Bacon.none)
                 if initialSent and event.isInitial()
                   # don't send duplicate Initial
                   Bacon.more
@@ -628,7 +636,7 @@ class Dispatcher
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
     super(subscribe, handleEvent)
-    current = undefined
+    current = Bacon.none
     push = @push
     subscribe = @subscribe
     @push = (event) =>
@@ -636,7 +644,7 @@ class PropertyDispatcher extends Dispatcher
         current = event.value
       push.apply(this, [event])
     @subscribe = (sink) =>
-      if @hasSubscribers() and current?
+      if @hasSubscribers() and current != Bacon.none
         reply = sink initial(current)
         if reply == Bacon.noMore
           return nop
