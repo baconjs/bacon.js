@@ -470,12 +470,7 @@ class EventStream extends Observable
     @scan(initValue, latter)
 
   scan: (seed, f) ->
-    if arguments.length == 1
-      acc = Bacon.none
-      f = seed
-    else
-      acc = seed
-
+    acc = seed
     f = toCombinator(f)
 
     handleEvent = (event) -> 
