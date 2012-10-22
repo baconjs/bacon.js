@@ -207,6 +207,13 @@ describe "EventStream.switch", ->
         Bacon.sequentially(t(2), [value, error(), value])
       [1, 2, error(), 2])
 
+describe "Property.switch", ->
+  it "spawns new streams but collects values from the latest spawned stream only", ->
+    expectStreamEvents(
+      -> series(3, [1, 2]).toProperty(0).switch (value) ->
+        Bacon.sequentially(t(2), [value, value])
+      [0, 1, 2, 2])
+
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
@@ -352,6 +359,12 @@ describe "Property", ->
     expectPropertyEvents(
       -> series(1, [null, 1, null]).toProperty(null)
       [null, null, 1, null])
+
+describe "Property.toEventStream", ->
+  it "creates a stream that starts with current property value", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).toProperty(0).toEventStream()
+      [0, 1, 2])
 
 describe "Property.map", ->
   it "maps property values", ->

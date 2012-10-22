@@ -384,6 +384,10 @@ class Observable
           children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
+  switch: (f) =>
+    stream = @toEventStream()
+    stream.flatMap (value) =>
+      f(value).takeUntil(stream)
   not: -> @map((x) -> !x)
   log: -> 
     @subscribe (event) -> console.log(event.describe())
@@ -408,9 +412,6 @@ class EventStream extends Observable
        .map(([p, s]) -> s)
     else
       super(p, args...)
-  switch: (f) =>
-    @flatMap (value) =>
-      f(value).takeUntil(this)
   delay: (delay) ->
     @flatMap (value) ->
       Bacon.later delay, value
@@ -469,6 +470,8 @@ class EventStream extends Observable
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
     @scan(initValue, latter)
+
+  toEventStream: -> this
 
   scan: (seed, f) ->
     acc = toOption(seed)
@@ -583,6 +586,11 @@ class Property extends Observable
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
   toProperty: => this
+  toEventStream: => 
+    new EventStream (sink) =>
+      @subscribe (event) =>
+        event = next(event.value) if event.isInitial()
+        sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
 
