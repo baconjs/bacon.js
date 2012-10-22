@@ -172,6 +172,23 @@ also use a property-extractor string instead of a function, as in
 `streamOrProperty.not()` returns a stream/property that inverts boolean
 values
 
+`streamOrProperty.flatMap(f)` for each element in the source stream, spawn a new
+stream using the function `f`. Collect events from each of the spawned
+streams into the result stream. This is very similar to selectMany in
+RxJs.
+
+stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
+
+Example - converting strings to integers, skipping empty values:
+
+    stream.flatMap(function(text) {
+        return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
+    })
+
+`streamOrProperty.switch(f)` like flatMap, but instead of including events from
+all spawned streams, only includes them from the latest spawned stream.
+You can think this as switching from stream to stream
+
 
 EventStream
 -----------
@@ -219,23 +236,6 @@ checking.
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
-
-`stream.flatMap(f)` for each element in the source stream, spawn a new
-stream using the function `f`. Collect events from each of the spawned
-streams into the result stream. This is very similar to selectMany in
-RxJs.
-
-stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
-
-Example - converting strings to integers, skipping empty values:
-
-    stream.flatMap(function(text) {
-        return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
-    })
-
-`stream.switch(f)` like flatMap, but instead of including events from
-all spawned streams, only includes them from the latest spawned stream.
-You can think this as switching from stream to stream
 
 `stream.takeUntil(stream2)` takes elements from source until a Next event 
 appears in the other stream. If other stream ends without value, it is
