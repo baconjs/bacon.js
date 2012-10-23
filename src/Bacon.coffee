@@ -548,7 +548,7 @@ class Property extends Observable
               Bacon.noMore
             else if event.isError()
                 reply = sink event
-                unsubBoth if reply == Bacon.noMore
+                unsubBoth() if reply == Bacon.noMore
                 reply
             else
               setValue(new Some(event.value))
@@ -559,7 +559,7 @@ class Property extends Observable
                 else
                   initialSent = true
                   reply = thisSink(sink, event, myVal.value, otherVal.value)
-                  unsubBoth if reply == Bacon.noMore
+                  unsubBoth() if reply == Bacon.noMore
                   reply
               else
                 Bacon.more
