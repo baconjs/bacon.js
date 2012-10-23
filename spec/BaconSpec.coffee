@@ -452,6 +452,18 @@ describe "Property.combine", ->
         left.combine(right, (l, r)-> [l, r])
       [[null, null]])
 
+  it "unsubscribes when initial value callback returns Bacon.noMore", ->
+    calls = 0
+    bus = new Bacon.Bus()
+    other = Bacon.constant(["rolfcopter"])
+    bus.toProperty(["lollerskates"]).combine(other, ".concat").subscribe (e) ->
+      if !e.isInitial()
+        calls += 1
+      Bacon.noMore
+
+    bus.push(["fail whale"])
+    expect(calls).toBe 0
+
 describe "Bacon.combineAsArray", -> 
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
