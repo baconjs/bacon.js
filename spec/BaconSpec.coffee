@@ -99,6 +99,11 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> repeat(1, [o]).take(3).map(".lol")
       ["wut", "wut", "wut"])
+  it "extracts a nested property too", ->
+    o = { lol : { wut : "wat" } }
+    expectStreamEvents(
+      -> Bacon.once(o).map(".lol.wut")
+      ["wat"])
   it "in case of a function property, calls the function with no args", ->
     expectStreamEvents(
       -> Bacon.once([1,2,3]).map(".length")

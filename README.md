@@ -431,7 +431,16 @@ You can call methods or return field values using a "property extractor"
 syntax. With this syntax, Bacon checks the type of the field and if it's indeed a method, it calls it. Otherwise it just returns field value. For example:
 
 `stream.map(".length")` would return the value of the "length" field of
-stream values. Would make sense for a stream of arrays
+stream values. Would make sense for a stream of arrays. So, you'd get 2
+for `["cat", "dog"]`
+
+`stream.map(".stuffs.length")` would pick the length of the "stuffs"
+array that is a field in the stream value. For example, you'd get 2 for
+`{ stuffs : ["thing", "object"] }`
+
+`stream.map(".dudes.1") would pick the second object from the nested
+"dudes" array. For example, you'd get "jack" for `{ dudes : ["john",
+"jack"] }`.
 
 `stream.do(".preventDefault")` would call the "preventDefault" method of
 stream values. 

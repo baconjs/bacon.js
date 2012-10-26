@@ -773,19 +773,27 @@ makeFunction = (f, args) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f
   else if isFieldKey(f) 
-    key = toFieldKey(f)
-    (value) ->
-      fieldValue = value[key]
-      if isFunction(fieldValue)
-        value[key](args...)
-      else
-        fieldValue
+    toFieldExtractor(f, args)
   else if typeof f == "object" and args.length
     methodCall(f, head(args), tail(args))
   else
     always f
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f[0] == "."
+toFieldExtractor = (f, args) ->
+  parts = f.slice(1).split(".")
+  partFuncs = map(toSimpleExtractor(args), parts)
+  (value) ->
+    for f in partFuncs
+      value = f(value)
+    value
+toSimpleExtractor = (args) -> (key) -> (value) ->
+  fieldValue = value[key]
+  if isFunction(fieldValue)
+    fieldValue(args...)
+  else
+    fieldValue
+
 toFieldKey = (f) ->
   f.slice(1)
 toCombinator = (f) ->
