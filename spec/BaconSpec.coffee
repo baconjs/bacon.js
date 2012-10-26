@@ -636,6 +636,12 @@ describe "combineTemplate", ->
       -> Bacon.combineTemplate( { x : Bacon.constant([]), y : Bacon.constant([[]]), z : Bacon.constant(["z"])})
       [{ x : [], y : [[]], z : ["z"]}])
 
+describe "Observable.onValues", ->
+  it "splits value array to callback arguments", ->
+    f = mockFunction()
+    Bacon.constant([1,2,3]).onValues(f)
+    f.verify(1,2,3)
+
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = new Bacon.Bus()

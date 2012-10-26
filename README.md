@@ -210,6 +210,9 @@ to the `subscribe` method is that the actual stream values are
 received, instead of Event objects. Function Construction rules below
 apply here.
 
+`stream.onValues(f)` like onValue, but splits the value (assuming its an
+array) as function arguments to `f`
+
 `stream.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the stream ends.
 
@@ -285,6 +288,9 @@ EventStream ends.
 `property.onValue(f)` similar to eventStream.onValue, except that also
 pushes the initial value of the property. See Function Construction
 rules below.
+
+`property.onValues(f)` like onValue, but splits the value (assuming its an
+array) as function arguments to `f`
 
 `property.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the source stream of the property ends.

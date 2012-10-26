@@ -219,6 +219,8 @@ class Observable
     f = makeFunction(f, args)
     @subscribe (event) ->
       f event.value if event.hasValue()
+  onValues: (f) ->
+    @onValue (args) -> f(args...)
   onError: (f, args...) -> 
     f = makeFunction(f, args)
     @subscribe (event) ->
