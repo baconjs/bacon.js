@@ -120,8 +120,9 @@ Bacon.combineAll = (streams, f) ->
 Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
-Bacon.combineAsArray = (streams) ->
-  assertArray streams
+Bacon.combineAsArray = (streams, more...) ->
+  if not (streams instanceof Array)
+    streams = [streams].concat(more)
   stream = (head streams).toProperty().map((x) -> [x])
   for next in (tail streams)
     stream = stream.combine(next, (xs, x) -> xs.concat([x]))

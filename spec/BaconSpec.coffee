@@ -459,6 +459,12 @@ describe "Bacon.combineAsArray", ->
         stream = series(1, ["a", "b"])
         Bacon.combineAsArray([Bacon.constant(1), Bacon.constant(2), stream])
       [[1, 2, "a"], [1, 2, "b"]])
+  it "Works with streams provided as a list of arguments as well as with a single array arg", ->
+    expectPropertyEvents(
+      ->
+        stream = series(1, ["a", "b"])
+        Bacon.combineAsArray(Bacon.constant(1), Bacon.constant(2), stream)
+      [[1, 2, "a"], [1, 2, "b"]])
   it "works with single stream", ->
     expectPropertyEvents(
       ->
