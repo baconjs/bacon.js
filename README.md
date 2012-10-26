@@ -668,6 +668,18 @@ Dependencies
 Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
 Build/test: node.js, npm, coffeescript
 
+Compatibility with other libs
+=============================
+
+Bacon.js doesn't mess with prototypes or the global object. Only exceptions below.
+
+* It exports the Bacon object. In a browser, this is added to the window object.
+* If jQuery is defined, it adds the asEventStream method to jQuery (similarly to Zepto)
+
+So, it should be pretty much compatible and a nice citizen. 
+
+I'm not sure how it works in case some other lib adds stuff to, say, Array prototype, though. Maybe add test for this later?
+
 Why Bacon?
 ==========
 
