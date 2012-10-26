@@ -264,8 +264,14 @@ The buffer is flushed when it contains the given number of elements. So, if
 you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
 events with values [1, 2], [3, 4] and [5].
 
+`stream.toProperty()` creates a Property based on the
+EventStream. Without arguments, you'll get a Property without an initial value.
+The Property will get its first actual value from the stream, and after that it'll
+always have a current value.
+
 `stream.toProperty(initialValue)` creates a Property based on the
-EventStream. You can optionally pass an initial value
+EventStream with the given initial value that will be used as the current value until
+the first value comes from the stream.
 
 `stream.decorateWith(name, property)` decorates stream values (must be
 objects) with a new property with the given name and a value taken from
@@ -276,7 +282,8 @@ Property
 
 `Bacon.Property` a reactive property. Has the concept of "current value".
 You can create a Property from an EventStream by using either toProperty 
-or scan method.
+or scan method. Note depending on how a Property is created, it may or may not
+have an initial value.
 
 `Bacon.constant(x)` creates a constant property with value x.
 
@@ -286,8 +293,8 @@ event will be pushed on updates and an `End` event in case the source
 EventStream ends.
 
 `property.onValue(f)` similar to eventStream.onValue, except that also
-pushes the initial value of the property. See Function Construction
-rules below.
+pushes the initial value of the property, in case there is one. 
+See Function Construction rules below for different forms of calling this method.
 
 `property.onValues(f)` like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
@@ -308,7 +315,8 @@ on a Property:
 
     myProperty.assign($("#my-button"), "toggle")
 
-Note that the `assign` method is actually just a synonym for `onValue`:)
+Note that the `assign` method is actually just a synonym for `onValue` and
+the function construction rules below apply to both.
 
 `property.combine(property2, f)` combines the latest values of the two
 properties using a two-arg function. Similarly to `scan`, you can use a
