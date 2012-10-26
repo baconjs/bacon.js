@@ -691,6 +691,7 @@ Why not RxJs or something else?
 - I think the Observable abstraction is not good enough. It leaves too much room for variations in
 behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
 - Bacon needs automatic tests. They also serve as documentation.
+- I don't like messing with the Array prototype
 - Because.
 
 Contribute
