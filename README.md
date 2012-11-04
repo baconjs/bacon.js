@@ -14,6 +14,7 @@ But hey, where's the bacon?
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 - [Diagrams](https://github.com/raimohanska/bacon.js/wiki) for the visual learners
+- [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
