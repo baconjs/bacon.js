@@ -199,11 +199,16 @@ describe "EventStream.flatMap", ->
       -> series(1, [error(), 1]).flatMap (value) ->
         Bacon.later(t(1), value)
       [error(), 1])
-  it "should work with a stream responding synchronously", ->
+  it "should work with a spawned stream responding synchronously", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->
          Bacon.once(value)
       [1, 2])
+  it "should work with a source stream responding synchronously", ->
+    expectStreamEvents(
+      -> Bacon.once(1).flatMap (value) ->
+         Bacon.once(value)
+      [1])
 
 describe "Property.flatMap", ->
   it "should spawn new stream for all events including Init", ->
