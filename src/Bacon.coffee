@@ -28,10 +28,6 @@ Bacon.noMore = "veggies"
 
 Bacon.more = "moar bacon!"
 
-Bacon.never = => new EventStream (sink) =>
-  sink (end())
-  nop
-
 Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
@@ -100,14 +96,19 @@ Bacon.interval = (delay, value) ->
   Bacon.fromPoll(delay, poll)
 
 Bacon.constant = (value) ->
-  new Property(just(initial, value))
+  new Property(sendWrapped([value], initial))
 
-Bacon.once = (value) ->
-  new EventStream(just(next, value))
+Bacon.never = -> Bacon.fromArray([])
 
-just = (wrapper, value) ->
+Bacon.once = (value) -> Bacon.fromArray([value])
+
+Bacon.fromArray = (values) ->
+  new EventStream(sendWrapped(values, next))
+
+sendWrapped = (values, wrapper) ->
   (sink) ->
-    sink (wrapper value)
+    for value in values
+      sink (wrapper value)
     sink (end())
     nop
 
