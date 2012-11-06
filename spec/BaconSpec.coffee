@@ -3,6 +3,15 @@ Mocks = (require "./Mock")
 mock = Mocks.mock
 mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
+th = require("./SpecHelper")
+t = th.t
+expectStreamEvents = th.expectStreamEvents
+expectPropertyEvents = th.expectPropertyEvents
+verifyCleanup = th.verifyCleanup
+error = th.error
+soon = th.soon
+series = th.series
+repeat = th.repeat
 
 describe "Bacon.later", ->
   it "should send single event and end", ->
@@ -811,126 +820,9 @@ describe "Bacon.Bus", ->
 
 lessThan = (limit) -> 
   (x) -> x < limit
-
 times = (x, y) -> x * y
-
 add = (x, y) -> x + y
-
-always = (x) -> (-> x)
-
 id = (x) -> x
-
-expectPropertyEvents = (src, expectedEvents) ->
-  events = []
-  events2 = []
-  ended = false
-  streamEnded = -> ended
-  property = src()
-  expect(property instanceof Bacon.Property).toEqual(true)
-  runs -> property.subscribe (event) -> 
-    if event.isEnd()
-      ended = true
-    else
-      events.push(toValue(event))
-      if event.hasValue()
-        property.subscribe (event) ->
-          if event.isInitial()
-            events2.push(event.value)
-          Bacon.noMore
-  waitsFor streamEnded, t(50)
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    expect(events2).toEqual(justValues(expectedEvents))
-    verifyCleanup()
-
-expectStreamEvents = (src, expectedEvents) ->
-  runs -> verifySingleSubscriber src(), expectedEvents
-  runs -> verifySwitching src(), expectedEvents
-
-verifySingleSubscriber = (src, expectedEvents) ->
-  expect(src instanceof Bacon.EventStream).toEqual(true)
-  events = []
-  ended = false
-  streamEnded = -> ended
-  runs -> src.subscribe (event) -> 
-    if event.isEnd()
-      ended = true
-    else
-      events.push(toValue(event))
-
-  waitsFor streamEnded, t(50)
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    verifyExhausted(src)
-    verifyCleanup()
-
-# get each event with new subscriber
-verifySwitching = (src, expectedEvents) ->
-  events = []
-  ended = false
-  streamEnded = -> ended
-  newSink = -> 
-    (event) ->
-      if event.isEnd()
-        ended = true
-      else
-        events.push(toValue(event))
-        src.subscribe(newSink())
-        Bacon.noMore
-  runs -> 
-    src.subscribe(newSink())
-  waitsFor streamEnded, t(50)
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    verifyExhausted(src)
-    verifyCleanup()
-
-verifyExhausted = (src) ->
-  events = []
-  src.subscribe (event) ->
-    events.push(event)
-  expect(events).toEqual([])
-
-error = (msg) -> new Bacon.Error(msg)
-seqs = []
-soon = (f) -> setTimeout f, t(1)
-timeUnitMillisecs = 10
-series = (interval, values) ->
-  Bacon.sequentially(t(interval), values)
-repeat = (interval, values) ->
-  source = Bacon.repeatedly(interval * timeUnitMillisecs, values)
-  seqs.push({ values : values, source : source })
-  source
-t = (time) -> time * timeUnitMillisecs
-
-verifyCleanup = ->
-  for seq in seqs
-    #console.log("verify cleanup: #{seq.values}")
-    expect(seq.source.hasSubscribers()).toEqual(false)
-  seqs = []
-
-toValues = (xs) ->
-  values = []
-  for x in xs
-    values.push(toValue(x))
-  values
-toValue = (x) ->
-  if x? and x.isEvent?
-    if x.isError()
-      "<error>"
-    else
-      x.value
-  else
-    x
-filter = (f, xs) ->
-  filtered = []
-  for x in xs
-    filtered.push(x) if f(x)
-  filtered
-justValues = (xs) ->
-  filter hasValue, xs
-hasValue = (x) ->
-  toValue(x) != "<error>"
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->

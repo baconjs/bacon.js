@@ -112,8 +112,8 @@ just = (wrapper, value) ->
 
 Bacon.combineAll = (streams, f) ->
   assertArray streams
-  stream = head streams
-  for next in (tail streams)
+  stream = _.head streams
+  for next in (_.tail streams)
     stream = f(stream, next)
   stream
 
@@ -123,8 +123,8 @@ Bacon.mergeAll = (streams) ->
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
-  stream = (head streams).toProperty().map((x) -> [x])
-  for next in (tail streams)
+  stream = (_.head streams).toProperty().map((x) -> [x])
+  for next in (_.tail streams)
     stream = stream.combine(next, (xs, x) -> xs.concat([x]))
   stream
 
@@ -614,7 +614,7 @@ class Dispatcher
           w() for w in ws
         event.onDone = Event.prototype.onDone
       event.onDone = (listener) ->
-        if waiters? and not contains(waiters, listener)
+        if waiters? and not _.contains(waiters, listener)
           waiters.push(listener)
         else
           waiters = [listener]
@@ -735,16 +735,6 @@ toEvent = (x) ->
     x
   else
     next x
-empty = (xs) -> xs.length == 0
-head = (xs) -> xs[0]
-tail = (xs) -> xs[1...xs.length]
-filter = (f, xs) ->
-  filtered = []
-  for x in xs
-    filtered.push(x) if f(x)
-  filtered
-map = (f, xs) ->
-  f(x) for x in xs
 cloneArray = (xs) -> xs.slice(0)
 cloneObject = (src) ->
   clone = {}
@@ -755,14 +745,12 @@ remove = (x, xs) ->
   i = xs.indexOf(x)
   if i >= 0
     xs.splice(i, 1)
-contains = (xs, x) -> xs.indexOf(x) >= 0
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
 assertString = (x) -> assert "not a string : " + x, typeof x == "string"
-always = (x) -> (-> x)
 methodCall = (obj, method, args) ->
   assertString(method)
   if args == undefined then args = []
@@ -775,14 +763,14 @@ makeFunction = (f, args) ->
   else if isFieldKey(f) 
     toFieldExtractor(f, args)
   else if typeof f == "object" and args.length
-    methodCall(f, head(args), tail(args))
+    methodCall(f, _.head(args), _.tail(args))
   else
-    always f
+    _.always f
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f[0] == "."
 toFieldExtractor = (f, args) ->
   parts = f.slice(1).split(".")
-  partFuncs = map(toSimpleExtractor(args), parts)
+  partFuncs = _.map(toSimpleExtractor(args), parts)
   (value) ->
     for f in partFuncs
       value = f(value)
@@ -812,3 +800,20 @@ toOption = (v) ->
     new Some(v)
 
 if define? and define.amd? then define? -> Bacon
+
+_ = {
+  head: (xs) -> xs[0],
+  always: (x) -> (-> x),
+  empty: (xs) -> xs.length == 0,
+  tail: (xs) -> xs[1...xs.length],
+  filter: (f, xs) ->
+    filtered = []
+    for x in xs
+      filtered.push(x) if f(x)
+    filtered
+  map: (f, xs) ->
+    f(x) for x in xs
+  contains: (xs, x) -> xs.indexOf(x) >= 0
+}
+
+Bacon._ = _
