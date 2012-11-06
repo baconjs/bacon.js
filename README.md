@@ -681,6 +681,28 @@ So, it should be pretty much compatible and a nice citizen.
 
 I'm not sure how it works in case some other lib adds stuff to, say, Array prototype, though. Maybe add test for this later?
 
+Compatibility with browsers
+===========================
+
+Bacon.js is not browser dependent, because it is not a UI library. Hence there are not actual browser tests and no
+"official" list of supported browsers.
+
+I have used Bacon.js with Chrome, Firefox, Safari, IE 8+, iPhone, iPad.
+
+Node.js
+=======
+
+Sure. Works. Try it out.
+
+    npm install baconjs
+
+Then type `node` and try the following
+
+    Bacon = require("baconjs").bacon()
+    Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
+
+I have published version 0.0.2 (commit 11ffc8ce5ba2000c784b700eba175b6e3c947d46) to NPM repo.
+
 Why Bacon?
 ==========
 
