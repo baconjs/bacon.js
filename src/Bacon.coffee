@@ -29,7 +29,8 @@ Bacon.noMore = "veggies"
 Bacon.more = "moar bacon!"
 
 Bacon.never = => new EventStream (sink) =>
-  => nop
+  sink (end())
+  nop
 
 Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])

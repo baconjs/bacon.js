@@ -202,7 +202,7 @@ describe "EventStream.flatMap", ->
   it "should work with a spawned stream responding synchronously", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->
-         Bacon.once(value)
+         Bacon.never().concat(Bacon.once(value))
       [1, 2])
   it "should work with a source stream responding synchronously", ->
     expectStreamEvents(
@@ -313,6 +313,12 @@ describe "Bacon.constant", ->
   it "ignores unsubscribe", ->
     Bacon.constant("lol").onValue(=>)()
 
+describe "Bacon.never", ->
+  it "should send just end", ->
+    expectStreamEvents(
+      -> Bacon.never()
+      [])
+
 describe "Bacon.once", ->
   it "should send single event and end", ->
     expectStreamEvents(
@@ -341,6 +347,22 @@ describe "EventStream.concat", ->
         right = series(2, [2, 4, 6])
         left.concat(right).takeWhile(lessThan(4))
       [1, 2, 2])
+  it "works with Bacon.never()", ->
+    expectStreamEvents(
+      -> Bacon.never().concat(Bacon.never())
+      [])
+  it "works with Bacon.once()", ->
+    expectStreamEvents(
+      -> Bacon.once(2).concat(Bacon.once(1))
+      [2, 1])
+  it "works with Bacon.once() and Bacon.never()", ->
+    expectStreamEvents(
+      -> Bacon.once(1).concat(Bacon.never())
+      [1])
+  it "works with Bacon.never() and Bacon.once()", ->
+    expectStreamEvents(
+      -> Bacon.never().concat(Bacon.once(1))
+      [1])
 
 describe "EventStream.startWith", ->
   it "provides seed value, then the rest", ->
