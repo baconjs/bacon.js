@@ -491,7 +491,10 @@ class EventStream extends Observable
     d = new Dispatcher(@subscribe, handleEvent)
     subscribe = (sink) ->
       reply = acc.map((val) -> sink initial(val)).getOrElse Bacon.more
-      d.subscribe(sink) unless reply == Bacon.noMore
+      if reply != Bacon.noMore
+        d.subscribe(sink)
+      else
+        nop
     new Property(subscribe)
 
   concat: (right) ->

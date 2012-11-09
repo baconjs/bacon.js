@@ -448,6 +448,27 @@ describe "Property.filter", ->
     p.onValue((v) => values.push(v))
     expect(values).toEqual([1])
 
+describe "Property.take(1)", ->
+  it "takes the Initial event", ->
+    console.log("**************")
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).take(1)
+      [0])
+  it "takes the first Next event, if no Initial value", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty().take(1)
+      [1])
+  it "works for constants", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1)
+      [1])
+
+describe "Bacon.once().take(1)", ->
+  it "works", ->
+    expectStreamEvents(
+      -> Bacon.once(1).take(1)
+      [1])
+
 describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
