@@ -533,6 +533,10 @@ describe "Bacon.combineAsArray", ->
       ->
         Bacon.combineAsArray([Bacon.constant([1]), Bacon.constant([2])])
     ([[[1], [2]]]))
+  it "works with empty array", ->
+    expectPropertyEvents(
+      -> Bacon.combineAsArray([])
+      [[]])
 
 describe "Bacon.combineWith", ->
   it "combines properties by applying the combinator function to values", ->
@@ -676,6 +680,14 @@ describe "combineTemplate", ->
     expectPropertyEvents(
       -> Bacon.combineTemplate( { x : Bacon.constant([]), y : Bacon.constant([[]]), z : Bacon.constant(["z"])})
       [{ x : [], y : [[]], z : ["z"]}])
+  it "supports empty object", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate({})
+      [{}])
+  it "supports empty object", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate({})
+      [{}])
 
 describe "Observable.onValues", ->
   it "splits value array to callback arguments", ->
