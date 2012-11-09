@@ -651,12 +651,16 @@ class PropertyDispatcher extends Dispatcher
     current = None
     push = @push
     subscribe = @subscribe
+    ended = false
     @push = (event) =>
+      if event.isEnd() 
+        ended = true
       if event.hasValue()
         current = new Some(event.value)
       push.apply(this, [event])
     @subscribe = (sink) =>
-      reply = current.filter(@hasSubscribers).map((val) -> sink initial(val))
+      shouldBounceInitialValue = => @hasSubscribers() or ended
+      reply = current.filter(shouldBounceInitialValue).map((val) -> sink initial(val))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
       else

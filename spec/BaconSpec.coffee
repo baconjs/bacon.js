@@ -312,6 +312,19 @@ describe "Bacon.constant", ->
     ["lol"])
   it "ignores unsubscribe", ->
     Bacon.constant("lol").onValue(=>)()
+  it "provides same value to all listeners", ->
+    c = Bacon.constant("lol")
+    expectPropertyEvents((-> c), ["lol"])
+    f = mockFunction()
+    c.onValue(f)
+    f.verify("lol")
+  it "provides same value to all listeners, when mapped (bug fix)", ->
+    c = Bacon.constant("lol").map(id)
+    f = mockFunction()
+    c.onValue(f)
+    f.verify("lol")
+    c.onValue(f)
+    f.verify("lol")
 
 describe "Bacon.never", ->
   it "should send just end", ->
