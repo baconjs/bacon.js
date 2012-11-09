@@ -450,7 +450,6 @@ describe "Property.filter", ->
 
 describe "Property.take(1)", ->
   it "takes the Initial event", ->
-    console.log("**************")
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).take(1)
       [0])
