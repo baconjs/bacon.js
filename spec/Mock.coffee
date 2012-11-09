@@ -24,7 +24,7 @@ mockFunction = (name) ->
     calls.push(args)
     for returnCombo in returns
       #console.log("check #{args} against #{name}(#{returnCombo.args})")
-      if eq(returnCombo.args, args) 
+      if checkMatch(returnCombo.args, args) 
         #console.log("match => #{returnCombo.returnValue}")
         return returnCombo.returnValue
   method.verify = (args...) ->
@@ -37,13 +37,32 @@ mockFunction = (name) ->
     {
       when: (args...) ->
         #console.log("#{name}(#{args}) => #{returnValue}")
-        returns.push({ args: args, returnValue: returnValue})
+        returns.push({ args: toMatchers(args), returnValue: returnValue})
     }
   method
-eq = (xs, ys) ->
-  return false if (xs.length != ys.length) 
-  for x, i in xs
-    return false if (x != ys[i]) 
+
+toMatchers = (values) ->
+  makeMatcher(value) for value in values
+
+checkMatch = (matchers, ys) ->
+  return false if (matchers.length != ys.length) 
+  for matcher, i in matchers
+    return false if (!matcher(ys[i])) 
   true
+
+makeMatcher = (x) ->
+  if (x? and x.isMatcher) then x else matchers.equal(x)
+
+matcherFunction = (f) -> 
+  f.isMatcher = true
+  f
+
 @mock = (methodNames...) -> new Mock(methodNames...)
 @mockFunction = mockFunction
+
+matchers = {
+  any : matcherFunction(-> true)
+  equal : (expected) -> matcherFunction((x) -> x == expected)
+}
+
+@matchers = matchers

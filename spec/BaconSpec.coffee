@@ -13,6 +13,15 @@ soon = th.soon
 series = th.series
 repeat = th.repeat
 
+describe "jQuery.asEventStream", ->
+  it "provides jQuery events as an EventStream", ->
+    elem = mock("on")
+    elem.asEventStream = Bacon.$.asEventStream
+
+    elem.when().on("click", undefined, Mocks.matchers.any()).thenReturn(->)
+    elem.asEventStream("click").log()
+    elem.verify().on("click", undefined, Mocks.matchers.any())
+
 describe "Bacon.later", ->
   it "should send single event and end", ->
     expectStreamEvents(
