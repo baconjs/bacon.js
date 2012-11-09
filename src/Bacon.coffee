@@ -1,8 +1,13 @@
-(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector) ->
+(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer) ->
   element = this
   new EventStream (sink) ->
-    handler = (event) ->
-      reply = sink (next event)
+    handler = (event, data) ->
+      valueToStream =
+        if (eventTransformer == undefined)
+          event
+        else
+          eventTransformer(event, data)
+      reply = sink (next valueToStream)
       if (reply == Bacon.noMore)
         unbind()
     unbind = -> element.off(eventName, selector, handler)
