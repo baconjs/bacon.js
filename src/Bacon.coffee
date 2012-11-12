@@ -1,8 +1,11 @@
-(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector) ->
+(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
+  if (isFunction(selector))
+    eventTransformer = selector
+    selector = null
   element = this
   new EventStream (sink) ->
-    handler = (event) ->
-      reply = sink (next event)
+    handler = (args...) ->
+      reply = sink (next (eventTransformer args...))
       if (reply == Bacon.noMore)
         unbind()
     unbind = -> element.off(eventName, selector, handler)
@@ -826,6 +829,7 @@ _ = {
   map: (f, xs) ->
     f(x) for x in xs
   contains: (xs, x) -> xs.indexOf(x) >= 0
+  id: (x) -> x
 }
 
 Bacon._ = _
