@@ -97,7 +97,12 @@ Creating streams
 ----------------
 
 `$.asEventStream("click")` creates an EventStream from events on a
-jQuery or Zepto.js object
+jQuery or Zepto.js object. You can pass optional arguments to add a 
+jQuery live selector and/or a function that processes the jQuery 
+event and its parameters, if given, like this:
+  `$("#my-div").asEventStream("click", ".more-specific-selector")`
+  `$("#my-div").asEventStream("click", ".more-specific-selector", function(event, args) { return args[0] })`
+  `$("#my-div").asEventStream("click", function(event, args) { return args[0] })`
 
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
