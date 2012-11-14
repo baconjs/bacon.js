@@ -674,6 +674,9 @@ class PropertyDispatcher extends Dispatcher
       reply = current.filter(shouldBounceInitialValue).map((val) -> sink initial(val))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
+      else if ended
+        sink end()
+        nop
       else
         subscribe.apply(this, [sink])
 
@@ -835,6 +838,7 @@ _ = {
     f(x) for x in xs
   contains: (xs, x) -> xs.indexOf(x) >= 0
   id: (x) -> x
+  last: (xs) -> xs[xs.length-1]
 }
 
 Bacon._ = _

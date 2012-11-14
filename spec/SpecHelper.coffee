@@ -19,6 +19,7 @@ seqs = []
   runs -> verifySwitching src(), expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents) ->
+  expect(expectedEvents.length > 0).toEqual(true)
   events = []
   events2 = []
   ended = false
@@ -39,6 +40,7 @@ seqs = []
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     expect(events2).toEqual(justValues(expectedEvents))
+    verifyFinalState(property, lastNonError(expectedEvents))
     verifyCleanup()
 
 verifySingleSubscriber = (src, expectedEvents) ->
@@ -83,7 +85,16 @@ verifyExhausted = (src) ->
   events = []
   src.subscribe (event) ->
     events.push(event)
-  expect(events[0] instanceof Bacon.End).toEqual(true)
+  expect(events[0].isEnd()).toEqual(true)
+
+lastNonError = (events) ->
+  _.last(_.filter(((e) -> toValue(e) != "<error>"), events))
+
+verifyFinalState = (property, value) ->
+  events = []
+  property.subscribe (event) ->
+    events.push(event)
+  expect(toValues(events)).toEqual(toValues([value, "<end>"]))
 
 verifyCleanup = @verifyCleanup = ->
   for seq in seqs
@@ -100,6 +111,8 @@ toValue = (x) ->
   if x? and x.isEvent?
     if x.isError()
       "<error>"
+    else if x.isEnd()
+      "<end>"
     else
       x.value
   else
