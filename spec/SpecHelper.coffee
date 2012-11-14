@@ -41,8 +41,6 @@ seqs = []
     expect(events2).toEqual(justValues(expectedEvents))
     verifyCleanup()
 
-
-
 verifySingleSubscriber = (src, expectedEvents) ->
   expect(src instanceof Bacon.EventStream).toEqual(true)
   events = []
@@ -85,7 +83,7 @@ verifyExhausted = (src) ->
   events = []
   src.subscribe (event) ->
     events.push(event)
-  expect(events).toEqual([])
+  expect(events[0] instanceof Bacon.End).toEqual(true)
 
 verifyCleanup = @verifyCleanup = ->
   for seq in seqs

@@ -612,6 +612,7 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     sinks = []
+    ended = false
     @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
@@ -639,17 +640,21 @@ class Dispatcher
     @handleEvent = (event) => 
       assertEvent event
       if event.isEnd()
-        subscribe = => nop
+        ended = true
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
-      assertFunction sink
-      sinks.push(sink)
-      if sinks.length == 1
-        unsubscribeFromSource = subscribe @handleEvent
-      assertFunction unsubscribeFromSource
-      =>
-        removeSink sink
-        unsubscribeFromSource() unless @hasSubscribers()
+      if ended
+        sink end()
+        nop
+      else
+        assertFunction sink
+        sinks.push(sink)
+        if sinks.length == 1
+          unsubscribeFromSource = subscribe @handleEvent
+        assertFunction unsubscribeFromSource
+        =>
+          removeSink sink
+          unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
