@@ -51,6 +51,15 @@ Bacon.repeatedly = (delay, values) ->
     toEvent values[index % values.length]
   Bacon.fromPoll(delay, poll)
 
+Bacon.fromCallback = (f, args...) -> 
+  f = makeFunction(f, args)
+  new EventStream (sink) ->
+    handler = (value) ->
+      sink next(value)
+      sink end()
+    f(handler)
+    nop
+
 Bacon.fromPoll = (delay, poll) ->
   new EventStream (sink) ->
     id = undefined

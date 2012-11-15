@@ -35,6 +35,20 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
+describe "Bacon.fromCallback", ->
+  it "makes an EventStream from function that takes a callback", ->
+    expectStreamEvents( 
+      ->
+        src = (callback) -> callback("lol")
+        stream = Bacon.fromCallback(src)
+      ["lol"])
+  it "supports partial application", ->
+    expectStreamEvents(
+      ->
+        src = (param, callback) -> callback(param)
+        stream = Bacon.fromCallback(src, "lol")
+      ["lol"])
+
 describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->
     emitter = new EventEmitter()
