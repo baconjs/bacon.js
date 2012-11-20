@@ -156,19 +156,23 @@ describe "EventStream.mapError", ->
         -> repeat(1, [1, error()]).mapError("ERR").take(2)
         [1, "ERR"])
 
-describe "EventStream.do", ->
-  it "does not alter the stream", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).do(->)
-      [1, 2])
+describe "EventStream.doAction", ->
   it "calls function before sending value to listeners", ->
     called = []
     bus = new Bacon.Bus()
-    s = bus.do((x) -> called.push(x))
+    s = bus.doAction((x) -> called.push(x))
     s.onValue(->)
     s.onValue(->)
     bus.push(1)
     expect(called).toEqual([1])
+  it "does not alter the stream", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).doAction(->)
+      [1, 2])
+  it "is dubbed by do for backward compatibility", ->
+    expectStreamEvents(
+      -> Bacon.once(1).do(->)
+      [1])
 
 describe "EventStream.mapEnd", ->
   it "produces an extra element on stream end", ->
@@ -233,12 +237,16 @@ describe "Property.flatMap", ->
       [0, 1, 2])
 
 
-describe "EventStream.switch", ->
+describe "EventStream.flatMapLatest", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
-      -> series(3, [1, 2]).switch (value) ->
+      -> series(3, [1, 2]).flatMapLatest (value) ->
         Bacon.sequentially(t(2), [value, error(), value])
       [1, 2, error(), 2])
+  it "is dubbed by switch for backward compatibility", ->
+    expectStreamEvents(
+      -> Bacon.once(1).switch((value) -> Bacon.once(value))
+      [1])
 
 describe "Property.switch", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->

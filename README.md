@@ -193,12 +193,14 @@ ignored
 
 `streamOrProperty.skip(n)` skips the first n elements from the stream
 
-`streamOrProperty.do(f)` returns a stream/property where the function f
+`streamOrProperty.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
 useful for debugging, but also for stuff like calling the
 preventDefault() method for events. In fact, you can
 also use a property-extractor string instead of a function, as in
-".preventDefault".
+".preventDefault". The old name for
+this method is `do` which is temporarily supported for backward
+compatibility.
 
 `streamOrProperty.not()` returns a stream/property that inverts boolean
 values
@@ -216,9 +218,11 @@ Example - converting strings to integers, skipping empty values:
         return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
     })
 
-`streamOrProperty.switch(f)` like flatMap, but instead of including events from
+`streamOrProperty.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
-You can think this as switching from stream to stream
+You can think this as switching from stream to stream. The old name for
+this method is `switch` which is temporarily supported for backward
+compatibility.
 
 
 EventStream
@@ -473,8 +477,10 @@ array that is a field in the stream value. For example, you'd get 2 for
 "dudes" array. For example, you'd get "jack" for `{ dudes : ["john",
 "jack"] }`.
 
-`stream.do(".preventDefault")` would call the "preventDefault" method of
-stream values. 
+`stream.doAction(".preventDefault")` would call the "preventDefault" method of
+stream values. The old name for
+this method is `do` which is temporarily supported for backward
+compatibility.
 
 `stream.filter(".attr", "disabled").not()` would call `.attr("disabled")` on
 stream values and filter by the return value. This would practically

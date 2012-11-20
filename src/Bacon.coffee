@@ -292,8 +292,8 @@ class Observable
         @push next (f event.error)
       else
         @push event
-
-  do: (f, args...) ->
+  do: (args...) -> @doAction(args...)
+  doAction: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
       f(event.value) if event.hasValue()
@@ -404,7 +404,8 @@ class Observable
           children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
-  switch: (f) =>
+  switch: (args...) => @flatMapLatest(args...)
+  flatMapLatest: (f) =>
     stream = @toEventStream()
     stream.flatMap (value) =>
       f(value).takeUntil(stream)
