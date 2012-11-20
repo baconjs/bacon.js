@@ -11,6 +11,7 @@ git pull --rebase origin master
 
 echo "Building"
 npm install
+npm test
 
 echo "Releasing with version $version"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
@@ -21,3 +22,5 @@ git tag $version
 
 git push origin master
 git push --tags origin master
+
+npm publish
