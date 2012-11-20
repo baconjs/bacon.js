@@ -6,6 +6,8 @@ if [ -z $1 ]; then
 fi
 version=$1
 files="component.json package.json"
+echo "Releasing with version $version"
+
 echo "Pulling from origin"
 git pull --rebase origin master
 
@@ -13,14 +15,19 @@ echo "Building"
 npm install
 npm test
 
-echo "Releasing with version $version"
+echo "Updating files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
 
+echo "Commit and tag"
 git add .
 git commit -m "release $version"
 git tag $version
 
+echo "Push to origin/master"
 git push origin master
 git push --tags origin master
 
+echo "Publish to npm"
 npm publish
+
+echo "DONE!"
