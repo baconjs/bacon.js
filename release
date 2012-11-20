@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+if [ -z $1 ]; then
+  echo "usage: release <version>"
+  exit 1
+fi
+version=$1
+files="component.json package.json"
+echo "Pulling from origin"
+git pull --rebase origin master
+
+echo "Building"
+npm install
+
+echo "Releasing with version $version"
+sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
+
+git add .
+git commit -m "release $version"
+git tag $version
+
+git push origin master
+git push --tags origin master
