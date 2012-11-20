@@ -22,6 +22,23 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
+Install
+=======
+
+You can download the latest [generated javascript](https://raw.github.com/raimohanska/bacon.js/master/lib/Bacon.js).
+
+..or you can use script tags to include this file directly from Github:
+
+    <script src="https://raw.github.com/raimohanska/bacon.js/master/lib/Bacon.js"></script>
+
+If you're targeting to [node.js](http://nodejs.org/), you can
+
+    npm install baconjs
+
+For [bower](https://github.com/twitter/bower) users:
+
+    bower install bacon
+
 Intro
 =====
 
