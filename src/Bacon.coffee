@@ -617,6 +617,7 @@ class Property extends Observable
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
+  decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
   delay: (delay) -> propertyThenStream(this, @changes().delay(delay))
   throttle: (delay) -> propertyThenStream(this, @changes().throttle(delay))
 
