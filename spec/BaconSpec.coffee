@@ -736,6 +736,16 @@ describe "combineTemplate", ->
       -> Bacon.combineTemplate({})
       [{}])
 
+describe "Property.switchCase", ->
+  it "switches between source Properties based on property value", ->
+    expectPropertyEvents(
+      ->
+        a = Bacon.constant("a")
+        b = Bacon.constant("b")
+        c = Bacon.constant("c")
+        series(1, [1,2,3]).toProperty().switchCase({1: a, 2: b, 3: c})
+      ["a", "b", "c"])
+
 describe "Observable.onValues", ->
   it "splits value array to callback arguments", ->
     f = mockFunction()

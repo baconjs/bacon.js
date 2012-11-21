@@ -616,6 +616,7 @@ class Property extends Observable
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
+  switchCase: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
