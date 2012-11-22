@@ -437,7 +437,7 @@ class EventStream extends Observable
     @flatMap (value) ->
       Bacon.later delay, value
   throttle: (delay) ->
-    @switch (value) ->
+    @flatMapLatest (value) ->
       Bacon.later delay, value
   bufferWithTime: (delay) ->
     values = []
