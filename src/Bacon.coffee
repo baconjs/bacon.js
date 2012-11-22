@@ -622,6 +622,7 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     sinks = []
+    ended = false
     @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
@@ -649,17 +650,21 @@ class Dispatcher
     @handleEvent = (event) => 
       assertEvent event
       if event.isEnd()
-        subscribe = => nop
+        ended = true
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
-      assertFunction sink
-      sinks.push(sink)
-      if sinks.length == 1
-        unsubscribeFromSource = subscribe @handleEvent
-      assertFunction unsubscribeFromSource
-      =>
-        removeSink sink
-        unsubscribeFromSource() unless @hasSubscribers()
+      if ended
+        sink end()
+        nop
+      else
+        assertFunction sink
+        sinks.push(sink)
+        if sinks.length == 1
+          unsubscribeFromSource = subscribe @handleEvent
+        assertFunction unsubscribeFromSource
+        =>
+          removeSink sink
+          unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
@@ -678,6 +683,9 @@ class PropertyDispatcher extends Dispatcher
       shouldBounceInitialValue = => @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map((val) -> sink initial(val))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
+        nop
+      else if ended
+        sink end()
         nop
       else
         subscribe.apply(this, [sink])
@@ -840,6 +848,7 @@ _ = {
     f(x) for x in xs
   contains: (xs, x) -> xs.indexOf(x) >= 0
   id: (x) -> x
+  last: (xs) -> xs[xs.length-1]
 }
 
 Bacon._ = _
