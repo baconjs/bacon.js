@@ -617,6 +617,15 @@ class Property extends Observable
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
+  delay: (delay) -> @changes().delay(delay).toProperty(snatchValue(this).toArray()...)
+
+snatchValue = (property) ->
+  value = None
+  property.subscribe (event) ->
+    if event.isInitial()
+      value = new Some(event.value)
+    Bacon.noMore
+  value
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
@@ -732,12 +741,14 @@ class Some
   map: (f) ->
     new Some(f @value)
   isDefined: true
+  toArray: -> [@value]
 
 None =
   getOrElse: (value) -> value
   filter: -> None
   map: -> None
   isDefined: false
+  toArray: -> []
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property

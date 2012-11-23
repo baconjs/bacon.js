@@ -1,0 +1,1 @@
+cat package.json|grep version|sed 's/.*:.*"\(.*\)".*/\1/'

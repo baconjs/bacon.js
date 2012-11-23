@@ -493,11 +493,31 @@ describe "Bacon.once().take(1)", ->
 describe "Property.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
+      -> series(2, [1,2,3]).toProperty().takeUntil(Bacon.later(t(3)))
+      [1])
+  it "works with errors", ->
+    expectPropertyEvents(
       ->
         src = repeat(2, [1, error(), 3])
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
+
+describe "Property.delay", ->
+  it "delivers initial value and changes", ->
+    expectPropertyEvents(
+      ->
+        series(1, [1,2,3]).toProperty(0).delay(t(1))
+      [0,1,2,3])
+  it "delays changes", ->
+    expectStreamEvents(
+      -> series(2, [1,2,3]).toProperty()
+        .delay(t(2)).changes().takeUntil(Bacon.later(t(5)))
+      [1])
+  it "does not delay initial value", ->
+    expectPropertyEvents(
+      -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
+      [0])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
