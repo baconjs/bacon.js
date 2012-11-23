@@ -506,8 +506,7 @@ describe "Property.takeUntil", ->
 describe "Property.delay", ->
   it "delivers initial value and changes", ->
     expectPropertyEvents(
-      ->
-        series(1, [1,2,3]).toProperty(0).delay(t(1))
+      -> series(1, [1,2,3]).toProperty(0).delay(t(1))
       [0,1,2,3])
   it "delays changes", ->
     expectStreamEvents(
@@ -518,6 +517,20 @@ describe "Property.delay", ->
     expectPropertyEvents(
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
       [0])
+
+describe "Property.throttle", ->
+  it "delivers initial value and changes", ->
+    expectPropertyEvents(
+      -> series(2, [1,2,3]).toProperty(0).throttle(t(1))
+      [0,1,2,3])
+  it "throttles changes, but not initial value", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).throttle(t(4))
+      [0,3])
+  it "works without initial value", ->
+    expectPropertyEvents(
+      -> series(2, [1,2,3]).toProperty().throttle(t(4))
+      [3])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
