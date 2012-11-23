@@ -193,6 +193,11 @@ ignored
 
 `streamOrProperty.skip(n)` skips the first n elements from the stream
 
+`streamOrProperty.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
+
+`streamOrProperty.throttle(delay)` throttles stream/property by given amount of milliseconds. This means that event is only emitted after the given
+"quiet period". Does not affect the initial value of a Property.
+
 `streamOrProperty.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
 useful for debugging, but also for stuff like calling the
@@ -274,12 +279,6 @@ checking.
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
-
-`stream.delay(delay)` delays the stream by given amount of milliseconds
-
-`stream.throttle(delay)` throttles stream by given amount of
-milliseconds. This means that event is only emitted after the given
-"quiet period".
 
 `stream.bufferWithTime(delay)` buffers stream events with given delay.
 The buffer is flushed at most once in the given delay. So, if your input
