@@ -412,7 +412,7 @@ class Observable
   not: -> @map((x) -> !x)
   log: -> 
     @subscribe (event) -> console.log(event.describe())
-    undefined
+    this
 
 class EventStream extends Observable
   constructor: (subscribe) ->
