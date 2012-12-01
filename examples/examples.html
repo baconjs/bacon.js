@@ -30,6 +30,8 @@
         keyState(32).onValue(function(state) {
           $("#state").text(state)
         })
+        function isEmpty(s) { return s.length == 0 }
+        $("#enabling input").asEventStream("keyup").map(function(event) { return $(event.target).val()}).toProperty("").map(isEmpty).assign($("#enabling button"), "attr", "disabled") 
 
       })
     </script>
@@ -44,5 +46,9 @@
       <h2>Combinators example</h2>
       SPACEBAR status=<span id="state"></span>
     </div>
+    <div id="enabling">
+      <h2>Enable/disable</h2>
+      <input type="text" placeholder="required field">
+      <button>Don't push me</button>
   </body>
 </html>
