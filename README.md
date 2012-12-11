@@ -731,8 +731,6 @@ Then type `node` and try the following
     Bacon = require("baconjs").bacon()
     Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
 
-I have published version 0.0.2 (commit 11ffc8ce5ba2000c784b700eba175b6e3c947d46) to NPM repo.
-
 Why Bacon?
 ==========
 
