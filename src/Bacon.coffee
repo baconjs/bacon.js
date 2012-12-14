@@ -340,11 +340,11 @@ class Observable
       else
         @push event
   distinctUntilChanged: -> @skipDuplicates()
-  skipDuplicates: ->
+  skipDuplicates: (isEqual = (a, b) -> a is b) ->
     @withStateMachine undefined, (prev, event) ->
       if !event.hasValue()
         [prev, [event]]
-      else if prev isnt event.value
+      else if not isEqual(prev, event.value)
         [event.value, [event]]
       else
         [prev, []]

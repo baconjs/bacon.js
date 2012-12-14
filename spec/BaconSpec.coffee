@@ -205,6 +205,12 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 2, 3, 1]).skipDuplicates()
     [1, 2, error(), 3, 1])
+  it "works with custom isEqual function", ->
+    a = {x: 1}; b = {x: 2}; c = {x: 2}; d = {x: 3}; e = {x: 1}
+    isEqual = (a, b) -> a?.x == b?.x
+    expectStreamEvents(
+      -> series(1, [a, b, error(), c, d, e]).skipDuplicates(isEqual)
+      [a, b, error(), d, e])
 
 describe "EventStream.flatMap", ->
   it "should spawn new stream for each value and collect results into a single stream", ->
