@@ -276,9 +276,10 @@ This would result to following elements in the result stream:
     1 + 2 = 3
     3 + 3 = 6
 
-`stream.skipDuplicates()` drops consecutive equal elements. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
-checking.
+`stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
+from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
+checking by default. If the isEqual argument is supplied, checks by calling
+isEqual(oldValue, newValue)
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
@@ -365,9 +366,10 @@ The result EventStream values will be formed using the given function
 `f(propertyValue, streamValue)`. You can use a method name (such as
 ".concat") instead of a function too.
 
-`property.skipDuplicates()` drops consecutive equal values. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses === operator for equality
-checking.
+`property.skipDuplicates([isEqual])` drops consecutive equal elements. So,
+from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
+checking by default. If the isEqual argument is supplied, checks by calling
+isEqual(oldValue, newValue)
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly the same events as the property itself, except any Initial
