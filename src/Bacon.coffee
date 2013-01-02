@@ -543,12 +543,12 @@ class EventStream extends Observable
   slidingWindow: (n) ->
     window = []
     @withHandler (event) ->
-      if event.isError() || event.isEnd()
-        @push event
-      else
+      if event.hasValue()
         if window.push(event.value) > n
           window.shift() until window.length <= n
         @push next(window, event)
+      else
+        @push event
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
@@ -616,8 +616,6 @@ class Property extends Observable
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
-  slidingWindow: (n) => 
-    @toEventStream().slidingWindow(n)
   withHandler: (handler) ->
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
@@ -627,6 +625,16 @@ class Property extends Observable
       @subscribe (event) =>
         event = next(event.value) if event.isInitial()
         sink event
+  slidingWindow: (n) =>
+    new Property (sink) =>
+      window = []
+      @subscribe (event) ->
+        if event.hasValue()
+          if window.push(event.value) > n
+            window.shift() until window.length <= n
+          sink next(window, event)
+        else
+          sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])

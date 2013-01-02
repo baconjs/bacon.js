@@ -35,21 +35,6 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
-describe "Bacon.slidingWindow", ->
-  # As the sliding window is in-place updated, we need to clone the arrays
-  # to make any assertions about them.
-  cloneArray = (xs) -> xs.slice(0)
-  
-  it "slides the window for events", ->
-    expectStreamEvents(
-      -> Bacon.sequentially(t(1), [1,2,3]).slidingWindow(2).map(cloneArray)
-      [[1], [1,2], [2,3]])
-  
-  it "slides the window for properties", ->
-    expectStreamEvents(
-      -> Bacon.sequentially(t(1), [1,2,3]).toProperty().slidingWindow(2).map(cloneArray)
-      [[1], [1,2], [2,3]])
-
 describe "Bacon.fromCallback", ->
   it "makes an EventStream from function that takes a callback", ->
     expectStreamEvents( 
@@ -202,6 +187,19 @@ describe "EventStream.mapEnd", ->
     expectStreamEvents(
       -> series(1, ["1", error()]).mapEnd()
       ["1", error(), undefined])
+
+describe "EventStream.slidingWindow", ->
+  # As the sliding window is in-place updated, we need to clone the arrays
+  # to make any assertions about them.
+  cloneArray = (xs) -> xs.slice(0)
+  it "slides the window for events", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3]).slidingWindow(2).map(cloneArray)
+      [[1], [1,2], [2,3]])
+  it "lets errors go through", ->
+    expectStreamEvents(
+      -> series(1, [1,2,error(),3]).slidingWindow(2).map(cloneArray)
+      [[1], [1,2], error(), [2,3]])
 
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
@@ -462,6 +460,17 @@ describe "Property.toEventStream", ->
     expectStreamEvents(
       -> series(1, [1, 2]).toProperty(0).toEventStream()
       [0, 1, 2])
+
+describe "Property.slidingWindow", ->
+  cloneArray = (xs) -> xs.slice(0)
+  it "gives a sliding window", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty().slidingWindow(2).map(cloneArray)
+      [[1], [1,2], [2,3]])
+  it "copes with errors", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,error(),3]).toProperty().slidingWindow(2).map(cloneArray)
+      [[1], [1,2], error(), [2,3]])
 
 describe "Property.map", ->
   it "maps property values", ->
