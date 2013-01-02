@@ -36,14 +36,18 @@ describe "Bacon.interval", ->
       ["x", "x", "x"])
 
 describe "Bacon.slidingWindow", ->
+  # As the sliding window is in-place updated, we need to clone the arrays
+  # to make any assertions about them.
+  cloneArray = (xs) -> xs.slice(0)
+  
   it "slides the window for events", ->
     expectStreamEvents(
-      -> Bacon.sequentially(t(1), [1,2,3,4]).slidingWindow(2).take(3)
+      -> Bacon.sequentially(t(1), [1,2,3]).slidingWindow(2).map(cloneArray)
       [[1], [1,2], [2,3]])
   
   it "slides the window for properties", ->
     expectStreamEvents(
-      -> Bacon.interval(t(1), 1).scan(1, add).slidingWindow(2).take(3)
+      -> Bacon.sequentially(t(1), [1,2,3]).toProperty().slidingWindow(2).map(cloneArray)
       [[1], [1,2], [2,3]])
 
 describe "Bacon.fromCallback", ->

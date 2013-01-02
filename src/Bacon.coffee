@@ -546,8 +546,8 @@ class EventStream extends Observable
       if event.isError() || event.isEnd()
         @push event
       else
-        window = window.slice(-(n-1))
-        window.push event.value
+        if window.push(event.value) > n
+          window.shift() until window.length <= n
         @push next(window, event)
 
   withHandler: (handler) ->
@@ -616,15 +616,8 @@ class Property extends Observable
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
-  slidingWindow: (n) => new EventStream (sink) =>
-    window = []
-    @subscribe (event) =>      
-      if event.isError() || event.isEnd()
-        sink event
-      else
-        window = window.slice(-(n-1))
-        window.push event.value
-        sink next(window, event)
+  slidingWindow: (n) => 
+    @toEventStream().slidingWindow(n)
   withHandler: (handler) ->
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
