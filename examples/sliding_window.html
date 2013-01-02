@@ -5,28 +5,20 @@
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="../lib/Bacon.js"></script>
   <style>
-  .chart rect {
-    fill: steelblue;
-    stroke: white;
-  }
+    .chart rect {
+      fill: steelblue;
+      stroke: white;
+    }
   </style>
-
 </head>
 <body>
-  <script>
-  var t = 1297110663, // start time (seconds since epoch)
-      v = 70,
-      d_len = 33;
-      
-      
-  function next() {
-    return new Bacon.Next({
-      time: ++t,
-      value: v = ~~Math.max(10, Math.min(90, v + 10 * (Math.random() - .5)))
-    });
-  }
+  <script>  
   
-  var w = 20,
+  // The d3 setup. Skip further down for the bacon-powered bit
+  // http://mbostock.github.com/d3/tutorial/bar-2.html
+  
+  var d_len = 33,
+      w = 20,
       h = 80;
       
   var x = d3.scale.linear()
@@ -72,12 +64,25 @@
         .remove();
   }
   
-  function cloneArray(a){
-    return a.slice(0);
+  // The Bacon awesomeness
+  
+  var initial = {
+    time: 1297110663,
+    value: 70
   }
   
-  Bacon.fromPoll(1500, next).slidingWindow(33).map(cloneArray).onValue(redraw);
+  function walk(prev, rand) {
+    return {
+      time: prev.time + 1,
+      value: ~~Math.max(10, Math.min(90, prev.value + 10 * (rand - .5)))
+    };
+  }
   
+  function rand() {
+    return new Bacon.Next(Math.random());
+  }
+  
+  Bacon.fromPoll(1500, rand).scan(initial, walk).slidingWindow(33).onValue(redraw);
   
   </script>
 </body>
