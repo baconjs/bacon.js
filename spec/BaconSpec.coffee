@@ -189,16 +189,13 @@ describe "EventStream.mapEnd", ->
       ["1", error(), undefined])
 
 describe "EventStream.slidingWindow", ->
-  # As the sliding window is in-place updated, we need to clone the arrays
-  # to make any assertions about them.
-  cloneArray = (xs) -> xs.slice(0)
   it "slides the window for events", ->
     expectStreamEvents(
-      -> series(1, [1,2,3]).slidingWindow(2).map(cloneArray)
+      -> series(1, [1,2,3]).slidingWindow(2)
       [[1], [1,2], [2,3]])
   it "lets errors go through", ->
     expectStreamEvents(
-      -> series(1, [1,2,error(),3]).slidingWindow(2).map(cloneArray)
+      -> series(1, [1,2,error(),3]).slidingWindow(2)
       [[1], [1,2], error(), [2,3]])
 
 describe "EventStream.takeWhile", ->
@@ -462,14 +459,13 @@ describe "Property.toEventStream", ->
       [0, 1, 2])
 
 describe "Property.slidingWindow", ->
-  cloneArray = (xs) -> xs.slice(0)
   it "gives a sliding window", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty().slidingWindow(2).map(cloneArray)
+    expectStreamEvents(
+      -> series(1, [1,2,3]).toProperty().slidingWindow(2)
       [[1], [1,2], [2,3]])
   it "copes with errors", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,error(),3]).toProperty().slidingWindow(2).map(cloneArray)
+    expectStreamEvents(
+      -> series(1, [1,2,error(),3]).toProperty().slidingWindow(2)
       [[1], [1,2], error(), [2,3]])
 
 describe "Property.map", ->

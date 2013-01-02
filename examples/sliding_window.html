@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sliding Windows Example</title>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="../lib/Bacon.js"></script>
+  <style>
+  .chart rect {
+    fill: steelblue;
+    stroke: white;
+  }
+  </style>
+
+</head>
+<body>
+  <script>
+  var t = 1297110663, // start time (seconds since epoch)
+      v = 70,
+      d_len = 33;
+      
+      
+  function next() {
+    return new Bacon.Next({
+      time: ++t,
+      value: v = ~~Math.max(10, Math.min(90, v + 10 * (Math.random() - .5)))
+    });
+  }
+  
+  var w = 20,
+      h = 80;
+      
+  var x = d3.scale.linear()
+      .domain([0, 1])
+      .range([0, w]);
+  
+  var y = d3.scale.linear()
+      .domain([0, 100])
+      .rangeRound([0, h]);
+  
+  var chart = d3.select("body").append("svg")
+      .attr("class", "chart")
+      .attr("width", w * d_len - 1)
+      .attr("height", h);
+    
+  chart.append("line")
+      .attr("x1", 0)
+      .attr("x2", w * d_len)
+      .attr("y1", h - 0.5)
+      .attr("y2", h - 0.5)
+      .style("stroke", "#000");
+    
+  function redraw(data) {
+    var rect = chart.selectAll("rect")
+        .data(data, function(d) { return d.time; });
+  
+    rect.enter().insert("rect", "line")
+        .attr("x", function(d, i) { return x(i + 1) - .5; })
+        .attr("y", function(d) { return h - y(d.value) - .5; })
+        .attr("width", w)
+        .attr("height", function(d) { return y(d.value); })
+      .transition()
+        .duration(1000)
+        .attr("x", function(d, i) { return x(i) - .5; });
+  
+    rect.transition()
+        .duration(1000)
+        .attr("x", function(d, i) { return x(i) - .5; });
+  
+    rect.exit().transition()
+        .duration(1000)
+        .attr("x", function(d, i) { return x(i - 1) - .5; })
+        .remove();
+  }
+  
+  function cloneArray(a){
+    return a.slice(0);
+  }
+  
+  Bacon.fromPoll(1500, next).slidingWindow(33).map(cloneArray).onValue(redraw);
+  
+  
+  </script>
+</body>
+</html>
