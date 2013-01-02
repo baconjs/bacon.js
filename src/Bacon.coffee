@@ -613,6 +613,26 @@ class Property extends Observable
       combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
+  scan: (seed, f) =>
+    f = toCombinator(f)
+    acc = seed
+    @withSubscribe (sink) =>
+      initSent = false
+      unsub = @subscribe (event) =>
+        if (event.hasValue())
+          if (initSent && event.isInitial())
+            Bacon.more # init already sent, skip this one
+          else
+            if (event.isInitial()) 
+              initSent = true
+            acc = f(acc, event.value)
+            sink (event.apply(acc))
+        else
+          sink event
+      if !initSent
+        sink initial(acc)
+      unsub
+
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()

@@ -767,6 +767,23 @@ describe "EventStream.scan", ->
       -> series(1, [1]).scan(null, ->1)
       [null, 1])
 
+describe "Property.scan", ->
+  it "with Init value, starts with f(seed, init)", ->
+    expectPropertyEvents(
+      -> series(1, [2,3]).toProperty(1).scan(0, add)
+      [1, 3, 6])
+  it "without Init value, starts with seed", ->
+    expectPropertyEvents(
+      -> series(1, [2,3]).toProperty().scan(0, add)
+      [0, 2, 5])
+  it "treats null seed value like any other value", ->
+    expectPropertyEvents(
+      -> series(1, [1]).toProperty().scan(null, add)
+      [null, 1])
+    expectPropertyEvents(
+      -> series(1, [2]).toProperty(1).scan(null, add)
+      [1, 3])
+
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
     expectPropertyEvents(
