@@ -539,6 +539,16 @@ class EventStream extends Observable
         Bacon.noMore
       else
         @push event
+  
+  slidingWindow: (n) ->
+    window = []
+    @withHandler (event) ->
+      if event.isError() || event.isEnd()
+        @push event
+      else
+        window = window.slice(-(n-1))
+        window.push event.value
+        @push next(window, event)
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
@@ -606,6 +616,15 @@ class Property extends Observable
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
       sink event unless event.isInitial()
+  slidingWindow: (n) => new EventStream (sink) =>
+    window = []
+    @subscribe (event) =>      
+      if event.isError() || event.isEnd()
+        sink event
+      else
+        window = window.slice(-(n-1))
+        window.push event.value
+        sink next(window, event)
   withHandler: (handler) ->
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)

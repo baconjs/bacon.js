@@ -35,6 +35,17 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
+describe "Bacon.slidingWindow", ->
+  it "slides the window for events", ->
+    expectStreamEvents(
+      -> Bacon.sequentially(t(1), [1,2,3,4]).slidingWindow(2).take(3)
+      [[1], [1,2], [2,3]])
+  
+  it "slides the window for properties", ->
+    expectStreamEvents(
+      -> Bacon.interval(t(1), 1).scan(1, add).slidingWindow(2).take(3)
+      [[1], [1,2], [2,3]])
+
 describe "Bacon.fromCallback", ->
   it "makes an EventStream from function that takes a callback", ->
     expectStreamEvents( 
