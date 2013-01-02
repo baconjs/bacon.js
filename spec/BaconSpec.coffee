@@ -750,11 +750,11 @@ describe "EventStream.scan", ->
 describe "Property.scan", ->
   it "with Init value, starts with f(seed, init)", ->
     expectPropertyEvents(
-      -> series(2,3).toProperty(1).scan(0, add)
+      -> series(1, [2,3]).toProperty(1).scan(0, add)
       [1, 3, 6])
   it "without Init value, starts with seed", ->
     expectPropertyEvents(
-      -> series(2,3).toProperty().scan(0, add)
+      -> series(1, [2,3]).toProperty().scan(0, add)
       [0, 2, 5])
   it "treats null seed value like any other value", ->
     expectPropertyEvents(
