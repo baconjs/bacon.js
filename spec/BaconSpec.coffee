@@ -190,13 +190,13 @@ describe "EventStream.mapEnd", ->
 
 describe "EventStream.slidingWindow", ->
   it "slides the window for events", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(1, [1,2,3]).slidingWindow(2)
-      [[1], [1,2], [2,3]])
+      [[], [1], [1,2], [2,3]])
   it "lets errors go through", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(1, [1,2,error(),3]).slidingWindow(2)
-      [[1], [1,2], error(), [2,3]])
+      [[], [1], [1,2], error(), [2,3]])
 
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
@@ -460,13 +460,13 @@ describe "Property.toEventStream", ->
 
 describe "Property.slidingWindow", ->
   it "gives a sliding window", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty().slidingWindow(2)
-      [[1], [1,2], [2,3]])
+      [[], [1], [1,2], [2,3]])
   it "copes with errors", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(1, [1,2,error(),3]).toProperty().slidingWindow(2)
-      [[1], [1,2], error(), [2,3]])
+      [[], [1], [1,2], error(), [2,3]])
 
 describe "Property.map", ->
   it "maps property values", ->
