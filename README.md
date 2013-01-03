@@ -66,10 +66,8 @@ filter and combine these streams in a multitude of ways (see API below). The met
 `filter`, for example, are similar to same functions in functional list programming
 (like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
 
-    function always(value) { return function() { return value } }
-    
-    var plus = $("#plus").asEventStream("click").map(always(1))
-    var minus = $("#minus").asEventStream("click").map(always(-1))
+    var plus = $("#plus").asEventStream("click").map(1)
+    var minus = $("#minus").asEventStream("click").map(-1)
     var both = plus.merge(minus)
 
 .. you'll have a stream that will output the number 1 when the "plus" button is clicked
@@ -109,6 +107,8 @@ Hiding and showing the same span depending on the content of the property value 
 In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
 
     $("span).css("visibility", "visible")
+
+For an actual tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
     
 API
 ===
@@ -130,10 +130,11 @@ event and its parameters, if given, like this:
 indefinitely with the given interval (in milliseconds)
 
 `Bacon.sequentially(interval, values)` creates a stream containing given
-values (given as array). Delivered with given interval (in milliseconds)
+values (given as array). Delivered with given interval in milliseconds.
 
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
-with given interval (in milliseconds)
+with given interval in milliseconds. For example, sequentially(10, [1,2,3]) 
+would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
 `Bacon.fromEventTarget(target, event)` creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object.
@@ -155,10 +156,10 @@ below)
 Common methods in EventStreams and Properties
 ---------------------------------------------
 
-Both EventStream and Property are subclasses of Observable, and hence
-share a lot of methods.
+Both EventStream and Property share the Observable interface, and hence
+share a lot of methods. Common methods are listed below.
 
-`streamOrProperty.map(f)` maps values using given function, returning a new
+`observable.map(f)` maps values using given function, returning a new
 EventStream. Instead of a function, you can also provide a constant
 value. Further, you can use a property extractor string like
 ".keyCode". So, if f is a string starting with a
@@ -171,16 +172,16 @@ rules below apply here.
 `stream.map(property)` maps the stream events to the current value of
 the given property. This is equivalent to `property.sampledBy(stream)`.
 
-`streamOrProperty.mapError(f)` maps errors using given function. More
+`observable.mapError(f)` maps errors using given function. More
 spedifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
 Construction rules apply.
 
-`streamOrProperty.mapEnd(f)` Adds an extra Next event just before End. The value is created
+`observable.mapEnd(f)` Adds an extra Next event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used. You can even omit the argument if
 
-`streamOrProperty.filter(f)` filters values using given predicate function. 
+`observable.filter(f)` filters values using given predicate function. 
 Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
 `map`, indeed.
@@ -189,22 +190,22 @@ property extractor string (like ".isValuable") instead. Just like with
 property. Event will be included in output iff the property holds `true`
 at the time of the event.
 
-`streamOrProperty.takeWhile(f)` takes while given predicate function holds true
+`observable.takeWhile(f)` takes while given predicate function holds true
 
-`streamOrProperty.take(n)` takes at most n elements from the stream
+`observable.take(n)` takes at most n elements from the stream
 
-`streamOrProperty.takeUntil(stream2)` takes elements from source until a Next event 
+`observable.takeUntil(stream2)` takes elements from source until a Next event 
 appears in the other stream. If other stream ends without value, it is
 ignored
 
-`streamOrProperty.skip(n)` skips the first n elements from the stream
+`observable.skip(n)` skips the first n elements from the stream
 
-`streamOrProperty.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
+`observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
 
-`streamOrProperty.throttle(delay)` throttles stream/property by given amount of milliseconds. This means that event is only emitted after the given
+`observable.throttle(delay)` throttles stream/property by given amount of milliseconds. This means that event is only emitted after the given
 "quiet period". Does not affect the initial value of a Property.
 
-`streamOrProperty.doAction(f)` returns a stream/property where the function f
+`observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
 useful for debugging, but also for stuff like calling the
 preventDefault() method for events. In fact, you can
@@ -213,10 +214,10 @@ also use a property-extractor string instead of a function, as in
 this method is `do` which is temporarily supported for backward
 compatibility.
 
-`streamOrProperty.not()` returns a stream/property that inverts boolean
+`observable.not()` returns a stream/property that inverts boolean
 values
 
-`streamOrProperty.flatMap(f)` for each element in the source stream, spawn a new
+`observable.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream. This is very similar to selectMany in
 RxJs.
@@ -229,13 +230,13 @@ Example - converting strings to integers, skipping empty values:
         return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
     })
 
-`streamOrProperty.flatMapLatest(f)` like flatMap, but instead of including events from
+`observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream. The old name for
 this method is `switch` which is temporarily supported for backward
 compatibility.
 
-`streamOrProperty.slidingWindow(n)` returns a Property that represents a
+`observable.slidingWindow(n)` returns a Property that represents a
 "sliding window" into the history of the values of the Observable. For
 example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
 respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
@@ -596,15 +597,15 @@ if you filter all values out, the error events will pass though. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.
 
-You can take action on errors by using the `streamOrProperty.onError(f)`
+You can take action on errors by using the `observable.onError(f)`
 callback.
 
-`streamOrProperty.errors()` returns a stream containing Error events only.
+`observable.errors()` returns a stream containing Error events only.
 Same as filtering with a function that always returns false.
 
 See also the `mapError()` function above.
 
-An Error does not terminate the stream. The method `streamOrProperty.endOnError()`
+An Error does not terminate the stream. The method `observable.endOnError()`
 returns a stream/property that ends immediately after first error.
 
 Bacon.js doesn't currently generate any Error events itself (except when
