@@ -232,6 +232,12 @@ You can think this as switching from stream to stream. The old name for
 this method is `switch` which is temporarily supported for backward
 compatibility.
 
+`streamOrProperty.slidingWindow(n)` returns a Property that represents a
+"sliding window" into the history of value of the observable. For
+example, if you has a stream `s` with value sequence 1 - 2 - 3 - 4 - 5, the
+respective values in `s.slidingWindow(2)` would be [], [1], [1,2],
+[2,3], [3,4], [4,5].
+
 
 EventStream
 -----------
