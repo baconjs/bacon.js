@@ -90,6 +90,16 @@ describe "Bacon.fromEventTarget", ->
 describe "Observable.log", ->
   it "does not crash", ->
     Bacon.constant(1).log
+    
+describe "Observable.slidingWindow", ->
+  it "slides the window for EventStreams", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).slidingWindow(2)
+      [[], [1], [1,2], [2,3]])
+  it "slides the window for Properties", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty().slidingWindow(2)
+      [[], [1], [1,2], [2,3]])
 
 describe "EventStream.filter", -> 
   it "should filter values", ->

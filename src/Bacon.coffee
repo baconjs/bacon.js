@@ -348,7 +348,6 @@ class Observable
         [event.value, [event]]
       else
         [prev, []]
-
   withStateMachine: (initState, f) ->
     state = initState
     @withHandler (event) ->
@@ -413,6 +412,9 @@ class Observable
   log: -> 
     @subscribe (event) -> console.log(event.describe())
     this
+  slidingWindow: (n) -> 
+    @scan [], (window, value) ->
+      window.concat([value]).slice(-n)
 
 class EventStream extends Observable
   constructor: (subscribe) ->
