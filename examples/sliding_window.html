@@ -82,7 +82,7 @@
     return new Bacon.Next(Math.random());
   }
   
-  Bacon.fromPoll(1500, rand).scan(initial, walk).slidingWindow(33).onValue(redraw);
+  Bacon.interval(1500).map(Math.random).scan(initial, walk).slidingWindow(33).onValue(redraw);
   
   </script>
 </body>
