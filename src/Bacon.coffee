@@ -348,7 +348,6 @@ class Observable
         [event.value, [event]]
       else
         [prev, []]
-
   withStateMachine: (initState, f) ->
     state = initState
     @withHandler (event) ->
@@ -413,6 +412,9 @@ class Observable
   log: -> 
     @subscribe (event) -> console.log(event.describe())
     this
+  slidingWindow: (n) -> 
+    @scan [], (window, value) ->
+      window.concat([value]).slice(-n)
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -539,10 +541,6 @@ class EventStream extends Observable
         Bacon.noMore
       else
         @push event
-  
-  slidingWindow: (n) -> 
-    @scan [], (window, value) ->
-      window.slice(-(n-1)).concat([value])
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
@@ -639,9 +637,6 @@ class Property extends Observable
       @subscribe (event) =>
         event = next(event.value) if event.isInitial()
         sink event
-  slidingWindow: (n) -> 
-    @scan [], (window, value) ->
-      window.slice(-(n-1)).concat([value])
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])

@@ -90,6 +90,16 @@ describe "Bacon.fromEventTarget", ->
 describe "Observable.log", ->
   it "does not crash", ->
     Bacon.constant(1).log
+    
+describe "Observable.slidingWindow", ->
+  it "slides the window for EventStreams", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).slidingWindow(2)
+      [[], [1], [1,2], [2,3]])
+  it "slides the window for Properties", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty().slidingWindow(2)
+      [[], [1], [1,2], [2,3]])
 
 describe "EventStream.filter", -> 
   it "should filter values", ->
@@ -187,16 +197,6 @@ describe "EventStream.mapEnd", ->
     expectStreamEvents(
       -> series(1, ["1", error()]).mapEnd()
       ["1", error(), undefined])
-
-describe "EventStream.slidingWindow", ->
-  it "slides the window for events", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).slidingWindow(2)
-      [[], [1], [1,2], [2,3]])
-  it "lets errors go through", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,error(),3]).slidingWindow(2)
-      [[], [1], [1,2], error(), [2,3]])
 
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
@@ -457,16 +457,6 @@ describe "Property.toEventStream", ->
     expectStreamEvents(
       -> series(1, [1, 2]).toProperty(0).toEventStream()
       [0, 1, 2])
-
-describe "Property.slidingWindow", ->
-  it "gives a sliding window", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty().slidingWindow(2)
-      [[], [1], [1,2], [2,3]])
-  it "copes with errors", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,error(),3]).toProperty().slidingWindow(2)
-      [[], [1], [1,2], error(), [2,3]])
 
 describe "Property.map", ->
   it "maps property values", ->
