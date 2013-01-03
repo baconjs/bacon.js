@@ -155,6 +155,9 @@ below)
 Common methods in EventStreams and Properties
 ---------------------------------------------
 
+Both EventStream and Property are subclasses of Observable, and hence
+share a lot of methods.
+
 `streamOrProperty.map(f)` maps values using given function, returning a new
 EventStream. Instead of a function, you can also provide a constant
 value. Further, you can use a property extractor string like
@@ -233,10 +236,10 @@ this method is `switch` which is temporarily supported for backward
 compatibility.
 
 `streamOrProperty.slidingWindow(n)` returns a Property that represents a
-"sliding window" into the history of value of the observable. For
-example, if you has a stream `s` with value sequence 1 - 2 - 3 - 4 - 5, the
-respective values in `s.slidingWindow(2)` would be [], [1], [1,2],
-[2,3], [3,4], [4,5].
+"sliding window" into the history of the values of the Observable. For
+example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
+respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
+[2,3] - [3,4] - [4,5].
 
 
 EventStream
