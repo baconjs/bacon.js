@@ -236,6 +236,33 @@ You can think this as switching from stream to stream. The old name for
 this method is `switch` which is temporarily supported for backward
 compatibility.
 
+`observable.scan(seed, f)` scans stream/property with given seed value and
+accumulator function, resulting to a Property. For example, you might
+use zero as seed and a "plus" function as the accumulator to create
+an "integral" property. Instead of a function, you can also supply a
+method name such as ".concat", in which case this method is called on
+the accumulator value and the new stream value is used as argument.
+
+Example:
+
+    var plus = function (a,b) { return a + b }
+    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+
+This would result to following elements in the result stream:
+
+    seed value = 0
+    0 + 1 = 1
+    1 + 2 = 3
+    3 + 3 = 6
+
+When applied to a Property as in `r = p.scan(f,seed)`, there's a (hopefully insignificant) catch: 
+The starting value for `r` depends on whether `p` has an 
+initial value when scan is applied. If there's no initial value, this works 
+identically to EventStream.scan: the `seed` will be the initial value of
+`r`. However, if `r` already has a current/initial value `x`, the
+seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
+because there can only be 1 initial value for a Property at a time.
+
 `observable.slidingWindow(n)` returns a Property that represents a
 "sliding window" into the history of the values of the Observable. For
 example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
@@ -266,25 +293,6 @@ event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
-
-`stream.scan(seed, f)` scans stream with given seed value and
-accumulator function, resulting to a Property. For example, you might
-use zero as seed and a "plus" function as the accumulator to create
-an "integral" property. Instead of a function, you can also supply a
-method name such as ".concat", in which case this method is called on
-the accumulator value and the new stream value is used as argument.
-
-Example:
-
-    var plus = function (a,b) { return a + b }
-    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
-
-This would result to following elements in the result stream:
-
-    seed value = 0
-    0 + 1 = 1
-    1 + 2 = 3
-    3 + 3 = 6
 
 `stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
