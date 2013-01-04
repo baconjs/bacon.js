@@ -362,6 +362,31 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
+  scan: (seed, f) =>
+    f = toCombinator(f)
+    acc = toOption(seed)
+    subscribe = (sink) =>
+      initSent = false
+      unsub = @subscribe (event) =>
+        if (event.hasValue())
+          if (initSent && event.isInitial())
+            Bacon.more # init already sent, skip this one
+          else
+            initSent = true
+            acc = new Some(f(acc.getOrElse(undefined), event.value))
+            sink (event.apply(acc.get()))
+        else
+          if event.isEnd() then initSent = true
+          sink event
+      if !initSent
+        acc.forEach (value) ->
+          reply = sink initial(value)
+          if (reply == Bacon.noMore)
+            unsub()
+            unsub = nop
+      unsub
+    new Property(new PropertyDispatcher(subscribe).subscribe)  
+    
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->
@@ -496,22 +521,6 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  scan: (seed, f) ->
-    acc = toOption(seed)
-    f = toCombinator(f)
-
-    handleEvent = (event) ->
-      acc = new Some(f(acc.getOrElse(undefined), event.value)) if event.hasValue()
-      @push event.apply(acc.getOrElse(undefined))
-    d = new Dispatcher(@subscribe, handleEvent)
-    subscribe = (sink) ->
-      reply = acc.map((val) -> sink initial(val)).getOrElse Bacon.more
-      if reply != Bacon.noMore
-        d.subscribe(sink)
-      else
-        nop
-    new Property(subscribe)
-
   concat: (right) ->
     left = this
     new EventStream (sink) ->
@@ -605,25 +614,6 @@ class Property extends Observable
       combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
-  scan: (seed, f) =>
-    f = toCombinator(f)
-    acc = seed
-    @withSubscribe (sink) =>
-      initSent = false
-      unsub = @subscribe (event) =>
-        if (event.hasValue())
-          if (initSent && event.isInitial())
-            Bacon.more # init already sent, skip this one
-          else
-            if (event.isInitial()) 
-              initSent = true
-            acc = f(acc, event.value)
-            sink (event.apply(acc))
-        else
-          sink event
-      if !initSent
-        sink initial(acc)
-      unsub
 
   changes: => new EventStream (sink) =>
     @subscribe (event) =>
@@ -640,10 +630,10 @@ class Property extends Observable
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
-  delay: (delay) -> propertyThenStream(this, @changes().delay(delay))
-  throttle: (delay) -> propertyThenStream(this, @changes().throttle(delay))
+  delay: (delay) -> addPropertyInitValueToStream(this, @changes().delay(delay))
+  throttle: (delay) -> addPropertyInitValueToStream(this, @changes().throttle(delay))
 
-propertyThenStream = (property, stream) ->
+addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
     value = None
     property.subscribe (event) ->
@@ -651,7 +641,7 @@ propertyThenStream = (property, stream) ->
         value = new Some(event.value)
       Bacon.noMore
     value
-  stream.toProperty(getInitValue(property).toArray()...)
+  stream.toProperty(getInitValue(property))
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
@@ -680,7 +670,10 @@ class Dispatcher
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
       done()
-      if @hasSubscribers() then Bacon.more else Bacon.noMore
+      if @hasSubscribers() 
+        Bacon.more 
+      else 
+        Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
       assertEvent event
@@ -715,8 +708,14 @@ class PropertyDispatcher extends Dispatcher
         current = new Some(event.value)
       push.apply(this, [event])
     @subscribe = (sink) =>
+      initSent = false
+      # init value is "bounced" here because the base Dispatcher class
+      # won't add more than one subscription to the underlying observable.
+      # without bouncing, the init value would be missing from all new subscribers
+      # after the first one
       shouldBounceInitialValue = => @hasSubscribers() or ended
-      reply = current.filter(shouldBounceInitialValue).map((val) -> sink initial(val))
+      reply = current.filter(shouldBounceInitialValue).map(
+        (val) -> sink initial(val))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
       else if ended
@@ -767,6 +766,7 @@ class Bus extends EventStream
 class Some
   constructor: (@value) ->
   getOrElse: -> @value
+  get: -> @value
   filter: (f) ->
     if f @value
       new Some(@value)
@@ -774,6 +774,8 @@ class Some
       None
   map: (f) ->
     new Some(f @value)
+  forEach: (f) ->
+    f @value
   isDefined: true
   toArray: -> [@value]
 
@@ -781,6 +783,7 @@ None =
   getOrElse: (value) -> value
   filter: -> None
   map: -> None
+  forEach: ->
   isDefined: false
   toArray: -> []
 

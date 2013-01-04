@@ -452,6 +452,15 @@ describe "Property", ->
       -> series(1, [null, 1, null]).toProperty(null)
       [null, null, 1, null])
 
+  it "does not get messed-up by a transient subscriber (bug fix)", ->
+    expectPropertyEvents(
+      ->
+        prop = series(1, [1,2,3]).toProperty(0)
+        prop.subscribe (event) =>
+          Bacon.noMore
+        prop
+      [0, 1, 2, 3])
+
 describe "Property.toEventStream", ->
   it "creates a stream that starts with current property value", ->
     expectStreamEvents(
