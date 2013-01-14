@@ -156,25 +156,26 @@ Bacon.combineTemplate = (template) ->
   setValue = (ctxStack, key, value) -> current(ctxStack)[key] = value
   applyStreamValue = (key, index) -> (ctxStack, values) -> setValue(ctxStack, key, values[index])
   constantValue = (key, value) -> (ctxStack, values) -> setValue(ctxStack, key, value)
-  compileTemplate = (template) ->
-    for key, value of template
-      if (value instanceof Observable)
-        streams.push(value)
-        funcs.push(applyStreamValue(key, streams.length - 1))
-      else if (typeof value == "object")
-        pushContext = (key) -> (ctxStack, values) ->
-          newContext = {}
-          setValue(ctxStack, key, newContext)
-          ctxStack.push(newContext)
-        popContext = (ctxStack, values) -> ctxStack.pop()
-        funcs.push(pushContext(key))
-        compileTemplate(value)
-        funcs.push(popContext)
-      else
-        funcs.push(constantValue(key, value))
+  mkContext = (template) -> if template instanceof Array then [] else {}
+  compile = (key, value) ->
+    if (value instanceof Observable)
+      streams.push(value)
+      funcs.push(applyStreamValue(key, streams.length - 1))
+    else if (typeof value == "object")
+      pushContext = (key) -> (ctxStack, values) ->
+        newContext = mkContext(value)
+        setValue(ctxStack, key, newContext)
+        ctxStack.push(newContext)
+      popContext = (ctxStack, values) -> ctxStack.pop()
+      funcs.push(pushContext(key))
+      compileTemplate(value)
+      funcs.push(popContext)
+    else
+      funcs.push(constantValue(key, value))
+  compileTemplate = (template) -> _.each(template, compile)
   compileTemplate template
   combinator = (values) ->
-    rootContext = {}
+    rootContext = mkContext(template)
     ctxStack = [rootContext]
     for f in funcs 
        f(ctxStack, values)
@@ -886,6 +887,9 @@ _ = {
     filtered
   map: (f, xs) ->
     f(x) for x in xs
+  each: (xs, f) ->
+    for key, value of xs
+      f(key, value)
   contains: (xs, x) -> xs.indexOf(x) >= 0
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]

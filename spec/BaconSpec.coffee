@@ -814,10 +814,23 @@ describe "combineTemplate", ->
     expectPropertyEvents(
       -> Bacon.combineTemplate({})
       [{}])
-  it "supports empty object", ->
-    expectPropertyEvents(
-      -> Bacon.combineTemplate({})
-      [{}])
+  it "supports arrays", ->
+    value = {key: [{ x: 1 }, { x: 2 }]}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+      expect(x.key instanceof Array).toEqual(true) # seems that the former passes even if x is not an array
+    value = [{ x: 1 }, { x: 2 }]
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+      expect(x instanceof Array).toEqual(true)
+    value = {key: [{ x: 1 }, { x: 2 }], key2: {}}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+      expect(x.key instanceof Array).toEqual(true)
+    value = {key: [{ x: 1 }, { x: Bacon.constant(2) }]}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual({key: [{ x: 1 }, { x: 2 }]})
+      expect(x.key instanceof Array).toEqual(true) # seems that the former passes even if x is not an array
 
 describe "Property.decode", ->
   it "switches between source Properties based on property value", ->
