@@ -126,6 +126,14 @@ event and its parameters, if given, like this:
 
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
+`Bacon.once(value)` creates an EventStream that delivers the given
+single value for the first subscriber. The stream will end immediately
+after this value.
+
+`Bacon.fromArray(values)` creates an EventStream that delivers the given
+series of values to the first subscriber. The stream ends after these
+values have been delivered.
+
 `Bacon.interval(interval, value)` repeats the single element
 indefinitely with the given interval (in milliseconds)
 
@@ -135,6 +143,8 @@ values (given as array). Delivered with given interval in milliseconds.
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
 with given interval in milliseconds. For example, sequentially(10, [1,2,3]) 
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
+
+`Bacon.never()` creates an EventStream that immediately ends.
 
 `Bacon.fromEventTarget(target, event)` creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object.
