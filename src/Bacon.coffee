@@ -852,7 +852,7 @@ toFieldExtractor = (f, args) ->
 toSimpleExtractor = (args) -> (key) -> (value) ->
   fieldValue = value[key]
   if isFunction(fieldValue)
-    fieldValue(args...)
+    fieldValue.apply(value, args)
   else
     fieldValue
 

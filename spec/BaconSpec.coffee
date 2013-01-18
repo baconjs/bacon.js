@@ -868,6 +868,27 @@ describe "Observable.onEnd", ->
     s.end()
     expect(ended).toEqual(true)
 
+describe "Field value extraction", ->
+  it "extracts field value", ->
+    expectStreamEvents(
+      -> Bacon.once({lol:"wut"}).map(".lol")
+      ["wut"])
+  it "extracts nested field value", ->
+    expectStreamEvents(
+      -> Bacon.once({lol:{wut: "wat"}}).map(".lol.wut")
+      ["wat"])
+  it "if field value is method, it does a method call", ->
+    context = null
+    result = null
+    object = {
+      method: -> 
+        context = this
+        "result"
+    }
+    Bacon.once(object).map(".method").onValue((x) -> result = x)
+    expect(result).toEqual("result")
+    expect(context).toEqual(object)
+
 testSideEffects = (wrapper, method) ->
   ->
     it "(f) calls function with property value", ->
