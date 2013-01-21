@@ -1044,6 +1044,23 @@ describe "Bacon.Bus", ->
         s
       ["two", "three", error()])
 
+  it "should replay plugged stream values if replay count > 0", ->
+    expectStreamEvents(
+      ->
+        bus = new Bacon.Bus(2)
+        push = new Bacon.Bus()
+        bus.plug(push)
+        push.push("plugged-one")
+        bus.push("one")
+        soon ->
+          push.push("plugged-two")
+          bus.push("two")
+          push.end()
+          bus.end()
+        bus
+      ["plugged-one", "one", "plugged-two", "two"])
+
+
 lessThan = (limit) -> 
   (x) -> x < limit
 times = (x, y) -> x * y

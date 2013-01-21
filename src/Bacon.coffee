@@ -732,38 +732,46 @@ class Bus extends EventStream
     inputs = []
     ended = false
     replays = []
+    saveReplay = (value) =>
+      if @replayCount > 0
+        replays.push(value)
+        replays = replays.slice(replays.length - @replayCount) if replays.length > @replayCount
     guardedSink = (input) => (event) =>
       if (event.isEnd())
         remove(input, inputs)
         Bacon.noMore
       else
-        sink event
+        saveReplay event
+        sink event if sink?
     unsubAll = => 
       f() for f in unsubFuncs
       unsubFuncs = []
     subscribeAll = (newSink) =>
       sink = newSink
-      unsubFuncs = []
-      for input in cloneArray(inputs)
-        unsubFuncs.push(input.subscribe(guardedSink(input)))
+      if @replayCount > 0
+        sink event for event in cloneArray(replays) if sink?
+      else
+        unsubFuncs = []
+        for input in cloneArray(inputs)
+          unsubFuncs.push(input.subscribe(guardedSink(input)))
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
-      sink next(rep) for rep in cloneArray(replays) if @replayCount >0 and sink?
       dispatcher.subscribe(sink)
     super(subscribeThis)
     @plug = (inputStream) =>
       return if ended
       inputs.push(inputStream)
-      if (sink?)
+      if (sink? or @replayCount > 0)
         unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
     @push = (value) =>
-      if @replayCount > 0
-        replays.push(value)
-        replays = replays.slice(replays.length - @replayCount) if replays.length > @replayCount
-      sink next(value) if sink?
+      value = next(value)
+      saveReplay(value)
+      sink value if sink?
     @error = (error) =>
-      sink new Error(error) if sink?
+      error = new Error(error)
+      saveReplay error
+      sink error if sink?
     @end = =>
       ended = true
       unsubAll()
