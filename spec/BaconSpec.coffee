@@ -1031,11 +1031,10 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).toEqual(false)
 
-describe "Bacon.ReplayBus", ->
-  it "should reply the latest values to new subscribers before broadcasting", ->
+  it "should reply the latest values to new subscribers if initialized with a replay count > 0", ->
     expectStreamEvents(
       ->
-        s = new Bacon.ReplayBus(1)
+        s = new Bacon.Bus(1)
         s.push "one"
         s.push "two"
         soon ->
@@ -1044,24 +1043,6 @@ describe "Bacon.ReplayBus", ->
           s.end()
         s
       ["two", "three", error()])
-
-  it "should behave like Bacon.Bus if the replay count is 0", ->
-    expectStreamEvents(
-      ->
-        bus = new Bacon.Bus
-        replayBus = new Bacon.ReplayBus(0)
-        bus.push "one"
-        bus.push "two"
-        replayBus.push "one"
-        replayBus.push "two"
-        s = bus.merge(replayBus)
-        soon ->
-          bus.push "three"
-          bus.end()
-          replayBus.push "three"
-          replayBus.end()
-        s
-      ["three", "three"])
 
 lessThan = (limit) -> 
   (x) -> x < limit

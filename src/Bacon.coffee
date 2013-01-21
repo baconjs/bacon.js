@@ -726,46 +726,7 @@ class PropertyDispatcher extends Dispatcher
         subscribe.apply(this, [sink])
 
 class Bus extends EventStream
-  constructor: ->
-    sink = undefined
-    unsubFuncs = []
-    inputs = []
-    ended = false
-    guardedSink = (input) => (event) =>
-      if (event.isEnd())
-        remove(input, inputs)
-        Bacon.noMore
-      else
-        sink event
-    unsubAll = => 
-      f() for f in unsubFuncs
-      unsubFuncs = []
-    subscribeAll = (newSink) =>
-      sink = newSink
-      unsubFuncs = []
-      for input in cloneArray(inputs)
-        unsubFuncs.push(input.subscribe(guardedSink(input)))
-      unsubAll
-    dispatcher = new Dispatcher(subscribeAll)
-    subscribeThis = (sink) =>
-      dispatcher.subscribe(sink)
-    super(subscribeThis)
-    @plug = (inputStream) =>
-      return if ended
-      inputs.push(inputStream)
-      if (sink?)
-        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
-    @push = (value) =>
-      sink next(value) if sink?
-    @error = (error) =>
-      sink new Error(error) if sink?
-    @end = =>
-      ended = true
-      unsubAll()
-      sink end() if sink?
-
-class ReplayBus extends EventStream
-  constructor: (@replayCount) ->
+  constructor: (@replayCount = 0) ->
     sink = undefined
     unsubFuncs = []
     inputs = []
@@ -788,7 +749,7 @@ class ReplayBus extends EventStream
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
-      sink next(rep) for rep in replays if sink?
+      sink next(rep) for rep in cloneArray(replays) if @replayCount >0 and sink?
       dispatcher.subscribe(sink)
     super(subscribeThis)
     @plug = (inputStream) =>
@@ -797,8 +758,9 @@ class ReplayBus extends EventStream
       if (sink?)
         unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
     @push = (value) =>
-      replays.push(value)
-      replays = replays.slice(replays.length - @replayCount) if replays.length > @replayCount
+      if @replayCount > 0
+        replays.push(value)
+        replays = replays.slice(replays.length - @replayCount) if replays.length > @replayCount
       sink next(value) if sink?
     @error = (error) =>
       sink new Error(error) if sink?
@@ -835,7 +797,6 @@ Bacon.EventStream = EventStream
 Bacon.Property = Property
 Bacon.Observable = Observable
 Bacon.Bus = Bus
-Bacon.ReplayBus = ReplayBus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
