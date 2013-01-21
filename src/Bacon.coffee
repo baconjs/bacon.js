@@ -764,6 +764,49 @@ class Bus extends EventStream
       unsubAll()
       sink end() if sink?
 
+class ReplayBus extends EventStream
+  constructor: (@replayCount) ->
+    sink = undefined
+    unsubFuncs = []
+    inputs = []
+    ended = false
+    replays = []
+    guardedSink = (input) => (event) =>
+      if (event.isEnd())
+        remove(input, inputs)
+        Bacon.noMore
+      else
+        sink event
+    unsubAll = => 
+      f() for f in unsubFuncs
+      unsubFuncs = []
+    subscribeAll = (newSink) =>
+      sink = newSink
+      unsubFuncs = []
+      for input in cloneArray(inputs)
+        unsubFuncs.push(input.subscribe(guardedSink(input)))
+      unsubAll
+    dispatcher = new Dispatcher(subscribeAll)
+    subscribeThis = (sink) =>
+      sink next(rep) for rep in replays if sink?
+      dispatcher.subscribe(sink)
+    super(subscribeThis)
+    @plug = (inputStream) =>
+      return if ended
+      inputs.push(inputStream)
+      if (sink?)
+        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
+    @push = (value) =>
+      replays.push(value)
+      replays = replays.slice(replays.length - @replayCount) if replays.length > @replayCount
+      sink next(value) if sink?
+    @error = (error) =>
+      sink new Error(error) if sink?
+    @end = =>
+      ended = true
+      unsubAll()
+      sink end() if sink?
+
 class Some
   constructor: (@value) ->
   getOrElse: -> @value
@@ -792,6 +835,7 @@ Bacon.EventStream = EventStream
 Bacon.Property = Property
 Bacon.Observable = Observable
 Bacon.Bus = Bus
+Bacon.ReplayBus = ReplayBus
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
