@@ -557,8 +557,10 @@ Bus is an EventStream that allows you to `push` values into the stream.
 It also allows pluggin other streams into the Bus. The Bus practically
 merges all plugged-in streams and the values pushed using the `push`
 method.
+If a replayCount of N is specifed, the Bus will replay the latest N 
+values to every new subscriber before starting to forward pushed values.
 
-`new Bacon.Bus()` returns a new Bus.
+`new Bacon.Bus(replayCount = 0)` returns a new Bus.
 
 `bus.push(x)` pushes the given value to the stream.
 
@@ -575,6 +577,17 @@ The plug method practically allows you to merge in other streams after
 the creation of the Bus. I've found Bus quite useful as an event broadcast
 mechanism in the
 [Worzone](https://github.com/raimohanska/worzone) game, for instance.
+
+The replays capability of Bus can be used in those cases where you have to
+push a value to the Bus before anyone can subscribe to it. Try this with
+a replay count of 1 and 0 to see the difference:
+
+```
+var bus = new Bacon.Bus(1);
+bus.push(':D');
+bus.onValue(function(value) { console.log(value) });
+bus.push('xD');
+```
 
 Event
 -----
