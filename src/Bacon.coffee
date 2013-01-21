@@ -388,6 +388,33 @@ class Observable
       unsub
     new Property(new PropertyDispatcher(subscribe).subscribe)  
     
+  diff: (start, f) =>
+    f = toCombinator(f)
+    prev = toOption(start)
+    diff = None
+    subscribe = (sink) =>
+      initSent = false
+      unsub = @subscribe (event) =>
+        if (event.hasValue())
+          if (initSent && event.isInitial())
+            Bacon.more
+          else
+            initSent = true
+            diff = new Some(f(prev.getOrElse(undefined), event.value))
+            prev = toOption(event.value)
+            sink (event.apply(diff.get()))
+        else
+          if event.isEnd() then initSent = true
+          sink event
+      if !initSent
+        diff.forEach (value) ->
+          reply = sink initial(value)
+          if (reply == Bacon.noMore)
+            unsub()
+            unsub = nop
+      unsub
+    new Property(new PropertyDispatcher(subscribe).subscribe)
+
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->
