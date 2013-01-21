@@ -387,7 +387,16 @@ class Observable
             unsub = nop
       unsub
     new Property(new PropertyDispatcher(subscribe).subscribe)  
-    
+  
+  diff: (start, f) -> 
+    f = toCombinator(f)
+    @scan([start, Bacon.more], (prevTuple, next) -> 
+      [next, f(prevTuple[0], next)])
+    .map((tuple) ->
+      tuple[1])
+    .filter((v) ->
+      v isnt Bacon.more)
+
   flatMap: (f) ->
     root = this
     new EventStream (sink) ->
