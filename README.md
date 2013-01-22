@@ -273,6 +273,21 @@ identically to EventStream.scan: the `seed` will be the initial value of
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
 
+`observable.diff(start, f)` returns a Property that represents the result of a comparison 
+between the previous and current value of the Observable. For the initial value of the Observable, 
+the previous value will be the given start.
+
+Example:
+
+    var distance = function (a,b) { return Math.abs(b - a) }
+    Bacon.sequentially(1, [1,2,3]).diff(0, distance)
+
+This would result to following elements in the result stream:
+
+    1 - 0 = 1
+    2 - 1 = 1
+    3 - 2 = 1
+
 `observable.slidingWindow(n)` returns a Property that represents a
 "sliding window" into the history of the values of the Observable. For
 example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
