@@ -87,10 +87,10 @@ Bacon.fromPoll = (delay, poll) ->
 #   # => EventStream
 #
 # Returns EventStream
-Bacon.fromEventTarget = (target, eventName) ->
+Bacon.fromEventTarget = (target, eventName, eventTransformer = _.id) ->
   new EventStream (sink) ->
-    handler = (event) ->
-      reply = sink (next event)
+    handler = (args...) ->
+      reply = sink (next eventTransformer args...)
       if reply == Bacon.noMore
         unbind()
 
