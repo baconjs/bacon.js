@@ -74,6 +74,18 @@ describe "Bacon.fromEventTarget", ->
       ["x"]
     )
 
+  it "should allow a custom map function for EventStream from EventEmitter", ->
+    emitter = new EventEmitter()
+    emitter.on "newListener", ->
+      runs ->
+        emitter.emit "data", "x", "y"
+
+    expectStreamEvents(
+      -> Bacon.fromEventTarget(emitter, "data", (x, y) => [x, y]).take(1)
+      [["x", "y"]]
+    )
+
+
   it "should clean up event listeners from EventEmitter", ->
     emitter = new EventEmitter()
     Bacon.fromEventTarget(emitter, "data").take(1).subscribe ->

@@ -147,7 +147,8 @@ would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 `Bacon.never()` creates an EventStream that immediately ends.
 
 `Bacon.fromEventTarget(target, event)` creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object.
+on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
+events' parameters.
 
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Next or End.
