@@ -15,7 +15,7 @@
 Bacon = @Bacon = {}
 
 Bacon.fromPromise = (promise) ->
-  new Bacon.EventStream(
+  new EventStream(
     (sink) ->
       onSuccess = (value) ->
         sink next(value)
