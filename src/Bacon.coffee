@@ -18,11 +18,11 @@ Bacon.fromPromise = (promise) ->
   new Bacon.EventStream(
     (sink) ->
       onSuccess = (value) ->
-        sink (new Next value)
-        sink (new End)
+        sink next(value)
+        sink end()
       onError = (e) ->
         sink (new Error e)
-        sink (new End)
+        sink end()
       promise.then(onSuccess, onError)
       nop
   )
