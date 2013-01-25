@@ -469,6 +469,7 @@ arrays into a single array property, with Bacon.combineWith(properties,
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
 
+    var password, username, firstname, lastname; // <- properties or streams
     var loginInfo = Bacon.combineTemplate({
         userid: username, 
         passwd: password, 
