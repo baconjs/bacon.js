@@ -161,7 +161,7 @@ Bacon.combineTemplate = (template) ->
   mkContext = (template) -> if template instanceof Array then [] else {}
   compile = (key, value) ->
     if (value instanceof Observable)
-      streams.push(value)
+      streams.push(value.toProperty().flatten())
       funcs.push(applyStreamValue(key, streams.length - 1))
     else if (typeof value == "object")
       pushContext = (key) -> (ctxStack, values) ->

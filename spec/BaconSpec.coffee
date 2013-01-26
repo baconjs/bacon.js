@@ -860,6 +860,18 @@ describe "Property.flatten", ->
           x: "x"
         }).flatten()
       [{ a: "a", x: "x"}])
+  it "Flattens recursively", ->
+    expectPropertyEvents(
+      ->
+        Bacon.constant({
+          a: Bacon.constant("a")
+          x: Bacon.constant({
+            b: Bacon.constant("b")
+            c: "c"
+          })
+        }).flatten()
+      [{ a: "a", x: { b: "b", c: "c"}}])
+  # TODO: more complex case with timings
 
 describe "Observable.onValues", ->
   it "splits value array to callback arguments", ->
