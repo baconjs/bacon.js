@@ -831,6 +831,14 @@ describe "combineTemplate", ->
     Bacon.combineTemplate(value).onValue (x) ->
       expect(x).toEqual({key: [{ x: 1 }, { x: 2 }]})
       expect(x.key instanceof Array).toEqual(true) # seems that the former passes even if x is not an array
+  it "supports naked strings", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate("hello")
+      ["hello"])
+  it "supports numbers", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate(1)
+      [1])
 
 describe "Property.decode", ->
   it "switches between source Properties based on property value", ->

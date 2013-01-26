@@ -150,6 +150,8 @@ Bacon.combineWith = (streams, f) ->
     s1.toProperty().combine(s2, f))
 
 Bacon.combineTemplate = (template) ->
+  if typeof template != "object"
+    return Bacon.constant(template)
   funcs = []
   streams = []
   current = (ctxStack) -> ctxStack[ctxStack.length - 1]
