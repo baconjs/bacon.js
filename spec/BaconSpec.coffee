@@ -842,6 +842,17 @@ describe "Property.decode", ->
         series(1, [1,2,3]).toProperty().decode({1: a, 2: b, 3: c})
       ["a", "b", "c"])
 
+describe "Property.flatten", ->
+  it "Flattens a Property that has sub-values that are Properties themselves", ->
+    expectPropertyEvents(
+      ->
+        a = Bacon.constant("a")
+        Bacon.constant({
+          a: a
+          x: "x"
+        }).flatten()
+      [{ a: "a", x: "x"}])
+
 describe "Observable.onValues", ->
   it "splits value array to callback arguments", ->
     f = mockFunction()
