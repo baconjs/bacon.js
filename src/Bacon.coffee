@@ -152,6 +152,8 @@ Bacon.combineWith = (streams, f) ->
 Bacon.combineTemplate = (template) ->
   if typeof template != "object"
     return Bacon.constant(template)
+  if template instanceof Observable
+    return template.toProperty().flatten()
   funcs = []
   streams = []
   current = (ctxStack) -> ctxStack[ctxStack.length - 1]
@@ -218,6 +220,7 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> initial(value, @getOriginalEvent())
+  toNext: -> next(@value, @getOriginalEvent())
 
 class End extends Event
   isEnd: -> true
@@ -423,6 +426,9 @@ class Observable
               childEnded = true
               Bacon.noMore
             else
+              if event instanceof Initial
+                # To support Property as the spawned stream
+                event = event.toNext()
               reply = sink event
               if reply == Bacon.noMore
                 unbind()

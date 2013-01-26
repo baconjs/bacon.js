@@ -52,6 +52,7 @@ verifySingleSubscriber = (src, expectedEvents) ->
     if event.isEnd()
       ended = true
     else
+      expect(event instanceof Bacon.Initial).toEqual(false)
       events.push(toValue(event))
 
   waitsFor streamEnded, t(50)
@@ -70,6 +71,7 @@ verifySwitching = (src, expectedEvents) ->
       if event.isEnd()
         ended = true
       else
+        expect(event instanceof Bacon.Initial).toEqual(false)
         events.push(toValue(event))
         src.subscribe(newSink())
         Bacon.noMore

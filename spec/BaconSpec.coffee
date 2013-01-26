@@ -243,6 +243,10 @@ describe "EventStream.flatMap", ->
       -> Bacon.once(1).flatMap (value) ->
          Bacon.once(value)
       [1])
+  it "Works also when f returns a Property instead of an EventStream", ->
+    expectStreamEvents(
+      -> series(1, [1,2]).flatMap(Bacon.constant)
+      [1,2])
 
 describe "Property.flatMap", ->
   it "should spawn new stream for all events including Init", ->
@@ -251,7 +255,13 @@ describe "Property.flatMap", ->
         once = (x) -> Bacon.once(x)
         series(1, [1, 2]).toProperty(0).flatMap(once)
       [0, 1, 2])
-
+  it "Works also when f returns a Property instead of an EventStream", ->
+    expectStreamEvents(
+      -> series(1, [1,2]).toProperty().flatMap(Bacon.constant)
+      [1,2])
+    expectPropertyEvents(
+      -> series(1, [1,2]).toProperty().flatMap(Bacon.constant).toProperty()
+      [1,2])
 
 describe "EventStream.flatMapLatest", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
@@ -839,6 +849,10 @@ describe "combineTemplate", ->
     expectPropertyEvents(
       -> Bacon.combineTemplate(1)
       [1])
+  it "if template itself is Observable, it flattens it", ->
+    expectPropertyEvents(
+      -> Bacon.combineTemplate(series(1, [Bacon.constant(1), 2]))
+      [1, 2])
 
 describe "Property.decode", ->
   it "switches between source Properties based on property value", ->
@@ -871,7 +885,22 @@ describe "Property.flatten", ->
           })
         }).flatten()
       [{ a: "a", x: { b: "b", c: "c"}}])
-  # TODO: more complex case with timings
+  it "Handles a more complex timing case", ->
+    expectPropertyEvents(
+      ->
+        series(4, [
+          series(1, [1, 2]),
+          series(1, [3, 4])
+        ]).toProperty().flatten()
+      [1, 2, 3, 4])
+  it "Handles a more complex case with timing and nesting", ->
+    expectPropertyEvents(
+      ->
+        series(4, [
+          [0, "one-two", series(1, [1,2])]
+          [0, "three-four", series(1, [3,4])]
+        ]).toProperty().flatten()
+      [[0, "one-two", 1], [0, "one-two", 2], [0, "three-four", 3], [0, "three-four", 4]])
 
 describe "Observable.onValues", ->
   it "splits value array to callback arguments", ->
