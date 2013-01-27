@@ -1,7 +1,7 @@
 Bacon.js
 ========
 
-A small functional reactive programming lib for JavaScript.
+A small functional reactive programming lib for JavaScript. 
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
@@ -9,14 +9,15 @@ concepts like `map` and `filter`. Stop working on individual events and work wit
 Transform your data with `map` and `filter`. Combine your data with `merge` and `combine`. 
 Then switch to the heavier weapons and wield `flatMap` and `combineTemplate` like a boss.
 
+It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
+
 Here's the stuff.
 
 - [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
-- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.js) (see below for building the js yourself)
-- [Generated javascript (minified, no asserts)](https://github.com/raimohanska/bacon.js/blob/master/lib/Bacon.min.js)
+- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
-- [Diagrams](https://github.com/raimohanska/bacon.js/wiki) for the visual learners
+- [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
