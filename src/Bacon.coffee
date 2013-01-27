@@ -27,9 +27,9 @@ Bacon.fromPromise = (promise) ->
       nop
   )
 
-Bacon.noMore = "veggies"
+Bacon.noMore = ["<no-more>"]
 
-Bacon.more = "moar bacon!"
+Bacon.more = ["<more>"]
 
 Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
