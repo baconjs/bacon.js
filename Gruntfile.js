@@ -9,9 +9,9 @@ module.exports = function (grunt) {
       }
     },
     uglify: {
-      compile: {
+      dist: {
         files: {
-          'lib/Bacon.min.js': 'lib/Bacon.js'
+          'dist/Bacon.min.js': 'lib/Bacon.js'
         }
       }
     }
