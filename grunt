@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Wrapper script for locally installed grunt-cli (https://github.com/gruntjs/grunt-cli).
+# With this there's no need to install the tool globally.
+#
+
+set -eu
+
+node_modules/grunt-cli/bin/grunt $@
