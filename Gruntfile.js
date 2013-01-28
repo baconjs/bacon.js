@@ -21,4 +21,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-coffee');
 
   grunt.registerTask('build', ['coffee', 'uglify']);
+  grunt.registerTask('default', ['build']);
 };
