@@ -10,6 +10,7 @@
     "jasmine-node": ">=1.0.x",
     "coffee-script": ">=1.2.x",
     "grunt": "0.4.0rc6",
+    "grunt-cli": "0.1.6",
     "grunt-contrib-uglify": "0.1.1rc6",
     "grunt-contrib-coffee": "0.4.0rc7"
   },
