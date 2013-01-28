@@ -826,8 +826,15 @@ cloneObject = (src) ->
   for key, value of src
     clone[key] = value
   clone
+indexOf = if Array::indexOf
+  (xs, x) -> xs.indexOf(x)
+else
+  (xs, x) ->
+    for y, i in xs
+      return i if x == y
+    -1
 remove = (x, xs) ->
-  i = xs.indexOf(x)
+  i = indexOf(xs, x)
   if i >= 0
     xs.splice(i, 1)
 assert = (message, condition) -> throw message unless condition
@@ -901,7 +908,7 @@ _ = {
   each: (xs, f) ->
     for key, value of xs
       f(key, value)
-  contains: (xs, x) -> xs.indexOf(x) >= 0
+  contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
 }
