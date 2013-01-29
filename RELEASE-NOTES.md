@@ -1,4 +1,4 @@
-## Master
+## 0.1.0
 
 - API change: event.value is now a function. Allows internal
   optimization.
