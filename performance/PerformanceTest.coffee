@@ -22,17 +22,15 @@ f =
 
 suite = new Benchmark.Suite
 
-suite.add('Bacon.combineTemplate', ->
+suite.add 'Bacon.combineTemplate.sample', ->
   gen = f.generator()
   Bacon.combineTemplate({a:gen.make(), b:gen.make(), c: gen.make(), d: gen.make()})
+    .sampledBy(f.everyNth(10, gen.make())) 
     .onValue((v) -> )
-  gen.ticks(10)
-)
-.on('cycle', (event) ->
-  console.log(String(event.target));
-)
-.on("error", (error) ->
+  gen.ticks(100)
+.on 'cycle', (event) ->
+  console.log(String(event.target))
+.on "error", (error) ->
   console.log(error)
-)
 .run({ 'async': false })
 
