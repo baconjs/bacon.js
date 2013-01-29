@@ -141,10 +141,49 @@ Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
   if streams.length
-    stream = (_.head streams).toProperty().map((x) -> [x])
-    for next in (_.tail streams)
-      stream = stream.combine(next, (xs, x) -> xs.concat([x]))
-    stream
+    values = (None for s in streams)
+    new Property (sink) =>
+      unsubscribed = false
+      unsubs = (nop for s in streams)
+      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
+      ends = (false for s in streams)
+      checkEnd = ->
+        if _.all(ends)
+          reply = sink end()
+          unsubAll() if reply == Bacon.noMore
+          reply
+      initialSent = false
+      combiningSink = (markEnd, setValue) =>
+        (event) =>
+          if (event.isEnd())
+            markEnd()
+            checkEnd()
+            Bacon.noMore
+          else if event.isError()
+            reply = sink event
+            unsubAll() if reply == Bacon.noMore
+            reply
+          else
+            setValue(event.value())
+            if _.all(_.map(((x) -> x.isDefined), values))
+              if initialSent and event.isInitial()
+                # don't send duplicate Initial
+                Bacon.more
+              else
+                initialSent = true
+                valueArray = (x.get() for x in values)
+                reply = sink(event.apply(valueArray))
+                unsubAll() if reply == Bacon.noMore
+                reply
+            else
+              Bacon.more
+      sinkFor = (index) -> 
+        combiningSink(
+          (-> ends[index] = true) 
+          ((x) -> values[index] = new Some(x)))
+      for stream, index in streams
+        unsubs[index] = stream.subscribe (sinkFor index) unless unsubscribed
+      unsubAll
   else
     Bacon.constant([])
 
@@ -338,7 +377,6 @@ class Observable
         Bacon.more
       else
         @push event
-  distinctUntilChanged: -> @skipDuplicates()
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
     @withStateMachine None, (prev, event) ->
       if !event.hasValue()
@@ -941,6 +979,10 @@ _ = {
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
+  all: (xs) ->
+    for x in xs
+      return false if not x
+    return true
 }
 
 Bacon._ = _
