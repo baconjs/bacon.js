@@ -1,7 +1,10 @@
 {
   "name": "baconjs",
-  "version": "0.0.11",
+  "version": "0.1.0",
   "dependencies": {
+    "benchmark": {
+      "version": "1.0.0"
+    },
     "coffee-script": {
       "version": "1.4.0"
     },
@@ -54,43 +57,6 @@
         },
         "grunt-lib-contrib": {
           "version": "0.3.1"
-        }
-      }
-    },
-    "grunt-contrib-uglify": {
-      "version": "0.1.1rc6",
-      "dependencies": {
-        "gzip-js": {
-          "version": "0.3.1",
-          "dependencies": {
-            "crc32": {
-              "version": "0.2.2"
-            },
-            "deflate-js": {
-              "version": "0.2.2"
-            }
-          }
-        },
-        "uglify-js": {
-          "version": "2.2.3",
-          "dependencies": {
-            "source-map": {
-              "version": "0.1.8",
-              "dependencies": {
-                "amdefine": {
-                  "version": "0.0.4"
-                }
-              }
-            },
-            "optimist": {
-              "version": "0.3.5",
-              "dependencies": {
-                "wordwrap": {
-                  "version": "0.0.2"
-                }
-              }
-            }
-          }
         }
       }
     },
