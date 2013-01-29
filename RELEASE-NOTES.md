@@ -2,6 +2,7 @@
 
 - API change: event.value is now a function. Allows internal
   optimization.
+- API changes: drop methods switch (use flatMapLatest), do (use doAction), distinctUntilChanged (use skipDuplicates), decorateWith, latestValue
 
 ## 0.0.12
 
