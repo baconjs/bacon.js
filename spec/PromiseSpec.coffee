@@ -9,13 +9,14 @@ promise = {
     fail = f
     calls = calls + 1
 }
+_ = Bacon._
 
 describe "Bacon.fromPromise", ->
   it "should produce value and end on success", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     success("a")
-    expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+    expect(_.map(((e) -> e.describe()), events)).toEqual(["a", "<end>"])
 
   it "should produce error and end on error", ->
     events = []

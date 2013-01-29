@@ -12,6 +12,7 @@ error = th.error
 soon = th.soon
 series = th.series
 repeat = th.repeat
+toValues = th.toValues
 
 describe "Bacon.later", ->
   it "should send single event and end", ->
@@ -1044,7 +1045,7 @@ describe "Bacon.Bus", ->
     input.push("a")
     bus.end()
     input.push("b")
-    expect(events).toEqual([new Bacon.Next("a"), new Bacon.End()])
+    expect(toValues(events)).toEqual(["a", "<end>"])
   it "handles cold single-event streams correctly (bug fix)", ->
     values = []
     bus = new Bacon.Bus()

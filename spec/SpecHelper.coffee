@@ -34,7 +34,7 @@ seqs = []
       if event.hasValue()
         property.subscribe (event) ->
           if event.isInitial()
-            events2.push(event.value)
+            events2.push(event.value())
           Bacon.noMore
   waitsFor streamEnded, t(50)
   runs -> 
@@ -116,7 +116,7 @@ toValue = (x) ->
     else if x.isEnd()
       "<end>"
     else
-      x.value
+      x.value()
   else
     x
 
@@ -124,3 +124,5 @@ justValues = (xs) ->
   _.filter hasValue, xs
 hasValue = (x) ->
   toValue(x) != "<error>"
+
+@toValues = toValues

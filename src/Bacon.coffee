@@ -185,7 +185,7 @@ Bacon.combineTemplate = (template) ->
 Bacon.latestValue = (src) ->
   latest = undefined
   src.subscribe (event) ->
-    latest = event.value if event.hasValue()
+    latest = event.value() if event.hasValue()
   => latest
 
 class Event
@@ -204,13 +204,14 @@ class Event
   onDone : (listener) -> listener()
 
 class Next extends Event
-  constructor: (@value, sourceEvent) ->
+  constructor: (value, sourceEvent) ->
+    @value = if isFunction(value) then value else _.always(value)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(f(this.value))
+  fmap: (f) -> @apply(f(this.value()))
   apply: (value) -> next(value, @getOriginalEvent())
-  filter: (f) -> f(@value)
-  describe: -> @value
+  filter: (f) -> f(@value())
+  describe: -> @value()
 
 class Initial extends Next
   isInitial: -> true
@@ -237,7 +238,7 @@ class Observable
   onValue: (f, args...) -> 
     f = makeFunction(f, args)
     @subscribe (event) ->
-      f event.value if event.hasValue()
+      f event.value() if event.hasValue()
   onValues: (f) ->
     @onValue (args) -> f(args...)
   onError: (f, args...) -> 
@@ -298,7 +299,7 @@ class Observable
   doAction: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
-      f(event.value) if event.hasValue()
+      f(event.value()) if event.hasValue()
       @push event
   takeUntil: (stopper) =>
     src = this
@@ -346,8 +347,8 @@ class Observable
     @withStateMachine undefined, (prev, event) ->
       if !event.hasValue()
         [prev, [event]]
-      else if not isEqual(prev, event.value)
-        [event.value, [event]]
+      else if not isEqual(prev, event.value())
+        [event.value(), [event]]
       else
         [prev, []]
   withStateMachine: (initState, f) ->
@@ -375,7 +376,7 @@ class Observable
             Bacon.more # init already sent, skip this one
           else
             initSent = true
-            acc = new Some(f(acc.getOrElse(undefined), event.value))
+            acc = new Some(f(acc.getOrElse(undefined), event.value()))
             sink (event.apply(acc.get()))
         else
           if event.isEnd() then initSent = true
@@ -417,7 +418,7 @@ class Observable
         else if event.isError()
           sink event
         else
-          child = f event.value
+          child = f event.value()
           unsubChild = undefined
           childEnded = false
           removeChild = ->
@@ -502,7 +503,7 @@ class EventStream extends Observable
         flush()
         @push event
       else
-        values.push(event.value)
+        values.push(event.value())
         flush() if values.length == count
   merge: (right) -> 
     left = this
@@ -598,7 +599,7 @@ class Property extends Observable
                 unsubBoth() if reply == Bacon.noMore
                 reply
             else
-              setValue(new Some(event.value))
+              setValue(new Some(event.value()))
               if (myVal.isDefined and otherVal.isDefined)
                 if initialSent and event.isInitial()
                   # don't send duplicate Initial
@@ -637,7 +638,7 @@ class Property extends Observable
   toEventStream: => 
     new EventStream (sink) =>
       @subscribe (event) =>
-        event = next(event.value) if event.isInitial()
+        event = event.toNext() if event.isInitial()
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
@@ -650,7 +651,7 @@ addPropertyInitValueToStream = (property, stream) ->
     value = None
     property.subscribe (event) ->
       if event.isInitial()
-        value = new Some(event.value)
+        value = new Some(event.value())
       Bacon.noMore
     value
   stream.toProperty(getInitValue(property))
@@ -717,7 +718,7 @@ class PropertyDispatcher extends Dispatcher
       if event.isEnd() 
         ended = true
       if event.hasValue()
-        current = new Some(event.value)
+        current = new Some(event.value())
       push.apply(this, [event])
     @subscribe = (sink) =>
       initSent = false
