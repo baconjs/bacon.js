@@ -739,21 +739,28 @@ See [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.c
 
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 
+Install
+=======
+
+Bacon uses npm to install the dependencies needed for compiling the coffeescript source and run the test. So first run:
+
+    npm install 
+    
 Build
 =====
 
 Build the coffeescript source into javascript:
 
-    cake build
+    grunt
 
-Result javascript file will be generated in `dist` directory.
+Result javascript files will be generated in `dist` directory.
 
 Test
 ====
 
 Run unit tests:
 
-    npm install&&npm test
+    npm test
 
 Dependencies
 ============
