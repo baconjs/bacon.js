@@ -14,7 +14,7 @@ It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
 Here's the stuff.
 
 - [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
-- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/lib/)
+- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/dist/)
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
@@ -31,11 +31,11 @@ Please contribute!
 Install
 =======
 
-You can download the latest [generated javascript](https://raw.github.com/raimohanska/bacon.js/master/lib/Bacon.js).
+You can download the latest [generated javascript](https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js).
 
 ..or you can use script tags to include this file directly from Github:
 
-    <script src="https://raw.github.com/raimohanska/bacon.js/master/lib/Bacon.js"></script>
+    <script src="https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js"></script>
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -746,7 +746,7 @@ Build the coffeescript source into javascript:
 
     cake build
 
-Result javascript file will be generated in `lib` directory.
+Result javascript file will be generated in `dist` directory.
 
 Test
 ====

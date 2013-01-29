@@ -19,5 +19,5 @@
     "test": "jasmine-node --coffee spec",
     "pre-publish": "grunt"
   },
-  "main": "lib/Bacon.js"
+  "main": "dist/Bacon.js"
 }
