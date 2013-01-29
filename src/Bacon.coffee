@@ -232,11 +232,6 @@ class Event
   isError: -> false
   hasValue: -> false
   filter: (f) -> true
-  getOriginalEvent: -> 
-    if @sourceEvent? 
-      @sourceEvent.getOriginalEvent() 
-    else 
-      this
   onDone : (listener) -> listener()
 
 class Next extends Event
@@ -251,15 +246,15 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   fmap: (f) -> @apply(=> f(@value()))
-  apply: (value) -> next(value, @getOriginalEvent())
+  apply: (value) -> next(value)
   filter: (f) -> f(@value())
   describe: -> @value()
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  apply: (value) -> initial(value, @getOriginalEvent())
-  toNext: -> new Next(@value, @getOriginalEvent())
+  apply: (value) -> initial(value)
+  toNext: -> next(@value)
 
 class End extends Event
   isEnd: -> true
@@ -355,7 +350,7 @@ class Observable
           sink event
           Bacon.noMore
         else
-          event.getOriginalEvent().onDone ->
+          event.onDone ->
             if !unsubscribed
               reply = sink event
               if reply == Bacon.noMore
