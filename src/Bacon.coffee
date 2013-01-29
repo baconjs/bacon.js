@@ -721,7 +721,7 @@ class Dispatcher
     @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
-      remove(sink, sinks)
+      sinks = _.without(sink, sinks)
     @push = (event) =>
       waiters = undefined
       done = -> 
@@ -736,7 +736,8 @@ class Dispatcher
         else
           waiters = [listener]
       assertEvent event
-      for sink in (cloneArray(sinks))
+      tmpSinks = sinks
+      for sink in tmpSinks
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
       done()
@@ -756,7 +757,7 @@ class Dispatcher
         nop
       else
         assertFunction sink
-        sinks.push(sink)
+        sinks = sinks.concat(sink)
         if sinks.length == 1
           unsubscribeFromSource = subscribe @handleEvent
         assertFunction unsubscribeFromSource
@@ -985,6 +986,8 @@ _ = {
     for x in xs
       return false if not x
     return true
+  without: (x, xs) ->
+    _.filter(((y) -> y != x), xs)
 }
 
 Bacon._ = _
