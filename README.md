@@ -617,7 +617,7 @@ to a Property.
 
 Event properties and methods:
 
-`event.value` the value associated with a Next or Initial event
+`event.value()` returns the value associated with a Next or Initial event
 
 `event.hasValue()` returns true for events of type Initial and Next
 
