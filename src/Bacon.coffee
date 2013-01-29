@@ -164,15 +164,15 @@ Bacon.combineAsArray = (streams, more...) ->
             unsubAll() if reply == Bacon.noMore
             reply
           else
-            setValue(event.value())
+            setValue(event.value)
             if _.all(_.map(((x) -> x.isDefined), values))
               if initialSent and event.isInitial()
                 # don't send duplicate Initial
                 Bacon.more
               else
                 initialSent = true
-                valueArray = (x.get() for x in values)
-                reply = sink(event.apply(valueArray))
+                valueArrayF = -> (x.get()() for x in values)
+                reply = sink(event.apply(valueArrayF))
                 unsubAll() if reply == Bacon.noMore
                 reply
             else
@@ -240,11 +240,17 @@ class Event
   onDone : (listener) -> listener()
 
 class Next extends Event
-  constructor: (value, sourceEvent) ->
-    @value = if isFunction(value) then value else _.always(value)
+  constructor: (valueF, sourceEvent) ->
+    if isFunction(valueF)
+      @value = =>
+        v = valueF()
+        @value = _.always(v)
+        v
+    else
+      @value = _.always(valueF)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(f(this.value()))
+  fmap: (f) -> @apply(=> f(@value()))
   apply: (value) -> next(value, @getOriginalEvent())
   filter: (f) -> f(@value())
   describe: -> @value()
@@ -652,7 +658,7 @@ class Property extends Observable
                 unsubBoth() if reply == Bacon.noMore
                 reply
             else
-              setValue(new Some(event.value()))
+              setValue(new Some(event.value))
               if (myVal.isDefined and otherVal.isDefined)
                 if initialSent and event.isInitial()
                   # don't send duplicate Initial
@@ -677,7 +683,7 @@ class Property extends Observable
           combinator(values[0], values[1])
     @sampledBy = (sampler, combinator = former) =>
       combinator = toCombinator(combinator)
-      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
+      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(-> combinator(propertyVal(), streamVal())))
       combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
@@ -774,7 +780,7 @@ class PropertyDispatcher extends Dispatcher
       if event.isEnd() 
         ended = true
       if event.hasValue()
-        current = new Some(event.value())
+        current = new Some(event.value)
       push.apply(this, [event])
     @subscribe = (sink) =>
       initSent = false
