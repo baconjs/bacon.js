@@ -672,8 +672,9 @@ class Property extends Observable
         unsubBoth
     @combine = (other, f) =>
       combinator = toCombinator(f)
-      combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
-      combine(other, combineAndPush, combineAndPush)
+      Bacon.combineAsArray(this, other)
+        .map (values) ->
+          combinator(values[0], values[1])
     @sampledBy = (sampler, combinator = former) =>
       combinator = toCombinator(combinator)
       pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
