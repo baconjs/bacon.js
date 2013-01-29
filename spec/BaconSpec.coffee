@@ -192,10 +192,6 @@ describe "EventStream.doAction", ->
     expectStreamEvents(
       -> series(1, [1, 2]).doAction(->)
       [1, 2])
-  it "is dubbed by do for backward compatibility", ->
-    expectStreamEvents(
-      -> Bacon.once(1).do(->)
-      [1])
 
 describe "EventStream.mapEnd", ->
   it "produces an extra element on stream end", ->
@@ -282,15 +278,11 @@ describe "EventStream.flatMapLatest", ->
       -> series(3, [1, 2]).flatMapLatest (value) ->
         Bacon.sequentially(t(2), [value, error(), value])
       [1, 2, error(), 2])
-  it "is dubbed by switch for backward compatibility", ->
-    expectStreamEvents(
-      -> Bacon.once(1).switch((value) -> Bacon.once(value))
-      [1])
 
-describe "Property.switch", ->
+describe "Property.flatMapLatest", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
-      -> series(3, [1, 2]).toProperty(0).switch (value) ->
+      -> series(3, [1, 2]).toProperty(0).flatMapLatest (value) ->
         Bacon.sequentially(t(2), [value, value])
       [0, 1, 2, 2])
 
@@ -446,13 +438,6 @@ describe "EventStream.startWith", ->
         left.startWith('pow')
       ['pow', 1, 2, 3])
 
-describe "EventStream.decorateWithProperty", ->
-  it "decorates stream event with Property value", ->
-    expectStreamEvents(
-      ->
-        series(1, [{i:0}, error(), {i:1}]).decorateWith("label", Bacon.constant("lol"))
-      [{i:0, label:"lol"}, error(), {i:1, label:"lol"}])
-
 describe "Property", ->
   it "delivers current value and changes to subscribers", ->
     expectPropertyEvents(
@@ -586,10 +571,10 @@ describe "Property.endOnError", ->
       -> series(2, [1, error(), 2]).toProperty().endOnError()
       [1, error()])
 
-describe "Property.distinctUntilChanged", ->
+describe "Property.skipDuplicates", ->
   it "drops duplicates", ->
     expectPropertyEvents(
-      -> series(1, [1, 2, error(), 2, 3, 1]).toProperty(0).distinctUntilChanged()
+      -> series(1, [1, 2, error(), 2, 3, 1]).toProperty(0).skipDuplicates()
     [0, 1, 2, error(), 3, 1])
 
 describe "Property.changes", ->
@@ -765,10 +750,6 @@ describe "Property.sample", ->
         prop = series(2, [1, error(), 2]).toProperty()
         prop.sample(t(5)).take(2)
       [error(), 1, 2])
-
-describe "Bacon.latestValue(property)()", ->
-  it "returns current value of property", ->
-    expect(Bacon.latestValue(Bacon.constant(1))()).toEqual(1)
 
 describe "EventStream.scan", ->
   it "accumulates values with given seed and accumulator function, passing through errors", ->

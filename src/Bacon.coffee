@@ -182,12 +182,6 @@ Bacon.combineTemplate = (template) ->
     rootContext
   Bacon.combineAsArray(streams).map(combinator)
 
-Bacon.latestValue = (src) ->
-  latest = undefined
-  src.subscribe (event) ->
-    latest = event.value() if event.hasValue()
-  => latest
-
 class Event
   isEvent: -> true
   isEnd: -> false
@@ -295,7 +289,6 @@ class Observable
         @push next (f event.error)
       else
         @push event
-  do: (args...) -> @doAction(args...)
   doAction: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
@@ -441,7 +434,6 @@ class Observable
           children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
-  switch: (args...) => @flatMapLatest(args...)
   flatMapLatest: (f) =>
     stream = @toEventStream()
     stream.flatMap (value) =>
@@ -546,13 +538,6 @@ class EventStream extends Observable
 
   startWith: (seed) ->
     Bacon.once(seed).concat(this)
-
-  decorateWith: (label, property) ->
-    property.sampledBy(this, (propertyValue, streamValue) ->
-        result = cloneObject(streamValue)
-        result[label] = propertyValue
-        result
-      )
 
   mapEnd : (f, args...) ->
     f = makeFunction(f, args)

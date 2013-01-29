@@ -303,20 +303,6 @@
     return Bacon.combineAsArray(streams).map(combinator);
   };
 
-  Bacon.latestValue = function(src) {
-    var latest,
-      _this = this;
-    latest = void 0;
-    src.subscribe(function(event) {
-      if (event.hasValue()) {
-        return latest = event.value;
-      }
-    });
-    return function() {
-      return latest;
-    };
-  };
-
   Event = (function() {
 
     function Event() {}
@@ -370,7 +356,7 @@
     __extends(Next, _super);
 
     function Next(value, sourceEvent) {
-      this.value = value;
+      this.value = isFunction(value) ? value : _.always(value);
     }
 
     Next.prototype.isNext = function() {
@@ -382,7 +368,7 @@
     };
 
     Next.prototype.fmap = function(f) {
-      return this.apply(f(this.value));
+      return this.apply(f(this.value()));
     };
 
     Next.prototype.apply = function(value) {
@@ -390,11 +376,11 @@
     };
 
     Next.prototype.filter = function(f) {
-      return f(this.value);
+      return f(this.value());
     };
 
     Next.prototype.describe = function() {
-      return this.value;
+      return this.value();
     };
 
     return Next;
@@ -490,8 +476,6 @@
     function Observable() {
       this.flatMapLatest = __bind(this.flatMapLatest, this);
 
-      this["switch"] = __bind(this["switch"], this);
-
       this.scan = __bind(this.scan, this);
 
       this.takeUntil = __bind(this.takeUntil, this);
@@ -504,7 +488,7 @@
       f = makeFunction(f, args);
       return this.subscribe(function(event) {
         if (event.hasValue()) {
-          return f(event.value);
+          return f(event.value());
         }
       });
     };
@@ -619,19 +603,13 @@
       });
     };
 
-    Observable.prototype["do"] = function() {
-      var args;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return this.doAction.apply(this, args);
-    };
-
     Observable.prototype.doAction = function() {
       var args, f;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       f = makeFunction(f, args);
       return this.withHandler(function(event) {
         if (event.hasValue()) {
-          f(event.value);
+          f(event.value());
         }
         return this.push(event);
       });
@@ -714,8 +692,8 @@
       return this.withStateMachine(void 0, function(prev, event) {
         if (!event.hasValue()) {
           return [prev, [event]];
-        } else if (!isEqual(prev, event.value)) {
-          return [event.value, [event]];
+        } else if (!isEqual(prev, event.value())) {
+          return [event.value(), [event]];
         } else {
           return [prev, []];
         }
@@ -758,7 +736,7 @@
               return Bacon.more;
             } else {
               initSent = true;
-              acc = new Some(f(acc.getOrElse(void 0), event.value));
+              acc = new Some(f(acc.getOrElse(void 0), event.value()));
               return sink(event.apply(acc.get()));
             }
           } else {
@@ -824,7 +802,7 @@
           } else if (event.isError()) {
             return sink(event);
           } else {
-            child = f(event.value);
+            child = f(event.value());
             unsubChild = void 0;
             childEnded = false;
             removeChild = function() {
@@ -859,12 +837,6 @@
         unsubRoot = root.subscribe(spawner);
         return unbind;
       });
-    };
-
-    Observable.prototype["switch"] = function() {
-      var args;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return this.flatMapLatest.apply(this, args);
     };
 
     Observable.prototype.flatMapLatest = function(f) {
@@ -989,7 +961,7 @@
           flush();
           return this.push(event);
         } else {
-          values.push(event.value);
+          values.push(event.value());
           if (values.length === count) {
             return flush();
           }
@@ -1067,15 +1039,6 @@
 
     EventStream.prototype.startWith = function(seed) {
       return Bacon.once(seed).concat(this);
-    };
-
-    EventStream.prototype.decorateWith = function(label, property) {
-      return property.sampledBy(this, function(propertyValue, streamValue) {
-        var result;
-        result = cloneObject(streamValue);
-        result[label] = propertyValue;
-        return result;
-      });
     };
 
     EventStream.prototype.mapEnd = function() {
@@ -1165,7 +1128,7 @@
                 }
                 return reply;
               } else {
-                setValue(new Some(event.value));
+                setValue(new Some(event.value()));
                 if (myVal.isDefined && otherVal.isDefined) {
                   if (initialSent && event.isInitial()) {
                     return Bacon.more;
@@ -1253,7 +1216,7 @@
       return new EventStream(function(sink) {
         return _this.subscribe(function(event) {
           if (event.isInitial()) {
-            event = next(event.value);
+            event = event.toNext();
           }
           return sink(event);
         });
@@ -1297,7 +1260,7 @@
       value = None;
       property.subscribe(function(event) {
         if (event.isInitial()) {
-          value = new Some(event.value);
+          value = new Some(event.value());
         }
         return Bacon.noMore;
       });
@@ -1417,7 +1380,7 @@
           ended = true;
         }
         if (event.hasValue()) {
-          current = new Some(event.value);
+          current = new Some(event.value());
         }
         return push.apply(_this, [event]);
       };

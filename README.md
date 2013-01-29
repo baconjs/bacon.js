@@ -247,8 +247,7 @@ Example - converting strings to integers, skipping empty values:
 `observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream. The old name for
-this method is `switch` which is temporarily supported for backward
-compatibility.
+this method is `switch`.
 
 `observable.scan(seed, f)` scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -350,10 +349,6 @@ always have a current value.
 EventStream with the given initial value that will be used as the current value until
 the first value comes from the stream.
 
-`stream.decorateWith(name, property)` decorates stream values (must be
-objects) with a new property with the given name and a value taken from
-the given Property.
-
 Property
 --------
 
@@ -416,7 +411,8 @@ The result EventStream values will be formed using the given function
 `property.skipDuplicates([isEqual])` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
 checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue)
+isEqual(oldValue, newValue). The old name for this method was
+"distinctUntilChanged".
 
 `property.changes()` returns an EventStream of property value changes.
 Returns exactly the same events as the property itself, except any Initial
@@ -562,13 +558,12 @@ at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, 
 Latest value of Property or EventStream
 ---------------------------------------
 
-`Bacon.latestValue(stream)` will return a function that will return the
-latest value from the given stream or property. Notice that the
-side-effect of this is that there will be an irremovable subscriber for
-the stream that takes care of storing the latest value.
-
-This is not really recommended. Usually you'll do better by using
-combinators such as `combine`, `sampledBy` and `combineTemplate`.
+One of the common first questions people ask is "how do I get the
+latest value of a stream or a property". There is no getLatestValue
+method available and will not be either. You get the value by
+subscribing to the stream/property and handling the values in your
+callback. If you need the value of more than one source, use one of the
+combine methods.
 
 Bus
 ---
