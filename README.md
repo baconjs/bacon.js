@@ -19,6 +19,7 @@ Here's the stuff.
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
+- [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
