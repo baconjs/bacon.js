@@ -1569,7 +1569,7 @@
   };
 
   initial = function(value) {
-    return new Initial(value);
+    return new Initial(_.always(value));
   };
 
   next = function(value) {
