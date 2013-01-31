@@ -1070,8 +1070,17 @@ describe "Bacon.Bus", ->
 describe "EventStream", ->
   it "works with functions as values (bug fix)", ->
     expectStreamEvents(
-     -> Bacon.once(-> "hello").map((f) -> f())
-     ["hello"])
+      -> Bacon.once(-> "hello").map((f) -> f())
+      ["hello"])
+    expectStreamEvents(
+      -> Bacon.once(-> "hello").flatMap(Bacon.once).map((f) -> f())
+      ["hello"])
+    expectPropertyEvents(
+      -> Bacon.constant(-> "hello").map((f) -> f())
+      ["hello"])
+    expectStreamEvents(
+      -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
+      ["hello"])
 
 lessThan = (limit) -> 
   (x) -> x < limit
