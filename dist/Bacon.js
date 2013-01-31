@@ -408,7 +408,7 @@
     };
 
     Initial.prototype.toNext = function() {
-      return next(this.value, this.getOriginalEvent());
+      return new Next(this.value, this.getOriginalEvent());
     };
 
     return Initial;
@@ -1573,7 +1573,7 @@
   };
 
   next = function(value) {
-    return new Next(value);
+    return new Next(_.always(value));
   };
 
   end = function() {
