@@ -211,7 +211,7 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> initial(value, @getOriginalEvent())
-  toNext: -> next(@value, @getOriginalEvent())
+  toNext: -> new Next(@value, @getOriginalEvent())
 
 class End extends Event
   isEnd: -> true
@@ -798,7 +798,7 @@ nop = ->
 latter = (_, x) -> x
 former = (x, _) -> x
 initial = (value) -> new Initial(value)
-next = (value) -> new Next(value)
+next = (value) -> new Next(_.always(value))
 end = -> new End()
 isEvent = (x) -> x? and x.isEvent? and x.isEvent()
 toEvent = (x) -> 

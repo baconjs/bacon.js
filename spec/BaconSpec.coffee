@@ -1067,6 +1067,12 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).toEqual(false)
 
+describe "EventStream", ->
+  it "works with functions as values (bug fix)", ->
+    expectStreamEvents(
+     -> Bacon.once(-> "hello").map((f) -> f())
+     ["hello"])
+
 lessThan = (limit) -> 
   (x) -> x < limit
 times = (x, y) -> x * y
