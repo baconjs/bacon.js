@@ -1,3 +1,7 @@
+## 0.1.1
+
+- Fix bug in case stream values are functions
+
 ## 0.1.0
 
 - API change: event.value is now a function. Allows internal
