@@ -350,6 +350,13 @@ always have a current value.
 EventStream with the given initial value that will be used as the current value until
 the first value comes from the stream.
 
+`stream1.awaiting(stream2)` creates a Property that indicates whether
+stream1 is awaiting stream2, i.e. has produced a value after the latest
+value from stream2. This is handy for keeping track whether we are
+currently awaiting an AJAX response:
+
+    var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
+
 Property
 --------
 

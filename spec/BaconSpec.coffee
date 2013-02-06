@@ -103,7 +103,7 @@ describe "Bacon.fromEventTarget", ->
 describe "Observable.log", ->
   it "does not crash", ->
     Bacon.constant(1).log
-    
+
 describe "Observable.slidingWindow", ->
   it "slides the window for EventStreams", ->
     expectPropertyEvents(
@@ -351,6 +351,12 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(7, ["stop!"]).merge(repeat(1, [error()]))
         src.takeUntil(stopper)
       [1, error(), 2])
+
+describe "EventStream.awaiting(other)", ->
+  it "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
+    expectPropertyEvents(
+      -> series(2, [1, 1]).awaiting(series(3, [2]))
+      [false, true, false, true])
 
 describe "EventStream.endOnError", ->
   it "terminates on error", ->

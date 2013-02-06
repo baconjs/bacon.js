@@ -1,3 +1,7 @@
+Next release
+
+- EventStream.awaiting (ported from Bacon.UI)
+
 ## 0.1.2
 
 - Fix bug in case stream values are functions

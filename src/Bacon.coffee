@@ -536,6 +536,9 @@ class EventStream extends Observable
           sink(e)
       -> unsub()
 
+  awaiting: (other) -> 
+    this.map(true).merge(other.map(false)).toProperty(false)
+
   startWith: (seed) ->
     Bacon.once(seed).concat(this)
 
