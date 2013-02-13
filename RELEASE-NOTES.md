@@ -1,6 +1,7 @@
-Next release
+## Next release
 
-- EventStream.awaiting (ported from Bacon.UI)
+- Add `EventStream.awaiting` (ported from Bacon.UI)
+- [#80: Fix handling of `undefined` in `skipDuplicates`](https://github.com/raimohanska/bacon.js/pull/80)
 
 ## 0.1.2
 
