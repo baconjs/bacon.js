@@ -130,6 +130,29 @@ event and its parameters, if given, like this:
 
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
+`Bacon.fromEventTarget(target, event)` creates an EventStream from events
+on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
+events' parameters.
+
+`Bacon.fromCallback(f)` creates an Event stream from a function that
+accepts a callback. The function is supposed to call its callback just
+once. For example:
+
+    Bacon.fromCallback(function(callback) {
+      setTimeout(function() {
+        callback("Bacon!")
+      }, 1000)
+    })
+
+This would create a stream that outputs a single value "Bacon!" and ends
+after that. The use of setTimeout causes the value to be delayed by 1
+second.
+
+`Bacon.fromPoll(interval, f)` polls given function with given interval.
+Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
+when there are subscribers to the stream. Polling ends permanently when
+`f` returns Bacon.End
+
 `Bacon.once(value)` creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
 after this value.
@@ -149,13 +172,6 @@ with given interval in milliseconds. For example, sequentially(10, [1,2,3])
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
 `Bacon.never()` creates an EventStream that immediately ends.
-
-`Bacon.fromEventTarget(target, event)` creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
-events' parameters.
-
-`Bacon.fromPoll(interval, f)` polls given function with given interval.
-Function should return Events: either Next or End.
 
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
