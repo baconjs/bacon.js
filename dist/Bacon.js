@@ -689,11 +689,11 @@
           return a === b;
         };
       }
-      return this.withStateMachine(void 0, function(prev, event) {
+      return this.withStateMachine(None, function(prev, event) {
         if (!event.hasValue()) {
           return [prev, [event]];
-        } else if (!isEqual(prev, event.value())) {
-          return [event.value(), [event]];
+        } else if (prev === None || !isEqual(prev.get(), event.value())) {
+          return [new Some(event.value()), [event]];
         } else {
           return [prev, []];
         }
@@ -1035,6 +1035,10 @@
           return unsub();
         };
       });
+    };
+
+    EventStream.prototype.awaiting = function(other) {
+      return this.map(true).merge(other.map(false)).toProperty(false);
     };
 
     EventStream.prototype.startWith = function(seed) {
