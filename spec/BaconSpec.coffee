@@ -323,6 +323,16 @@ describe "EventStream.throttle", ->
       -> series(2, [1, error(), 2]).throttle(t(7))
       [error(), 2])
 
+describe "EventStream.limitThroughput(n)", ->
+  it "outputs events at most once per n millis", ->
+    expectStreamEvents(
+      -> series(3, [0, 3, 6, 9]).limitThroughput(t(5))
+      [0, 3, 9])
+  it "outputs first event immediately", ->
+    expectStreamEvents(
+      -> series(1, ["a", "b"]).limitThroughput(t(3))
+      ["a", "b"])
+
 describe "EventStream.bufferWithTime", ->
   it "returns events in bursts, passing through errors", ->
     expectStreamEvents(
@@ -461,7 +471,7 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
-  
+
   it "passes through also Errors", ->
     expectPropertyEvents(
       -> series(1, [1, error(), 2]).toProperty()

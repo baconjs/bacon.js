@@ -471,6 +471,34 @@ class EventStream extends Observable
   throttle: (delay) ->
     @flatMapLatest (value) ->
       Bacon.later delay, value
+  limitThroughput: (delay) ->
+    scheduled = false
+    nextEvent = None
+    endEvent = None
+    sendAndSchedule = (push) =>
+      scheduled = false
+      reply = null
+      if nextEvent.isDefined
+        reply = push(nextEvent.get())
+        nextEvent = None
+      if endEvent.isDefined and reply != Bacon.noMore
+        reply = push(endEvent.get())
+      if !(endEvent.isDefined) and reply != Bacon.noMore
+        scheduled = true
+        setTimeout((() -> sendAndSchedule(push)), delay)
+      reply
+    @withHandler (event) ->
+      if event.hasValue()
+        nextEvent = new Some(event)
+        if not scheduled
+          sendAndSchedule(@push)
+      else if event.isEnd()
+        if scheduled
+          endEvent = new Some(event)
+        else
+          @push(event)
+      else
+        @push(event)
   bufferWithTime: (delay) ->
     values = []
     storeAndMaybeTrigger = (value) ->
