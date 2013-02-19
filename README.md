@@ -233,8 +233,20 @@ ignored
 
 `observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
 
+    var delayed = source.delay(2)
+    
+    source:    asdf----asdf----
+    delayed:   --asdf----asdf--
+
 `observable.throttle(delay)` throttles stream/property by given amount of milliseconds. This means that event is only emitted after the given
-"quiet period". Does not affect the initial value of a Property.
+"quiet period". Does not affect emitting the initial value of a Property.
+
+Example:
+
+    var throttled = source.throttle(1)
+    
+    source:    asdf----asdf----
+    throttled: -----f-------f--
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
