@@ -890,11 +890,6 @@ toEvent = (x) ->
   else
     next x
 cloneArray = (xs) -> xs.slice(0)
-cloneObject = (src) ->
-  clone = {}
-  for key, value of src
-    clone[key] = value
-  clone
 indexOf = if Array::indexOf
   (xs, x) -> xs.indexOf(x)
 else
