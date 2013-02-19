@@ -1,4 +1,4 @@
-## Next release
+## 0.1.5
 
 - Bus.plug returns function for unplugging
 - Fixes possible memory leak in Bus, related to ended streams
