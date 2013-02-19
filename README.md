@@ -793,6 +793,11 @@ Run unit tests:
 
     npm test
 
+Run browser tests:
+
+    npm install -g phantomjs
+    phantomjs browsertest/lib/mocha-phantomjs.coffee browsertest/phantom.runner.html
+
 Dependencies
 ============
 
