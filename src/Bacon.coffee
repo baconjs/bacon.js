@@ -387,9 +387,7 @@ class Observable
     state = initState
     @withHandler (event) ->
       fromF = f(state, event)
-      assertArray fromF
       [newState, outputs] = fromF
-      assertArray outputs
       state = newState
       reply = Bacon.more
       for output in outputs
@@ -701,7 +699,6 @@ class Dispatcher
     @push = (event) =>
       waiters = []
       event.onDone = addWaiter
-      assertEvent event
       tmpSinks = sinks
       for sink in tmpSinks
         reply = sink event
@@ -713,7 +710,6 @@ class Dispatcher
         Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
-      assertEvent event
       if event.isEnd()
         ended = true
       handleEvent.apply(this, [event])
