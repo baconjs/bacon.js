@@ -1079,6 +1079,17 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).toEqual(false)
 
+  it "returns unplug function from plug", ->
+    values = []
+    bus = new Bacon.Bus()
+    src = new Bacon.Bus()
+    unplug = bus.plug(src)
+    bus.onValue((x) -> values.push(x))
+    src.push("x")
+    unplug()
+    src.push("y")
+    expect(values).toEqual(["x"])
+
 describe "EventStream", ->
   it "works with functions as values (bug fix)", ->
     expectStreamEvents(
