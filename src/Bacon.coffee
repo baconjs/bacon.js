@@ -722,25 +722,23 @@ class Dispatcher
     unsubscribeFromSource = nop
     removeSink = (sink) ->
       sinks = _.without(sink, sinks)
+    waiters = []
+    done = (event) -> 
+      if waiters?
+        ws = waiters
+        waiters = undefined
+        w() for w in ws
+      event.onDone = Event.prototype.onDone
+    addWaiter = (listener) -> waiters.push(listener)
     @push = (event) =>
-      waiters = undefined
-      done = -> 
-        if waiters?
-          ws = waiters
-          waiters = undefined
-          w() for w in ws
-        event.onDone = Event.prototype.onDone
-      event.onDone = (listener) ->
-        if waiters? and not _.contains(waiters, listener)
-          waiters.push(listener)
-        else
-          waiters = [listener]
+      waiters = []
+      event.onDone = addWaiter
       assertEvent event
       tmpSinks = sinks
       for sink in tmpSinks
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
-      done()
+      done(event)
       if @hasSubscribers() 
         Bacon.more 
       else 
