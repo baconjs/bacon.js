@@ -2,3 +2,12 @@ language: node_js
 
 node_js:
   - 0.6
+
+after_install:
+  - sudo npm install -g phantomjs
+
+before_script:
+  - phantomjs --version
+  - jasmine-node --coffee spec
+
+script: phantomjs browsertest/lib/mocha-phantomjs.coffee browsertest/phantom.runner.html
