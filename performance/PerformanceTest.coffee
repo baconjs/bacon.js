@@ -6,7 +6,7 @@ f =
   generator: ->
     streams = []
     {
-      make: ->
+      stream: ->
         counter = 0
         bus = new Bacon.Bus()
         bus.tick = -> @push(counter = counter + 1)
@@ -19,18 +19,27 @@ f =
     }
   everyNth: (n, stream) ->
     stream.filter (x) -> x % n == 0
+  withGenerator: (fun) ->
+    gen = f.generator()
+    fun(gen).onValue((v) -> )
+    gen.ticks(100)
+  combineTemplate: (gen) ->
+    Bacon.combineTemplate({a:gen.stream(), b:gen.stream(), c: gen.stream(), d: gen.stream()})
 
 suite = new Benchmark.Suite
 
 suite.add 'Bacon.combineTemplate.sample', ->
-  gen = f.generator()
-  Bacon.combineTemplate({a:gen.make(), b:gen.make(), c: gen.make(), d: gen.make()})
-    .sampledBy(f.everyNth(10, gen.make())) 
-    .onValue((v) -> )
-  gen.ticks(100)
+  f.withGenerator (gen) ->
+    f.combineTemplate(gen)
+      .sampledBy(f.everyNth(10, gen.stream())) 
+.add 'Bacon.combineTemplate', ->
+  f.withGenerator (gen) ->
+    f.combineTemplate(gen)
+.add 'EventStream.map', ->
+  f.withGenerator (gen) ->
+    gen.stream().map((x) -> x * 2)
 .on 'cycle', (event) ->
   console.log(String(event.target))
 .on "error", (error) ->
   console.log(error)
 .run({ 'async': false })
-
