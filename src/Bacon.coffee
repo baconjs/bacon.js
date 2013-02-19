@@ -728,33 +728,43 @@ class PropertyDispatcher extends Dispatcher
 class Bus extends EventStream
   constructor: ->
     sink = undefined
-    unsubFuncs = []
-    inputs = []
+    subscriptions = []
     ended = false
     guardedSink = (input) => (event) =>
       if (event.isEnd())
-        remove(input, inputs)
+        unsubscribeInput(input)
         Bacon.noMore
       else
         sink event
     unsubAll = => 
-      f() for f in unsubFuncs
-      unsubFuncs = []
+      for sub in subscriptions
+        if sub.unsub?
+          sub.unsub()
+      subscriptions = []
+    subscribeInput = (subscription) ->
+      subscription.unsub = (subscription.input.subscribe(guardedSink(subscription.input)))
+    unsubscribeInput = (input) ->
+      for sub, i in subscriptions
+        if sub.input == input
+          sub.unsub() if sub.unsub?
+          subscriptions.splice(i, 1)
+          return
     subscribeAll = (newSink) =>
       sink = newSink
       unsubFuncs = []
-      for input in cloneArray(inputs)
-        unsubFuncs.push(input.subscribe(guardedSink(input)))
+      for subscription in cloneArray(subscriptions)
+        subscribeInput(subscription)
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
       dispatcher.subscribe(sink)
     super(subscribeThis)
-    @plug = (inputStream) =>
+    @plug = (input) =>
       return if ended
-      inputs.push(inputStream)
-      if (sink?)
-        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
+      sub = { input: input }
+      subscriptions.push(sub)
+      subscribeInput(sub) if (sink?)
+      () -> unsubscribeInput(input)
     @push = (value) =>
       sink next(value) if sink?
     @error = (error) =>

@@ -1417,16 +1417,15 @@
     __extends(Bus, _super);
 
     function Bus() {
-      var dispatcher, ended, guardedSink, inputs, sink, subscribeAll, subscribeThis, unsubAll, unsubFuncs,
+      var dispatcher, ended, guardedSink, sink, subscribeAll, subscribeInput, subscribeThis, subscriptions, unsubAll, unsubscribeInput,
         _this = this;
       sink = void 0;
-      unsubFuncs = [];
-      inputs = [];
+      subscriptions = [];
       ended = false;
       guardedSink = function(input) {
         return function(event) {
           if (event.isEnd()) {
-            remove(input, inputs);
+            unsubscribeInput(input);
             return Bacon.noMore;
           } else {
             return sink(event);
@@ -1434,21 +1433,39 @@
         };
       };
       unsubAll = function() {
-        var f, _i, _len;
-        for (_i = 0, _len = unsubFuncs.length; _i < _len; _i++) {
-          f = unsubFuncs[_i];
-          f();
+        var sub, _i, _len;
+        for (_i = 0, _len = subscriptions.length; _i < _len; _i++) {
+          sub = subscriptions[_i];
+          if (sub.unsub != null) {
+            sub.unsub();
+          }
         }
-        return unsubFuncs = [];
+        return subscriptions = [];
+      };
+      subscribeInput = function(subscription) {
+        return subscription.unsub = subscription.input.subscribe(guardedSink(subscription.input));
+      };
+      unsubscribeInput = function(input) {
+        var i, sub, _i, _len;
+        for (i = _i = 0, _len = subscriptions.length; _i < _len; i = ++_i) {
+          sub = subscriptions[i];
+          if (sub.input === input) {
+            if (sub.unsub != null) {
+              sub.unsub();
+            }
+            subscriptions.splice(i, 1);
+            return;
+          }
+        }
       };
       subscribeAll = function(newSink) {
-        var input, _i, _len, _ref1;
+        var subscription, unsubFuncs, _i, _len, _ref1;
         sink = newSink;
         unsubFuncs = [];
-        _ref1 = cloneArray(inputs);
+        _ref1 = cloneArray(subscriptions);
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          input = _ref1[_i];
-          unsubFuncs.push(input.subscribe(guardedSink(input)));
+          subscription = _ref1[_i];
+          subscribeInput(subscription);
         }
         return unsubAll;
       };
@@ -1457,14 +1474,21 @@
         return dispatcher.subscribe(sink);
       };
       Bus.__super__.constructor.call(this, subscribeThis);
-      this.plug = function(inputStream) {
+      this.plug = function(input) {
+        var sub;
         if (ended) {
           return;
         }
-        inputs.push(inputStream);
+        sub = {
+          input: input
+        };
+        subscriptions.push(sub);
         if ((sink != null)) {
-          return unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)));
+          subscribeInput(sub);
         }
+        return function() {
+          return unsubscribeInput(input);
+        };
       };
       this.push = function(value) {
         if (sink != null) {

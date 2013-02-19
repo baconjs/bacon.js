@@ -1,3 +1,8 @@
+## Next release
+
+- Bus.plug returns function for unplugging
+- Fixes possible memory leak in Bus, related to ended streams
+
 ## 0.1.4
 
 - Add `EventStream.awaiting` (ported from Bacon.UI)

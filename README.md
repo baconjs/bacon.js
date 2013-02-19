@@ -621,6 +621,7 @@ Also, the Bus `push` and `plug` methods have no effect.
 
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
+Returns a function that can be used to unplug the same stream.
 
 The plug method practically allows you to merge in other streams after
 the creation of the Bus. I've found Bus quite useful as an event broadcast
