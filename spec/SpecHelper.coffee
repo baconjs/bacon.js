@@ -1,7 +1,9 @@
 Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
-timeUnitMillisecs = 10
+browser = (typeof window) != "undefined"
+console.log("in browser") if browser
+timeUnitMillisecs = if browser then 50 else 10
 @t = (time) -> time * timeUnitMillisecs
 seqs = []
 
