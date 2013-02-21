@@ -825,7 +825,7 @@ Bacon.js is not browser dependent, because it is not a UI library. Hence there a
 
 I have used Bacon.js with Chrome, Firefox, Safari, IE 8+, iPhone, iPad.
 
-[![browser support test report](http://ci.testling.com/USER/PROJECT.png)](http://ci.testling.com/USER/PROJECT)
+[![browser support test report](http://ci.testling.com/raimohanska/bacon.js.png)](http://ci.testling.com/raimohanska/bacon.js)
 
 Don't take the above browser support status too seriously, it's actually much
 better. the reds are mostly false positives. Will improve browser
