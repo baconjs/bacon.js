@@ -1,7 +1,10 @@
 Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
-timeUnitMillisecs = 10
+isNode = !!(typeof module != 'undefined' && module.exports)
+if !isNode then console.log("Running in browser")
+timeUnitMillisecs = if isNode then 10 else 30
+
 @t = (time) -> time * timeUnitMillisecs
 seqs = []
 
