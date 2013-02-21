@@ -858,7 +858,7 @@ makeFunction = (f, args) ->
   else
     _.always f
 isFieldKey = (f) ->
-  ((typeof f == "string") || (f instanceof String)) and f.length > 1 and f[0] == "."
+  f and f.length > 1 and f[0] == "."
 toFieldExtractor = (f, args) ->
   parts = f.slice(1).split(".")
   partFuncs = _.map(toSimpleExtractor(args), parts)
