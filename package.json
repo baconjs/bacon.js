@@ -16,6 +16,18 @@
     "grunt-contrib-copy": "~0.3.2",
     "benchmark": "1.0.0"
   },
+  "testling": {
+    "browsers": {
+      "ie": [ 6, 7, 8, 9, 10 ],
+      "ff": [ 12, 13, 14, 15, 16, 17 ],
+      "chrome": [ 20, 21, 22, 23 ],
+      "opera": [ 10, 11, 12 ],
+      "safari": [ 5.1, 6 ],
+      "iphone": [ 6 ],
+      "ipad": [ 6 ]
+    },
+    "files": "jasmine-harness.coffee"
+  },
   "scripts": {
     "test": "jasmine-node --coffee spec",
     "pre-publish": "grunt"
