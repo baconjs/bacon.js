@@ -9,12 +9,14 @@ class Mock
       verifier
     this.when = () =>
       returner = {}
-      methodNames.forEach (name) =>
+      assign = (name) =>
         returner[name] = (args...) =>
           {
             thenReturn: (returnValue) =>
               this[name].doReturn(returnValue).when(args...)
           }
+      for name in methodNames
+        assign(name)
       returner
 
 mockFunction = (name) ->
