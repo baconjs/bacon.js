@@ -820,16 +820,19 @@ I'm not sure how it works in case some other lib adds stuff to, say, Array proto
 Compatibility with browsers
 ===========================
 
-Bacon.js is not browser dependent, because it is not a UI library. Hence there are not actual browser tests and no
-"official" list of supported browsers.
+TLDR: good.
 
-I have used Bacon.js with Chrome, Firefox, Safari, IE 8+, iPhone, iPad.
+Bacon.js is not browser dependent, because it is not a UI library.
+
+I have personally used it Bacon.js with Chrome, Firefox, Safari, IE 6+, iPhone, iPad.
+
+Automatically tested on each commit on modern browsers and IE6+.
+
+The full Bacon.js test suite is run on testling.ci with a wide range of browsers:
 
 [![browser support test report](http://ci.testling.com/raimohanska/bacon.js.png)](http://ci.testling.com/raimohanska/bacon.js)
 
-Don't take the above browser support status too seriously, it's actually much
-better. the reds are mostly false positives. Will improve browser
-testing soon to get more reliable results.
+Results from those tests are quite unreliable, producing random failures, but the bottom line is that there are no outstanding compatibility issues.
 
 Node.js
 =======
