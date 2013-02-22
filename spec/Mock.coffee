@@ -13,7 +13,7 @@ class Mock
         returner[name] = (args...) =>
           {
             thenReturn: (returnValue) =>
-              this[name].return(returnValue).when(args...)
+              this[name].doReturn(returnValue).when(args...)
           }
       returner
 
@@ -33,7 +33,7 @@ mockFunction = (name) ->
     actualCall = calls[0]
     calls.splice(0,1)
     expect(actualCall).toEqual(args)
-  method.return = (returnValue) ->
+  method.doReturn = (returnValue) ->
     {
       when: (args...) ->
         #console.log("#{name}(#{args}) => #{returnValue}")
