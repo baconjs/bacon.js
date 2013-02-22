@@ -1,3 +1,7 @@
+## 0.1.6
+
+- Fix property extraction (".field") syntax compatibility with IE6-7
+
 ## 0.1.5
 
 - Bus.plug returns function for unplugging
