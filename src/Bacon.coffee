@@ -858,7 +858,8 @@ makeFunction = (f, args) ->
   else
     _.always f
 isFieldKey = (f) ->
-  (typeof f == "string") and f.length > 1 and f[0] == "."
+  (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
+Bacon.isFieldKey = isFieldKey
 toFieldExtractor = (f, args) ->
   parts = f.slice(1).split(".")
   partFuncs = _.map(toSimpleExtractor(args), parts)
