@@ -1715,8 +1715,10 @@
   };
 
   isFieldKey = function(f) {
-    return (typeof f === "string") && f.length > 1 && f[0] === ".";
+    return (typeof f === "string") && f.length > 1 && f.charAt(0) === ".";
   };
+
+  Bacon.isFieldKey = isFieldKey;
 
   toFieldExtractor = function(f, args) {
     var partFuncs, parts;

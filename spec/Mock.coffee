@@ -9,12 +9,14 @@ class Mock
       verifier
     this.when = () =>
       returner = {}
-      methodNames.forEach (name) =>
+      assign = (name) =>
         returner[name] = (args...) =>
           {
             thenReturn: (returnValue) =>
-              this[name].return(returnValue).when(args...)
+              this[name].doReturn(returnValue).when(args...)
           }
+      for name in methodNames
+        assign(name)
       returner
 
 mockFunction = (name) ->
@@ -33,7 +35,7 @@ mockFunction = (name) ->
     actualCall = calls[0]
     calls.splice(0,1)
     expect(actualCall).toEqual(args)
-  method.return = (returnValue) ->
+  method.doReturn = (returnValue) ->
     {
       when: (args...) ->
         #console.log("#{name}(#{args}) => #{returnValue}")
