@@ -337,6 +337,11 @@ describe "EventStream.bufferWithTime", ->
     expectStreamEvents(
       -> Bacon.never().bufferWithTime(t(1))
       [])
+  it "allows custom defer-function", ->
+    fast = (f) -> setTimeout(f, 0)
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
+      [[0, ["a"]], [2, ["b"]]])
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->

@@ -478,10 +478,13 @@ class EventStream extends Observable
     scheduled = false
     end = null
     values = []
+    if not isFunction(delay)
+      delayMs = delay
+      delay = (f) -> setTimeout(f, delayMs)
     @withHandler (event) ->
       schedule = =>
         scheduled = true
-        setTimeout(flush, delay)
+        delay(flush)
       flush = =>
         if values.length > 0
           @push next(values, event)
@@ -490,6 +493,8 @@ class EventStream extends Observable
             @push end
           else
             schedule()
+        else
+          scheduled = false
       if event.isError()
         @push event
       else if event.isEnd()
