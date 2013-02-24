@@ -364,6 +364,12 @@ The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
+`stream.bufferWithTime(f)` works with a given "defer-function" instead
+of a delay. Here's a simple example, which is equivalent to
+stream.bufferWithTime(10):
+
+    stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+
 `stream.bufferWithCount(count)` buffers stream events with given count.
 The buffer is flushed when it contains the given number of elements. So, if
 you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
