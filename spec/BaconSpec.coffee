@@ -342,6 +342,11 @@ describe "EventStream.bufferWithTime", ->
     th.expectStreamTimings(
       -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
       [[0, ["a"]], [2, ["b"]]])
+  it "works with synchronous defer-function", ->
+    sync = (f) -> f()
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(sync)
+      [[0, ["a"]], [2, ["b"]]])
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->
