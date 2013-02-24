@@ -476,6 +476,7 @@ class EventStream extends Observable
       Bacon.later delay, value
   bufferWithTime: (delay) ->
     scheduled = false
+    end = null
     values = []
     @withHandler (event) ->
       schedule = =>
@@ -485,12 +486,15 @@ class EventStream extends Observable
         if values.length > 0
           @push next(values, event)
           values = []
-          schedule()
+          if end?
+            @push end
+          else
+            schedule()
       if event.isError()
         @push event
       else if event.isEnd()
-        flush()
-        @push event
+        end = event
+        schedule()
       else
         values.push(event.value())
         schedule() if not scheduled
