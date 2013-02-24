@@ -474,54 +474,54 @@ class EventStream extends Observable
   throttle: (delay) ->
     @flatMapLatest (value) ->
       Bacon.later delay, value
+
   bufferWithTime: (delay) ->
-    scheduled = false
-    end = null
-    values = []
+    schedule = (buffer) => buffer.schedule()
+    @buffer(delay, schedule, schedule)
+
+  bufferWithCount: (count) ->
+    @buffer(0,
+            (buffer) -> buffer.flush() if buffer.values.length == count
+    )
+
+  buffer: (delay, onInput = (->), onFlush = (->)) ->
+    buffer = {
+      scheduled: false
+      end : null
+      values : []
+      flush: ->
+        @scheduled = false
+        if @values.length > 0
+          reply = @push next(@values)
+          @values = []
+          if @end?
+            @push @end
+          else if reply != Bacon.noMore
+            onFlush(this)
+        else
+          @push @end if @end?
+      schedule: ->
+        if not @scheduled
+          @scheduled = true
+          delay(=> @flush())
+    }
     reply = Bacon.more
     if not isFunction(delay)
       delayMs = delay
       delay = (f) -> setTimeout(f, delayMs)
     @withHandler (event) ->
-      schedule = =>
-        scheduled = true
-        delay(flush)
-      flush = =>
-        if values.length > 0
-          reply = @push next(values, event)
-          values = []
-          if end?
-            @push end
-          else if reply != Bacon.noMore
-            schedule()
-        else
-          scheduled = false
+      buffer.push = @push
       if event.isError()
         reply = @push event
       else if event.isEnd()
-        if scheduled
-          end = event
-        else
-          reply = @push event
+        buffer.end = event
+        if not buffer.scheduled
+          buffer.flush()
       else
-        values.push(event.value())
-        schedule() if not scheduled
+        buffer.values.push(event.value())
+        onInput(buffer)
       reply
 
-  bufferWithCount: (count) ->
-    values = []
-    @withHandler (event) ->
-      flush = =>
-        @push next(values, event)
-        values = []
-      if event.isError()
-        @push event
-      else if event.isEnd()
-        flush()
-        @push event
-      else
-        values.push(event.value())
-        flush() if values.length == count
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
