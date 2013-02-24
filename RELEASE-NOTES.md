@@ -1,3 +1,7 @@
+## Next release
+
+- fix bufferWithTime behaviour: output at steady rate as long as there's anything to output
+
 ## 0.1.7
 
 - Fixed tests too on IE6+
