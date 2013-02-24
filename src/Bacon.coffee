@@ -493,8 +493,10 @@ class EventStream extends Observable
       if event.isError()
         @push event
       else if event.isEnd()
-        end = event
-        schedule()
+        if scheduled
+          end = event
+        else
+          @push event
       else
         values.push(event.value())
         schedule() if not scheduled

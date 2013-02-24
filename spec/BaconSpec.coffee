@@ -333,6 +333,10 @@ describe "EventStream.bufferWithTime", ->
       -> th.atGivenTimes([[0, "a"], [3, "b"], [5, "c"]]).bufferWithTime(t(2))
       [[2, ["a"]], [4, ["b"]], [6, ["c"]]]
     )
+  it "works with empty stream", ->
+    expectStreamEvents(
+      -> Bacon.never().bufferWithTime(t(1))
+      [])
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->
