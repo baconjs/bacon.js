@@ -472,17 +472,26 @@ class EventStream extends Observable
     @flatMapLatest (value) ->
       Bacon.later delay, value
   bufferWithTime: (delay) ->
+    scheduled = false
     values = []
-    storeAndMaybeTrigger = (value) ->
-      values.push value
-      values.length == 1
-    flush = ->
-      output = values
-      values = []
-      output
-    buffer = ->
-      Bacon.later(delay).map(flush)
-    @filter(storeAndMaybeTrigger).flatMap(buffer)
+    @withHandler (event) ->
+      schedule = =>
+        scheduled = true
+        setTimeout(flush, delay)
+      flush = =>
+        if values.length > 0
+          @push next(values, event)
+          values = []
+          schedule()
+      if event.isError()
+        @push event
+      else if event.isEnd()
+        flush()
+        @push event
+      else
+        values.push(event.value())
+        schedule() if not scheduled
+
   bufferWithCount: (count) ->
     values = []
     @withHandler (event) ->

@@ -328,6 +328,11 @@ describe "EventStream.bufferWithTime", ->
     expectStreamEvents(
       -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTime(t(7))
       [error(), [1, 2, 3, 4], [5, 6, 7]])
+  it "keeps constant output rate even when input is sporadical", ->
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [3, "b"]]).bufferWithTime(t(2))
+      [[2, ["a"]], [4, ["b"]]]
+    )
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->

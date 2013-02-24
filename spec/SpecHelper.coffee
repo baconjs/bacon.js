@@ -15,6 +15,19 @@ seqs = []
   source = Bacon.repeatedly(t(interval), values)
   seqs.push({ values : values, source : source })
   source
+@atGivenTimes = (timesAndValues) ->
+  streams = for tv in timesAndValues
+    Bacon.later(t(tv[0]), tv[1])
+  Bacon.mergeAll(streams)
+
+@expectStreamTimings = (src, expectedEventsAndTimings) ->
+  srcWithRelativeTime = () ->
+    now = () -> new Date().getTime()
+    t0 = now()
+    relativeTime = () -> Math.floor((now() - t0) / timeUnitMillisecs)
+    withRelativeTime = (x) -> [relativeTime(), x]
+    src().map(withRelativeTime)
+  @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
 
 @expectStreamEvents = (src, expectedEvents) ->
   runs -> verifySingleSubscriber src(), expectedEvents
