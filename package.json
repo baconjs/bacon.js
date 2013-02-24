@@ -14,7 +14,8 @@
     "grunt-contrib-coffee": "~0.3",
     "grunt-contrib-clean": "~0.3",
     "grunt-contrib-copy": "~0.3.2",
-    "benchmark": "1.0.0"
+    "benchmark": "1.0.0",
+    "browserify": "2.2.1"
   },
   "testling": {
     "browsers": {
@@ -26,7 +27,7 @@
       "iphone": [ 6 ],
       "ipad": [ 6 ]
     },
-    "files": "jasmine-harness.coffee"
+    "files": "browsertest/jasmine-harness.coffee"
   },
   "scripts": {
     "test": "jasmine-node --coffee spec",
