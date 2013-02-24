@@ -480,9 +480,8 @@ class EventStream extends Observable
     @buffer(delay, schedule, schedule)
 
   bufferWithCount: (count) ->
-    @buffer(0,
-            (buffer) -> buffer.flush() if buffer.values.length == count
-    )
+    flushOnCount = (buffer) -> buffer.flush() if buffer.values.length == count
+    @buffer(0, flushOnCount)
 
   buffer: (delay, onInput = (->), onFlush = (->)) ->
     buffer = {
