@@ -478,6 +478,7 @@ class EventStream extends Observable
     scheduled = false
     end = null
     values = []
+    reply = Bacon.more
     if not isFunction(delay)
       delayMs = delay
       delay = (f) -> setTimeout(f, delayMs)
@@ -487,24 +488,25 @@ class EventStream extends Observable
         delay(flush)
       flush = =>
         if values.length > 0
-          @push next(values, event)
+          reply = @push next(values, event)
           values = []
           if end?
             @push end
-          else
+          else if reply != Bacon.noMore
             schedule()
         else
           scheduled = false
       if event.isError()
-        @push event
+        reply = @push event
       else if event.isEnd()
         if scheduled
           end = event
         else
-          @push event
+          reply = @push event
       else
         values.push(event.value())
         schedule() if not scheduled
+      reply
 
   bufferWithCount: (count) ->
     values = []
