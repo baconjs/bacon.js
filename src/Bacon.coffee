@@ -38,10 +38,11 @@ Bacon.sequentially = (delay, values) ->
   index = -1
   poll = ->
     index++
-    if index < values.length
-      toEvent values[index]
+    valueEvent = toEvent values[index]
+    if index < values.length - 1
+      valueEvent
     else
-      end()
+      [valueEvent, end()]
   Bacon.fromPoll(delay, poll)
 
 Bacon.repeatedly = (delay, values) ->
@@ -64,14 +65,16 @@ Bacon.fromPoll = (delay, poll) ->
   new EventStream (sink) ->
     id = undefined
     handler = ->
-      value = poll()
-      reply = sink value
-      if (reply == Bacon.noMore or value.isEnd())
-        unbind()
+      events = _.toArray(poll())
+      for event in events
+        reply = sink event
+        if (reply == Bacon.noMore or event.isEnd())
+          unbind()
     unbind = -> 
       clearInterval id
     id = setInterval(handler, delay)
     unbind
+
 
 # Wrap DOM EventTarget or Node EventEmitter as EventStream
 #
@@ -917,6 +920,7 @@ _ = {
   each: (xs, f) ->
     for key, value of xs
       f(key, value)
+  toArray: (xs) -> if (xs instanceof Array) then xs else [xs]
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]

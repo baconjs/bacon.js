@@ -333,6 +333,7 @@ describe "EventStream.bufferWithTime", ->
       -> th.atGivenTimes([[0, "a"], [3, "b"]]).bufferWithTime(t(2))
       [[2, ["a"]], [4, ["b"]]]
     )
+  # TODO: ensure scheduled flush at end
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->
