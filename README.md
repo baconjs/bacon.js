@@ -802,8 +802,8 @@ Run unit tests:
 
 Run browser tests:
 
-    npm install -g phantomjs
-    phantomjs browsertest/lib/mocha-phantomjs.coffee browsertest/phantom.runner.html
+    npm install -g testem
+    testem
 
 Dependencies
 ============

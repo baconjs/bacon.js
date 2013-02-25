@@ -1,7 +1,7 @@
 expose = (obj) -> window[key] = obj[key] for key of obj
 
 # attach jasmine to window
-expose require('./spec/lib/jasmine.js')
+expose require('./spec/lib/jasmine.js') unless jasmine?
 
 html = require './spec/lib/jasmine-html.js'
 tap = require './spec/lib/jasmine.tap_reporter.js'
@@ -21,8 +21,10 @@ describe 'Basic Suite', ->
     expect(false).toEqual(false)
 
 startJasmine = ->
-  jasmine.getEnv().addReporter new jasmine.TapReporter()
-  jasmine.getEnv().execute()
+  env = jasmine.getEnv()
+  env.addReporter new jasmine.TapReporter()
+  env.addReporter new jasmine.HtmlReporter()
+  env.execute()
 
 currentWindowOnload = window.onload
 

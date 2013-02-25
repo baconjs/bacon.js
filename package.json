@@ -14,17 +14,47 @@
     "grunt-contrib-coffee": "~0.3",
     "grunt-contrib-clean": "~0.3",
     "grunt-contrib-copy": "~0.3.2",
-    "benchmark": "1.0.0"
+    "benchmark": "1.0.0",
+    "browserify": "https://github.com/substack/node-browserify/tarball/1.17.2"
   },
   "testling": {
     "browsers": {
-      "ie": [ 6, 7, 8, 9, 10 ],
-      "ff": [ 12, 17 ],
-      "chrome": [ 20, 23 ],
-      "opera": [ 10, 12 ],
-      "safari": [ 5.1, 6 ],
-      "iphone": [ 6 ],
-      "ipad": [ 6 ]
+      "ie": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "ff": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "chrome": [
+        20,
+        21,
+        22,
+        23
+      ],
+      "opera": [
+        10,
+        11,
+        12
+      ],
+      "safari": [
+        5.1,
+        6
+      ],
+      "iphone": [
+        6
+      ],
+      "ipad": [
+        6
+      ]
     },
     "files": "jasmine-harness.coffee"
   },
