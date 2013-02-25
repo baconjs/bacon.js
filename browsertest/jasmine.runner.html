@@ -1,0 +1,16 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Jasmine Tests</title>
+  <link rel="stylesheet" href="../spec/lib/jasmine.css">
+  <script src="./lib/jasmine.js"></script>
+  <script>
+  if (location.hash === '#testem')
+    document.write('<script src="/testem.js"></'+'script>')
+  </script>
+  <script src="./lib/jasmine_adapter.js"></script>
+</head>
+<body>
+  <script src="./bundle.js"></script>
+</body>
+</html>
