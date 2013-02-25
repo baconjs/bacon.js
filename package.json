@@ -15,7 +15,7 @@
     "grunt-contrib-clean": "~0.3",
     "grunt-contrib-copy": "~0.3.2",
     "benchmark": "1.0.0",
-    "browserify": "https://github.com/substack/node-browserify/tarball/1.17.2"
+    "browserify": "1.18.0"
   },
   "testling": {
     "browsers": {
