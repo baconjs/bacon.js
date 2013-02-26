@@ -1,0 +1,4 @@
+# Creates a bundle.js file from node project, so that you can run tests
+# in the browser using jasmine.runner.html
+
+node_modules/.bin/browserify browsertest/jasmine-harness.coffee > browsertest/bundle.js
