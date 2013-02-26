@@ -25,7 +25,7 @@ seqs = []
     now = () -> new Date().getTime()
     t0 = now()
     relativeTime = () -> 
-      Math.floor((now() - t0 + (timeUnitMillisecs * 0.3)) / timeUnitMillisecs)
+      Math.floor((now() - t0 + 1) / timeUnitMillisecs)
     withRelativeTime = (x) -> [relativeTime(), x]
     src().map(withRelativeTime)
   @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
