@@ -802,6 +802,8 @@ Run unit tests:
 
 Run browser tests:
 
+    npm install
+    npm install --save-dev browserify@1.18.0
     npm install -g testem
     testem
 
