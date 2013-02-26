@@ -1,5 +1,5 @@
 {
-  "before_tests": "node_modules/.bin/browserify jasmine-harness.coffee > browsertest/bundle.js",
+  "before_tests": "node_modules/.bin/browserify browsertest/jasmine-harness.coffee > browsertest/bundle.js",
   "test_page": "browsertest/jasmine.runner.html",
   "src_files": [
     "src/*.coffee",

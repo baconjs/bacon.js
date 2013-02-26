@@ -56,7 +56,7 @@
         6
       ]
     },
-    "files": "jasmine-harness.coffee"
+    "files": "browsertest/jasmine-harness.coffee"
   },
   "scripts": {
     "test": "jasmine-node --coffee spec",
