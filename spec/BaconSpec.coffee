@@ -322,6 +322,10 @@ describe "EventStream.throttle", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).throttle(t(7))
       [error(), 2])
+  it "waits for a quiet period before outputing anything", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3, 4]).throttle(t(3))
+      [[11, 4]])
 
 describe "EventStream.bufferWithTime", ->
   it "returns events in bursts, passing through errors", ->
