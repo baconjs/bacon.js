@@ -65,11 +65,13 @@
     var index, poll;
     index = -1;
     poll = function() {
+      var valueEvent;
       index++;
-      if (index < values.length) {
-        return toEvent(values[index]);
+      valueEvent = toEvent(values[index]);
+      if (index < values.length - 1) {
+        return valueEvent;
       } else {
-        return end();
+        return [valueEvent, end()];
       }
     };
     return Bacon.fromPoll(delay, poll);
@@ -105,12 +107,19 @@
       var handler, id, unbind;
       id = void 0;
       handler = function() {
-        var reply, value;
-        value = poll();
-        reply = sink(value);
-        if (reply === Bacon.noMore || value.isEnd()) {
-          return unbind();
+        var event, events, reply, _i, _len, _results;
+        events = _.toArray(poll());
+        _results = [];
+        for (_i = 0, _len = events.length; _i < _len; _i++) {
+          event = events[_i];
+          reply = sink(event);
+          if (reply === Bacon.noMore || event.isEnd()) {
+            _results.push(unbind());
+          } else {
+            _results.push(void 0);
+          }
         }
+        return _results;
       };
       unbind = function() {
         return clearInterval(id);
@@ -926,46 +935,91 @@
       });
     };
 
+    EventStream.prototype.throttle2 = function(delay) {
+      return this.bufferWithTime(delay).map(function(values) {
+        return values[values.length - 1];
+      });
+    };
+
     EventStream.prototype.bufferWithTime = function(delay) {
-      var buffer, flush, storeAndMaybeTrigger, values;
-      values = [];
-      storeAndMaybeTrigger = function(value) {
-        values.push(value);
-        return values.length === 1;
+      var schedule,
+        _this = this;
+      schedule = function(buffer) {
+        return buffer.schedule();
       };
-      flush = function() {
-        var output;
-        output = values;
-        values = [];
-        return output;
-      };
-      buffer = function() {
-        return Bacon.later(delay).map(flush);
-      };
-      return this.filter(storeAndMaybeTrigger).flatMap(buffer);
+      return this.buffer(delay, schedule, schedule);
     };
 
     EventStream.prototype.bufferWithCount = function(count) {
-      var values;
-      values = [];
-      return this.withHandler(function(event) {
-        var flush,
-          _this = this;
-        flush = function() {
-          _this.push(next(values, event));
-          return values = [];
-        };
-        if (event.isError()) {
-          return this.push(event);
-        } else if (event.isEnd()) {
-          flush();
-          return this.push(event);
-        } else {
-          values.push(event.value());
-          if (values.length === count) {
-            return flush();
+      var flushOnCount;
+      flushOnCount = function(buffer) {
+        if (buffer.values.length === count) {
+          return buffer.flush();
+        }
+      };
+      return this.buffer(0, flushOnCount);
+    };
+
+    EventStream.prototype.buffer = function(delay, onInput, onFlush) {
+      var buffer, delayMs, reply;
+      if (onInput == null) {
+        onInput = (function() {});
+      }
+      if (onFlush == null) {
+        onFlush = (function() {});
+      }
+      buffer = {
+        scheduled: false,
+        end: null,
+        values: [],
+        flush: function() {
+          var reply;
+          this.scheduled = false;
+          if (this.values.length > 0) {
+            reply = this.push(next(this.values));
+            this.values = [];
+            if (this.end != null) {
+              return this.push(this.end);
+            } else if (reply !== Bacon.noMore) {
+              return onFlush(this);
+            }
+          } else {
+            if (this.end != null) {
+              return this.push(this.end);
+            }
+          }
+        },
+        schedule: function() {
+          var _this = this;
+          if (!this.scheduled) {
+            this.scheduled = true;
+            return delay(function() {
+              return _this.flush();
+            });
           }
         }
+      };
+      reply = Bacon.more;
+      if (!isFunction(delay)) {
+        delayMs = delay;
+        delay = function(f) {
+          return setTimeout(f, delayMs);
+        };
+      }
+      return this.withHandler(function(event) {
+        buffer.push = this.push;
+        if (event.isError()) {
+          reply = this.push(event);
+        } else if (event.isEnd()) {
+          buffer.end = event;
+          if (!buffer.scheduled) {
+            buffer.flush();
+          }
+        } else {
+          buffer.values.push(event.value());
+          onInput(buffer);
+        }
+        return reply;
       });
     };
 
@@ -1246,11 +1300,25 @@
     };
 
     Property.prototype.delay = function(delay) {
-      return addPropertyInitValueToStream(this, this.changes().delay(delay));
+      return this.delayChanges(function(changes) {
+        return changes.delay(delay);
+      });
     };
 
     Property.prototype.throttle = function(delay) {
-      return addPropertyInitValueToStream(this, this.changes().throttle(delay));
+      return this.delayChanges(function(changes) {
+        return changes.throttle(delay);
+      });
+    };
+
+    Property.prototype.throttle2 = function(delay) {
+      return this.delayChanges(function(changes) {
+        return changes.throttle2(delay);
+      });
+    };
+
+    Property.prototype.delayChanges = function(f) {
+      return addPropertyInitValueToStream(this, f(this.changes()));
     };
 
     return Property;
@@ -1825,6 +1893,13 @@
         _results.push(f(key, value));
       }
       return _results;
+    },
+    toArray: function(xs) {
+      if (xs instanceof Array) {
+        return xs;
+      } else {
+        return [xs];
+      }
     },
     contains: function(xs, x) {
       return indexOf(xs, x) !== -1;
