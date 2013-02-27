@@ -327,6 +327,12 @@ describe "EventStream.throttle", ->
       -> series(2, [1, 2, 3, 4]).throttle(t(3))
       [[11, 4]])
 
+describe "EventStream.throttle2(delay)", ->
+  it "outputs at steady intervals, without waiting for quite period", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3]).throttle2(t(3))
+      [[5, 2], [8, 3]])
+
 describe "EventStream.bufferWithTime", ->
   it "returns events in bursts, passing through errors", ->
     expectStreamEvents(

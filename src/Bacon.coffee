@@ -475,6 +475,9 @@ class EventStream extends Observable
     @flatMapLatest (value) ->
       Bacon.later delay, value
 
+  throttle2: (delay) ->
+    @bufferWithTime(delay).map((values) -> values[values.length - 1])
+
   bufferWithTime: (delay) ->
     schedule = (buffer) => buffer.schedule()
     @buffer(delay, schedule, schedule)
