@@ -658,9 +658,10 @@ class Property extends Observable
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
-  delay: (delay) -> addPropertyInitValueToStream(this, @changes().delay(delay))
-  throttle: (delay) -> addPropertyInitValueToStream(this, @changes().throttle(delay))
-  throttle2: (delay) -> addPropertyInitValueToStream(this, @changes().throttle2(delay))
+  delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
+  throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
+  throttle2: (delay) -> @delayChanges((changes) -> changes.throttle2(delay))
+  delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes())) 
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->

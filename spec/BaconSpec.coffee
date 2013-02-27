@@ -605,6 +605,11 @@ describe "Property.throttle", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty().throttle(t(4))
       [3])
+describe "Property.throttle2", ->
+  it "throttles changes, but not initial value", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).throttle2(t(4))
+      [0,3])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
