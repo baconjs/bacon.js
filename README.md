@@ -243,10 +243,22 @@ ignored
 
 Example:
 
-    var throttled = source.throttle(1)
+    var throttled = source.throttle(2)
     
     source:    asdf----asdf----
     throttled: -----f-------f--
+
+`observable.throttle2(delay)` throttles stream/property by given amount
+of milliseconds. Events are emitted with the minimum interval of
+`delay`, but this version of throttle does not wait for a quiet period.
+The implementation if based on stream.bufferWithTime.
+
+Example:
+
+    var throttled = source.throttle2(2)
+
+    source:    asdf----asdf----
+    throttled: --s--f----s--f--
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
