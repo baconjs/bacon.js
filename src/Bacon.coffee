@@ -660,6 +660,7 @@ class Property extends Observable
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
   delay: (delay) -> addPropertyInitValueToStream(this, @changes().delay(delay))
   throttle: (delay) -> addPropertyInitValueToStream(this, @changes().throttle(delay))
+  throttle2: (delay) -> addPropertyInitValueToStream(this, @changes().throttle2(delay))
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
