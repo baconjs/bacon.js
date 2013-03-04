@@ -1,4 +1,4 @@
-(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
+(window?.jQuery || window?.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
   if (isFunction(selector))
     eventTransformer = selector
     selector = null

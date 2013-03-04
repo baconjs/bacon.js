@@ -5,9 +5,10 @@ node_js:
 
 after_install:
   - sudo npm install -g phantomjs
+  - sudo npm install -g testem
 
 before_script:
   - phantomjs --version
   - jasmine-node --coffee spec
 
-script: phantomjs browsertest/lib/mocha-phantomjs.coffee browsertest/phantom.runner.html
+script: node_modules/.bin/testem ci
