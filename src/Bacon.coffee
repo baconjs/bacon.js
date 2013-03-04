@@ -246,14 +246,14 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   fmap: (f) -> @apply(=> f(@value()))
-  apply: (value) -> next(value)
+  apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   describe: -> @value()
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  apply: (value) -> initial(value)
+  apply: (value) -> new Initial(value)
   toNext: -> next(@value)
 
 class End extends Event
