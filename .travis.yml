@@ -8,6 +8,3 @@ after_install:
 
 before_script:
   - phantomjs --version
-  - jasmine-node --coffee spec
-
-script: phantomjs browsertest/lib/mocha-phantomjs.coffee browsertest/phantom.runner.html
