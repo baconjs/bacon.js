@@ -103,7 +103,7 @@ describe "Bacon.fromEventTarget", ->
 describe "Observable.log", ->
   it "does not crash", ->
     Bacon.constant(1).log
-    
+
 describe "Observable.slidingWindow", ->
   it "slides the window for EventStreams", ->
     expectPropertyEvents(
@@ -224,6 +224,12 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 2, 3, 1]).skipDuplicates()
     [1, 2, error(), 3, 1])
+
+  it "allows undefined as initial value", ->
+    expectStreamEvents(
+      -> series(1, [undefined, undefined, 1, 2]).skipDuplicates()
+    [undefined, 1, 2])
+
   it "works with custom isEqual function", ->
     a = {x: 1}; b = {x: 2}; c = {x: 2}; d = {x: 3}; e = {x: 1}
     isEqual = (a, b) -> a?.x == b?.x
@@ -316,12 +322,41 @@ describe "EventStream.throttle", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).throttle(t(7))
       [error(), 2])
+  it "waits for a quiet period before outputing anything", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3, 4]).throttle(t(3))
+      [[11, 4]])
+
+describe "EventStream.throttle2(delay)", ->
+  it "outputs at steady intervals, without waiting for quite period", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3]).throttle2(t(3))
+      [[5, 2], [8, 3]])
 
 describe "EventStream.bufferWithTime", ->
   it "returns events in bursts, passing through errors", ->
     expectStreamEvents(
       -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTime(t(7))
       [error(), [1, 2, 3, 4], [5, 6, 7]])
+  it "keeps constant output rate even when input is sporadical", ->
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [3, "b"], [5, "c"]]).bufferWithTime(t(2))
+      [[2, ["a"]], [4, ["b"]], [6, ["c"]]]
+    )
+  it "works with empty stream", ->
+    expectStreamEvents(
+      -> Bacon.never().bufferWithTime(t(1))
+      [])
+  it "allows custom defer-function", ->
+    fast = (f) -> setTimeout(f, 0)
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
+      [[0, ["a"]], [2, ["b"]]])
+  it "works with synchronous defer-function", ->
+    sync = (f) -> f()
+    th.expectStreamTimings(
+      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(sync)
+      [[0, ["a"]], [2, ["b"]]])
 
 describe "EventStream.bufferWithCount", ->
   it "returns events in chunks of fixed size, passing through errors", ->
@@ -351,6 +386,12 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(7, ["stop!"]).merge(repeat(1, [error()]))
         src.takeUntil(stopper)
       [1, error(), 2])
+
+describe "EventStream.awaiting(other)", ->
+  it "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
+    expectPropertyEvents(
+      -> series(2, [1, 1]).awaiting(series(3, [2]))
+      [false, true, false, true])
 
 describe "EventStream.endOnError", ->
   it "terminates on error", ->
@@ -564,6 +605,11 @@ describe "Property.throttle", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty().throttle(t(4))
       [3])
+describe "Property.throttle2", ->
+  it "throttles changes, but not initial value", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).throttle2(t(4))
+      [0,3])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
@@ -1066,6 +1112,32 @@ describe "Bacon.Bus", ->
     bus.plug(new Bacon.EventStream((sink) -> plugged = true; (->)))
     bus.onValue(->)
     expect(plugged).toEqual(false)
+
+  it "returns unplug function from plug", ->
+    values = []
+    bus = new Bacon.Bus()
+    src = new Bacon.Bus()
+    unplug = bus.plug(src)
+    bus.onValue((x) -> values.push(x))
+    src.push("x")
+    unplug()
+    src.push("y")
+    expect(values).toEqual(["x"])
+
+describe "EventStream", ->
+  it "works with functions as values (bug fix)", ->
+    expectStreamEvents(
+      -> Bacon.once(-> "hello").map((f) -> f())
+      ["hello"])
+    expectStreamEvents(
+      -> Bacon.once(-> "hello").flatMap(Bacon.once).map((f) -> f())
+      ["hello"])
+    expectPropertyEvents(
+      -> Bacon.constant(-> "hello").map((f) -> f())
+      ["hello"])
+    expectStreamEvents(
+      -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
+      ["hello"])
 
 lessThan = (limit) -> 
   (x) -> x < limit

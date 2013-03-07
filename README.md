@@ -19,6 +19,7 @@ Here's the stuff.
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
+- [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
@@ -129,6 +130,29 @@ event and its parameters, if given, like this:
 
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
+`Bacon.fromEventTarget(target, event)` creates an EventStream from events
+on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
+events' parameters.
+
+`Bacon.fromCallback(f)` creates an Event stream from a function that
+accepts a callback. The function is supposed to call its callback just
+once. For example:
+
+    Bacon.fromCallback(function(callback) {
+      setTimeout(function() {
+        callback("Bacon!")
+      }, 1000)
+    })
+
+This would create a stream that outputs a single value "Bacon!" and ends
+after that. The use of setTimeout causes the value to be delayed by 1
+second.
+
+`Bacon.fromPoll(interval, f)` polls given function with given interval.
+Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
+when there are subscribers to the stream. Polling ends permanently when
+`f` returns Bacon.End
+
 `Bacon.once(value)` creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
 after this value.
@@ -148,13 +172,6 @@ with given interval in milliseconds. For example, sequentially(10, [1,2,3])
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
 `Bacon.never()` creates an EventStream that immediately ends.
-
-`Bacon.fromEventTarget(target, event)` creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
-events' parameters.
-
-`Bacon.fromPoll(interval, f)` polls given function with given interval.
-Function should return Events: either Next or End.
 
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
@@ -216,8 +233,32 @@ ignored
 
 `observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
 
+    var delayed = source.delay(2)
+    
+    source:    asdf----asdf----
+    delayed:   --asdf----asdf--
+
 `observable.throttle(delay)` throttles stream/property by given amount of milliseconds. This means that event is only emitted after the given
-"quiet period". Does not affect the initial value of a Property.
+"quiet period". Does not affect emitting the initial value of a Property.
+
+Example:
+
+    var throttled = source.throttle(2)
+    
+    source:    asdf----asdf----
+    throttled: -----f-------f--
+
+`observable.throttle2(delay)` throttles stream/property by given amount
+of milliseconds. Events are emitted with the minimum interval of
+`delay`, but this version of throttle does not wait for a quiet period.
+The implementation if based on stream.bufferWithTime.
+
+Example:
+
+    var throttled = source.throttle2(2)
+
+    source:    asdf----asdf----
+    throttled: --s--f----s--f--
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -335,6 +376,12 @@ The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
+`stream.bufferWithTime(f)` works with a given "defer-function" instead
+of a delay. Here's a simple example, which is equivalent to
+stream.bufferWithTime(10):
+
+    stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+
 `stream.bufferWithCount(count)` buffers stream events with given count.
 The buffer is flushed when it contains the given number of elements. So, if
 you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
@@ -348,6 +395,13 @@ always have a current value.
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream with the given initial value that will be used as the current value until
 the first value comes from the stream.
+
+`stream1.awaiting(stream2)` creates a Property that indicates whether
+stream1 is awaiting stream2, i.e. has produced a value after the latest
+value from stream2. This is handy for keeping track whether we are
+currently awaiting an AJAX response:
+
+    var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
 
 Property
 --------
@@ -585,6 +639,7 @@ Also, the Bus `push` and `plug` methods have no effect.
 
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
+Returns a function that can be used to unplug the same stream.
 
 The plug method practically allows you to merge in other streams after
 the creation of the Bus. I've found Bus quite useful as an event broadcast
@@ -757,6 +812,13 @@ Run unit tests:
 
     npm test
 
+Run browser tests:
+
+    npm install
+    npm install --save-dev browserify@1.18.0
+    npm install -g testem
+    testem
+
 Dependencies
 ============
 
@@ -778,10 +840,19 @@ I'm not sure how it works in case some other lib adds stuff to, say, Array proto
 Compatibility with browsers
 ===========================
 
-Bacon.js is not browser dependent, because it is not a UI library. Hence there are not actual browser tests and no
-"official" list of supported browsers.
+TLDR: good.
 
-I have used Bacon.js with Chrome, Firefox, Safari, IE 8+, iPhone, iPad.
+Bacon.js is not browser dependent, because it is not a UI library.
+
+I have personally used it Bacon.js with Chrome, Firefox, Safari, IE 6+, iPhone, iPad.
+
+Automatically tested on each commit on modern browsers and IE6+.
+
+The full Bacon.js test suite is run on testling.ci with a wide range of browsers:
+
+[![browser support test report](http://ci.testling.com/raimohanska/bacon.js.png)](http://ci.testling.com/raimohanska/bacon.js)
+
+Results from those tests are quite unreliable, producing random failures, but the bottom line is that there are no outstanding compatibility issues.
 
 Node.js
 =======

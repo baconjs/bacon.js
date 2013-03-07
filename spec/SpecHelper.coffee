@@ -1,7 +1,9 @@
 Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
-timeUnitMillisecs = 10
+browser = (typeof window) != "undefined"
+console.log("in browser") if browser
+timeUnitMillisecs = if browser then 50 else 10
 @t = (time) -> time * timeUnitMillisecs
 seqs = []
 
@@ -13,6 +15,20 @@ seqs = []
   source = Bacon.repeatedly(t(interval), values)
   seqs.push({ values : values, source : source })
   source
+@atGivenTimes = (timesAndValues) ->
+  streams = for tv in timesAndValues
+    Bacon.later(t(tv[0]), tv[1])
+  Bacon.mergeAll(streams)
+
+@expectStreamTimings = (src, expectedEventsAndTimings) ->
+  srcWithRelativeTime = () ->
+    now = () -> new Date().getTime()
+    t0 = now()
+    relativeTime = () -> 
+      Math.floor((now() - t0 + 1) / timeUnitMillisecs)
+    withRelativeTime = (x) -> [relativeTime(), x]
+    src().map(withRelativeTime)
+  @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
 
 @expectStreamEvents = (src, expectedEvents) ->
   runs -> verifySingleSubscriber src(), expectedEvents

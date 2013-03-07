@@ -1,4 +1,4 @@
-(this.jQuery || this.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
+(window?.jQuery || window?.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
   if (isFunction(selector))
     eventTransformer = selector
     selector = null
@@ -38,10 +38,11 @@ Bacon.sequentially = (delay, values) ->
   index = -1
   poll = ->
     index++
-    if index < values.length
-      toEvent values[index]
+    valueEvent = toEvent values[index]
+    if index < values.length - 1
+      valueEvent
     else
-      end()
+      [valueEvent, end()]
   Bacon.fromPoll(delay, poll)
 
 Bacon.repeatedly = (delay, values) ->
@@ -64,14 +65,16 @@ Bacon.fromPoll = (delay, poll) ->
   new EventStream (sink) ->
     id = undefined
     handler = ->
-      value = poll()
-      reply = sink value
-      if (reply == Bacon.noMore or value.isEnd())
-        unbind()
+      events = _.toArray(poll())
+      for event in events
+        reply = sink event
+        if (reply == Bacon.noMore or event.isEnd())
+          unbind()
     unbind = -> 
       clearInterval id
     id = setInterval(handler, delay)
     unbind
+
 
 # Wrap DOM EventTarget or Node EventEmitter as EventStream
 #
@@ -250,8 +253,8 @@ class Next extends Event
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  apply: (value) -> initial(value)
-  toNext: -> next(@value)
+  apply: (value) -> initial(value))
+  toNext: -> new Next(@value))
 
 class End extends Event
   isEnd: -> true
@@ -376,11 +379,11 @@ class Observable
       else
         @push event
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
-    @withStateMachine undefined, (prev, event) ->
+    @withStateMachine None, (prev, event) ->
       if !event.hasValue()
         [prev, [event]]
-      else if not isEqual(prev, event.value())
-        [event.value(), [event]]
+      else if prev == None or not isEqual(prev.get(), event.value())
+        [new Some(event.value()), [event]]
       else
         [prev, []]
   withStateMachine: (initState, f) ->
@@ -508,32 +511,56 @@ class EventStream extends Observable
   throttle: (delay) ->
     @flatMapLatest (value) ->
       Bacon.later delay, value
+
+  throttle2: (delay) ->
+    @bufferWithTime(delay).map((values) -> values[values.length - 1])
+
   bufferWithTime: (delay) ->
-    values = []
-    storeAndMaybeTrigger = (value) ->
-      values.push value
-      values.length == 1
-    flush = ->
-      output = values
-      values = []
-      output
-    buffer = ->
-      Bacon.later(delay).map(flush)
-    @filter(storeAndMaybeTrigger).flatMap(buffer)
+    schedule = (buffer) => buffer.schedule()
+    @buffer(delay, schedule, schedule)
+
   bufferWithCount: (count) ->
-    values = []
+    flushOnCount = (buffer) -> buffer.flush() if buffer.values.length == count
+    @buffer(0, flushOnCount)
+
+  buffer: (delay, onInput = (->), onFlush = (->)) ->
+    buffer = {
+      scheduled: false
+      end : null
+      values : []
+      flush: ->
+        @scheduled = false
+        if @values.length > 0
+          reply = @push next(@values)
+          @values = []
+          if @end?
+            @push @end
+          else if reply != Bacon.noMore
+            onFlush(this)
+        else
+          @push @end if @end?
+      schedule: ->
+        if not @scheduled
+          @scheduled = true
+          delay(=> @flush())
+    }
+    reply = Bacon.more
+    if not isFunction(delay)
+      delayMs = delay
+      delay = (f) -> setTimeout(f, delayMs)
     @withHandler (event) ->
-      flush = =>
-        @push next(values, event)
-        values = []
+      buffer.push = @push
       if event.isError()
-        @push event
+        reply = @push event
       else if event.isEnd()
-        flush()
-        @push event
+        buffer.end = event
+        if not buffer.scheduled
+          buffer.flush()
       else
-        values.push(event.value())
-        flush() if values.length == count
+        buffer.values.push(event.value())
+        onInput(buffer)
+      reply
+
   merge: (right) -> 
     left = this
     new EventStream (sink) ->
@@ -572,6 +599,9 @@ class EventStream extends Observable
         else
           sink(e)
       -> unsub()
+
+  awaiting: (other) -> 
+    this.map(true).merge(other.map(false)).toProperty(false)
 
   startWith: (seed) ->
     Bacon.once(seed).concat(this)
@@ -666,8 +696,10 @@ class Property extends Observable
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
-  delay: (delay) -> addPropertyInitValueToStream(this, @changes().delay(delay))
-  throttle: (delay) -> addPropertyInitValueToStream(this, @changes().throttle(delay))
+  delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
+  throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
+  throttle2: (delay) -> @delayChanges((changes) -> changes.throttle2(delay))
+  delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes())) 
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
@@ -760,33 +792,43 @@ class PropertyDispatcher extends Dispatcher
 class Bus extends EventStream
   constructor: ->
     sink = undefined
-    unsubFuncs = []
-    inputs = []
+    subscriptions = []
     ended = false
     guardedSink = (input) => (event) =>
       if (event.isEnd())
-        remove(input, inputs)
+        unsubscribeInput(input)
         Bacon.noMore
       else
         sink event
     unsubAll = => 
-      f() for f in unsubFuncs
-      unsubFuncs = []
+      for sub in subscriptions
+        if sub.unsub?
+          sub.unsub()
+      subscriptions = []
+    subscribeInput = (subscription) ->
+      subscription.unsub = (subscription.input.subscribe(guardedSink(subscription.input)))
+    unsubscribeInput = (input) ->
+      for sub, i in subscriptions
+        if sub.input == input
+          sub.unsub() if sub.unsub?
+          subscriptions.splice(i, 1)
+          return
     subscribeAll = (newSink) =>
       sink = newSink
       unsubFuncs = []
-      for input in cloneArray(inputs)
-        unsubFuncs.push(input.subscribe(guardedSink(input)))
+      for subscription in cloneArray(subscriptions)
+        subscribeInput(subscription)
       unsubAll
     dispatcher = new Dispatcher(subscribeAll)
     subscribeThis = (sink) =>
       dispatcher.subscribe(sink)
     super(subscribeThis)
-    @plug = (inputStream) =>
+    @plug = (input) =>
       return if ended
-      inputs.push(inputStream)
-      if (sink?)
-        unsubFuncs.push(inputStream.subscribe(guardedSink(inputStream)))
+      sub = { input: input }
+      subscriptions.push(sub)
+      subscribeInput(sub) if (sink?)
+      () -> unsubscribeInput(input)
     @push = (value) =>
       sink next(value) if sink?
     @error = (error) =>
@@ -832,8 +874,8 @@ Bacon.Error = Error
 nop = ->
 latter = (_, x) -> x
 former = (x, _) -> x
-initial = (value) -> new Initial(value)
-next = (value) -> new Next(value)
+initial = (value) -> new Initial(_.always(value))
+next = (value) -> new Next(_.always(value))
 end = -> new End()
 isEvent = (x) -> x? and x.isEvent? and x.isEvent()
 toEvent = (x) -> 
@@ -875,7 +917,8 @@ makeFunction = (f, args) ->
   else
     _.always f
 isFieldKey = (f) ->
-  (typeof f == "string") and f.length > 1 and f[0] == "."
+  (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
+Bacon.isFieldKey = isFieldKey
 toFieldExtractor = (f, args) ->
   parts = f.slice(1).split(".")
   partFuncs = _.map(toSimpleExtractor(args), parts)
@@ -924,6 +967,7 @@ _ = {
   each: (xs, f) ->
     for key, value of xs
       f(key, value)
+  toArray: (xs) -> if (xs instanceof Array) then xs else [xs]
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]

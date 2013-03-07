@@ -1,0 +1,8 @@
+{
+  "before_tests": "browsertest/browserify",
+  "test_page": "browsertest/jasmine.runner.html",
+  "src_files": [
+    "src/*.coffee",
+    "spec/*.coffee"
+  ]
+}

@@ -1,3 +1,31 @@
+## Next release
+
+- fix bufferWithTime behaviour: output at steady rate as long as there's anything to output
+- add throttle2
+
+## 0.1.7
+
+- Fixed tests too on IE6+
+
+## 0.1.6
+
+- Fix property extraction (".field") syntax compatibility with IE6-7
+
+## 0.1.5
+
+- Bus.plug returns function for unplugging
+- Fixes possible memory leak in Bus, related to ended streams
+
+## 0.1.4
+
+- Add `EventStream.awaiting` (ported from Bacon.UI)
+- [#80: Fix handling of `undefined` in `skipDuplicates`](https://github.com/raimohanska/bacon.js/pull/80)
+- Documented Bacon.fromCallback
+
+## 0.1.2
+
+- Fix bug in case stream values are functions
+
 ## 0.1.0
 
 - API change: event.value is now a function. Allows internal

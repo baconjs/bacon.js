@@ -14,6 +14,7 @@ git pull --rebase origin master
 echo "Building"
 npm install
 npm test
+grunt
 
 echo "Updating files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
