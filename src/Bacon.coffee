@@ -254,7 +254,7 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> new Initial(value)
-  toNext: -> next(@value)
+  toNext: -> new Next(@value)
 
 class End extends Event
   isEnd: -> true
@@ -410,7 +410,7 @@ class Observable
           else
             initSent = true
             acc = new Some(f(acc.getOrElse(undefined), event.value()))
-            sink (event.apply(acc.get()))
+            sink (event.apply(_.always(acc.get())))
         else
           if event.isEnd() then initSent = true
           sink event
