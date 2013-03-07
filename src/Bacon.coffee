@@ -246,15 +246,15 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   fmap: (f) -> @apply(=> f(@value()))
-  apply: (value) -> next(value)
+  apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   describe: -> @value()
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  apply: (value) -> initial(value))
-  toNext: -> new Next(@value))
+  apply: (value) -> new Initial(value)
+  toNext: -> new Next(@value)
 
 class End extends Event
   isEnd: -> true
@@ -410,7 +410,7 @@ class Observable
           else
             initSent = true
             acc = new Some(f(acc.getOrElse(undefined), event.value()))
-            sink (event.apply(acc.get()))
+            sink (event.apply(_.always(acc.get())))
         else
           if event.isEnd() then initSent = true
           sink event
@@ -770,7 +770,7 @@ class PropertyDispatcher extends Dispatcher
       if event.isEnd() 
         ended = true
       if event.hasValue()
-        current = new Some(event.value)
+        current = new Some(event.value())
       push.apply(this, [event])
     @subscribe = (sink) =>
       initSent = false
