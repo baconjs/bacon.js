@@ -110,7 +110,7 @@ Hiding and showing the same span depending on the content of the property value 
     
 In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
 
-    $("span).css("visibility", "visible")
+    $("span").css("visibility", "visible")
 
 For an actual tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
     
