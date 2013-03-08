@@ -863,7 +863,7 @@ Sure. Works. Try it out.
 
 Then type `node` and try the following
 
-    Bacon = require("baconjs").bacon()
+    Bacon = require("baconjs").Bacon
     Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
 
 Why Bacon?
