@@ -1,4 +1,6 @@
-(window?.jQuery || window?.Zepto)?.fn.asEventStream = (eventName, selector, eventTransformer = _.id) ->
+Bacon = @Bacon = {}
+
+Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
   if (isFunction(selector))
     eventTransformer = selector
     selector = null
@@ -12,7 +14,8 @@
     element.on(eventName, selector, handler)
     unbind
 
-Bacon = @Bacon = {}
+if window?
+  (window.jQuery || window.Zepto)?.fn.asEventStream = Bacon.asEventStream
 
 Bacon.fromPromise = (promise) ->
   new EventStream(
