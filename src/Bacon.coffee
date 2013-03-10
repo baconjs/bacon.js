@@ -14,7 +14,7 @@ Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
     element.on(eventName, selector, handler)
     unbind
 
-# `this isnt window` in broserified environment
+# `this isnt window` in browserified environment
 if window?
   (window.jQuery || window.Zepto)?.fn.asEventStream = Bacon.asEventStream
 
