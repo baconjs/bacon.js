@@ -1,4 +1,4 @@
-Bacon = @Bacon = {}
+(exports or @).Bacon = Bacon = {}
 
 Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
   if (isFunction(selector))
@@ -14,6 +14,7 @@ Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
     element.on(eventName, selector, handler)
     unbind
 
+# `this isnt window` in broserified enviroment
 if window?
   (window.jQuery || window.Zepto)?.fn.asEventStream = Bacon.asEventStream
 
