@@ -5,37 +5,51 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  if ((_ref = this.jQuery || this.Zepto) != null) {
-    _ref.fn.asEventStream = function(eventName, selector, eventTransformer) {
-      var element;
+  if (typeof module !== "undefined" && module !== null) {
+    module.exports = Bacon = {};
+    Bacon.Bacon = Bacon;
+  } else {
+    this.Bacon = Bacon = {};
+  }
+
+  Bacon.asStream = function(binder, eventTransformer) {
+    if (eventTransformer == null) {
+      eventTransformer = _.id;
+    }
+    return new EventStream(function(sink) {
+      var unbind;
+      return unbind = binder(function() {
+        var args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        if (Bacon.noMore === sink(next(eventTransformer.apply(null, args)))) {
+          return unbind();
+        }
+      });
+    });
+  };
+
+  Bacon.$ = {
+    asEventStream: function(eventName, selector, eventTransformer) {
+      var _ref,
+        _this = this;
       if (eventTransformer == null) {
         eventTransformer = _.id;
       }
       if (isFunction(selector)) {
-        eventTransformer = selector;
-        selector = null;
+        _ref = [selector, null], eventTransformer = _ref[0], selector = _ref[1];
       }
-      element = this;
-      return new EventStream(function(sink) {
-        var handler, unbind;
-        handler = function() {
-          var args, reply;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          reply = sink(next(eventTransformer.apply(null, args)));
-          if (reply === Bacon.noMore) {
-            return unbind();
-          }
+      return Bacon.asStream(function(handler) {
+        _this.on(eventName, selector, handler);
+        return function() {
+          return _this.off(eventName, selector, handler);
         };
-        unbind = function() {
-          return element.off(eventName, selector, handler);
-        };
-        element.on(eventName, selector, handler);
-        return unbind;
       });
-    };
-  }
+    }
+  };
 
-  Bacon = this.Bacon = {};
+  if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : null) != null) {
+    _ref.fn.asEventStream = Bacon.$.asEventStream;
+  }
 
   Bacon.fromPromise = function(promise) {
     return new EventStream(function(sink) {
