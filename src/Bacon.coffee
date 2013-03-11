@@ -4,19 +4,16 @@ if module?
 else
   @Bacon = Bacon = {} # otherwise for execution context
 
-Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
-  if (isFunction(selector))
-    eventTransformer = selector
-    selector = null
-  element = this
+Bacon.asStream = (binder, eventTransformer = _.id) ->
   new EventStream (sink) ->
-    handler = (args...) ->
-      reply = sink (next (eventTransformer args...))
-      if (reply == Bacon.noMore)
-        unbind()
-    unbind = -> element.off(eventName, selector, handler)
-    element.on(eventName, selector, handler)
-    unbind
+    unbind = binder (args...) ->
+      unbind() if Bacon.noMore == sink next eventTransformer args...
+
+Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
+  [eventTransformer, selector] = [selector, null] if isFunction selector
+  Bacon.asStream (handler) =>
+    @on eventName, selector, handler
+    => @off eventName, selector, handler
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
