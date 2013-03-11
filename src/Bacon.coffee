@@ -1,6 +1,10 @@
-(exports or @).Bacon = Bacon = {}
+if module?
+  module.exports = Bacon = {} # for Bacon = require 'baconjs'
+  Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
+else
+  @Bacon = Bacon = {} # otherwise for execution context
 
-Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
+Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
   if (isFunction(selector))
     eventTransformer = selector
     selector = null
@@ -14,9 +18,7 @@ Bacon.asEventStream = (eventName, selector, eventTransformer = _.id) ->
     element.on(eventName, selector, handler)
     unbind
 
-# `this isnt window` in browserified environment
-if window?
-  (window.jQuery || window.Zepto)?.fn.asEventStream = Bacon.asEventStream
+(jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
 Bacon.fromPromise = (promise) ->
   new EventStream(
