@@ -17,6 +17,36 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
+# Wrap DOM EventTarget or Node EventEmitter as EventStream
+#
+# target - EventTarget or EventEmitter, source of events
+# eventName - event name to bind
+#
+# Examples
+#
+#   Bacon.fromEventTarget(document.body, "click")
+#   # => EventStream
+#
+#   Bacon.fromEventTarget (new EventEmitter(), "data")
+#   # => EventStream
+#
+# Returns EventStream
+Bacon.fromEventTarget = (target, eventName, eventTransformer = _.id) ->
+  new EventStream (sink) ->
+    handler = (args...) ->
+      reply = sink (next eventTransformer args...)
+      if reply == Bacon.noMore
+        unbind()
+
+    if target.addEventListener
+      unbind = -> target.removeEventListener(eventName, handler, false)
+      target.addEventListener(eventName, handler, false)
+    else
+      unbind = -> target.removeListener(eventName, handler)
+      target.addListener(eventName, handler)
+    unbind
+
+
 Bacon.fromPromise = (promise) ->
   new EventStream(
     (sink) ->
@@ -76,36 +106,6 @@ Bacon.fromPoll = (delay, poll) ->
     unbind = -> 
       clearInterval id
     id = setInterval(handler, delay)
-    unbind
-
-
-# Wrap DOM EventTarget or Node EventEmitter as EventStream
-#
-# target - EventTarget or EventEmitter, source of events
-# eventName - event name to bind
-#
-# Examples
-#
-#   Bacon.fromEventTarget(document.body, "click")
-#   # => EventStream
-#
-#   Bacon.fromEventTarget (new EventEmitter(), "data")
-#   # => EventStream
-#
-# Returns EventStream
-Bacon.fromEventTarget = (target, eventName, eventTransformer = _.id) ->
-  new EventStream (sink) ->
-    handler = (args...) ->
-      reply = sink (next eventTransformer args...)
-      if reply == Bacon.noMore
-        unbind()
-
-    if target.addEventListener
-      unbind = -> target.removeEventListener(eventName, handler, false)
-      target.addEventListener(eventName, handler, false)
-    else
-      unbind = -> target.removeListener(eventName, handler)
-      target.addListener(eventName, handler)
     unbind
 
 Bacon.interval = (delay, value) ->
