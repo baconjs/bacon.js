@@ -882,5 +882,5 @@ behaviour (like hot/cold observables). I feel much more comfortable with EventSt
 
 Contribute
 ==========
-
+ 
 Use GitHub issues and Pull Requests.
