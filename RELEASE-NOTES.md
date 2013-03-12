@@ -1,5 +1,8 @@
 ## Next release
 
+- reject arguments in Property.toProperty
+- add Property.sampledBy(property)
+- generalize mapEnd to all Observables
 - fix bufferWithTime behaviour: output at steady rate as long as there's anything to output
 - add throttle2
 
