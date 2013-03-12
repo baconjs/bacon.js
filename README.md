@@ -457,9 +457,14 @@ property value at each event from the given stream. The result
 EventStream will contain the property value at each event in the source
 stream.
 
-`property.sampledBy(stream, f)` samples the property on stream events.
-The result EventStream values will be formed using the given function
-`f(propertyValue, streamValue)`. You can use a method name (such as
+`property.sampledBy(property)` creates a Property by sampling the
+property value at each event from the given property. The result
+Property will contain the property value at each event in the source
+property.
+
+`property.sampledBy(streamOrProperty, f)` samples the property on stream 
+events. The result values will be formed using the given function
+`f(propertyValue, samplerValue)`. You can use a method name (such as
 ".concat") instead of a function too.
 
 `property.skipDuplicates([isEqual])` drops consecutive equal elements. So,
