@@ -1,4 +1,4 @@
-## Next release
+## 0.1.8
 
 - add Property.filter(property)
 - reject arguments in Property.toProperty
