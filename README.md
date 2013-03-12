@@ -824,6 +824,10 @@ Run browser tests:
     npm install -g testem
     testem
 
+Run performance tests:
+
+    coffee performance/*
+
 Dependencies
 ============
 
