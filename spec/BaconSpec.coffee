@@ -748,7 +748,7 @@ describe "Bacon.mergeAll", ->
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6])
 
-describe "Property.sampledBy", -> 
+describe "Property.sampledBy(stream)", -> 
   it "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
       ->
@@ -793,6 +793,22 @@ describe "Property.sampledBy", ->
         src = series(2, [1, 2])
         src.toProperty().sampledBy(src.map(times, 2))
       [1, 2])
+
+describe "Property.sampledBy(property)", ->
+  it "samples property at events, resulting to a Property", ->
+    expectPropertyEvents(
+      ->
+        prop = series(2, [1, 2]).toProperty()
+        sampler = repeat(3, ["troll"]).take(4).toProperty()
+        prop.sampledBy(sampler)
+      [1, 2, 2, 2])
+  it "accepts optional combinator function f(Vp, Vs)", ->
+    expectPropertyEvents(
+      ->
+        prop = series(2, ["a", "b"]).toProperty()
+        sampler = series(2, ["1", "2", "1", "2"]).delay(t(1)).toProperty()
+        prop.sampledBy(sampler, add)
+      ["a1", "b2", "b1", "b2"])
 
 describe "Property.sample", -> 
   it "samples property by given interval", ->

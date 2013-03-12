@@ -295,6 +295,15 @@ class Observable
         @push next (f event.error)
       else
         @push event
+  mapEnd : (f, args...) ->
+    f = makeFunction(f, args)
+    @withHandler (event) ->
+      if (event.isEnd())
+        @push next(f(event))
+        @push end()
+        Bacon.noMore
+      else
+        @push event
   doAction: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
@@ -572,16 +581,6 @@ class EventStream extends Observable
   startWith: (seed) ->
     Bacon.once(seed).concat(this)
 
-  mapEnd : (f, args...) ->
-    f = makeFunction(f, args)
-    @withHandler (event) ->
-      if (event.isEnd())
-        @push next(f(event))
-        @push end()
-        Bacon.noMore
-      else
-        @push event
-
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
     new EventStream(dispatcher.subscribe)
@@ -642,7 +641,9 @@ class Property extends Observable
     @sampledBy = (sampler, combinator = former) =>
       combinator = toCombinator(combinator)
       pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
-      combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd())
+      values = combine(sampler, nop, pushPropertyValue)
+      values = values.changes() if sampler instanceof EventStream
+      values.takeUntil(sampler.filter(false).mapEnd())
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
 
@@ -667,6 +668,17 @@ class Property extends Observable
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
   throttle2: (delay) -> @delayChanges((changes) -> changes.throttle2(delay))
   delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes())) 
+  filter: (p, args...) ->
+    if (p instanceof Property)
+      Bacon.combineAsArray(this, p)
+        .filter((values) -> 
+          console.log("filter", values)
+          values[1])
+        .map((values) -> 
+          console.log("map", values)
+          values[0])
+    else
+      super(p, args...)
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
