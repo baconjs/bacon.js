@@ -553,14 +553,28 @@
     Observable.prototype.filter = function() {
       var args, f;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
-      return this.withHandler(function(event) {
-        if (event.filter(f)) {
-          return this.push(event);
-        } else {
-          return Bacon.more;
-        }
-      });
+      if (f instanceof Property) {
+        return f.sampledBy(this, function(p, s) {
+          return [p, s];
+        }).filter(function(_arg) {
+          var p, s;
+          p = _arg[0], s = _arg[1];
+          return p;
+        }).map(function(_arg) {
+          var p, s;
+          p = _arg[0], s = _arg[1];
+          return s;
+        });
+      } else {
+        f = makeFunction(f, args);
+        return this.withHandler(function(event) {
+          if (event.filter(f)) {
+            return this.push(event);
+          } else {
+            return Bacon.more;
+          }
+        });
+      }
     };
 
     Observable.prototype.takeWhile = function() {
@@ -929,26 +943,6 @@
         return p.sampledBy(this, former);
       } else {
         return EventStream.__super__.map.apply(this, [p].concat(__slice.call(args)));
-      }
-    };
-
-    EventStream.prototype.filter = function() {
-      var args, p;
-      p = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      if (p instanceof Property) {
-        return p.sampledBy(this, function(p, s) {
-          return [p, s];
-        }).filter(function(_arg) {
-          var p, s;
-          p = _arg[0], s = _arg[1];
-          return p;
-        }).map(function(_arg) {
-          var p, s;
-          p = _arg[0], s = _arg[1];
-          return s;
-        });
-      } else {
-        return EventStream.__super__.filter.apply(this, [p].concat(__slice.call(args)));
       }
     };
 
