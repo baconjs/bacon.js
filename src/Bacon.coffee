@@ -668,17 +668,6 @@ class Property extends Observable
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
   throttle2: (delay) -> @delayChanges((changes) -> changes.throttle2(delay))
   delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes())) 
-  filter: (p, args...) ->
-    if (p instanceof Property)
-      Bacon.combineAsArray(this, p)
-        .filter((values) -> 
-          console.log("filter", values)
-          values[1])
-        .map((values) -> 
-          console.log("map", values)
-          values[0])
-    else
-      super(p, args...)
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
