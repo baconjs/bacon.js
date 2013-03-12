@@ -652,7 +652,9 @@ class Property extends Observable
   withHandler: (handler) ->
     new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
   withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
-  toProperty: => this
+  toProperty: => 
+    assertNoArguments(arguments)
+    this
   toEventStream: => 
     new EventStream (sink) =>
       @subscribe (event) =>
@@ -873,6 +875,7 @@ assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; asse
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
+assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> assert "not a string : " + x, typeof x == "string"
 methodCall = (obj, method, args) ->
   assertString(method)

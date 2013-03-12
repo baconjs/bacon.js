@@ -516,6 +516,17 @@ describe "Property.toEventStream", ->
       -> series(1, [1, 2]).toProperty(0).toEventStream()
       [0, 1, 2])
 
+describe "Property.toProperty", ->
+  it "returns the same Property", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1).toProperty()
+      [1])
+  it "rejects arguments", ->
+    try
+      Bacon.constant(1).toProperty(0)
+      fail()
+    catch e
+
 describe "Property.map", ->
   it "maps property values", ->
     expectPropertyEvents(
