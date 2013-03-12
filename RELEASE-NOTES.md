@@ -1,3 +1,7 @@
+## Next release
+
+- Performance improvements
+
 ## 0.1.8
 
 - add Property.filter(property)
