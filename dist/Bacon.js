@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertString, cloneArray, cloneObject, end, former, indexOf, initial, isEvent, isFieldKey, isFunction, latter, makeFunction, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
+  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, cloneObject, end, former, indexOf, initial, isEvent, isFieldKey, isFunction, latter, makeFunction, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -50,6 +50,35 @@
   if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : null) != null) {
     _ref.fn.asEventStream = Bacon.$.asEventStream;
   }
+
+  Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
+    if (eventTransformer == null) {
+      eventTransformer = _.id;
+    }
+    return new EventStream(function(sink) {
+      var handler, unbind;
+      handler = function() {
+        var args, reply;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        reply = sink(next(eventTransformer.apply(null, args)));
+        if (reply === Bacon.noMore) {
+          return unbind();
+        }
+      };
+      if (target.addEventListener) {
+        unbind = function() {
+          return target.removeEventListener(eventName, handler, false);
+        };
+        target.addEventListener(eventName, handler, false);
+      } else {
+        unbind = function() {
+          return target.removeListener(eventName, handler);
+        };
+        target.addListener(eventName, handler);
+      }
+      return unbind;
+    });
+  };
 
   Bacon.fromPromise = function(promise) {
     return new EventStream(function(sink) {
@@ -139,35 +168,6 @@
         return clearInterval(id);
       };
       id = setInterval(handler, delay);
-      return unbind;
-    });
-  };
-
-  Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-    if (eventTransformer == null) {
-      eventTransformer = _.id;
-    }
-    return new EventStream(function(sink) {
-      var handler, unbind;
-      handler = function() {
-        var args, reply;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        reply = sink(next(eventTransformer.apply(null, args)));
-        if (reply === Bacon.noMore) {
-          return unbind();
-        }
-      };
-      if (target.addEventListener) {
-        unbind = function() {
-          return target.removeEventListener(eventName, handler, false);
-        };
-        target.addEventListener(eventName, handler, false);
-      } else {
-        unbind = function() {
-          return target.removeListener(eventName, handler);
-        };
-        target.addListener(eventName, handler);
-      }
       return unbind;
     });
   };
@@ -620,6 +620,21 @@
       return this.withHandler(function(event) {
         if (event.isError()) {
           return this.push(next(f(event.error)));
+        } else {
+          return this.push(event);
+        }
+      });
+    };
+
+    Observable.prototype.mapEnd = function() {
+      var args, f;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      f = makeFunction(f, args);
+      return this.withHandler(function(event) {
+        if (event.isEnd()) {
+          this.push(next(f(event)));
+          this.push(end());
+          return Bacon.noMore;
         } else {
           return this.push(event);
         }
@@ -1113,21 +1128,6 @@
       return Bacon.once(seed).concat(this);
     };
 
-    EventStream.prototype.mapEnd = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
-      return this.withHandler(function(event) {
-        if (event.isEnd()) {
-          this.push(next(f(event)));
-          this.push(end());
-          return Bacon.noMore;
-        } else {
-          return this.push(event);
-        }
-      });
-    };
-
     EventStream.prototype.withHandler = function(handler) {
       var dispatcher;
       dispatcher = new Dispatcher(this.subscribe, handler);
@@ -1244,7 +1244,7 @@
         return combine(other, combineAndPush, combineAndPush);
       };
       this.sampledBy = function(sampler, combinator) {
-        var pushPropertyValue;
+        var pushPropertyValue, values;
         if (combinator == null) {
           combinator = former;
         }
@@ -1252,7 +1252,11 @@
         pushPropertyValue = function(sink, event, propertyVal, streamVal) {
           return sink(event.apply(combinator(propertyVal, streamVal)));
         };
-        return combine(sampler, nop, pushPropertyValue).changes().takeUntil(sampler.filter(false).mapEnd());
+        values = combine(sampler, nop, pushPropertyValue);
+        if (sampler instanceof EventStream) {
+          values = values.changes();
+        }
+        return values.takeUntil(sampler.filter(false).mapEnd());
       };
     }
 
@@ -1280,6 +1284,7 @@
     };
 
     Property.prototype.toProperty = function() {
+      assertNoArguments(arguments);
       return this;
     };
 
@@ -1758,6 +1763,10 @@
 
   assertArray = function(xs) {
     return assert("not an array : " + xs, xs instanceof Array);
+  };
+
+  assertNoArguments = function(args) {
+    return assert("no arguments supported", args.length === 0);
   };
 
   assertString = function(x) {
