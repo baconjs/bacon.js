@@ -1,5 +1,6 @@
 ## Next release
 
+- add Property.filter(property)
 - reject arguments in Property.toProperty
 - add Property.sampledBy(property)
 - generalize mapEnd to all Observables
