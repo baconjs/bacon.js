@@ -144,10 +144,49 @@ Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
   if streams.length
-    stream = (_.head streams).toProperty().map((x) -> [x])
-    for next in (_.tail streams)
-      stream = stream.combine(next, (xs, x) -> xs.concat([x]))
-    stream
+    values = (None for s in streams)
+    new Property (sink) =>
+      unsubscribed = false
+      unsubs = (nop for s in streams)
+      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
+      ends = (false for s in streams)
+      checkEnd = ->
+        if _.all(ends)
+          reply = sink end()
+          unsubAll() if reply == Bacon.noMore
+          reply
+      initialSent = false
+      combiningSink = (markEnd, setValue) =>
+        (event) =>
+          if (event.isEnd())
+            markEnd()
+            checkEnd()
+            Bacon.noMore
+          else if event.isError()
+            reply = sink event
+            unsubAll() if reply == Bacon.noMore
+            reply
+          else
+            setValue(event.value)
+            if _.all(_.map(((x) -> x.isDefined), values))
+              if initialSent and event.isInitial()
+                # don't send duplicate Initial
+                Bacon.more
+              else
+                initialSent = true
+                valueArrayF = -> (x.get()() for x in values)
+                reply = sink(event.apply(valueArrayF))
+                unsubAll() if reply == Bacon.noMore
+                reply
+            else
+              Bacon.more
+      sinkFor = (index) -> 
+        combiningSink(
+          (-> ends[index] = true) 
+          ((x) -> values[index] = new Some(x)))
+      for stream, index in streams
+        unsubs[index] = stream.subscribe (sinkFor index) unless unsubscribed
+      unsubAll
   else
     Bacon.constant([])
 
@@ -196,28 +235,29 @@ class Event
   isError: -> false
   hasValue: -> false
   filter: (f) -> true
-  getOriginalEvent: -> 
-    if @sourceEvent? 
-      @sourceEvent.getOriginalEvent() 
-    else 
-      this
   onDone : (listener) -> listener()
 
 class Next extends Event
-  constructor: (value, sourceEvent) ->
-    @value = if isFunction(value) then value else _.always(value)
+  constructor: (valueF, sourceEvent) ->
+    if isFunction(valueF)
+      @value = =>
+        v = valueF()
+        @value = _.always(v)
+        v
+    else
+      @value = _.always(valueF)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(f(this.value()))
-  apply: (value) -> next(value, @getOriginalEvent())
+  fmap: (f) -> @apply(=> f(@value()))
+  apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   describe: -> @value()
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
-  apply: (value) -> initial(value, @getOriginalEvent())
-  toNext: -> new Next(@value, @getOriginalEvent())
+  apply: (value) -> new Initial(value)
+  toNext: -> new Next(@value)
 
 class End extends Event
   isEnd: -> true
@@ -327,7 +367,7 @@ class Observable
           sink event
           Bacon.noMore
         else
-          event.getOriginalEvent().onDone ->
+          event.onDone ->
             if !unsubscribed
               reply = sink event
               if reply == Bacon.noMore
@@ -355,7 +395,6 @@ class Observable
         Bacon.more
       else
         @push event
-  distinctUntilChanged: -> @skipDuplicates()
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
     @withStateMachine None, (prev, event) ->
       if !event.hasValue()
@@ -368,9 +407,7 @@ class Observable
     state = initState
     @withHandler (event) ->
       fromF = f(state, event)
-      assertArray fromF
       [newState, outputs] = fromF
-      assertArray outputs
       state = newState
       reply = Bacon.more
       for output in outputs
@@ -390,7 +427,7 @@ class Observable
           else
             initSent = true
             acc = new Some(f(acc.getOrElse(undefined), event.value()))
-            sink (event.apply(acc.get()))
+            sink (event.apply(_.always(acc.get())))
         else
           if event.isEnd() then initSent = true
           sink event
@@ -614,7 +651,7 @@ class Property extends Observable
                 unsubBoth() if reply == Bacon.noMore
                 reply
             else
-              setValue(new Some(event.value()))
+              setValue(new Some(event.value))
               if (myVal.isDefined and otherVal.isDefined)
                 if initialSent and event.isInitial()
                   # don't send duplicate Initial
@@ -634,11 +671,12 @@ class Property extends Observable
         unsubBoth
     @combine = (other, f) =>
       combinator = toCombinator(f)
-      combineAndPush = (sink, event, myVal, otherVal) -> sink(event.apply(combinator(myVal, otherVal)))
-      combine(other, combineAndPush, combineAndPush)
+      Bacon.combineAsArray(this, other)
+        .map (values) ->
+          combinator(values[0], values[1])
     @sampledBy = (sampler, combinator = former) =>
       combinator = toCombinator(combinator)
-      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply(combinator(propertyVal, streamVal)))
+      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply( ->combinator(propertyVal(), streamVal())))
       values = combine(sampler, nop, pushPropertyValue)
       values = values.changes() if sampler instanceof EventStream
       values.takeUntil(sampler.filter(false).mapEnd())
@@ -685,32 +723,29 @@ class Dispatcher
     @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
-      remove(sink, sinks)
+      sinks = _.without(sink, sinks)
+    waiters = []
+    done = (event) -> 
+      if waiters?
+        ws = waiters
+        waiters = undefined
+        w() for w in ws
+      event.onDone = Event.prototype.onDone
+    addWaiter = (listener) -> waiters.push(listener)
     @push = (event) =>
-      waiters = undefined
-      done = -> 
-        if waiters?
-          ws = waiters
-          waiters = undefined
-          w() for w in ws
-        event.onDone = Event.prototype.onDone
-      event.onDone = (listener) ->
-        if waiters? and not _.contains(waiters, listener)
-          waiters.push(listener)
-        else
-          waiters = [listener]
-      assertEvent event
-      for sink in (cloneArray(sinks))
+      waiters = []
+      event.onDone = addWaiter
+      tmpSinks = sinks
+      for sink in tmpSinks
         reply = sink event
         removeSink sink if reply == Bacon.noMore or event.isEnd()
-      done()
+      done(event)
       if @hasSubscribers() 
         Bacon.more 
       else 
         Bacon.noMore
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
-      assertEvent event
       if event.isEnd()
         ended = true
       handleEvent.apply(this, [event])
@@ -720,7 +755,7 @@ class Dispatcher
         nop
       else
         assertFunction sink
-        sinks.push(sink)
+        sinks = sinks.concat(sink)
         if sinks.length == 1
           unsubscribeFromSource = subscribe @handleEvent
         assertFunction unsubscribeFromSource
@@ -853,11 +888,6 @@ toEvent = (x) ->
   else
     next x
 cloneArray = (xs) -> xs.slice(0)
-cloneObject = (src) ->
-  clone = {}
-  for key, value of src
-    clone[key] = value
-  clone
 indexOf = if Array::indexOf
   (xs, x) -> xs.indexOf(x)
 else
@@ -946,6 +976,12 @@ _ = {
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
+  all: (xs) ->
+    for x in xs
+      return false if not x
+    return true
+  without: (x, xs) ->
+    _.filter(((y) -> y != x), xs)
 }
 
 Bacon._ = _
