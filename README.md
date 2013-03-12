@@ -217,7 +217,7 @@ Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
 `map`, indeed.
 
-`stream.filter(property)` filters a stream based on the value of a
+`observable.filter(property)` filters values based on the value of a
 property. Event will be included in output iff the property holds `true`
 at the time of the event.
 

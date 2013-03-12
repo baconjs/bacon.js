@@ -554,6 +554,13 @@ describe "Property.filter", ->
     values = []
     p.onValue((v) => values.push(v))
     expect(values).toEqual([1])
+  it "can filter by Property value", ->
+    expectPropertyEvents(
+      -> 
+        src = series(2, [1, 2, 3, 4]).delay(t(1)).toProperty()
+        ok = series(2, [false, true, true, false]).toProperty()
+        src.filter(ok)
+      [2, 3])
 
 describe "Property.take(1)", ->
   it "takes the Initial event", ->

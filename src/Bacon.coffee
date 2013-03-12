@@ -251,12 +251,17 @@ class Observable
       f() if event.isEnd()
   errors: -> @filter(-> false)
   filter: (f, args...) ->
-    f = makeFunction(f, args)
-    @withHandler (event) -> 
-      if event.filter(f)
-        @push event
-      else
-        Bacon.more
+    if (f instanceof Property)
+      f.sampledBy(this, (p,s) -> [p,s])
+       .filter(([p, s]) -> p)
+       .map(([p, s]) -> s)
+    else
+      f = makeFunction(f, args)
+      @withHandler (event) -> 
+        if event.filter(f)
+          @push event
+        else
+          Bacon.more
   takeWhile: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) -> 
@@ -471,13 +476,6 @@ class EventStream extends Observable
   map: (p, args...) ->
     if (p instanceof Property)
       p.sampledBy(this, former)
-    else
-      super(p, args...)
-  filter: (p, args...) ->
-    if (p instanceof Property)
-      p.sampledBy(this, (p,s) -> [p,s])
-       .filter(([p, s]) -> p)
-       .map(([p, s]) -> s)
     else
       super(p, args...)
   delay: (delay) ->
