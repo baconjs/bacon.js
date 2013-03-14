@@ -1,6 +1,8 @@
-## Next release
+## 0.1.9
 
 - Performance improvements
+- Fix stream ending in case an exception is thrown (#106)
+- Rewrite binder stream factory to compose all others (#105)
 
 ## 0.1.8
 
