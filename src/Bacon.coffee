@@ -7,15 +7,21 @@ else
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream (sink) ->
+    unbind = ->
+      # defer if binder calls handler in sync before returning unbinder
+      if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
       unless value instanceof Array and _.last(value) instanceof Event
         value = [value]
-      for event in value 
-        reply = sink(event = toEvent(event))
-        if reply == Bacon.noMore or event.isEnd()
-          # defer if binder calls handler in sync before returning unbinder
-          if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
+      try
+        for event in value 
+          reply = sink(event = toEvent(event))
+          unbind() if reply == Bacon.noMore or event.isEnd()
+      catch e
+        # make sure the stream ends even if an exception is thrown
+        unbind() if _.last(value).isEnd()
+        throw e
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->

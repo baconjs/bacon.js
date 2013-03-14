@@ -17,28 +17,41 @@
       eventTransformer = _.id;
     }
     return new EventStream(function(sink) {
-      var unbinder;
+      var unbind, unbinder;
+      unbind = function() {
+        if (typeof unbinder !== "undefined" && unbinder !== null) {
+          return unbinder();
+        } else {
+          return setTimeout((function() {
+            return unbinder();
+          }), 0);
+        }
+      };
       return unbinder = binder(function() {
-        var args, event, value, _i, _len, _results;
+        var args, event, reply, value, _i, _len, _results;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         value = eventTransformer.apply(null, args);
         if (!(value instanceof Array && _.last(value) instanceof Event)) {
           value = [value];
         }
-        _results = [];
-        for (_i = 0, _len = value.length; _i < _len; _i++) {
-          event = value[_i];
-          if (sink(event = toEvent(event)) === Bacon.noMore || event.isEnd()) {
-            if (unbinder != null) {
-              _results.push(unbinder());
+        try {
+          _results = [];
+          for (_i = 0, _len = value.length; _i < _len; _i++) {
+            event = value[_i];
+            reply = sink(event = toEvent(event));
+            if (reply === Bacon.noMore || event.isEnd()) {
+              _results.push(unbind());
             } else {
-              _results.push(setTimeout((function() {
-                return unbinder();
-              }), 0));
+              _results.push(void 0);
             }
           }
+          return _results;
+        } catch (e) {
+          if (_.last(value).isEnd()) {
+            unbind();
+          }
+          throw e;
         }
-        return _results;
       });
     });
   };
