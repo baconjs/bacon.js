@@ -15,7 +15,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         # defer if binder calls handler in sync before returning unbinder
         if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
 
-# eventTransformer - defaults to returning the first agrument to handler
+# eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
   Bacon.fromBinder (handler) =>
@@ -31,7 +31,7 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
 #
 # target - EventTarget or EventEmitter, source of events
 # eventName - event name to bind
-# eventTransformer - defaults to returning the first agrument to handler
+# eventTransformer - defaults to returning the first argument to handler
 #
 # Examples
 #
