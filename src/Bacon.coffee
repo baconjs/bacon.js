@@ -11,9 +11,11 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
       value = eventTransformer(args...)
       unless value instanceof Array and _.last(value) instanceof Event
         value = [value]
-      for event in value when sink(event = toEvent(event)) == Bacon.noMore or event.isEnd()
-        # defer if binder calls handler in sync before returning unbinder
-        if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
+      for event in value 
+        reply = sink(event = toEvent(event))
+        if reply == Bacon.noMore or event.isEnd()
+          # defer if binder calls handler in sync before returning unbinder
+          if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
