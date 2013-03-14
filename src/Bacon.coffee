@@ -4,23 +4,34 @@ if module?
 else
   @Bacon = Bacon = {} # otherwise for execution context
 
-Bacon.asStream = (binder, eventTransformer = _.id) ->
+# eventTransformer - should return one value or one or many events
+Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream (sink) ->
-    unbind = binder (args...) ->
-      unbind() if Bacon.noMore == sink next eventTransformer args...
+    unbinder = binder (args...) ->
+      value = eventTransformer(args...)
+      unless value instanceof Array and _.last(value) instanceof Event
+        value = [value]
+      for event in value when sink(event = toEvent(event)) == Bacon.noMore or event.isEnd()
+        # defer if binder calls handler in sync before returning unbinder
+        if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
 
-Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
-  [eventTransformer, selector] = [selector, null] if isFunction selector
-  Bacon.asStream (handler) =>
-    @on eventName, selector, handler
-    => @off eventName, selector, handler
+# eventTransformer - defaults to returning the first agrument to handler
+Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
+  [eventTransformer, selector] = [selector, null] if isFunction(selector)
+  Bacon.fromBinder (handler) =>
+    @on(eventName, selector, handler)
+    => @off(eventName, selector, handler)
+  , eventTransformer
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
-# Wrap DOM EventTarget or Node EventEmitter as EventStream
+# Wrap DOM EventTarget, Node EventEmitter, or
+# [un]bind: (Any, (Any) -> None) -> None interfaces
+# common in MVCs as EventStream
 #
 # target - EventTarget or EventEmitter, source of events
 # eventName - event name to bind
+# eventTransformer - defaults to returning the first agrument to handler
 #
 # Examples
 #
@@ -31,34 +42,17 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer = _.id) ->
 #   # => EventStream
 #
 # Returns EventStream
-Bacon.fromEventTarget = (target, eventName, eventTransformer = _.id) ->
-  new EventStream (sink) ->
-    handler = (args...) ->
-      reply = sink (next eventTransformer args...)
-      if reply == Bacon.noMore
-        unbind()
-
-    if target.addEventListener
-      unbind = -> target.removeEventListener(eventName, handler, false)
-      target.addEventListener(eventName, handler, false)
-    else
-      unbind = -> target.removeListener(eventName, handler)
-      target.addListener(eventName, handler)
-    unbind
-
+Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
+  sub = target.addEventListener ? (target.addListener ? target.bind)
+  unsub = target.removeEventListener ? (target.removeListener ? target.unbind)
+  Bacon.fromBinder (handler) ->
+    sub.call(target, eventName, handler)
+    -> unsub.call(target, eventName, handler)
+  , eventTransformer
 
 Bacon.fromPromise = (promise) ->
-  new EventStream(
-    (sink) ->
-      onSuccess = (value) ->
-        sink next(value)
-        sink end()
-      onError = (e) ->
-        sink (new Error e)
-        sink end()
-      promise.then(onSuccess, onError)
-      nop
-  )
+  Bacon.fromCallback (handler) ->
+    promise.then(handler, (e) -> handler(new Error(e)))
 
 Bacon.noMore = ["<no-more>"]
 
@@ -68,50 +62,30 @@ Bacon.later = (delay, value) ->
   Bacon.sequentially(delay, [value])
 
 Bacon.sequentially = (delay, values) ->
-  index = -1
-  poll = ->
-    index++
-    valueEvent = toEvent values[index]
-    if index < values.length - 1
-      valueEvent
-    else
-      [valueEvent, end()]
-  Bacon.fromPoll(delay, poll)
+  index = 0
+  Bacon.fromPoll delay, ->
+    value = values[index++]
+    if index < values.length then value else [value, end()]
 
 Bacon.repeatedly = (delay, values) ->
-  index = -1
-  poll = ->
-    index++
-    toEvent values[index % values.length]
-  Bacon.fromPoll(delay, poll)
+  index = 0
+  Bacon.fromPoll(delay, -> values[index++ % values.length])
 
 Bacon.fromCallback = (f, args...) -> 
-  f = makeFunction(f, args)
-  new EventStream (sink) ->
-    handler = (value) ->
-      sink next(value)
-      sink end()
-    f(handler)
+  Bacon.fromBinder (handler) ->
+    makeFunction(f, args)(handler)
     nop
+  , (value) -> [value, end()]
 
 Bacon.fromPoll = (delay, poll) ->
-  new EventStream (sink) ->
-    id = undefined
-    handler = ->
-      events = _.toArray(poll())
-      for event in events
-        reply = sink event
-        if (reply == Bacon.noMore or event.isEnd())
-          unbind()
-    unbind = -> 
-      clearInterval id
+  Bacon.fromBinder (handler) ->
     id = setInterval(handler, delay)
-    unbind
+    -> clearInterval(id)
+  , poll
 
 Bacon.interval = (delay, value) ->
   value = {} unless value?
-  poll = -> next(value)
-  Bacon.fromPoll(delay, poll)
+  Bacon.fromPoll(delay, -> next(value))
 
 Bacon.constant = (value) ->
   new Property(sendWrapped([value], initial))
@@ -881,12 +855,8 @@ former = (x, _) -> x
 initial = (value) -> new Initial(_.always(value))
 next = (value) -> new Next(_.always(value))
 end = -> new End()
-isEvent = (x) -> x? and x.isEvent? and x.isEvent()
-toEvent = (x) -> 
-  if isEvent x
-    x
-  else
-    next x
+# instanceof more performant than x.?isEvent?()
+toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
 indexOf = if Array::indexOf
   (xs, x) -> xs.indexOf(x)
@@ -900,7 +870,7 @@ remove = (x, xs) ->
   if i >= 0
     xs.splice(i, 1)
 assert = (message, condition) -> throw message unless condition
-assertEvent = (event) -> assert "not an event : " + event, event.isEvent? ; assert "not event", event.isEvent()
+assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
@@ -910,8 +880,8 @@ methodCall = (obj, method, args) ->
   assertString(method)
   if args == undefined then args = []
   (value) -> obj[method]((args.concat([value]))...)
-partiallyApplied = (f, args) ->
-  (value) -> f((args.concat([value]))...)
+partiallyApplied = (f, applied) ->
+  (args...) -> f((applied.concat(args))...)
 makeFunction = (f, args) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f

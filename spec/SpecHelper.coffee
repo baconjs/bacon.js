@@ -126,15 +126,11 @@ toValues = (xs) ->
     values.push(toValue(x))
   values
 toValue = (x) ->
-  if x? and x.isEvent?
-    if x.isError()
-      "<error>"
-    else if x.isEnd()
-      "<end>"
-    else
-      x.value()
-  else
-    x
+  switch true
+    when !x?.isEvent?() then x
+    when x.isError() then "<error>"
+    when x.isEnd() then "<end>"
+    else x.value()
 
 justValues = (xs) ->
   _.filter hasValue, xs
