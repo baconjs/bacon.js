@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, makeFunction, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
+  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -895,6 +895,7 @@
 
     Observable.prototype.flatMap = function(f) {
       var root;
+      f = makeSpawner(f);
       root = this;
       return new EventStream(function(sink) {
         var checkEnd, children, rootEnd, spawner, unbind, unsubRoot;
@@ -963,6 +964,7 @@
     Observable.prototype.flatMapLatest = function(f) {
       var stream,
         _this = this;
+      f = makeSpawner(f);
       stream = this.toEventStream();
       return stream.flatMap(function(value) {
         return f(value).takeUntil(stream);
@@ -1834,6 +1836,14 @@
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       return f.apply(null, applied.concat(args));
     };
+  };
+
+  makeSpawner = function(f) {
+    if (f instanceof Observable) {
+      f = _.always(f);
+    }
+    assertFunction(f);
+    return f;
   };
 
   makeFunction = function(f, args) {
