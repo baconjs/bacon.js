@@ -1,3 +1,7 @@
+## Next release
+
+- Support usage of an EventStream/Property instead of a function as a parameter to flatMap/Latest
+
 ## 0.1.9
 
 - Performance improvements
