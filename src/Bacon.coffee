@@ -430,6 +430,7 @@ class Observable
     .map((tuple) -> tuple[1])
 
   flatMap: (f) ->
+    f = makeSpawner(f)
     root = this
     new EventStream (sink) ->
       children = []
@@ -474,6 +475,7 @@ class Observable
       unsubRoot = root.subscribe(spawner)
       unbind
   flatMapLatest: (f) =>
+    f = makeSpawner(f)
     stream = @toEventStream()
     stream.flatMap (value) =>
       f(value).takeUntil(stream)
@@ -890,6 +892,10 @@ methodCall = (obj, method, args) ->
   (value) -> obj[method]((args.concat([value]))...)
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
+makeSpawner = (f) ->
+    f = _.always(f) if f instanceof Observable
+    assertFunction(f)
+    f
 makeFunction = (f, args) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f

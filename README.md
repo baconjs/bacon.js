@@ -275,7 +275,8 @@ values
 `observable.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream. This is very similar to selectMany in
-RxJs.
+RxJs. Note that instead of a function, you can provide a
+stream/property too.
 
 stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
 
@@ -288,7 +289,8 @@ Example - converting strings to integers, skipping empty values:
 `observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream. The old name for
-this method is `switch`.
+this method is `switch`. Note that instead of a function, you can
+provide a stream/property too.
 
 `observable.scan(seed, f)` scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might

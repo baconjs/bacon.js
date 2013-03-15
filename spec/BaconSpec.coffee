@@ -262,6 +262,13 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
       [1,2])
+  it "Accepts a constant EventStream/Property as an alternative to a function", ->
+    expectStreamEvents(
+      -> Bacon.once("asdf").flatMap(Bacon.constant("bacon"))
+      ["bacon"])
+    expectStreamEvents(
+      -> Bacon.once("asdf").flatMap(Bacon.once("bacon"))
+      ["bacon"])
 
 describe "Property.flatMap", ->
   it "should spawn new stream for all events including Init", ->
@@ -284,6 +291,10 @@ describe "EventStream.flatMapLatest", ->
       -> series(3, [1, 2]).flatMapLatest (value) ->
         Bacon.sequentially(t(2), [value, error(), value])
       [1, 2, error(), 2])
+  it "Accepts a constant EventStream/Property as an alternative to a function", ->
+    expectStreamEvents(
+      -> Bacon.once("asdf").flatMapLatest(Bacon.constant("bacon"))
+      ["bacon"])
 
 describe "Property.flatMapLatest", ->
   it "spawns new streams but collects values from the latest spawned stream only", ->
@@ -291,6 +302,10 @@ describe "Property.flatMapLatest", ->
       -> series(3, [1, 2]).toProperty(0).flatMapLatest (value) ->
         Bacon.sequentially(t(2), [value, value])
       [0, 1, 2, 2])
+  it "Accepts a constant EventStream/Property as an alternative to a function", ->
+    expectStreamEvents(
+      -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
+      ["bacon"])
 
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
