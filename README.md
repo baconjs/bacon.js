@@ -338,6 +338,10 @@ example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
 respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
 [2,3] - [3,4] - [4,5].
 
+`observable.log()` logs each value of the Observable to the console.
+It optionally takes arguments to pass to console.log() alongside each
+value. To assist with chaining, it returns the original Observable.
+
 
 EventStream
 -----------
