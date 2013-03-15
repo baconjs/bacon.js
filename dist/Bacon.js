@@ -976,8 +976,10 @@
     };
 
     Observable.prototype.log = function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       this.subscribe(function(event) {
-        return console.log(event.describe());
+        return console.log.apply(console, __slice.call(args).concat([event.describe()]));
       });
       return this;
     };

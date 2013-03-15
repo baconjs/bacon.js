@@ -478,8 +478,8 @@ class Observable
     stream.flatMap (value) =>
       f(value).takeUntil(stream)
   not: -> @map((x) -> !x)
-  log: -> 
-    @subscribe (event) -> console.log(event.describe())
+  log: (args...) ->
+    @subscribe (event) -> console.log(args..., event.describe())
     this
   slidingWindow: (n) -> 
     @scan [], (window, value) ->
