@@ -1025,13 +1025,13 @@
       });
     };
 
-    EventStream.prototype.throttle = function(delay) {
+    EventStream.prototype.debounce = function(delay) {
       return this.flatMapLatest(function(value) {
         return Bacon.later(delay, value);
       });
     };
 
-    EventStream.prototype.throttle2 = function(delay) {
+    EventStream.prototype.throttle = function(delay) {
       return this.bufferWithTime(delay).map(function(values) {
         return values[values.length - 1];
       });
@@ -1392,15 +1392,15 @@
       });
     };
 
-    Property.prototype.throttle = function(delay) {
+    Property.prototype.debounce = function(delay) {
       return this.delayChanges(function(changes) {
-        return changes.throttle(delay);
+        return changes.debounce(delay);
       });
     };
 
-    Property.prototype.throttle2 = function(delay) {
+    Property.prototype.throttle = function(delay) {
       return this.delayChanges(function(changes) {
-        return changes.throttle2(delay);
+        return changes.throttle(delay);
       });
     };
 
