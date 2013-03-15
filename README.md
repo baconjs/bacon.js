@@ -342,7 +342,16 @@ respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
 
 `observable.log()` logs each value of the Observable to the console.
 It optionally takes arguments to pass to console.log() alongside each
-value. To assist with chaining, it returns the original Observable.
+value. To assist with chaining, it returns the original Observable. Note
+that as a side-effect, the observable will have a constant listener and
+will not be garbage-collected. So, use this for debugging only and
+remove from production code. For example:
+
+    myStream.log("New event in myStream")
+
+or just
+
+    myStream.log()
 
 
 EventStream
