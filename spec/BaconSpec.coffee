@@ -332,20 +332,20 @@ describe "EventStream.delay", ->
         left.merge(right)
       [error(), 1, 2, 3, 4, 5, 6])
 
-describe "EventStream.throttle", ->
+describe "EventStream.debounce", ->
   it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
-      -> series(2, [1, error(), 2]).throttle(t(7))
+      -> series(2, [1, error(), 2]).debounce(t(7))
       [error(), 2])
   it "waits for a quiet period before outputing anything", ->
     expectStreamTimings(
-      -> series(2, [1, 2, 3, 4]).throttle(t(3))
+      -> series(2, [1, 2, 3, 4]).debounce(t(3))
       [[11, 4]])
 
-describe "EventStream.throttle2(delay)", ->
+describe "EventStream.throttle(delay)", ->
   it "outputs at steady intervals, without waiting for quite period", ->
     expectStreamTimings(
-      -> series(2, [1, 2, 3]).throttle2(t(3))
+      -> series(2, [1, 2, 3]).throttle(t(3))
       [[5, 2], [8, 3]])
 
 describe "EventStream.bufferWithTime", ->
@@ -625,23 +625,23 @@ describe "Property.delay", ->
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
       [0])
 
-describe "Property.throttle", ->
+describe "Property.debounce", ->
   it "delivers initial value and changes", ->
     expectPropertyEvents(
-      -> series(2, [1,2,3]).toProperty(0).throttle(t(1))
+      -> series(2, [1,2,3]).toProperty(0).debounce(t(1))
       [0,1,2,3])
   it "throttles changes, but not initial value", ->
     expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty(0).throttle(t(4))
+      -> series(1, [1,2,3]).toProperty(0).debounce(t(4))
       [0,3])
   it "works without initial value", ->
     expectPropertyEvents(
-      -> series(2, [1,2,3]).toProperty().throttle(t(4))
+      -> series(2, [1,2,3]).toProperty().debounce(t(4))
       [3])
-describe "Property.throttle2", ->
+describe "Property.throttle", ->
   it "throttles changes, but not initial value", ->
     expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty(0).throttle2(t(4))
+      -> series(1, [1,2,3]).toProperty(0).throttle(t(4))
       [0,3])
 
 describe "Property.endOnError", ->

@@ -502,11 +502,11 @@ class EventStream extends Observable
   delay: (delay) ->
     @flatMap (value) ->
       Bacon.later delay, value
-  throttle: (delay) ->
+  debounce: (delay) ->
     @flatMapLatest (value) ->
       Bacon.later delay, value
 
-  throttle2: (delay) ->
+  throttle: (delay) ->
     @bufferWithTime(delay).map((values) -> values[values.length - 1])
 
   bufferWithTime: (delay) ->
@@ -685,8 +685,8 @@ class Property extends Observable
   or:  (other) -> @combine(other, (x, y) -> x || y)
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
   delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
+  debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
-  throttle2: (delay) -> @delayChanges((changes) -> changes.throttle2(delay))
   delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes())) 
 
 addPropertyInitValueToStream = (property, stream) ->

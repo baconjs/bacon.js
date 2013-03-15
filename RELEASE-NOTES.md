@@ -1,3 +1,8 @@
+## 0.2.0
+
+- Rename throttle to debounce
+- Rename throttle2 to throttle
+
 ## 0.1.10
 
 - Support usage of an EventStream/Property instead of a function as a parameter to flatMap/Latest
