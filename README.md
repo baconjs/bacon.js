@@ -184,8 +184,8 @@ subscribe function. (See below)
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
 
-The EventStream constructor
---------------------------------------------
+The EventStream constructor for custom streams
+----------------------------------------------
 
 If none of the factory methods above apply, you may of course roll your own EventStream by using the constructor:
 
@@ -197,6 +197,9 @@ For example:
 
     new Bacon.EventStream(function(subscriber) {
       subscriber(new Bacon.Next("a value here"))
+      subscriber(new Bacon.Next(function() { 
+        return "This one will be evaluated lazily"
+      }))
       subscriber(new Bacon.Error("oops, an error"))
       subscriber(new Bacon.End())
       return function() { // unsub functionality here, this one's a no-op }
@@ -215,6 +218,21 @@ only be called when the first stream listener is added, and the unsubscibe
 function is called only after the last listener has been removed. 
 The subscribe-unsubscribe cycle may of course be repeated indefinitely, 
 so prepare for multiple calls to the subscribe function.
+
+A note about the `new Bacon.Next(..)` constructor: You can use it like
+
+    new Bacon.Next("value")
+
+But the canonical way would be
+
+    new Bacon.Next(function() { return "value") })
+
+The former version is safe only when you know that the actual value in
+the stream is not a function.
+
+The idea in using a function instead of a plain value is that the internals on Bacon.js take
+advantage of lazy evaluation by deferring the evaluations of values
+created by `map`, `combine`.
 
 Common methods in EventStreams and Properties
 ---------------------------------------------
