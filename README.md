@@ -177,12 +177,44 @@ would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 produces given value after given delay (milliseconds).
 
 `new Bacon.EventStream(subscribe)` creates an event stream with the given 
-subscribe function.
+subscribe function. (See below)
 
 `property.changes()` creates a stream of changes to the Property (see Property API below)
 
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
+
+The EventStream constructor
+--------------------------------------------
+
+If none of the factory methods above apply, you may of course roll your own EventStream by using the constructor:
+
+    new EventStream(subscribe)
+
+The parameter `subscribe` is a function that accepts an subscriber which is a function that will receive Events.
+
+For example:
+
+    new Bacon.EventStream(function(subscriber) {
+      subscriber(new Bacon.Next("a value here"))
+      subscriber(new Bacon.Error("oops, an error"))
+      subscriber(new Bacon.End())
+      return function() { // unsub functionality here, this one's a no-op }
+    })
+
+The subscribe function must return a function. Let's call that function 
+`unsubscribe`. The returned function can be used by the subscriber to 
+unsubscribe and it should release all resources that the subscribe function reserved.
+
+The subscriber function may return Bacon.more or Bacon.noMore. It may also 
+return undefined or anything else. Iff it returns Bacon.noMore, the subscriber 
+must be cleaned up just like in case of calling the unsubscribe function.
+
+The EventStream constructor will wrap your subscribe function so that it will 
+only be called when the first stream listener is added, and the unsubscibe 
+function is called only after the last listener has been removed. 
+The subscribe-unsubscribe cycle may of course be repeated indefinitely, 
+so prepare for multiple calls to the subscribe function.
 
 Common methods in EventStreams and Properties
 ---------------------------------------------
