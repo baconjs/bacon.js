@@ -604,7 +604,6 @@ class EventStream extends Observable
     dispatcher = new Dispatcher(@subscribe, handler)
     new EventStream(dispatcher.subscribe)
   withSubscribe: (subscribe) -> new EventStream(subscribe)
-  plug: (bus) -> bus?.plug(@)
 
 class Property extends Observable
   constructor: (@subscribe) ->
@@ -689,6 +688,7 @@ class Property extends Observable
   debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
   delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes()))
+  plug: (bus) -> bus?.plug(@)
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
