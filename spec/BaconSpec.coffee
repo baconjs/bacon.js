@@ -402,6 +402,16 @@ describe "EventStream.takeUntil", ->
         src.takeUntil(stopper)
       [1, error(), 2])
 
+describe "EventStream.take", ->
+  it "should take only specified number of events, even if it is retriggered during a callback (bug fix)", ->
+    bus = new Bacon.Bus
+    o = []
+    bus.take(1).onValue (v) ->
+      bus.push("onValue triggers a side-effect here")
+      o.push(v)
+    bus.push("foo")
+    expect(o).toEqual(["foo"])
+
 describe "EventStream.awaiting(other)", ->
   it "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
     expectPropertyEvents(

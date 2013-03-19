@@ -687,13 +687,17 @@
       return this.withHandler(function(event) {
         if (!event.hasValue()) {
           return this.push(event);
-        } else if (count === 1) {
-          this.push(event);
-          this.push(end());
-          return Bacon.noMore;
         } else {
           count--;
-          return this.push(event);
+          if (count === 0) {
+            this.push(event);
+            this.push(end());
+            return Bacon.noMore;
+          } else if (count > 0) {
+            return this.push(event);
+          } else {
+            return Bacon.noMore;
+          }
         }
       });
     };
@@ -1593,11 +1597,7 @@
         _results = [];
         for (_i = 0, _len = subscriptions.length; _i < _len; _i++) {
           sub = subscriptions[_i];
-          if (sub.unsub != null) {
-            _results.push(sub.unsub());
-          } else {
-            _results.push(void 0);
-          }
+          _results.push(typeof sub.unsub === "function" ? sub.unsub() : void 0);
         }
         return _results;
       };
@@ -1609,7 +1609,7 @@
         for (i = _i = 0, _len = subscriptions.length; _i < _len; i = ++_i) {
           sub = subscriptions[i];
           if (sub.input === input) {
-            if (sub.unsub != null) {
+            if (typeof sub.unsub === "function") {
               sub.unsub();
             }
             subscriptions.splice(i, 1);
@@ -1646,21 +1646,15 @@
         };
       };
       this.push = function(value) {
-        if (sink != null) {
-          return sink(next(value));
-        }
+        return typeof sink === "function" ? sink(next(value)) : void 0;
       };
       this.error = function(error) {
-        if (sink != null) {
-          return sink(new Error(error));
-        }
+        return typeof sink === "function" ? sink(new Error(error)) : void 0;
       };
       this.end = function() {
         ended = true;
         unsubAll();
-        if (sink != null) {
-          return sink(end());
-        }
+        return typeof sink === "function" ? sink(end()) : void 0;
       };
     }
 
