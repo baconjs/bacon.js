@@ -795,7 +795,6 @@ class Bus extends EventStream
       for sub in subscriptions
         if sub.unsub?
           sub.unsub()
-      subscriptions = []
     subscribeInput = (subscription) ->
       subscription.unsub = (subscription.input.subscribe(guardedSink(subscription.input)))
     unsubscribeInput = (input) ->

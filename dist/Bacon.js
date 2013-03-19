@@ -1589,14 +1589,17 @@
         };
       };
       unsubAll = function() {
-        var sub, _i, _len;
+        var sub, _i, _len, _results;
+        _results = [];
         for (_i = 0, _len = subscriptions.length; _i < _len; _i++) {
           sub = subscriptions[_i];
           if (sub.unsub != null) {
-            sub.unsub();
+            _results.push(sub.unsub());
+          } else {
+            _results.push(void 0);
           }
         }
-        return subscriptions = [];
+        return _results;
       };
       subscribeInput = function(subscription) {
         return subscription.unsub = subscription.input.subscribe(guardedSink(subscription.input));
