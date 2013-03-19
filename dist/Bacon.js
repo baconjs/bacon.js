@@ -1573,7 +1573,7 @@
     __extends(Bus, _super);
 
     function Bus() {
-      var dispatcher, ended, guardedSink, sink, subscribeAll, subscribeInput, subscribeThis, subscriptions, unsubAll, unsubscribeInput,
+      var ended, guardedSink, sink, subscribeAll, subscribeInput, subscriptions, unsubAll, unsubscribeInput,
         _this = this;
       sink = void 0;
       subscriptions = [];
@@ -1628,11 +1628,7 @@
         }
         return unsubAll;
       };
-      dispatcher = new Dispatcher(subscribeAll);
-      subscribeThis = function(sink) {
-        return dispatcher.subscribe(sink);
-      };
-      Bus.__super__.constructor.call(this, subscribeThis);
+      Bus.__super__.constructor.call(this, subscribeAll);
       this.plug = function(input) {
         var sub;
         if (ended) {
