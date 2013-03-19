@@ -10,6 +10,7 @@ promise = {
     calls = calls + 1
 }
 _ = Bacon._
+nop = ->
 
 describe "Bacon.fromPromise", ->
   it "should produce value and end on success", ->
@@ -30,4 +31,18 @@ describe "Bacon.fromPromise", ->
     dispose()
     success("a")
     expect(events).toEqual([])
+	
+  it "should abort ajax promise on unsub", ->
+    isAborted = false
+    promise.abort = ->
+      isAborted = true
+    dispose = Bacon.fromPromise(promise).subscribe(nop)
+    dispose()
+    delete promise.abort
+    expect(isAborted).toEqual(true)    
 
+  it "should not abort non-ajax promise", ->
+    isAborted = false
+    dispose = Bacon.fromPromise(promise).subscribe(nop)
+    dispose()
+    expect(isAborted).toEqual(false)
