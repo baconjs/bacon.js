@@ -1173,6 +1173,18 @@ describe "Bacon.Bus", ->
     src.push("y")
     expect(values).toEqual(["x"])
 
+  it "allows consumers to re-subscribe after other consumers have unsubscribed (bug fix)", ->
+    bus = new Bacon.Bus
+    otherBus = new Bacon.Bus
+    otherBus.plug(bus)
+    unsub = otherBus.onValue ->
+    unsub()
+    o = []
+    otherBus.onValue (v) -> o.push(v)
+    bus.push("foo")
+    expect(o).toEqual(["foo"])
+
+
 describe "EventStream", ->
   it "works with functions as values (bug fix)", ->
     expectStreamEvents(
