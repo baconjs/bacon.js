@@ -89,10 +89,15 @@
   };
 
   Bacon.fromPromise = function(promise) {
-    return Bacon.fromCallback(function(handler) {
-      return promise.then(handler, function(e) {
+    return Bacon.fromBinder(function(handler) {
+      promise.then(handler, function(e) {
         return handler(new Error(e));
       });
+      return function() {
+        return typeof promise.abort === "function" ? promise.abort() : void 0;
+      };
+    }, function(value) {
+      return [value, end()];
     });
   };
 
