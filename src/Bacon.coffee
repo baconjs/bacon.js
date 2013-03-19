@@ -809,10 +809,7 @@ class Bus extends EventStream
       for subscription in cloneArray(subscriptions)
         subscribeInput(subscription)
       unsubAll
-    dispatcher = new Dispatcher(subscribeAll)
-    subscribeThis = (sink) =>
-      dispatcher.subscribe(sink)
-    super(subscribeThis)
+    super(subscribeAll)
     @plug = (input) =>
       return if ended
       sub = { input: input }
