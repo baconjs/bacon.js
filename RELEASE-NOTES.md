@@ -1,3 +1,7 @@
+## 0.2.1
+
+- fromPromise calls .abort() on unsubscribe
+
 ## 0.2.0
 
 - Rename throttle to debounce
