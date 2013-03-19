@@ -791,16 +791,14 @@ class Bus extends EventStream
         Bacon.noMore
       else
         sink event
-    unsubAll = => 
-      for sub in subscriptions
-        if sub.unsub?
-          sub.unsub()
+    unsubAll = -> 
+      sub.unsub?() for sub in subscriptions
     subscribeInput = (subscription) ->
       subscription.unsub = (subscription.input.subscribe(guardedSink(subscription.input)))
     unsubscribeInput = (input) ->
       for sub, i in subscriptions
         if sub.input == input
-          sub.unsub() if sub.unsub?
+          sub.unsub?()
           subscriptions.splice(i, 1)
           return
     subscribeAll = (newSink) =>
@@ -815,15 +813,15 @@ class Bus extends EventStream
       sub = { input: input }
       subscriptions.push(sub)
       subscribeInput(sub) if (sink?)
-      () -> unsubscribeInput(input)
+      -> unsubscribeInput(input)
     @push = (value) =>
-      sink next(value) if sink?
+      sink? next(value)
     @error = (error) =>
-      sink new Error(error) if sink?
+      sink? new Error(error)
     @end = =>
       ended = true
       unsubAll()
-      sink end() if sink?
+      sink? end()
 
 class Some
   constructor: (@value) ->
