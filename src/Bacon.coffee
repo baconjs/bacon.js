@@ -307,13 +307,17 @@ class Observable
     @withHandler (event) ->
       if !event.hasValue()
         @push event
-      else if (count == 1)
-        @push event
-        @push end()
-        Bacon.noMore
       else
         count--
-        @push event
+        if count == 0
+          @push event
+          @push end()
+          Bacon.noMore
+        else if count > 0
+          @push event
+        else
+          Bacon.noMore
+
   map: (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) -> 
