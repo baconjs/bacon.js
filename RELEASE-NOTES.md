@@ -1,3 +1,7 @@
+## 0.2.2
+
+- Fix #118: Bus drops all inputs after last consumer of its events is dropped; impossible to re-subscribe
+
 ## 0.2.1
 
 - fromPromise calls .abort() on unsubscribe
