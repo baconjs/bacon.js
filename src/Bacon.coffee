@@ -59,8 +59,11 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
   , eventTransformer
 
 Bacon.fromPromise = (promise) ->
-  Bacon.fromCallback (handler) ->
+  Bacon.fromBinder (handler) ->
     promise.then(handler, (e) -> handler(new Error(e)))
+    -> promise.abort()
+  , (value) -> [value, end()]
+
 
 Bacon.noMore = ["<no-more>"]
 
