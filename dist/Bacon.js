@@ -689,13 +689,13 @@
           return this.push(event);
         } else {
           count--;
-          if (count === 0) {
-            this.push(event);
-            this.push(end());
-            return Bacon.noMore;
-          } else if (count > 0) {
+          if (count > 0) {
             return this.push(event);
           } else {
+            if (count === 0) {
+              this.push(event);
+              this.push(end());
+            }
             return Bacon.noMore;
           }
         }
@@ -1440,8 +1440,10 @@
   Dispatcher = (function() {
 
     function Dispatcher(subscribe, handleEvent) {
-      var addWaiter, done, ended, removeSink, sinks, unsubscribeFromSource, waiters,
+      var addWaiter, callingSink, done, ended, queuedEvents, removeSink, sinks, unsubscribeFromSource, waiters,
         _this = this;
+      queuedEvents = [];
+      callingSink = false;
       if (subscribe == null) {
         subscribe = function() {
           return nop;
@@ -1473,16 +1475,33 @@
         return waiters.push(listener);
       };
       this.push = function(event) {
-        var reply, sink, tmpSinks, _i, _len;
+        var queuedEvent, reply, sink, tmpQueued, tmpSinks, _i, _j, _len, _len1;
+        if (callingSink) {
+          queuedEvents.push(event);
+          return;
+        }
         waiters = [];
         event.onDone = addWaiter;
         tmpSinks = sinks;
         for (_i = 0, _len = tmpSinks.length; _i < _len; _i++) {
           sink = tmpSinks[_i];
-          reply = sink(event);
+          callingSink = true;
+          reply = (function() {
+            try {
+              return sink(event);
+            } finally {
+              callingSink = false;
+            }
+          })();
           if (reply === Bacon.noMore || event.isEnd()) {
             removeSink(sink);
           }
+        }
+        tmpQueued = queuedEvents;
+        queuedEvents = [];
+        for (_j = 0, _len1 = tmpQueued.length; _j < _len1; _j++) {
+          queuedEvent = tmpQueued[_j];
+          _this.push(queuedEvent);
         }
         done(event);
         if (_this.hasSubscribers()) {

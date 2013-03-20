@@ -707,6 +707,8 @@ addPropertyInitValueToStream = (property, stream) ->
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
+    queuedEvents = []
+    callingSink = false
     subscribe ?= -> nop
     sinks = []
     ended = false
@@ -723,12 +725,22 @@ class Dispatcher
       event.onDone = Event.prototype.onDone
     addWaiter = (listener) -> waiters.push(listener)
     @push = (event) =>
+      if callingSink
+        queuedEvents.push(event)
+        return
       waiters = []
       event.onDone = addWaiter
       tmpSinks = sinks
       for sink in tmpSinks
-        reply = sink event
+        callingSink = true
+        reply = try
+          sink event
+        finally
+          callingSink = false
         removeSink sink if reply == Bacon.noMore or event.isEnd()
+      tmpQueued = queuedEvents
+      queuedEvents = []
+      @push(queuedEvent) for queuedEvent in tmpQueued
       done(event)
       if @hasSubscribers() 
         Bacon.more 
