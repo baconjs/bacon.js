@@ -312,9 +312,8 @@ class Observable
         if count > 0
           @push event
         else
-          if count == 0
-            @push event
-            @push end()
+          @push event
+          @push end()
           Bacon.noMore
 
   map: (f, args...) ->
@@ -709,31 +708,46 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     sinks = []
+    queue = null
+    pushing = false
     ended = false
     @hasSubscribers = -> sinks.length > 0
     unsubscribeFromSource = nop
     removeSink = (sink) ->
       sinks = _.without(sink, sinks)
-    waiters = []
+    waiters = null
     done = (event) -> 
       if waiters?
         ws = waiters
-        waiters = undefined
+        waiters = null
         w() for w in ws
       event.onDone = Event.prototype.onDone
-    addWaiter = (listener) -> waiters.push(listener)
+    addWaiter = (listener) -> waiters = (waiters or []).concat([listener])
     @push = (event) =>
-      waiters = []
-      event.onDone = addWaiter
-      tmpSinks = sinks
-      for sink in tmpSinks
-        reply = sink event
-        removeSink sink if reply == Bacon.noMore or event.isEnd()
-      done(event)
-      if @hasSubscribers() 
-        Bacon.more 
-      else 
-        Bacon.noMore
+      if not pushing
+        doPush event
+      else
+        queue = (queue or []).concat([event])
+        Bacon.more
+    doPush = (event) =>
+      try
+        pushing = true
+        event.onDone = addWaiter
+        tmpSinks = sinks
+        for sink in tmpSinks
+          reply = sink event
+          removeSink sink if reply == Bacon.noMore or event.isEnd()
+        done(event)
+        if queue?.length
+          first = _.head(queue)
+          queue = _.tail(queue)
+          doPush first
+        else if @hasSubscribers() 
+          Bacon.more 
+        else 
+          Bacon.noMore
+      finally
+        pushing = false
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
       if event.isEnd()
