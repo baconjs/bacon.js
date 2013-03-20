@@ -725,29 +725,27 @@ class Dispatcher
     addWaiter = (listener) -> waiters = (waiters or []).concat([listener])
     @push = (event) =>
       if not pushing
-        doPush event
-      else
-        queue = (queue or []).concat([event])
-        Bacon.more
-    doPush = (event) =>
-      try
-        pushing = true
-        event.onDone = addWaiter
-        tmpSinks = sinks
-        for sink in tmpSinks
-          reply = sink event
-          removeSink sink if reply == Bacon.noMore or event.isEnd()
+        try
+          pushing = true
+          event.onDone = addWaiter
+          tmpSinks = sinks
+          for sink in tmpSinks
+            reply = sink event
+            removeSink sink if reply == Bacon.noMore or event.isEnd()
+        finally
+          pushing = false
+        if queue?
+          events = queue
+          queue = null
+          @push event for event in events
         done(event)
-        if queue?.length
-          first = _.head(queue)
-          queue = _.tail(queue)
-          doPush first
-        else if @hasSubscribers() 
+        if @hasSubscribers() 
           Bacon.more 
         else 
           Bacon.noMore
-      finally
-        pushing = false
+      else
+        queue = (queue or []).concat([event])
+        Bacon.more
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) => 
       if event.isEnd()
