@@ -1,3 +1,7 @@
+## 0.2.3
+
+- Fix #120: take(n) may be triggered more than n times if event emitter is triggered in onValue callback
+
 ## 0.2.2
 
 - Fix #118: Bus drops all inputs after last consumer of its events is dropped; impossible to re-subscribe
