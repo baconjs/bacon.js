@@ -309,13 +309,12 @@ class Observable
         @push event
       else
         count--
-        if count == 0
-          @push event
-          @push end()
-          Bacon.noMore
-        else if count > 0
+        if count > 0
           @push event
         else
+          if count == 0
+            @push event
+            @push end()
           Bacon.noMore
 
   map: (f, args...) ->
