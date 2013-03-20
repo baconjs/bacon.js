@@ -732,6 +732,9 @@ class Dispatcher
           for sink in tmpSinks
             reply = sink event
             removeSink sink if reply == Bacon.noMore or event.isEnd()
+        catch e
+          queue = null # ditch queue to allow recovery from exceptions
+          throw e
         finally
           pushing = false
         if queue?
