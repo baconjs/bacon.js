@@ -1,6 +1,8 @@
 ## 0.2.3
 
 - Fix #120: take(n) may be triggered more than n times if event emitter is triggered in onValue callback
+- Generally more reliable implementation in case of recursively
+  generated events
 
 ## 0.2.2
 
