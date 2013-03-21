@@ -737,10 +737,10 @@ class Dispatcher
           throw e
         finally
           pushing = false
-        if queue?
-          events = queue
-          queue = null
-          @push event for event in events
+        while queue?.length
+          event = _.head(queue)
+          queue = _.tail(queue)
+          @push event
         done(event)
         if @hasSubscribers() 
           Bacon.more 
