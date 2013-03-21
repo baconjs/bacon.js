@@ -689,13 +689,11 @@
           return this.push(event);
         } else {
           count--;
-          if (count === 0) {
-            this.push(event);
-            this.push(end());
-            return Bacon.noMore;
-          } else if (count > 0) {
+          if (count > 0) {
             return this.push(event);
           } else {
+            this.push(event);
+            this.push(end());
             return Bacon.noMore;
           }
         }
@@ -1440,7 +1438,7 @@
   Dispatcher = (function() {
 
     function Dispatcher(subscribe, handleEvent) {
-      var addWaiter, done, ended, removeSink, sinks, unsubscribeFromSource, waiters,
+      var addWaiter, done, ended, pushing, queue, removeSink, sinks, unsubscribeFromSource, waiters,
         _this = this;
       if (subscribe == null) {
         subscribe = function() {
@@ -1448,6 +1446,8 @@
         };
       }
       sinks = [];
+      queue = null;
+      pushing = false;
       ended = false;
       this.hasSubscribers = function() {
         return sinks.length > 0;
@@ -1456,12 +1456,12 @@
       removeSink = function(sink) {
         return sinks = _.without(sink, sinks);
       };
-      waiters = [];
+      waiters = null;
       done = function(event) {
         var w, ws, _i, _len;
         if (waiters != null) {
           ws = waiters;
-          waiters = void 0;
+          waiters = null;
           for (_i = 0, _len = ws.length; _i < _len; _i++) {
             w = ws[_i];
             w();
@@ -1470,25 +1470,42 @@
         return event.onDone = Event.prototype.onDone;
       };
       addWaiter = function(listener) {
-        return waiters.push(listener);
+        return waiters = (waiters || []).concat([listener]);
       };
       this.push = function(event) {
         var reply, sink, tmpSinks, _i, _len;
-        waiters = [];
-        event.onDone = addWaiter;
-        tmpSinks = sinks;
-        for (_i = 0, _len = tmpSinks.length; _i < _len; _i++) {
-          sink = tmpSinks[_i];
-          reply = sink(event);
-          if (reply === Bacon.noMore || event.isEnd()) {
-            removeSink(sink);
+        if (!pushing) {
+          try {
+            pushing = true;
+            event.onDone = addWaiter;
+            tmpSinks = sinks;
+            for (_i = 0, _len = tmpSinks.length; _i < _len; _i++) {
+              sink = tmpSinks[_i];
+              reply = sink(event);
+              if (reply === Bacon.noMore || event.isEnd()) {
+                removeSink(sink);
+              }
+            }
+          } catch (e) {
+            queue = null;
+            throw e;
+          } finally {
+            pushing = false;
           }
-        }
-        done(event);
-        if (_this.hasSubscribers()) {
-          return Bacon.more;
+          while (queue != null ? queue.length : void 0) {
+            event = _.head(queue);
+            queue = _.tail(queue);
+            _this.push(event);
+          }
+          done(event);
+          if (_this.hasSubscribers()) {
+            return Bacon.more;
+          } else {
+            return Bacon.noMore;
+          }
         } else {
-          return Bacon.noMore;
+          queue = (queue || []).concat([event]);
+          return Bacon.more;
         }
       };
       if (handleEvent == null) {
