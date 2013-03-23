@@ -148,6 +148,10 @@ This would create a stream that outputs a single value "Bacon!" and ends
 after that. The use of setTimeout causes the value to be delayed by 1
 second.
 
+`Bacon.fromNodeCallback(f)` behaves the same way as `Bacon.fromCallback`,
+except that it expects the callback to be called in the Node.js convention:
+`callback(error, data)`, where error is null if everything is fine.
+
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
 when there are subscribers to the stream. Polling ends permanently when

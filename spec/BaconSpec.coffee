@@ -50,6 +50,26 @@ describe "Bacon.fromCallback", ->
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
 
+describe "Bacon.fromNodeCallback", ->
+  it "makes an EventStream from function that takes a node-style callback", ->
+    expectStreamEvents(
+      ->
+        src = (callback) -> callback(null, "lol")
+        stream = Bacon.fromNodeCallback(src)
+      ["lol"])
+  it "handles error parameter correctly", ->
+    expectStreamEvents(
+      ->
+        src = (callback) -> callback('errortxt', null)
+        stream = Bacon.fromNodeCallback(src)
+      [error()])
+  it "supports partial application", ->
+    expectStreamEvents(
+      ->
+        src = (param, callback) -> callback(null, param)
+        stream = Bacon.fromNodeCallback(src, "lol")
+      ["lol"])
+
 describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->
     emitter = new EventEmitter()
