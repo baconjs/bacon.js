@@ -1,3 +1,7 @@
+## 0.2.4
+
+- Support Node.js style callbacks using Bacon.fromNodeCallback
+
 ## 0.2.3
 
 - Fix #120: take(n) may be triggered more than n times if event emitter is triggered in onValue callback
