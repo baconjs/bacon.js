@@ -142,6 +142,20 @@
     });
   };
 
+  Bacon.fromNodeCallback = function() {
+    var args, f;
+    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return Bacon.fromBinder(function(handler) {
+      makeFunction(f, args)(handler);
+      return nop;
+    }, function(error, value) {
+      if (error) {
+        return [new Error(error), end()];
+      }
+      return [value, end()];
+    });
+  };
+
   Bacon.fromPoll = function(delay, poll) {
     return Bacon.fromBinder(function(handler) {
       var id;
