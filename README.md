@@ -36,7 +36,9 @@ You can download the latest [generated javascript](https://raw.github.com/raimoh
 
 ..or you can use script tags to include this file directly from Github:
 
-    <script src="https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js"></script>
+```html
+<script src="https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js"></script>
+```
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -57,29 +59,37 @@ working with events and dynamic values (which are called Properties in Bacon.js)
 Anyways, you can wrap an event source, 
 say "mouse clicks on an element" into an `EventStream` by saying
 
-    var cliks = $("h1").asEventStream("click")
-    
+```js
+var cliks = $("h1").asEventStream("click")
+```
+
 Each EventStream represents a stream of events. It is an Observable object, meaning
 that you can listen to events in the stream using, for instance, the `onValue` method 
 with a callback. Like this:
 
-    cliks.onValue(function() { alert("you clicked the h1 element") })
-    
+```js
+cliks.onValue(function() { alert("you clicked the h1 element") })
+```
+
 But you can do neater stuff too. The Bacon of bacon.js is in that you can transform, 
 filter and combine these streams in a multitude of ways (see API below). The methods `map`,
 `filter`, for example, are similar to same functions in functional list programming
 (like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
 
-    var plus = $("#plus").asEventStream("click").map(1)
-    var minus = $("#minus").asEventStream("click").map(-1)
-    var both = plus.merge(minus)
+```js
+var plus = $("#plus").asEventStream("click").map(1)
+var minus = $("#minus").asEventStream("click").map(-1)
+var both = plus.merge(minus)
+```
 
 .. you'll have a stream that will output the number 1 when the "plus" button is clicked
 and another stream outputting -1 when the "minus" button is clicked. The `both` stream will
 be a merged stream containing events from both the plus and minus streams. This allows
 you to subscribe to both streams with one handler:
 
-    both.onValue(function(val) { /* val will be 1 or -1 */ })
+```js
+both.onValue(function(val) { /* val will be 1 or -1 */ })
+```
 
 In addition to EventStreams, bacon.js has a thing called `Property`, that is almost like an
 EventStream, but has a "current value". So things that change and have a current state are 
@@ -87,9 +97,11 @@ Properties, while things that consist of discrete events are EventStreams. You c
 mouse clicks as an EventStream and mouse position as a Property. You can create Properties from
 an EventStream with `scan` or `toProperty` methods. So, let's say
 
-    function add(x, y) { return x + y }
-    var counter = both.scan(0, add)
-    counter.onValue(function(sum) { $("#sum").text(sum) })
+```js
+function add(x, y) { return x + y }
+var counter = both.scan(0, add)
+counter.onValue(function(sum) { $("#sum").text(sum) })
+```
 
 The `counter` property will contain the sum of the values in the `both` stream, so it's practically 
 a counter that can be increased and decreased using the plus and minus buttons. The `scan` method 
@@ -101,16 +113,22 @@ property value and the new value from the stream.
 Properties can be very conventiently used for assigning values and attributes to DOM elements with JQuery.
 Here we assign the value of a property as the text of a span element whenever it changes:
 
-    property.assign($("span"), "text")
+```js
+property.assign($("span"), "text")
+```
 
 Hiding and showing the same span depending on the content of the property value is equally straightforward
 
-    function hiddenForEmptyValue(value) { return value == "" ? "hidden" : "visible" }
-    property.map(hiddenForEmptyValue).assign($("span"), "css", "visibility")
-    
+```js
+function hiddenForEmptyValue(value) { return value == "" ? "hidden" : "visible" }
+property.map(hiddenForEmptyValue).assign($("span"), "css", "visibility")
+```
+
 In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
 
-    $("span").css("visibility", "visible")
+```js
+$("span").css("visibility", "visible")
+```
 
 For an actual tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
     
@@ -124,9 +142,12 @@ Creating streams
 jQuery or Zepto.js object. You can pass optional arguments to add a 
 jQuery live selector and/or a function that processes the jQuery 
 event and its parameters, if given, like this:
-  `$("#my-div").asEventStream("click", ".more-specific-selector")`
-  `$("#my-div").asEventStream("click", ".more-specific-selector", function(event, args) { return args[0] })`
-  `$("#my-div").asEventStream("click", function(event, args) { return args[0] })`
+
+```js
+$("#my-div").asEventStream("click", ".more-specific-selector")
+$("#my-div").asEventStream("click", ".more-specific-selector", function(event, args) { return args[0] })
+$("#my-div").asEventStream("click", function(event, args) { return args[0] })
+```
 
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
@@ -138,11 +159,13 @@ events' parameters.
 accepts a callback. The function is supposed to call its callback just
 once. For example:
 
-    Bacon.fromCallback(function(callback) {
-      setTimeout(function() {
-        callback("Bacon!")
-      }, 1000)
-    })
+```js
+Bacon.fromCallback(function(callback) {
+  setTimeout(function() {
+    callback("Bacon!")
+  }, 1000)
+})
+```
 
 This would create a stream that outputs a single value "Bacon!" and ends
 after that. The use of setTimeout causes the value to be delayed by 1
@@ -152,11 +175,13 @@ second.
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
 
-    var Bacon = require('baconjs').Bacon,
-        fs = require('fs');
-    var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
-    read.onError(function(error) { console.log("Reading failed: " + error); });
-    read.onValue(function(value) { console.log("Read contents: " + value); });
+```js
+var Bacon = require('baconjs').Bacon,
+    fs = require('fs');
+var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
+read.onError(function(error) { console.log("Reading failed: " + error); });
+read.onValue(function(value) { console.log("Read contents: " + value); });
+```
 
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
@@ -199,21 +224,25 @@ The EventStream constructor for custom streams
 
 If none of the factory methods above apply, you may of course roll your own EventStream by using the constructor:
 
-    new EventStream(subscribe)
+```js
+new EventStream(subscribe)
+```
 
 The parameter `subscribe` is a function that accepts an subscriber which is a function that will receive Events.
 
 For example:
 
-    new Bacon.EventStream(function(subscriber) {
-      subscriber(new Bacon.Next("a value here"))
-      subscriber(new Bacon.Next(function() { 
-        return "This one will be evaluated lazily"
-      }))
-      subscriber(new Bacon.Error("oops, an error"))
-      subscriber(new Bacon.End())
-      return function() { // unsub functionality here, this one's a no-op }
-    })
+```js
+new Bacon.EventStream(function(subscriber) {
+  subscriber(new Bacon.Next("a value here"))
+  subscriber(new Bacon.Next(function() { 
+    return "This one will be evaluated lazily"
+  }))
+  subscriber(new Bacon.Error("oops, an error"))
+  subscriber(new Bacon.End())
+  return function() { // unsub functionality here, this one's a no-op }
+})
+```
 
 The subscribe function must return a function. Let's call that function 
 `unsubscribe`. The returned function can be used by the subscriber to 
@@ -231,11 +260,14 @@ so prepare for multiple calls to the subscribe function.
 
 A note about the `new Bacon.Next(..)` constructor: You can use it like
 
-    new Bacon.Next("value")
+```js
+new Bacon.Next("value")
+```
 
 But the canonical way would be
-
-    new Bacon.Next(function() { return "value") })
+```js
+new Bacon.Next(function() { return "value") })
+```
 
 The former version is safe only when you know that the actual value in
 the stream is not a function.
@@ -293,10 +325,14 @@ ignored
 
 `observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
 
-    var delayed = source.delay(2)
-    
-    source:    asdf----asdf----
-    delayed:   --asdf----asdf--
+```js
+var delayed = source.delay(2)
+```
+  
+```
+source:    asdf----asdf----
+delayed:   --asdf----asdf--
+```
 
 `observable.throttle(delay)` throttles stream/property by given amount
 of milliseconds. Events are emitted with the minimum interval of
@@ -305,10 +341,14 @@ Does not affect emitting the initial value of a Property.
 
 Example:
 
-    var throttled = source.throttle(2)
+```js
+var throttled = source.throttle(2)
+```
 
-    source:    asdf----asdf----
-    throttled: --s--f----s--f--
+```
+source:    asdf----asdf----
+throttled: --s--f----s--f--
+```
 
 `observable.debounce(delay)` throttles stream/property by given amount
 of milliseconds, but so that event is only emitted after the given
@@ -318,10 +358,14 @@ same methods in jQuery.
 
 Example:
 
-    var debounced = source.debounce(2)
-    
-    source:    asdf----asdf----
-    debounce: -----f-------f--
+```js
+var debounced = source.debounce(2)
+```
+
+```
+source:    asdf----asdf----
+debounce: -----f-------f--
+```
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -345,9 +389,11 @@ stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()
 
 Example - converting strings to integers, skipping empty values:
 
-    stream.flatMap(function(text) {
-        return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
-    })
+```js
+stream.flatMap(function(text) {
+    return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
+})
+```
 
 `observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
@@ -364,8 +410,10 @@ the accumulator value and the new stream value is used as argument.
 
 Example:
 
-    var plus = function (a,b) { return a + b }
-    Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+```js
+var plus = function (a,b) { return a + b }
+Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+```
 
 This would result to following elements in the result stream:
 
@@ -388,8 +436,10 @@ the previous value will be the given start.
 
 Example:
 
-    var distance = function (a,b) { return Math.abs(b - a) }
-    Bacon.sequentially(1, [1,2,3]).diff(0, distance)
+```js
+var distance = function (a,b) { return Math.abs(b - a) }
+Bacon.sequentially(1, [1,2,3]).diff(0, distance)
+```
 
 This would result to following elements in the result stream:
 
@@ -410,11 +460,15 @@ that as a side-effect, the observable will have a constant listener and
 will not be garbage-collected. So, use this for debugging only and
 remove from production code. For example:
 
-    myStream.log("New event in myStream")
+```js
+myStream.log("New event in myStream")
+```
 
 or just
 
-    myStream.log()
+```js
+myStream.log()
+```
 
 
 EventStream
@@ -458,7 +512,9 @@ and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 of a delay. Here's a simple example, which is equivalent to
 stream.bufferWithTime(10):
 
-    stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+```js
+stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+```
 
 `stream.bufferWithCount(count)` buffers stream events with given count.
 The buffer is flushed when it contains the given number of elements. So, if
@@ -479,7 +535,9 @@ stream1 is awaiting stream2, i.e. has produced a value after the latest
 value from stream2. This is handy for keeping track whether we are
 currently awaiting an AJAX response:
 
-    var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
+```js
+var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
+```
 
 Property
 --------
@@ -512,12 +570,16 @@ arguments which will be used as the first arguments of the method call.
 For instance, if you want to assign your Property to the "disabled"
 attribute of a JQuery object, you can do this:
 
-    myProperty.assign($("#my-button"), "attr", "disabled")
+```js
+myProperty.assign($("#my-button"), "attr", "disabled")
+```
 
 A simpler example would be to toggle the visibility of an element based
 on a Property:
 
-    myProperty.assign($("#my-button"), "toggle")
+```js
+myProperty.assign($("#my-button"), "toggle")
+```
 
 Note that the `assign` method is actually just a synonym for `onValue` and
 the function construction rules below apply to both.
@@ -564,12 +626,16 @@ bit like a switch-case or the decode function in Oracle SQL. For
 example, the following would map the value 1 into the the string "mike" 
 and the value 2 into the value of the `who` property.
 
-    property.decode({1 : "mike", 2 : who})
+```js
+property.decode({1 : "mike", 2 : who})
+```
 
 This is actually based on `combineTemplate` so you can compose static
 and dynamic data quite freely, as in
 
-    property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
+```js
+property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
+```
 
 Combining multiple streams and properties
 -----------------------------------------
@@ -605,26 +671,32 @@ arrays into a single array property, with Bacon.combineWith(properties,
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
 
-    var password, username, firstname, lastname; // <- properties or streams
-    var loginInfo = Bacon.combineTemplate({
-        userid: username, 
-        passwd: password, 
-        name: { first: firstname, last: lastname }})
+```js
+var password, username, firstname, lastname; // <- properties or streams
+var loginInfo = Bacon.combineTemplate({
+    userid: username, 
+    passwd: password, 
+    name: { first: firstname, last: lastname }})
+```
 
 .. and your new loginInfo property will combine values from all these
 streams using that template, whenever any of the streams/properties 
 get a new value. For instance, it could yield a value such as
 
-    { userid: "juha", 
-      passwd: "easy", 
-      name : { first: "juha", last: "paananen" }}
+```js
+{ userid: "juha", 
+  passwd: "easy", 
+  name : { first: "juha", last: "paananen" }}
+```
 
 In addition to combining data from streams, you can include constant
 values in your templates.
 
 Note that all Bacon.combine* methods produce a Property instead of an EventStream. If you need the result as an EventStream you might want to use property.changes()
 
-    Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
+```js
+Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
+```
 
 Function Construction rules
 ---------------------------
@@ -950,8 +1022,10 @@ Sure. Works. Try it out.
 
 Then type `node` and try the following
 
-    Bacon = require("baconjs").Bacon
-    Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
+```js
+Bacon = require("baconjs").Bacon
+Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
+```
 
 Why Bacon?
 ==========
