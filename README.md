@@ -152,23 +152,11 @@ second.
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
 
-    Bacon.fromNodeCallback(function(callback) {
-      setTimeout(function() {
-        callback(null, "Bacon!")
-      }, 1000)
-    })
-
-The result is exactly the same as with the `fromCallback` example. Now let's
-see an error:
-
-    Bacon.fromNodeCallback(function(callback) {
-      setTimeout(function() {
-        callback('error', null)
-      }, 1000)
-    })
-
-This creates a stream that, after one second, will output a `Bacon.Error`
-event object. The `error` field of the event is set to the string 'error'.
+    var Bacon = require('baconjs').Bacon,
+        fs = require('fs');
+    var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
+    read.onError(function(error) { console.log("Reading failed: " + error); });
+    read.onValue(function(value) { console.log("Read contents: " + value); });
 
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
