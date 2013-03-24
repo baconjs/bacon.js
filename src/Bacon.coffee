@@ -88,6 +88,14 @@ Bacon.fromCallback = (f, args...) ->
     nop
   , (value) -> [value, end()]
 
+Bacon.fromNodeCallback = (f, args...) ->
+  Bacon.fromBinder (handler) ->
+    makeFunction(f, args)(handler)
+    nop
+  , (error, value) ->
+      return [new Error(error), end()] if error
+      [value, end()]
+
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
     id = setInterval(handler, delay)
