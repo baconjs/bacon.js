@@ -17,10 +17,10 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
       try
         for event in value 
           reply = sink(event = toEvent(event))
-          unbind() if reply == Bacon.noMore or event.isEnd?()
+          unbind() if reply == Bacon.noMore or event.isEnd()
       catch e
         # make sure the stream ends even if an exception is thrown
-        unbind() if _.last(value).isEnd()
+        unbind() if _.last(value).isEnd?()
         throw e
 
 # eventTransformer - defaults to returning the first argument to handler
