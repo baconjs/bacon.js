@@ -28,7 +28,7 @@
         }
       };
       return unbinder = binder(function() {
-        var args, event, reply, value, _i, _len, _results;
+        var args, event, reply, value, _base, _i, _len, _results;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         value = eventTransformer.apply(null, args);
         if (!(value instanceof Array && _.last(value) instanceof Event)) {
@@ -47,7 +47,7 @@
           }
           return _results;
         } catch (e) {
-          if (_.last(value).isEnd()) {
+          if (typeof (_base = _.last(value)).isEnd === "function" ? _base.isEnd() : void 0) {
             unbind();
           }
           throw e;
