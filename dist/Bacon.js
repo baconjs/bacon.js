@@ -1002,7 +1002,7 @@
       var args;
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       this.subscribe(function(event) {
-        return console.log.apply(console, __slice.call(args).concat([event.describe()]));
+        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, __slice.call(args).concat([event.describe()])) : void 0 : void 0;
       });
       return this;
     };
