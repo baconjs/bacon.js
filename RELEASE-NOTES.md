@@ -1,3 +1,7 @@
+## 0.2.6
+
+- Fix error handling bug in fromBinder
+
 ## 0.2.5
 
 - log() does not crash if console or console.log is undefined
