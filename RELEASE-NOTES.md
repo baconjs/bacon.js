@@ -1,6 +1,6 @@
 ## 0.2.6
 
-- Fix error handling bug in fromBinder
+- Fix #129: error handling bug in fromBinder
 
 ## 0.2.5
 
