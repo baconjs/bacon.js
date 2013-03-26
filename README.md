@@ -447,6 +447,27 @@ This would result to following elements in the result stream:
     2 - 1 = 1
     3 - 2 = 1
 
+`observable.zip(streams..., f)` return an EventStream with elements
+pair-wise lined up from each stream. A zipped stream will publish only
+when it has a value from each stream and will only produce values up
+to when any single stream ends.
+
+Be careful not to have too much "drift" between streams. If one stream
+produces many more values than some other excessive buffering will
+occur inside the zipped observable. 
+
+Example:
+
+You can use zip to combine observables that are pairwise synchronized
+from e.g. projections or sampling by the same property, while avoiding
+the double-processing that would happen recombining with `combine`.
+
+```js
+var x = obs.map('.x')
+var y = obs.map('.y')
+x.zipWith(y, makeComplex)
+```
+
 `observable.slidingWindow(n)` returns a Property that represents a
 "sliding window" into the history of the values of the Observable. For
 example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the

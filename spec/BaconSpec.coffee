@@ -955,6 +955,28 @@ describe "Property.diff", ->
       -> series(1, [2]).toProperty(1).diff(null, add)
       [1, 3])
 
+describe "EventStream.zip", ->
+  it "pairwise combines values from two streams, passing through errors", ->
+    expectStreamEvents(
+      -> series(1, [1, error(), 2, 3]).zip(series(1, ['a', 'b', error(), 'c']), Array)
+      [[1, 'a'], error(), [2, 'b'], error(), [3, 'c']])
+  it "completes as soon as possible", ->
+    expectStreamEvents(
+      -> series(1, [1]).zip(series(1, ['a', 'b', 'c']), Array)
+      [[1, 'a']])
+  it "can zip an observable with itself", ->
+    expectStreamEvents(
+      -> 
+        obs = series(1, ['a', 'b', 'c'])
+        obs.zip(obs.skip(1), Array)
+      [['a', 'b'], ['b', 'c']])
+  it "is n-ary", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        obs.zip(obs.skip(1), obs.skip(2), Array)
+    [[1, 2, 3], [2, 3, 4]])
+
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
     expectPropertyEvents(
