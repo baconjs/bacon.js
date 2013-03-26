@@ -121,8 +121,23 @@ describe "Bacon.fromEventTarget", ->
     expect(emitter.listeners("click").length).toEqual(0)
 
 describe "Observable.log", ->
+  preservingLog = (f) ->
+    originalConsole = console
+    originalLog = console.log
+    try
+      f()
+    finally
+      global.console = originalConsole
+      console.log = originalLog
+
   it "does not crash", ->
-    Bacon.constant(1).log
+    preservingLog ->
+      console.log = ->
+      Bacon.constant(1).log()
+  it "does not crash in case console.log is not defined", ->
+    preservingLog ->
+      console.log = undefined
+      Bacon.constant(1).log()
 
 describe "Observable.slidingWindow", ->
   it "slides the window for EventStreams", ->

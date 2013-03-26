@@ -494,7 +494,7 @@ class Observable
       f(value).takeUntil(stream)
   not: -> @map((x) -> !x)
   log: (args...) ->
-    @subscribe (event) -> console.log(args..., event.describe())
+    @subscribe (event) -> console?.log?(args..., event.describe())
     this
   slidingWindow: (n) -> 
     @scan [], (window, value) ->

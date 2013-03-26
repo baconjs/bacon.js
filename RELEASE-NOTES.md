@@ -1,3 +1,7 @@
+## 0.2.5
+
+- log() does not crash if console or console.log is undefined
+
 ## 0.2.4
 
 - Support Node.js style callbacks using Bacon.fromNodeCallback
