@@ -457,7 +457,9 @@ class Observable
           checkEnd()
         else if event.isError()
           sink event
-        else if (not children.length) or (not firstOnly)
+        else if firstOnly and children.length
+          Bacon.more
+        else
           child = f event.value()
           unsubChild = undefined
           childEnded = false
@@ -479,8 +481,6 @@ class Observable
               reply
           unsubChild = child.subscribe handler
           children.push unsubChild if not childEnded
-        else
-          Bacon.more
       unsubRoot = root.subscribe(spawner)
       unbind
 
