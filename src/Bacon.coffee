@@ -133,6 +133,41 @@ Bacon.combineAll = (streams, f) ->
 Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
+Bacon.zipWith = (streams..., f) ->
+    # result is a property iff. all involved streams are
+    # properties, otherwise the result is an event stream
+    if _.all(s instanceof Property for s in streams)
+      ctor = (subs) -> new Property(subs)
+    else
+      ctor = (subs) -> new EventStream(subs)
+      for s,i in streams
+        streams[i] = s.changes() if s instanceof Property
+    ctor (sink) ->
+      bufs = ([] for s in streams)
+      unsubscribed = false
+      unsubs = (nop for s in streams)
+      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
+      zipSink = (e) ->
+        reply = sink e
+        if reply == Bacon.noMore or e.isEnd()
+          unsubAll()
+        reply
+      handle = (i) -> (e) ->
+       if e.isError()
+         zipSink e
+       else
+         bufs[i].push(e)
+         if not e.isEnd() and _.all(b.length for b in bufs)
+           vs = (b.shift().value() for b in bufs)
+           reply = zipSink e.apply _.always f(vs ...)
+         if _.any(b.length and b[0].isEnd() for b in bufs)
+           reply = zipSink end()
+         reply or Bacon.more
+      for s,j in streams
+        unsubs[j] = do (i=j) ->
+          s.subscribe (handle i) unless unsubscribed
+      unsubAll
+
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
@@ -435,40 +470,9 @@ class Observable
       unsub
     new Property(new PropertyDispatcher(subscribe).subscribe)  
 
-  zip: (streams...) ->
-    @zipWith streams.concat([Array])...
+  zip: (other, f = Array) ->
+    Bacon.zipWith(this,other,f)
 
-  zipWith: (streams..., f) ->
-    streams = [this].concat(streams)
-    if _.all(s instanceof Property for s in streams)
-      ctor = (subs) -> new Property(subs)
-    else 
-      ctor = (subs) -> new EventStream(subs)
-      for s,i in streams
-        streams[i] = s.changes() if s instanceof Property
-    ctor (sink) ->
-      bufs = ([] for s in streams)
-      zipSink = (e) ->
-        reply = sink e
-        if reply == Bacon.noMore or e.isEnd()
-          unsubAll()
-        reply
-      unsubs = for s,j in streams
-        do (i=j) ->
-          s.subscribe (e) ->
-            if e.isError()
-              zipSink e
-            else
-              bufs[i].push(e)
-              if not e.isEnd() and _.all(b.length for b in bufs)
-                vs = (b.shift().value() for b in bufs)
-                reply = zipSink e.apply _.always f(vs ...)
-              if _.any(b.length and b[0].isEnd() for b in bufs)
-                reply = zipSink end()
-              reply or Bacon.more
-      unsubAll = ->
-         f() for f in unsubs
-  
   diff: (start, f) -> 
     f = toCombinator(f)
     @scan([start], (prevTuple, next) -> 

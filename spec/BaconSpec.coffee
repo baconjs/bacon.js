@@ -970,12 +970,14 @@ describe "EventStream.zip", ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
+  
+describe "Bacon.zipWith", ->  
   it "is n-ary", ->
     expectStreamEvents(
       ->
         obs = series(1, [1, 2, 3, 4])
-        obs.zip(obs.skip(1), obs.skip(2))
-    [[1, 2, 3], [2, 3, 4]])
+        Bacon.zipWith(obs, obs.skip(1), obs.skip(2), ((x,y,z) -> (x + y + z)))
+    [1 + 2 + 3, 2 + 3 + 4])
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
