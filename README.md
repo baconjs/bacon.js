@@ -465,7 +465,7 @@ the double-processing that would happen recombining with `combine`.
 ```js
 var x = obs.map('.x')
 var y = obs.map('.y')
-x.zipWith(y, makeComplex)
+x.zip(y, makeComplex)
 ```
 
 `observable.slidingWindow(n)` returns a Property that represents a
