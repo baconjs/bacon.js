@@ -127,6 +127,35 @@ Bacon.combineAll = (streams, f) ->
 Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
+Bacon.zipWith = (streams..., f) ->
+    new EventStream (sink) ->
+      bufs = ([] for s in streams)
+      unsubscribed = false
+      unsubs = (nop for s in streams)
+      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
+      zipSink = (e) ->
+        reply = sink e
+        if reply == Bacon.noMore or e.isEnd()
+          unsubAll()
+        reply
+      handle = (i) -> (e) ->
+       if e.isError()
+         zipSink e
+       else if e.isInitial()
+         Bacon.more
+       else
+         bufs[i].push(e)
+         if not e.isEnd() and _.all(b.length for b in bufs)
+           vs = (b.shift().value() for b in bufs)
+           reply = zipSink e.apply _.always f(vs ...)
+         if _.any(b.length and b[0].isEnd() for b in bufs)
+           reply = zipSink end()
+         reply or Bacon.more
+      for s,j in streams
+        unsubs[j] = do (i=j) ->
+          s.subscribe (handle i) unless unsubscribed
+      unsubAll
+
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
@@ -428,6 +457,9 @@ class Observable
             unsub = nop
       unsub
     new Property(new PropertyDispatcher(subscribe).subscribe)  
+
+  zip: (other, f = Array) ->
+    Bacon.zipWith(this,other,f)
 
   diff: (start, f) -> 
     f = toCombinator(f)
@@ -981,6 +1013,10 @@ _ = {
     for x in xs
       return false if not x
     return true
+  any: (xs) ->
+    for x in xs
+      return true if x
+    return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
 }
