@@ -134,15 +134,7 @@ Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
 Bacon.zipWith = (streams..., f) ->
-    # result is a property iff. all involved streams are
-    # properties, otherwise the result is an event stream
-    if _.all(s instanceof Property for s in streams)
-      ctor = (subs) -> new Property(subs)
-    else
-      ctor = (subs) -> new EventStream(subs)
-      for s,i in streams
-        streams[i] = s.changes() if s instanceof Property
-    ctor (sink) ->
+    new EventStream (sink) ->
       bufs = ([] for s in streams)
       unsubscribed = false
       unsubs = (nop for s in streams)
@@ -155,6 +147,8 @@ Bacon.zipWith = (streams..., f) ->
       handle = (i) -> (e) ->
        if e.isError()
          zipSink e
+       else if e.isInitial()
+         Bacon.more
        else
          bufs[i].push(e)
          if not e.isEnd() and _.all(b.length for b in bufs)
