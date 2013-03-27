@@ -1,3 +1,7 @@
+## 0.2.7
+
+- Removed exception-catching in fromBinder
+
 ## 0.2.6
 
 - Fix #129: error handling bug in fromBinder
