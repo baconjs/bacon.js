@@ -17,41 +17,31 @@
       eventTransformer = _.id;
     }
     return new EventStream(function(sink) {
-      var unbind, unbinder;
-      unbind = function() {
-        if (typeof unbinder !== "undefined" && unbinder !== null) {
-          return unbinder();
-        } else {
-          return setTimeout((function() {
-            return unbinder();
-          }), 0);
-        }
-      };
+      var unbinder;
       return unbinder = binder(function() {
-        var args, event, reply, value, _base, _i, _len, _results;
+        var args, event, reply, value, _i, _len, _results;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         value = eventTransformer.apply(null, args);
         if (!(value instanceof Array && _.last(value) instanceof Event)) {
           value = [value];
         }
-        try {
-          _results = [];
-          for (_i = 0, _len = value.length; _i < _len; _i++) {
-            event = value[_i];
-            reply = sink(event = toEvent(event));
-            if (reply === Bacon.noMore || event.isEnd()) {
-              _results.push(unbind());
+        _results = [];
+        for (_i = 0, _len = value.length; _i < _len; _i++) {
+          event = value[_i];
+          reply = sink(event = toEvent(event));
+          if (reply === Bacon.noMore || event.isEnd()) {
+            if (unbinder != null) {
+              _results.push(unbinder());
             } else {
-              _results.push(void 0);
+              _results.push(setTimeout((function() {
+                return unbinder();
+              }), 0));
             }
+          } else {
+            _results.push(void 0);
           }
-          return _results;
-        } catch (e) {
-          if (typeof (_base = _.last(value)).isEnd === "function" ? _base.isEnd() : void 0) {
-            unbind();
-          }
-          throw e;
         }
+        return _results;
       });
     });
   };
