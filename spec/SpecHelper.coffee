@@ -3,7 +3,7 @@ _ = Bacon._
 
 browser = (typeof window) != "undefined"
 console.log("in browser") if browser
-timeUnitMillisecs = if browser then 50 else 10
+timeUnitMillisecs = if browser then 50 else 30
 @t = (time) -> time * timeUnitMillisecs
 seqs = []
 

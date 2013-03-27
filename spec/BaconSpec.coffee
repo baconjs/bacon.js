@@ -342,6 +342,13 @@ describe "Property.flatMapLatest", ->
       -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"])
 
+describe "EventStream.flatMapFirst", ->
+  it "spawns new streams and ignores source events until current spawned stream has ended", ->
+    expectStreamEvents(
+      -> series(2, [2, 4, 6, 8]).flatMapFirst (value) ->
+        series(1, ["a" + value, "b" + value, "c" + value])
+      ["a2", "b2", "c2", "a6", "b6", "c6"])
+
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents( 
@@ -367,7 +374,7 @@ describe "EventStream.delay", ->
         left.merge(right)
       [error(), 1, 2, 3, 4, 5, 6])
 
-describe "EventStream.debounce", ->
+describe "EventStream.debounce(delay)", ->
   it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).debounce(t(7))
@@ -376,6 +383,12 @@ describe "EventStream.debounce", ->
     expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounce(t(3))
       [[11, 4]])
+
+describe "EventStream.debounceImmediate(delay)", ->
+  it "outputs first event immediately, then ignores events for given amount of milliseconds", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
+      [[2, 1], [6, 3]])
 
 describe "EventStream.throttle(delay)", ->
   it "outputs at steady intervals, without waiting for quite period", ->
