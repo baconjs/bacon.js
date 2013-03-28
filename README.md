@@ -724,14 +724,6 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 
 `Bacon.mergeAll(streams)` merges given array of EventStreams.
 
-`Bacon.combineAll(streams, f)` combines given list of streams/properties
-using the given combinator function `f(s1, s2)`. The function is applied in a
-fold-like fashion: the first two streams are given to the function
-first. Then the result of this operation is combined with the third
-stream and so on. In this variant, the combinator function is applied to
-the streams themselves, not the stream values.
-
-
 `Bacon.zipAsArray(streams)` zips the array of stream in to a new
 EventStream that will have an array of values from each source stream as
 its value. Zipping means that events from each stream are combine

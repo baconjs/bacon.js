@@ -1,6 +1,7 @@
 ## 0.3.0
 
 - Change combineWith behavior (#124)
+- Remove combineAll which had a confusing name and no known uses
 
 ## 0.2.8
 
