@@ -203,6 +203,7 @@ Bacon.combineAsArray = (streams, more...) ->
           (-> ends[index] = true) 
           ((x) -> values[index] = new Some(x)))
       for stream, index in streams
+        stream = Bacon.constant(stream) if not (stream instanceof Observable)
         unsubs[index] = stream.subscribe (sinkFor index) unless unsubscribed
       unsubAll
   else

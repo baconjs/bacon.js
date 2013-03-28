@@ -2,6 +2,8 @@
 
 - Change combineWith behavior (#124)
 - Remove combineAll which had a confusing name and no known uses
+- Support constants instead of Observables as arguments of
+  combineAsArray, combineWith
 
 ## 0.2.8
 

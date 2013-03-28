@@ -673,33 +673,43 @@ property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
 Combining multiple streams and properties
 -----------------------------------------
 
-`Bacon.combineAsArray(streams)` combines Properties and EventStreams so 
-that the result Property will have an array of all property values as its value.
-The input array may contain both Properties and EventStreams. In the
-latter case, the stream is first converted into a Property and then
-combined with the other properties.
+`Bacon.combineAsArray(streams)` combines Properties, EventStreams and
+constant values so that the result Property will have an array of all 
+property values as its value. The input array may contain both Properties 
+and EventStreams. In the latter case, the stream is first converted into
+a Property and then combined with the other properties.
 
 `Bacon.combineAsArray(s1, s2, ...) just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
-`Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* streams/properties
-using the given n-ary function `f(v1, v2 ...)`. To calculate the current 
-sum of three numeric Properties, you can do
+```js
+property = Bacon.constant(1)
+stream = Bacon.once(2)
+constant = 3
+Bacon.combineAsArray(property, stream, constant)
+# produces the value [1,2,3]
+```
+
+`Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* Properties, 
+EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`. 
+To calculate the current sum of three numeric Properties, you can do
 
 ```js
 function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 
-`Bacon.combineTemplate(template)` combines streams using a template
+`Bacon.combineTemplate(template)` combines Properties, EventStreams and
+constant values using a template
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
 
 ```js
 var password, username, firstname, lastname; // <- properties or streams
 var loginInfo = Bacon.combineTemplate({
-    userid: username, 
-    passwd: password, 
+    magicNumber: 3,
+    userid: username,
+    passwd: password,
     name: { first: firstname, last: lastname }})
 ```
 
@@ -708,15 +718,17 @@ streams using that template, whenever any of the streams/properties
 get a new value. For instance, it could yield a value such as
 
 ```js
-{ userid: "juha", 
-  passwd: "easy", 
+{ magicNumer: 3,
+  userid: "juha",
+  passwd: "easy",
   name : { first: "juha", last: "paananen" }}
 ```
 
 In addition to combining data from streams, you can include constant
 values in your templates.
 
-Note that all Bacon.combine* methods produce a Property instead of an EventStream. If you need the result as an EventStream you might want to use property.changes()
+Note that all Bacon.combine* methods produce a Property instead of an EventStream.
+If you need the result as an EventStream you might want to use property.changes()
 
 ```js
 Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()

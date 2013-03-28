@@ -793,14 +793,18 @@ describe "Bacon.combineAsArray", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray([])
       [[]])
+  it "accepts constant values instead of Observables", ->
+    expectPropertyEvents(
+      -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
+    [[1,2,3]])
 
 describe "Bacon.combineWith", ->
-  it "combines n properties using an n-ary function", ->
+  it "combines n properties, streams and constants using an n-ary function", ->
     expectPropertyEvents(
       ->
         stream = series(1, [1, 2])
         f = (x, y, z) -> x + y + z
-        Bacon.combineWith(f, stream, Bacon.constant(10), Bacon.constant(100))
+        Bacon.combineWith(f, stream, Bacon.constant(10), 100)
       [111, 112])
 
 describe "Boolean logic", ->
