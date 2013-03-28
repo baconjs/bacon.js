@@ -211,6 +211,109 @@
     });
   };
 
+  Bacon.zipAsArray = function() {
+    var more, streams;
+    streams = arguments[0], more = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!(streams instanceof Array)) {
+      streams = [streams].concat(more);
+    }
+    return Bacon.zipWith(streams, Array);
+  };
+
+  Bacon.zipWith = function(streams, f) {
+    return new EventStream(function(sink) {
+      var bufs, handle, j, s, unsubAll, unsubs, unsubscribed, zipSink, _i, _len;
+      bufs = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = streams.length; _i < _len; _i++) {
+          s = streams[_i];
+          _results.push([]);
+        }
+        return _results;
+      })();
+      unsubscribed = false;
+      unsubs = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = streams.length; _i < _len; _i++) {
+          s = streams[_i];
+          _results.push(nop);
+        }
+        return _results;
+      })();
+      unsubAll = (function() {
+        var _i, _len;
+        for (_i = 0, _len = unsubs.length; _i < _len; _i++) {
+          f = unsubs[_i];
+          f();
+        }
+        return unsubscribed = true;
+      });
+      zipSink = function(e) {
+        var reply;
+        reply = sink(e);
+        if (reply === Bacon.noMore || e.isEnd()) {
+          unsubAll();
+        }
+        return reply;
+      };
+      handle = function(i) {
+        return function(e) {
+          var b, reply, vs;
+          if (e.isError()) {
+            return zipSink(e);
+          } else if (e.isInitial()) {
+            return Bacon.more;
+          } else {
+            bufs[i].push(e);
+            if (!e.isEnd() && _.all((function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = bufs.length; _i < _len; _i++) {
+                b = bufs[_i];
+                _results.push(b.length);
+              }
+              return _results;
+            })())) {
+              vs = (function() {
+                var _i, _len, _results;
+                _results = [];
+                for (_i = 0, _len = bufs.length; _i < _len; _i++) {
+                  b = bufs[_i];
+                  _results.push(b.shift().value());
+                }
+                return _results;
+              })();
+              reply = zipSink(e.apply(_.always(f.apply(null, vs))));
+            }
+            if (_.any((function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = bufs.length; _i < _len; _i++) {
+                b = bufs[_i];
+                _results.push(b.length && b[0].isEnd());
+              }
+              return _results;
+            })())) {
+              reply = zipSink(end());
+            }
+            return reply || Bacon.more;
+          }
+        };
+      };
+      for (j = _i = 0, _len = streams.length; _i < _len; j = ++_i) {
+        s = streams[j];
+        unsubs[j] = (function(i) {
+          if (!unsubscribed) {
+            return s.subscribe(handle(i));
+          }
+        })(j);
+      }
+      return unsubAll;
+    });
+  };
+
   Bacon.combineAsArray = function() {
     var more, s, streams, values,
       _this = this;
@@ -891,6 +994,13 @@
         return unsub;
       };
       return new Property(new PropertyDispatcher(subscribe).subscribe);
+    };
+
+    Observable.prototype.zip = function(other, f) {
+      if (f == null) {
+        f = Array;
+      }
+      return Bacon.zipWith([this, other], f);
     };
 
     Observable.prototype.diff = function(start, f) {
@@ -2020,6 +2130,16 @@
         }
       }
       return true;
+    },
+    any: function(xs) {
+      var x, _i, _len;
+      for (_i = 0, _len = xs.length; _i < _len; _i++) {
+        x = xs[_i];
+        if (x) {
+          return true;
+        }
+      }
+      return false;
     },
     without: function(x, xs) {
       return _.filter((function(y) {
