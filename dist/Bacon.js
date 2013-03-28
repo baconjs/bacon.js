@@ -193,22 +193,16 @@
     };
   };
 
-  Bacon.combineAll = function(streams, f) {
+  Bacon.mergeAll = function(streams) {
     var next, stream, _i, _len, _ref1;
     assertArray(streams);
     stream = _.head(streams);
     _ref1 = _.tail(streams);
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       next = _ref1[_i];
-      stream = f(stream, next);
+      stream = stream.merge(next);
     }
     return stream;
-  };
-
-  Bacon.mergeAll = function(streams) {
-    return Bacon.combineAll(streams, function(s1, s2) {
-      return s1.merge(s2);
-    });
   };
 
   Bacon.zipAsArray = function() {
@@ -423,6 +417,9 @@
         };
         for (index = _i = 0, _len = streams.length; _i < _len; index = ++_i) {
           stream = streams[index];
+          if (!(stream instanceof Observable)) {
+            stream = Bacon.constant(stream);
+          }
           if (!unsubscribed) {
             unsubs[index] = stream.subscribe(sinkFor(index));
           }
@@ -434,9 +431,11 @@
     }
   };
 
-  Bacon.combineWith = function(streams, f) {
-    return Bacon.combineAll(streams, function(s1, s2) {
-      return s1.toProperty().combine(s2, f);
+  Bacon.combineWith = function() {
+    var f, streams;
+    f = arguments[0], streams = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return Bacon.combineAsArray(streams).map(function(values) {
+      return f.apply(null, values);
     });
   };
 
