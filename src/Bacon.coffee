@@ -76,7 +76,7 @@ Bacon.repeatedly = (delay, values) ->
   index = 0
   Bacon.fromPoll(delay, -> values[index++ % values.length])
 
-Bacon.fromCallback = (f, args...) ->
+Bacon._fromCallback = (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
@@ -90,16 +90,16 @@ Bacon._fromNodeCallback = (f, args...) ->
       return [new Error(error), end()] if error
       [value, end()]
 
-Bacon.fromNodeCallback = (f, args...) ->
-  observables = _.filter ((x) -> x instanceof Bacon.Observable), args
-  return Bacon._fromNodeCallback(f, args...) if observables.length == 0
-  stream = partiallyApplied(Bacon._fromNodeCallback, [(observableValues, callback) ->
+primitiveOrObservableParametersWrapper = (wrapped) ->
+  return (f, args...) ->
     for arg, i in args
-      continue unless arg instanceof Observable
-      args[i] = observableValues.shift()
-    args.push(callback)
-    f(args...)])
-  Bacon.combineAsArray(observables).flatMap(stream)
+      args[i] = Bacon.constant(arg) unless arg instanceof Observable
+    stream = partiallyApplied(wrapped, [(observableValues, callback) ->
+      f(observableValues..., callback)])
+    Bacon.combineAsArray(args).flatMap(stream)
+
+Bacon.fromCallback = primitiveOrObservableParametersWrapper(Bacon._fromCallback)
+Bacon.fromNodeCallback = primitiveOrObservableParametersWrapper(Bacon._fromNodeCallback)
 
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
