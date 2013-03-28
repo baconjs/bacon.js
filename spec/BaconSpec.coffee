@@ -971,10 +971,14 @@ describe "Property.diff", ->
       [1, 3])
 
 describe "EventStream.zip", ->
-  it "pairwise combines values from two streams, passing through errors", ->
+  it "pairwise combines values from two streams", ->
     expectStreamEvents(
-      -> series(1, [1, error(), 2, 3]).zip(series(1, ['a', 'b', error(), 'c']))
-      [[1, 'a'], error(), [2, 'b'], error(), [3, 'c']])
+      -> series(1, [1, 2, 3]).zip(series(1, ['a', 'b', 'c']))
+      [[1, 'a'], [2, 'b'], [3, 'c']])
+  it "passes through errors", ->
+    expectStreamEvents(
+      -> series(2, [1, error(), 2]).zip(series(2, ['a', 'b']).delay(1))
+      [[1, 'a'], error(), [2, 'b']])
   it "completes as soon as possible", ->
     expectStreamEvents(
       -> series(1, [1]).zip(series(1, ['a', 'b', 'c']))
@@ -985,13 +989,26 @@ describe "EventStream.zip", ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
-  
-describe "Bacon.zipWith", ->  
-  it "is n-ary", ->
+
+describe "Bacon.zipAsArray", ->
+  it "zips an array of streams into a stream of arrays", ->
     expectStreamEvents(
       ->
         obs = series(1, [1, 2, 3, 4])
-        Bacon.zipWith(obs, obs.skip(1), obs.skip(2), ((x,y,z) -> (x + y + z)))
+        Bacon.zipAsArray([obs, obs.skip(1), obs.skip(2)])
+    [[1 , 2 , 3], [2 , 3 , 4]])
+  it "supports n-ary syntax", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        Bacon.zipAsArray(obs, obs.skip(1))
+    [[1 , 2], [2 , 3], [3, 4]])
+describe "Bacon.zipWith", ->  
+  it "zips an array of streams with given function", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        Bacon.zipWith([obs, obs.skip(1), obs.skip(2)], ((x,y,z) -> (x + y + z)))
     [1 + 2 + 3, 2 + 3 + 4])
 
 describe "combineTemplate", ->

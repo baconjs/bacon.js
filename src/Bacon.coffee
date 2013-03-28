@@ -127,7 +127,12 @@ Bacon.combineAll = (streams, f) ->
 Bacon.mergeAll = (streams) ->
   Bacon.combineAll(streams, (s1, s2) -> s1.merge(s2))
 
-Bacon.zipWith = (streams..., f) ->
+Bacon.zipAsArray = (streams, more...) ->
+  if not (streams instanceof Array)
+    streams = [streams].concat(more)
+  Bacon.zipWith(streams, Array)
+
+Bacon.zipWith = (streams, f) ->
     new EventStream (sink) ->
       bufs = ([] for s in streams)
       unsubscribed = false
@@ -459,7 +464,7 @@ class Observable
     new Property(new PropertyDispatcher(subscribe).subscribe)  
 
   zip: (other, f = Array) ->
-    Bacon.zipWith(this,other,f)
+    Bacon.zipWith([this,other], f)
 
   diff: (start, f) -> 
     f = toCombinator(f)

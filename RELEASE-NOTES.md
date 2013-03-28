@@ -1,3 +1,7 @@
+## 0.2.8
+
+- Add EventStream.zip, Bacon.zipWith, Bacon.zipAsArray
+
 ## 0.2.7
 
 - Removed exception-catching in fromBinder

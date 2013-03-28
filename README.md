@@ -447,16 +447,26 @@ This would result to following elements in the result stream:
     2 - 1 = 1
     3 - 2 = 1
 
-`observable.zip(streams..., f)` return an EventStream with elements
-pair-wise lined up from each stream. A zipped stream will publish only
-when it has a value from each stream and will only produce values up
-to when any single stream ends.
+`observable.zip(other, f)` return an EventStream with elements
+pair-wise lined up with events from this and the other stream. 
+A zipped stream will publish only when it has a value from each 
+stream and will only produce values up to when any single stream ends.
 
 Be careful not to have too much "drift" between streams. If one stream
 produces many more values than some other excessive buffering will
 occur inside the zipped observable. 
 
-Example:
+Example 1: 
+
+```js
+var x = Bacon.fromArray([1, 2])
+var y = Bacon.fromArray([3, 4])
+x.zip(y, function(x, y) { return x + y })
+
+# produces values 4, 6
+```
+
+Example 2:
 
 You can use zip to combine observables that are pairwise synchronized
 from e.g. projections or sampling by the same property, while avoiding
@@ -720,6 +730,34 @@ Note that all Bacon.combine* methods produce a Property instead of an EventStrea
 ```js
 Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
 ```
+
+`Bacon.zipAsArray(streams)` zips the array of stream in to a new
+EventStream that will have an array of values from each source stream as
+its value. Zipping means that events from each stream are combine
+pairwise so that the 1st event from each stream is published first, then
+the 2nd event from each. The results will be published as soon as there
+is a value from each source stream.
+
+Be careful not to have too much "drift" between streams. If one stream
+produces many more values than some other excessive buffering will
+occur inside the zipped observable. 
+
+Example:
+
+```js
+x = Bacon.fromArray([1,2,3])
+y = Bacon.fromArray([10, 20, 30])
+z = Bacon.fromArray([100, 200, 300])
+Bacon.zipAsArray(x, y, z)
+
+# produces values 111, 222, 333
+```
+
+`Bacon.zipAsArray(stream1, stream2, ..)` just like above, but with streams
+provided as a list of arguments as opposed to a single array. 
+
+`Bacon.zipWith(streams, f)` like `zipAsArray` but uses the given n-ary
+function to combine the n values from n streams, instead of returning them in an Array.
 
 Function Construction rules
 ---------------------------
