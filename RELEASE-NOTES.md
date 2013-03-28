@@ -1,6 +1,6 @@
 ## 0.3.0
 
-- Change combineWith behavior (#124)
+- Change combineWith behavior to combine n Observables using n-ary function (#124)
 - Remove combineAll which had a confusing name and no known uses
 - Support constants instead of Observables as arguments of
   combineAsArray, combineWith
