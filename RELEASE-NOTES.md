@@ -1,3 +1,7 @@
+## 0.3.0
+
+- Change combineWith behavior (#124)
+
 ## 0.2.8
 
 - Add EventStream.zip, Bacon.zipWith, Bacon.zipAsArray

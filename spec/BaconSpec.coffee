@@ -795,12 +795,13 @@ describe "Bacon.combineAsArray", ->
       [[]])
 
 describe "Bacon.combineWith", ->
-  it "combines properties by applying the combinator function to values", ->
+  it "combines n properties using an n-ary function", ->
     expectPropertyEvents(
       ->
-        stream = series(1, [[1]])
-        Bacon.combineWith([stream, Bacon.constant([2]), Bacon.constant([3])], ".concat")
-      [[1, 2, 3]])
+        stream = series(1, [1, 2])
+        f = (x, y, z) -> x + y + z
+        Bacon.combineWith(f, stream, Bacon.constant(10), Bacon.constant(100))
+      [111, 112])
 
 describe "Boolean logic", ->
   it "combines Properties with and()", ->

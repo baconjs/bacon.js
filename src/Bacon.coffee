@@ -211,9 +211,8 @@ Bacon.combineAsArray = (streams, more...) ->
   else
     Bacon.constant([])
 
-Bacon.combineWith = (streams, f) ->
-  Bacon.combineAll(streams, (s1, s2) ->
-    s1.toProperty().combine(s2, f))
+Bacon.combineWith = (f, streams...) ->
+  Bacon.combineAsArray(streams).map (values) -> f(values...)
 
 Bacon.combineTemplate = (template) ->
   funcs = []

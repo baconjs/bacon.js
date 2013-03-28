@@ -682,23 +682,14 @@ combined with the other properties.
 `Bacon.combineAsArray(s1, s2, ...) just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
-`Bacon.mergeAll(streams)` merges given array of EventStreams.
+`Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* streams/properties
+using the given n-ary function `f(v1, v2 ...)`. To calculate the current 
+sum of three numeric Properties, you can do
 
-`Bacon.combineAll(streams, f)` combines given list of streams/properties
-using the given combinator function `f(s1, s2)`. The function is applied in a
-fold-like fashion: the first two streams are given to the function
-first. Then the result of this operation is combined with the third
-stream and so on. In this variant, the combinator function is applied to
-the streams themselves, not the stream values.
-
-`Bacon.combineWith(streams, f)` combines given list of streams/properties
-using the given combinator function `f(v1, v2)`. In this variant, the
-combinator function is used for combining two stream values, not the
-streams themselves. This is equivalent to combining the
-streams/properties using the combine method like a.combine(b,
-f).combine(c.f) etc. For example, you can combine properties containing
-arrays into a single array property, with Bacon.combineWith(properties,
-".concat").
+```js
+function sum3(x,y,z) { return x + y + z }
+Bacon.combineWith(sum3, p1, p2, p3)
+```
 
 `Bacon.combineTemplate(template)` combines streams using a template
 object. For instance, assuming you've got streams or properties named
@@ -728,8 +719,18 @@ values in your templates.
 Note that all Bacon.combine* methods produce a Property instead of an EventStream. If you need the result as an EventStream you might want to use property.changes()
 
 ```js
-Bacon.combineWith([stream1,stream2], function(v1,v2) {} ).changes()
+Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 ```
+
+`Bacon.mergeAll(streams)` merges given array of EventStreams.
+
+`Bacon.combineAll(streams, f)` combines given list of streams/properties
+using the given combinator function `f(s1, s2)`. The function is applied in a
+fold-like fashion: the first two streams are given to the function
+first. Then the result of this operation is combined with the third
+stream and so on. In this variant, the combinator function is applied to
+the streams themselves, not the stream values.
+
 
 `Bacon.zipAsArray(streams)` zips the array of stream in to a new
 EventStream that will have an array of values from each source stream as
