@@ -69,6 +69,16 @@ describe "Bacon.fromNodeCallback", ->
         src = (param, callback) -> callback(null, param)
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
+  it "supports partial application with Observable arguments", ->
+    expectStreamEvents(
+      ->
+        src = (values..., callback) -> callback(null, values)
+        a = Bacon.once("a")
+        b = Bacon.constant("b")
+        c = Bacon.once("c").toProperty()
+        d = Bacon.constant("d").toProperty()
+        stream = Bacon.fromNodeCallback(src, a, b, "x", c, d, "y")
+      [["a", "b", "x", "c", "d", "y"]])
 
 describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->

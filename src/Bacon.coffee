@@ -82,13 +82,24 @@ Bacon.fromCallback = (f, args...) ->
     nop
   , (value) -> [value, end()]
 
-Bacon.fromNodeCallback = (f, args...) ->
+Bacon._fromNodeCallback = (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
   , (error, value) ->
       return [new Error(error), end()] if error
       [value, end()]
+
+Bacon.fromNodeCallback = (f, args...) ->
+  observables = _.filter ((x) -> x instanceof Bacon.Observable), args
+  return Bacon._fromNodeCallback(f, args...) if observables.length == 0
+  stream = partiallyApplied(Bacon._fromNodeCallback, [(observableValues, callback) ->
+    for arg, i in args
+      continue unless arg instanceof Observable
+      args[i] = observableValues.shift()
+    args.push(callback)
+    f(args...)])
+  Bacon.combineAsArray(observables).flatMap(stream)
 
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
