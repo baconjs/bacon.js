@@ -92,10 +92,8 @@ Bacon._fromNodeCallback = (f, args...) ->
 
 primitiveOrObservableParametersWrapper = (wrapped) ->
   return (f, args...) ->
-    for arg, i in args
-      args[i] = Bacon.constant(arg) unless arg instanceof Observable
-    stream = partiallyApplied(wrapped, [(observableValues, callback) ->
-      f(observableValues..., callback)])
+    stream = partiallyApplied(wrapped, [(values, callback) ->
+      f(values..., callback)])
     Bacon.combineAsArray(args).flatMap(stream)
 
 Bacon.fromCallback = primitiveOrObservableParametersWrapper(Bacon._fromCallback)
