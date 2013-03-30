@@ -36,6 +36,28 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
+testSupportsPartialApplicationWithObservables = (src, generator) ->
+  inputs = {
+    a: Bacon.constant('a')
+    b: Bacon.constant('b').toProperty()
+    x: 'x'
+    y: 'y'
+  }
+  outputs = {a: 'a', b: 'b', x: 'x', y: 'y'}
+  cases = [
+    [],
+    ['a', 'b'], ['a', 'x', 'b']
+    ['x', 'y'], ['x', 'a', 'y']
+  ]
+  for testCase in cases
+    do (testCase) ->
+      input = (inputs[item] for item in testCase)
+      output = (outputs[item] for item in testCase)
+      expectStreamEvents(
+        -> generator(src, input...)
+        [output]
+      )
+
 describe "Bacon.fromCallback", ->
   it "makes an EventStream from function that takes a callback", ->
     expectStreamEvents(
@@ -50,15 +72,10 @@ describe "Bacon.fromCallback", ->
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    expectStreamEvents(
-      ->
-        src = (values..., callback) -> callback(values)
-        a = Bacon.once("a")
-        b = Bacon.constant("b")
-        c = Bacon.once("c").toProperty()
-        d = Bacon.constant("d").toProperty()
-        stream = Bacon.fromCallback(src, a, b, "x", c, d, "y")
-      [["a", "b", "x", "c", "d", "y"]])
+    testSupportsPartialApplicationWithObservables(
+      (values..., callback) -> callback(values)
+      Bacon.fromCallback
+    )
 
 describe "Bacon.fromNodeCallback", ->
   it "makes an EventStream from function that takes a node-style callback", ->
@@ -80,15 +97,10 @@ describe "Bacon.fromNodeCallback", ->
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    expectStreamEvents(
-      ->
-        src = (values..., callback) -> callback(null, values)
-        a = Bacon.once("a")
-        b = Bacon.constant("b")
-        c = Bacon.once("c").toProperty()
-        d = Bacon.constant("d").toProperty()
-        stream = Bacon.fromNodeCallback(src, a, b, "x", c, d, "y")
-      [["a", "b", "x", "c", "d", "y"]])
+    testSupportsPartialApplicationWithObservables(
+      (values..., callback) -> callback(null, values)
+      Bacon.fromNodeCallback
+    )
 
 describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->
@@ -1010,7 +1022,7 @@ describe "EventStream.zip", ->
       [[1, 'a']])
   it "can zip an observable with itself", ->
     expectStreamEvents(
-      -> 
+      ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
@@ -1028,7 +1040,7 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1))
     [[1 , 2], [2 , 3], [3, 4]])
-describe "Bacon.zipWith", ->  
+describe "Bacon.zipWith", ->
   it "zips an array of streams with given function", ->
     expectStreamEvents(
       ->
