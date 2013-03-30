@@ -171,6 +171,17 @@ This would create a stream that outputs a single value "Bacon!" and ends
 after that. The use of setTimeout causes the value to be delayed by 1
 second.
 
+You can also give any number of arguments to `fromCallback`, which will be
+passed to the function. These arguments can be simple variables, Bacon
+EventStreams or Properties. For example the following will output "Bacon rules":
+
+```js
+rules = 'rules'
+Bacon.fromCallback(function(bacon, rules, callback) {
+  callback(bacon + ' ' + rules);
+}, bacon, rules).log();
+```
+
 `Bacon.fromNodeCallback(f)` behaves the same way as `Bacon.fromCallback`,
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
