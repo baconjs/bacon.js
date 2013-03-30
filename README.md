@@ -1,12 +1,12 @@
 Bacon.js
 ========
 
-A small functional reactive programming lib for JavaScript. 
+A small functional reactive programming lib for JavaScript.
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
-concepts like `map` and `filter`. Stop working on individual events and work with event streams instead. 
-Transform your data with `map` and `filter`. Combine your data with `merge` and `combine`. 
+concepts like `map` and `filter`. Stop working on individual events and work with event streams instead.
+Transform your data with `map` and `filter`. Combine your data with `merge` and `combine`.
 Then switch to the heavier weapons and wield `flatMap` and `combineTemplate` like a boss.
 
 It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
@@ -54,9 +54,9 @@ Intro
 The idea of Functional Reactive Programming is quite well described by Conal Elliot at [Stack Overflow](http://stackoverflow.com/questions/1028250/what-is-functional-reactive-programming/1030631#1030631).
 
 Bacon.js is a library for functional reactive programming. Or let's say it's a library for
-working with events and dynamic values (which are called Properties in Bacon.js). 
+working with events and dynamic values (which are called Properties in Bacon.js).
 
-Anyways, you can wrap an event source, 
+Anyways, you can wrap an event source,
 say "mouse clicks on an element" into an `EventStream` by saying
 
 ```js
@@ -64,14 +64,14 @@ var cliks = $("h1").asEventStream("click")
 ```
 
 Each EventStream represents a stream of events. It is an Observable object, meaning
-that you can listen to events in the stream using, for instance, the `onValue` method 
+that you can listen to events in the stream using, for instance, the `onValue` method
 with a callback. Like this:
 
 ```js
 cliks.onValue(function() { alert("you clicked the h1 element") })
 ```
 
-But you can do neater stuff too. The Bacon of bacon.js is in that you can transform, 
+But you can do neater stuff too. The Bacon of bacon.js is in that you can transform,
 filter and combine these streams in a multitude of ways (see API below). The methods `map`,
 `filter`, for example, are similar to same functions in functional list programming
 (like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
@@ -92,7 +92,7 @@ both.onValue(function(val) { /* val will be 1 or -1 */ })
 ```
 
 In addition to EventStreams, bacon.js has a thing called `Property`, that is almost like an
-EventStream, but has a "current value". So things that change and have a current state are 
+EventStream, but has a "current value". So things that change and have a current state are
 Properties, while things that consist of discrete events are EventStreams. You could think
 mouse clicks as an EventStream and mouse position as a Property. You can create Properties from
 an EventStream with `scan` or `toProperty` methods. So, let's say
@@ -103,8 +103,8 @@ var counter = both.scan(0, add)
 counter.onValue(function(sum) { $("#sum").text(sum) })
 ```
 
-The `counter` property will contain the sum of the values in the `both` stream, so it's practically 
-a counter that can be increased and decreased using the plus and minus buttons. The `scan` method 
+The `counter` property will contain the sum of the values in the `both` stream, so it's practically
+a counter that can be increased and decreased using the plus and minus buttons. The `scan` method
 was used here to calculate the "current sum" of events in the `both` stream, by giving a "seed value"
 `0` and an "accumulator function" `add`. The scan method creates a property that starts with the given
 seed value and on each event in the source stream applies the accumulator function to the current
@@ -131,7 +131,7 @@ $("span").css("visibility", "visible")
 ```
 
 For an actual tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
-    
+
 API
 ===
 
@@ -139,8 +139,8 @@ Creating streams
 ----------------
 
 `$.asEventStream("click")` creates an EventStream from events on a
-jQuery or Zepto.js object. You can pass optional arguments to add a 
-jQuery live selector and/or a function that processes the jQuery 
+jQuery or Zepto.js object. You can pass optional arguments to add a
+jQuery live selector and/or a function that processes the jQuery
 event and its parameters, if given, like this:
 
 ```js
@@ -152,7 +152,7 @@ $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 `Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end.
 
 `Bacon.fromEventTarget(target, event)` creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted 
+on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted
 events' parameters.
 
 `Bacon.fromCallback(f)` creates an Event stream from a function that
@@ -203,7 +203,7 @@ indefinitely with the given interval (in milliseconds)
 values (given as array). Delivered with given interval in milliseconds.
 
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
-with given interval in milliseconds. For example, sequentially(10, [1,2,3]) 
+with given interval in milliseconds. For example, sequentially(10, [1,2,3])
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
 `Bacon.never()` creates an EventStream that immediately ends.
@@ -211,7 +211,7 @@ would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
-`new Bacon.EventStream(subscribe)` creates an event stream with the given 
+`new Bacon.EventStream(subscribe)` creates an event stream with the given
 subscribe function. (See below)
 
 `property.changes()` creates a stream of changes to the Property (see Property API below)
@@ -235,7 +235,7 @@ For example:
 ```js
 new Bacon.EventStream(function(subscriber) {
   subscriber(new Bacon.Next("a value here"))
-  subscriber(new Bacon.Next(function() { 
+  subscriber(new Bacon.Next(function() {
     return "This one will be evaluated lazily"
   }))
   subscriber(new Bacon.Error("oops, an error"))
@@ -244,18 +244,18 @@ new Bacon.EventStream(function(subscriber) {
 })
 ```
 
-The subscribe function must return a function. Let's call that function 
-`unsubscribe`. The returned function can be used by the subscriber to 
+The subscribe function must return a function. Let's call that function
+`unsubscribe`. The returned function can be used by the subscriber to
 unsubscribe and it should release all resources that the subscribe function reserved.
 
-The subscriber function may return Bacon.more or Bacon.noMore. It may also 
-return undefined or anything else. Iff it returns Bacon.noMore, the subscriber 
+The subscriber function may return Bacon.more or Bacon.noMore. It may also
+return undefined or anything else. Iff it returns Bacon.noMore, the subscriber
 must be cleaned up just like in case of calling the unsubscribe function.
 
-The EventStream constructor will wrap your subscribe function so that it will 
-only be called when the first stream listener is added, and the unsubscibe 
-function is called only after the last listener has been removed. 
-The subscribe-unsubscribe cycle may of course be repeated indefinitely, 
+The EventStream constructor will wrap your subscribe function so that it will
+only be called when the first stream listener is added, and the unsubscibe
+function is called only after the last listener has been removed.
+The subscribe-unsubscribe cycle may of course be repeated indefinitely,
 so prepare for multiple calls to the subscribe function.
 
 A note about the `new Bacon.Next(..)` constructor: You can use it like
@@ -304,7 +304,7 @@ Construction rules apply.
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used. You can even omit the argument if
 
-`observable.filter(f)` filters values using given predicate function. 
+`observable.filter(f)` filters values using given predicate function.
 Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
 `map`, indeed.
@@ -317,7 +317,7 @@ at the time of the event.
 
 `observable.take(n)` takes at most n elements from the stream
 
-`observable.takeUntil(stream2)` takes elements from source until a Next event 
+`observable.takeUntil(stream2)` takes elements from source until a Next event
 appears in the other stream. If other stream ends without value, it is
 ignored
 
@@ -328,7 +328,7 @@ ignored
 ```js
 var delayed = source.delay(2)
 ```
-  
+
 ```
 source:    asdf----asdf----
 delayed:   --asdf----asdf--
@@ -422,16 +422,16 @@ This would result to following elements in the result stream:
     1 + 2 = 3
     3 + 3 = 6
 
-When applied to a Property as in `r = p.scan(f,seed)`, there's a (hopefully insignificant) catch: 
-The starting value for `r` depends on whether `p` has an 
-initial value when scan is applied. If there's no initial value, this works 
+When applied to a Property as in `r = p.scan(f,seed)`, there's a (hopefully insignificant) catch:
+The starting value for `r` depends on whether `p` has an
+initial value when scan is applied. If there's no initial value, this works
 identically to EventStream.scan: the `seed` will be the initial value of
 `r`. However, if `r` already has a current/initial value `x`, the
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
 
-`observable.diff(start, f)` returns a Property that represents the result of a comparison 
-between the previous and current value of the Observable. For the initial value of the Observable, 
+`observable.diff(start, f)` returns a Property that represents the result of a comparison
+between the previous and current value of the Observable. For the initial value of the Observable,
 the previous value will be the given start.
 
 Example:
@@ -448,15 +448,15 @@ This would result to following elements in the result stream:
     3 - 2 = 1
 
 `observable.zip(other, f)` return an EventStream with elements
-pair-wise lined up with events from this and the other stream. 
-A zipped stream will publish only when it has a value from each 
+pair-wise lined up with events from this and the other stream.
+A zipped stream will publish only when it has a value from each
 stream and will only produce values up to when any single stream ends.
 
 Be careful not to have too much "drift" between streams. If one stream
 produces many more values than some other excessive buffering will
-occur inside the zipped observable. 
+occur inside the zipped observable.
 
-Example 1: 
+Example 1:
 
 ```js
 var x = Bacon.fromArray([1, 2])
@@ -529,8 +529,8 @@ call to unsubscribe. You can also unsubscribe by returning
 `stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
 checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). For instance, to do a deep comparison,you can 
-use the isEqual function from [underscore.js](http://underscorejs.org/) 
+isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
@@ -576,19 +576,19 @@ Property
 --------
 
 `Bacon.Property` a reactive property. Has the concept of "current value".
-You can create a Property from an EventStream by using either toProperty 
+You can create a Property from an EventStream by using either toProperty
 or scan method. Note depending on how a Property is created, it may or may not
 have an initial value.
 
 `Bacon.constant(x)` creates a constant property with value x.
 
 `property.subscribe(f)` subscribes a handler function to property. If there's
-a current value, an `Initial` event will be pushed immediately. `Next` 
-event will be pushed on updates and an `End` event in case the source 
+a current value, an `Initial` event will be pushed immediately. `Next`
+event will be pushed on updates and an `End` event in case the source
 EventStream ends.
 
 `property.onValue(f)` similar to eventStream.onValue, except that also
-pushes the initial value of the property, in case there is one. 
+pushes the initial value of the property, in case there is one.
 See Function Construction rules below for different forms of calling this method.
 
 `property.onValues(f)` like onValue, but splits the value (assuming its an
@@ -635,7 +635,7 @@ property value at each event from the given property. The result
 Property will contain the property value at each event in the source
 property.
 
-`property.sampledBy(streamOrProperty, f)` samples the property on stream 
+`property.sampledBy(streamOrProperty, f)` samples the property on stream
 events. The result values will be formed using the given function
 `f(propertyValue, samplerValue)`. You can use a method name (such as
 ".concat") instead of a function too.
@@ -656,7 +656,7 @@ events. Note that property.changes() does NOT skip duplicate values, use .skipDu
 
 `property.decode(mapping)` decodes input using the given mapping. Is a
 bit like a switch-case or the decode function in Oracle SQL. For
-example, the following would map the value 1 into the the string "mike" 
+example, the following would map the value 1 into the the string "mike"
 and the value 2 into the value of the `who` property.
 
 ```js
@@ -674,8 +674,8 @@ Combining multiple streams and properties
 -----------------------------------------
 
 `Bacon.combineAsArray(streams)` combines Properties, EventStreams and
-constant values so that the result Property will have an array of all 
-property values as its value. The input array may contain both Properties 
+constant values so that the result Property will have an array of all
+property values as its value. The input array may contain both Properties
 and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
 
@@ -690,8 +690,8 @@ Bacon.combineAsArray(property, stream, constant)
 # produces the value [1,2,3]
 ```
 
-`Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* Properties, 
-EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`. 
+`Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* Properties,
+EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`.
 To calculate the current sum of three numeric Properties, you can do
 
 ```js
@@ -714,7 +714,7 @@ var loginInfo = Bacon.combineTemplate({
 ```
 
 .. and your new loginInfo property will combine values from all these
-streams using that template, whenever any of the streams/properties 
+streams using that template, whenever any of the streams/properties
 get a new value. For instance, it could yield a value such as
 
 ```js
@@ -745,7 +745,7 @@ is a value from each source stream.
 
 Be careful not to have too much "drift" between streams. If one stream
 produces many more values than some other excessive buffering will
-occur inside the zipped observable. 
+occur inside the zipped observable.
 
 Example:
 
@@ -759,7 +759,7 @@ Bacon.zipAsArray(x, y, z)
 ```
 
 `Bacon.zipAsArray(stream1, stream2, ..)` just like above, but with streams
-provided as a list of arguments as opposed to a single array. 
+provided as a list of arguments as opposed to a single array.
 
 `Bacon.zipWith(streams, f)` like `zipAsArray` but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
@@ -827,7 +827,7 @@ instance:
 `mouseClicks.map({ isMouseClick: true })` would map all events to the
 object `{ isMouseClick: true }`
 
-Methods that support function construction include 
+Methods that support function construction include
 at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError` and `do`.
 
 Latest value of Property or EventStream
@@ -853,7 +853,7 @@ method.
 `bus.push(x)` pushes the given value to the stream.
 
 `bus.end()` ends the stream. Sends an End event to all subscribers.
-After this call, there'll be no more events to the subscribers. 
+After this call, there'll be no more events to the subscribers.
 Also, the Bus `push` and `plug` methods have no effect.
 
 `bus.error(e)` sends an Error with given message to all subscribers
@@ -925,7 +925,7 @@ such as AJAX calls.
 Cleaning up
 -----------
 
-As described above, a subscriber can signal the loss of interest in new events 
+As described above, a subscriber can signal the loss of interest in new events
 in any of these two ways:
 
 1. Return `Bacon.noMore` from the handler function
@@ -968,9 +968,9 @@ subscriber is as follows:
    and `End` event. The return value of the subscribe function is
    ignored in this case.
 
-A `Property` behaves similarly to an `EventStream` except that 
+A `Property` behaves similarly to an `EventStream` except that
 
-1. On a call to `subscribe`, it will deliver its current value 
+1. On a call to `subscribe`, it will deliver its current value
 (if any) to the provided subscriber function wrapped into an `Initial`
 event.
 2. This means that if the Property has previously emitted the value `x`
@@ -984,7 +984,7 @@ For RxJs Users
 
 Bacon.js is quite similar to RxJs, so it should be pretty easy to pick up. The
 major difference is that in bacon, there are two distinct kinds of Observables:
-the EventStream and the Property. The former is for discrete events while the 
+the EventStream and the Property. The former is for discrete events while the
 latter is for observable properties that have the concept of "current value".
 
 Also, there are no "cold observables", which
@@ -1015,8 +1015,8 @@ Install
 
 Bacon uses npm to install the dependencies needed for compiling the coffeescript source and run the test. So first run:
 
-    npm install 
-    
+    npm install
+
 Build
 =====
 
@@ -1058,7 +1058,7 @@ Bacon.js doesn't mess with prototypes or the global object. Only exceptions belo
 * It exports the Bacon object. In a browser, this is added to the window object.
 * If jQuery is defined, it adds the asEventStream method to jQuery (similarly to Zepto)
 
-So, it should be pretty much compatible and a nice citizen. 
+So, it should be pretty much compatible and a nice citizen.
 
 I'm not sure how it works in case some other lib adds stuff to, say, Array prototype, though. Maybe add test for this later?
 
@@ -1111,4 +1111,3 @@ Contribute
 ==========
 
 Use GitHub issues and Pull Requests.
-
