@@ -40,3 +40,12 @@ describe "Bacon.fromPromise", ->
     dispose()
     delete promise.abort
     expect(isAborted).toEqual(true)    
+
+  it "should reject non-ajax promise on unsub", ->
+    isRejected = false
+    promise.reject = ->
+      isRejected = true
+    dispose = Bacon.fromPromise(promise).subscribe(nop)
+    dispose()
+    delete promise.reject
+    expect(isRejected).toEqual(true)    
