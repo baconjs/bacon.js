@@ -27,6 +27,9 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
   Bacon.fromBinder (handler) =>
+    if not selector?
+      selector = handler
+      handler = undefined
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
   , eventTransformer

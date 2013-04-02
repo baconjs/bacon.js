@@ -64,6 +64,10 @@
         _ref = [selector, null], eventTransformer = _ref[0], selector = _ref[1];
       }
       return Bacon.fromBinder(function(handler) {
+        if (!(selector != null)) {
+          selector = handler;
+          handler = void 0;
+        }
         _this.on(eventName, selector, handler);
         return function() {
           return _this.off(eventName, selector, handler);
