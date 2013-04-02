@@ -249,7 +249,7 @@ The subscribe function must return a function. Let's call that function
 unsubscribe and it should release all resources that the subscribe function reserved.
 
 The subscriber function may return Bacon.more or Bacon.noMore. It may also 
-return undefined or anything else. Iff it returns Bacon.noMore, the subscriber 
+return undefined or anything else. If it returns Bacon.noMore, the subscriber 
 must be cleaned up just like in case of calling the unsubscribe function.
 
 The EventStream constructor will wrap your subscribe function so that it will 
@@ -310,7 +310,7 @@ property extractor string (like ".isValuable") instead. Just like with
 `map`, indeed.
 
 `observable.filter(property)` filters values based on the value of a
-property. Event will be included in output iff the property holds `true`
+property. Event will be included in output if the property holds `true`
 at the time of the event.
 
 `observable.takeWhile(f)` takes while given predicate function holds true
