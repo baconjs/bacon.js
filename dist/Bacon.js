@@ -2016,11 +2016,15 @@
     return function(key) {
       return function(value) {
         var fieldValue;
-        fieldValue = value[key];
-        if (isFunction(fieldValue)) {
-          return fieldValue.apply(value, args);
+        if (!(value != null)) {
+          return void 0;
         } else {
-          return fieldValue;
+          fieldValue = value[key];
+          if (isFunction(fieldValue)) {
+            return fieldValue.apply(value, args);
+          } else {
+            return fieldValue;
+          }
         }
       };
     };
