@@ -36,7 +36,7 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
-testSupportsPartialApplicationWithObservables = (src, generator) ->
+testLiftCallback = (src, generator) ->
   inputs = {
     a: Bacon.constant('a')
     b: Bacon.constant('b').toProperty()
@@ -72,7 +72,7 @@ describe "Bacon.fromCallback", ->
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    testSupportsPartialApplicationWithObservables(
+    testLiftCallback(
       (values..., callback) -> callback(values)
       Bacon.fromCallback
     )
@@ -97,7 +97,7 @@ describe "Bacon.fromNodeCallback", ->
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    testSupportsPartialApplicationWithObservables(
+    testLiftCallback(
       (values..., callback) -> callback(null, values)
       Bacon.fromNodeCallback
     )

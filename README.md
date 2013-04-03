@@ -176,10 +176,10 @@ passed to the function. These arguments can be simple variables, Bacon
 EventStreams or Properties. For example the following will output "Bacon rules":
 
 ```js
-rules = 'rules'
-Bacon.fromCallback(function(bacon, rules, callback) {
-  callback(bacon + ' ' + rules);
-}, bacon, rules).log();
+bacon = Bacon.constant('bacon')
+Bacon.fromCallback(function(a, b, callback) {
+  callback(a + ' ' + b);
+}, bacon, 'rules').log();
 ```
 
 `Bacon.fromNodeCallback(f)` behaves the same way as `Bacon.fromCallback`,

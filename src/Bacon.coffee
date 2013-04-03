@@ -76,19 +76,19 @@ Bacon.repeatedly = (delay, values) ->
   index = 0
   Bacon.fromPoll(delay, -> values[index++ % values.length])
 
-lift = (wrapped) ->
+liftCallback = (wrapped) ->
   return (f, args...) ->
     stream = partiallyApplied(wrapped, [(values, callback) ->
       f(values..., callback)])
     Bacon.combineAsArray(args).flatMap(stream)
 
-Bacon.fromCallback = lift (f, args...) ->
+Bacon.fromCallback = liftCallback (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
   , (value) -> [value, end()]
 
-Bacon.fromNodeCallback = lift (f, args...) ->
+Bacon.fromNodeCallback = liftCallback (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
