@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Fix #142: map(".foo.bar") failed if "foo" was null
+
 ## 0.3.0
 
 - Change combineWith behavior to combine n Observables using n-ary function (#124)

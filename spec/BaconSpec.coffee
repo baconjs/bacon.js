@@ -1110,6 +1110,10 @@ describe "Field value extraction", ->
     expectStreamEvents(
       -> Bacon.once({lol:{wut: "wat"}}).map(".lol.wut")
       ["wat"])
+  it "yields 'undefined' if any value on the path is 'undefined'", ->
+    expectStreamEvents(
+      -> Bacon.once({}).map(".lol.wut")
+      [undefined])
   it "if field value is method, it does a method call", ->
     context = null
     result = null

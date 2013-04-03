@@ -967,11 +967,14 @@ toFieldExtractor = (f, args) ->
       value = f(value)
     value
 toSimpleExtractor = (args) -> (key) -> (value) ->
-  fieldValue = value[key]
-  if isFunction(fieldValue)
-    fieldValue.apply(value, args)
+  if not value?
+    undefined
   else
-    fieldValue
+    fieldValue = value[key]
+    if isFunction(fieldValue)
+      fieldValue.apply(value, args)
+    else
+      fieldValue
 
 toFieldKey = (f) ->
   f.slice(1)
