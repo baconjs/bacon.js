@@ -1,3 +1,8 @@
+## 0.3.2
+
+- Support EventStreams and Properties as arguments of fromCallback,
+  fromNodeCallback (#133)
+
 ## 0.3.1
 
 - Fix #142: map(".foo.bar") failed if "foo" was null
