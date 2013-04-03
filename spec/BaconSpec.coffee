@@ -36,27 +36,19 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
-testLiftCallback = (src, generator) ->
-  inputs = {
-    a: Bacon.constant('a')
-    b: Bacon.constant('b').toProperty()
-    x: 'x'
-    y: 'y'
-  }
-  outputs = {a: 'a', b: 'b', x: 'x', y: 'y'}
-  cases = [
-    [],
-    ['a', 'b'], ['a', 'x', 'b']
-    ['x', 'y'], ['x', 'a', 'y']
+testLiftedCallback = (src, liftedCallback) ->
+  input = [
+    Bacon.constant('a')
+    'x'
+    Bacon.constant('b').toProperty()
+    'y'
   ]
-  for testCase in cases
-    do (testCase) ->
-      input = (inputs[item] for item in testCase)
-      output = (outputs[item] for item in testCase)
-      expectStreamEvents(
-        -> generator(src, input...)
-        [output]
-      )
+  output = ['a', 'x', 'b', 'y']
+  expectStreamEvents(
+    -> liftedCallback(src, input...)
+    [output]
+  )
+
 
 describe "Bacon.fromCallback", ->
   it "makes an EventStream from function that takes a callback", ->
@@ -72,7 +64,7 @@ describe "Bacon.fromCallback", ->
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    testLiftCallback(
+    testLiftedCallback(
       (values..., callback) -> callback(values)
       Bacon.fromCallback
     )
@@ -97,7 +89,7 @@ describe "Bacon.fromNodeCallback", ->
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
   it "supports partial application with Observable arguments", ->
-    testLiftCallback(
+    testLiftedCallback(
       (values..., callback) -> callback(null, values)
       Bacon.fromNodeCallback
     )
