@@ -444,6 +444,12 @@
     }
   };
 
+  Bacon.onValues = function() {
+    var f, streams, _i;
+    streams = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), f = arguments[_i++];
+    return Bacon.combineAsArray(streams).onValues(f);
+  };
+
   Bacon.combineWith = function() {
     var f, streams;
     f = arguments[0], streams = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
