@@ -1599,8 +1599,9 @@
         return waiters = (waiters || []).concat([listener]);
       };
       this.push = function(event) {
-        var reply, sink, tmpSinks, _i, _len;
+        var reply, sink, success, tmpSinks, _i, _len;
         if (!pushing) {
+          success = false;
           try {
             pushing = true;
             event.onDone = addWaiter;
@@ -1612,12 +1613,14 @@
                 removeSink(sink);
               }
             }
-          } catch (e) {
-            queue = null;
-            throw e;
+            success = true;
           } finally {
             pushing = false;
+            if (!success) {
+              queue = null;
+            }
           }
+          success = true;
           while (queue != null ? queue.length : void 0) {
             event = _.head(queue);
             queue = _.tail(queue);
