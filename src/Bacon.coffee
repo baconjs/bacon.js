@@ -767,6 +767,7 @@ class Dispatcher
     addWaiter = (listener) -> waiters = (waiters or []).concat([listener])
     @push = (event) =>
       if not pushing
+        success = false
         try
           pushing = true
           event.onDone = addWaiter
@@ -774,11 +775,11 @@ class Dispatcher
           for sink in tmpSinks
             reply = sink event
             removeSink sink if reply == Bacon.noMore or event.isEnd()
-        catch e
-          queue = null # ditch queue to allow recovery from exceptions
-          throw e
+          success = true
         finally
           pushing = false
+          queue = null if not success # ditch queue in case of exception to avoid unexpected behavior
+        success = true
         while queue?.length
           event = _.head(queue)
           queue = _.tail(queue)
