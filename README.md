@@ -775,6 +775,16 @@ provided as a list of arguments as opposed to a single array.
 `Bacon.zipWith(streams, f)` like `zipAsArray` but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
 
+`Bacon.onValues(a, b [, c...], f)` is a shorthand for combining multiple
+sources (streams, properties, constants) as array and assigning the
+side-effect function f for the values. The following example would log
+the number 3.
+
+```js
+function f(a, b) { console.log(a + b) }
+Bacon.onValues(Bacon.constant(1), Bacon.constant(2), f)
+```
+
 Function Construction rules
 ---------------------------
 

@@ -1105,6 +1105,12 @@ describe "Observable.onValues", ->
     Bacon.constant([1,2,3]).onValues(f)
     f.verify(1,2,3)
 
+describe "Bacon.onValues", ->
+  it "is a shorthand for combineAsArray.onValues", ->
+    f = mockFunction()
+    Bacon.onValues(1, 2, 3, f)
+    f.verify(1,2,3)
+
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = new Bacon.Bus()

@@ -1,3 +1,7 @@
+## 0.3.4
+
+- Add Bacon.onValues shorthand function
+
 ## 0.3.3
 
 - Avoid catch-rethrow to preserve original stack trace (#146)

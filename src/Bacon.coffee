@@ -215,6 +215,8 @@ Bacon.combineAsArray = (streams, more...) ->
   else
     Bacon.constant([])
 
+Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
+
 Bacon.combineWith = (f, streams...) ->
   Bacon.combineAsArray(streams).map (values) -> f(values...)
 
