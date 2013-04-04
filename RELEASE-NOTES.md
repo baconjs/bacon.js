@@ -1,3 +1,7 @@
+## 0.3.3
+
+- Avoid catch-rethrow to preserve original stack trace (#146)
+
 ## 0.3.2
 
 - Support EventStreams and Properties as arguments of fromCallback,
