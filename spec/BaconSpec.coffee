@@ -385,6 +385,14 @@ describe "EventStream.merge", ->
         right = repeat(3, [2]).take(3)
         left.merge(right).takeWhile(lessThan(2))
       [1])
+  it "does not duplicate same error from two streams", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1, error(), 2, error(), 3])
+        left = src.map((x) -> x)
+        right = src.map((x) -> x * 2)
+        left.merge(right)
+      [1, 2, error(), 2, 4, error(), 3, 6])
 
 describe "EventStream.delay", ->
   it "delays all events (except errors) by given delay in milliseconds", ->
@@ -788,6 +796,12 @@ describe "Property.combine", ->
 
     bus.push(["fail whale"])
     expect(calls).toBe 0
+  it "does not duplicate same error from two streams", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [error()])
+        Bacon.combineAsArray(src, src)
+      [error()])
 
 describe "EventStream.combine", ->
   it "converts stream to Property, then combines", ->
