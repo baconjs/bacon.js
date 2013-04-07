@@ -321,6 +321,10 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
       [1,2])
+  it "Works also when f returns a constant value instead of an EventStream", ->
+    expectStreamEvents(
+      -> series(1, [1,2]).flatMap((x) -> x)
+      [1,2])
   it "Accepts a constant EventStream/Property as an alternative to a function", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.constant("bacon"))

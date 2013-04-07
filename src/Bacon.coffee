@@ -501,6 +501,7 @@ class Observable
           sink event
         else
           child = f event.value()
+          child = Bacon.once(child) if not (child instanceof Observable)
           unsubChild = undefined
           childEnded = false
           removeChild = ->

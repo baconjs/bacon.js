@@ -394,7 +394,8 @@ values
 stream using the function `f`. Collect events from each of the spawned
 streams into the result stream. This is very similar to selectMany in
 RxJs. Note that instead of a function, you can provide a
-stream/property too.
+stream/property too. Also, the return value of function `f` can be either an 
+Observable (stream/property) or a constant value.
 
 stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
 
@@ -402,7 +403,7 @@ Example - converting strings to integers, skipping empty values:
 
 ```js
 stream.flatMap(function(text) {
-    return (text != "") ? Bacon.once(parseInt(text)) : Bacon.never()
+    return (text != "") ? parseInt(text) : Bacon.never()
 })
 ```
 

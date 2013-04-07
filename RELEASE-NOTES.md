@@ -1,3 +1,7 @@
+## 0.3.5
+
+- Support constant values to be returned from function f in flatMap
+
 ## 0.3.4
 
 - Add Bacon.onValues shorthand function
