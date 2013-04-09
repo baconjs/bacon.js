@@ -789,6 +789,15 @@ describe "Property.combine", ->
     bus.push(["fail whale"])
     expect(calls).toBe 0
 
+describe "EventStream.combine", ->
+  it "converts stream to Property, then combines", ->
+    expectPropertyEvents(
+      ->
+        left = series(2, [1, error(), 2, 3])
+        right = series(2, [4, error(), 5, 6]).delay(t(1)).toProperty()
+        left.combine(right, add)
+      [5, error(), error(), 6, 7, 8, 9])
+
 describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(

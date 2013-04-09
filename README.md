@@ -518,6 +518,10 @@ or just
 myStream.log()
 ```
 
+`observable.combine(property2, f)` combines the latest values of the two
+streams or properties using a two-arg function. Similarly to `scan`, you can use a
+method name instead, so you could do `a.combine(b, ".concat")` for two
+properties with array value. The result is a Property.
 
 EventStream
 -----------
@@ -633,11 +637,6 @@ myProperty.assign($("#my-button"), "toggle")
 
 Note that the `assign` method is actually just a synonym for `onValue` and
 the function construction rules below apply to both.
-
-`property.combine(property2, f)` combines the latest values of the two
-properties using a two-arg function. Similarly to `scan`, you can use a
-method name instead, so you could do `a.combine(b, ".concat")` for two
-properties with array value.
 
 `property.sample(interval)` creates an EventStream by sampling the
 property value at given interval (in milliseconds)

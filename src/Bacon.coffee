@@ -536,6 +536,11 @@ class Observable
   slidingWindow: (n) ->
     @scan [], (window, value) ->
       window.concat([value]).slice(-n)
+  combine: (other, f) =>
+    combinator = toCombinator(f)
+    Bacon.combineAsArray(this, other)
+      .map (values) ->
+        combinator(values[0], values[1])
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -703,11 +708,6 @@ class Property extends Observable
         unsubMe = this.subscribe mySink
         unsubOther = other.subscribe otherSink unless unsubscribed
         unsubBoth
-    @combine = (other, f) =>
-      combinator = toCombinator(f)
-      Bacon.combineAsArray(this, other)
-        .map (values) ->
-          combinator(values[0], values[1])
     @sampledBy = (sampler, combinator = former) =>
       combinator = toCombinator(combinator)
       pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply( ->combinator(propertyVal(), streamVal())))
