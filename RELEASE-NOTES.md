@@ -1,3 +1,7 @@
+## 0.3.6
+
+- generalize combine method to all Observables
+
 ## 0.3.5
 
 - Support constant values to be returned from function f in flatMap
