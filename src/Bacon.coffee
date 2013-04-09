@@ -752,14 +752,14 @@ addPropertyInitValueToStream = (property, stream) ->
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
-    sinks = []
+    subscriptions = []
     queue = null
     pushing = false
     ended = false
-    @hasSubscribers = -> sinks.length > 0
+    @hasSubscribers = -> subscriptions.length > 0
     unsubscribeFromSource = nop
-    removeSink = (sink) ->
-      sinks = _.without(sink, sinks)
+    removeSub = (subscription) ->
+      subscriptions = _.without(subscription, subscriptions)
     waiters = null
     done = (event) ->
       if waiters?
@@ -774,10 +774,10 @@ class Dispatcher
         try
           pushing = true
           event.onDone = addWaiter
-          tmpSinks = sinks
-          for sink in tmpSinks
-            reply = sink event
-            removeSink sink if reply == Bacon.noMore or event.isEnd()
+          tmp = subscriptions
+          for sub in tmp
+            reply = sub.sink event
+            removeSub sub if reply == Bacon.noMore or event.isEnd()
           success = true
         finally
           pushing = false
@@ -806,12 +806,13 @@ class Dispatcher
         nop
       else
         assertFunction sink
-        sinks = sinks.concat(sink)
-        if sinks.length == 1
+        subscription = { sink: sink }
+        subscriptions = subscriptions.concat(subscription)
+        if subscriptions.length == 1
           unsubscribeFromSource = subscribe @handleEvent
         assertFunction unsubscribeFromSource
         =>
-          removeSink sink
+          removeSub subscription
           unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
