@@ -1064,6 +1064,9 @@
             return sink(event);
           } else {
             child = f(event.value());
+            if (!(child instanceof Observable)) {
+              child = Bacon.once(child);
+            }
             unsubChild = void 0;
             childEnded = false;
             removeChild = function() {
@@ -1570,23 +1573,23 @@
   Dispatcher = (function() {
 
     function Dispatcher(subscribe, handleEvent) {
-      var addWaiter, done, ended, pushing, queue, removeSink, sinks, unsubscribeFromSource, waiters,
+      var addWaiter, done, ended, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters,
         _this = this;
       if (subscribe == null) {
         subscribe = function() {
           return nop;
         };
       }
-      sinks = [];
+      subscriptions = [];
       queue = null;
       pushing = false;
       ended = false;
       this.hasSubscribers = function() {
-        return sinks.length > 0;
+        return subscriptions.length > 0;
       };
       unsubscribeFromSource = nop;
-      removeSink = function(sink) {
-        return sinks = _.without(sink, sinks);
+      removeSub = function(subscription) {
+        return subscriptions = _.without(subscription, subscriptions);
       };
       waiters = null;
       done = function(event) {
@@ -1605,18 +1608,18 @@
         return waiters = (waiters || []).concat([listener]);
       };
       this.push = function(event) {
-        var reply, sink, success, tmpSinks, _i, _len;
+        var reply, sub, success, tmp, _i, _len;
         if (!pushing) {
           success = false;
           try {
             pushing = true;
             event.onDone = addWaiter;
-            tmpSinks = sinks;
-            for (_i = 0, _len = tmpSinks.length; _i < _len; _i++) {
-              sink = tmpSinks[_i];
-              reply = sink(event);
+            tmp = subscriptions;
+            for (_i = 0, _len = tmp.length; _i < _len; _i++) {
+              sub = tmp[_i];
+              reply = sub.sink(event);
               if (reply === Bacon.noMore || event.isEnd()) {
-                removeSink(sink);
+                removeSub(sub);
               }
             }
             success = true;
@@ -1655,18 +1658,22 @@
         return handleEvent.apply(_this, [event]);
       };
       this.subscribe = function(sink) {
+        var subscription;
         if (ended) {
           sink(end());
           return nop;
         } else {
           assertFunction(sink);
-          sinks = sinks.concat(sink);
-          if (sinks.length === 1) {
+          subscription = {
+            sink: sink
+          };
+          subscriptions = subscriptions.concat(subscription);
+          if (subscriptions.length === 1) {
             unsubscribeFromSource = subscribe(_this.handleEvent);
           }
           assertFunction(unsubscribeFromSource);
           return function() {
-            removeSink(sink);
+            removeSub(subscription);
             if (!_this.hasSubscribers()) {
               return unsubscribeFromSource();
             }
