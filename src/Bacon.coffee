@@ -15,7 +15,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         reply = sink(event = toEvent(event))
         if reply == Bacon.noMore or event.isEnd()
           # defer if binder calls handler in sync before returning unbinder
-          if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
+          if unbinder? then unbinder() else Bacon.scheduler.setTimeout (-> unbinder()), 0
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
@@ -98,8 +98,8 @@ Bacon.fromNodeCallback = liftCallback (f, args...) ->
 
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
-    id = setInterval(handler, delay)
-    -> clearInterval(id)
+    id = Bacon.scheduler.setInterval(handler, delay)
+    -> Bacon.scheduler.clearInterval(id)
   , poll
 
 Bacon.interval = (delay, value) ->
@@ -596,7 +596,7 @@ class EventStream extends Observable
     reply = Bacon.more
     if not isFunction(delay)
       delayMs = delay
-      delay = (f) -> setTimeout(f, delayMs)
+      delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
     @withHandler (event) ->
       buffer.push = @push
       if event.isError()
@@ -1045,3 +1045,8 @@ _ = {
 }
 
 Bacon._ = _
+
+Bacon.scheduler =
+  setTimeout: global.setTimeout
+  setInterval: global.setInterval
+  clearInterval: global.clearInterval
