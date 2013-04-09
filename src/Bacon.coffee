@@ -169,7 +169,7 @@ Bacon.combineAsArray = (streams, more...) ->
     streams = [streams].concat(more)
   if streams.length
     values = (None for s in streams)
-    new Property (sink) =>
+    subscribe = (sink) =>
       unsubscribed = false
       unsubs = (nop for s in streams)
       unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
@@ -212,6 +212,7 @@ Bacon.combineAsArray = (streams, more...) ->
         stream = Bacon.constant(stream) if not (stream instanceof Observable)
         unsubs[index] = stream.subscribe (sinkFor index) unless unsubscribed
       unsubAll
+    new Property(new PropertyDispatcher(subscribe).subscribe)
   else
     Bacon.constant([])
 

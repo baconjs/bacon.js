@@ -797,11 +797,11 @@ describe "Property.combine", ->
     bus.push(["fail whale"])
     expect(calls).toBe 0
   it "does not duplicate same error from two streams", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       ->
-        src = series(1, [error()])
+        src = series(1, ["same", error()])
         Bacon.combineAsArray(src, src)
-      [error()])
+      [["same", "same"], error()])
 
 describe "EventStream.combine", ->
   it "converts stream to Property, then combines", ->
