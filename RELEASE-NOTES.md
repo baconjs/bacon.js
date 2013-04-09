@@ -1,6 +1,7 @@
 ## 0.3.5
 
 - Support constant values to be returned from function f in flatMap
+- Fix #148: Handle same subscriber added twice just like two separate subscribers
 
 ## 0.3.4
 
