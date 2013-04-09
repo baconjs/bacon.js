@@ -541,6 +541,8 @@ class Observable
     Bacon.combineAsArray(this, other)
       .map (values) ->
         combinator(values[0], values[1])
+  combineOnRight: (right, f) => this.sampledBy(right, f)
+  combineOnLeft: (left, f) => left.combineOnRight(this, _.flip(f))
 
 class EventStream extends Observable
   constructor: (subscribe) ->
@@ -659,6 +661,7 @@ class EventStream extends Observable
     dispatcher = new Dispatcher(@subscribe, handler)
     new EventStream(dispatcher.subscribe)
   withSubscribe: (subscribe) -> new EventStream(subscribe)
+  combineOnRight: (right, f) => this.toProperty().sampledBy(right, f)
 
 class Property extends Observable
   constructor: (@subscribe) ->
@@ -1035,6 +1038,7 @@ _ = {
     return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
+  flip: (f) -> (x, y) -> f y, x
 }
 
 Bacon._ = _

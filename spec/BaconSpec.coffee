@@ -868,6 +868,43 @@ describe "Bacon.mergeAll", ->
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6])
 
+describe "EventStream.combineOnRight", ->
+  it "combines with given function when the other observable gets a value", ->
+    expectStreamEvents(
+      ->
+        left = series(2, ["a", "b"])
+        right = series(2, ["1", "2", "1", "2"]).delay(t(1))
+        left.combineOnRight(right, add)
+      ["a1", "b2", "b1", "b2"])
+
+describe "Property.combineOnRight", ->
+  it "combines with given function when the other observable gets a value", ->
+    expectStreamEvents(
+      ->
+        left = series(2, ["a", "b"]).toProperty()
+        right = series(2, ["1", "2", "1", "2"]).delay(t(1))
+        left.combineOnRight(right, add)
+      ["a1", "b2", "b1", "b2"])
+
+describe "EventStream.combineOnLeft", ->
+  it "combines with given function when the other observable gets a value", ->
+    expectStreamEvents(
+      ->
+        right = series(2, ["a", "b"])
+        left = series(2, ["1", "2", "1", "2"]).delay(t(1))
+        left.combineOnLeft(right, add)
+      ["1a", "2b", "1b", "2b"])
+
+describe "Property.combineOnLeft", ->
+  it "combines with given function when the other observable gets a value", ->
+    expectStreamEvents(
+      ->
+        right = series(2, ["a", "b"])
+        # TODO: gets mysteriously stuck
+        left = series(2, ["1", "2", "1", "2"]).delay(t(1)).toProperty()
+        left.combineOnLeft(right, add)
+      ["1a", "2b", "1b", "2b"])
+
 describe "Property.sampledBy(stream)", ->
   it "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
