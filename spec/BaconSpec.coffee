@@ -1339,6 +1339,28 @@ describe "EventStream", ->
     expectStreamEvents(
       -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
       ["hello"])
+  it "handles one subscriber added twice just like two separate subscribers (case Bacon.noMore)", ->
+    values = []
+    bus = new Bacon.Bus()
+    f = (v) ->
+      if v.hasValue()
+        values.push(v.value())
+        return Bacon.noMore
+    bus.subscribe(f)
+    bus.subscribe(f)
+    bus.push("bacon")
+    expect(values).toEqual(["bacon", "bacon"])
+  it "handles one subscriber added twice just like two separate subscribers (case unsub)", ->
+    values = []
+    bus = new Bacon.Bus()
+    f = (v) ->
+      if v.hasValue()
+        values.push(v.value())
+    bus.subscribe(f)
+    unsub = bus.subscribe(f)
+    unsub()
+    bus.push("bacon")
+    expect(values).toEqual(["bacon"])
 
 lessThan = (limit) ->
   (x) -> x < limit
