@@ -758,7 +758,7 @@ class Dispatcher
     pushing = false
     ended = false
     @hasSubscribers = -> subscriptions.length > 0
-    previousEvent = null
+    prevError = null
     unsubscribeFromSource = nop
     removeSub = (subscription) ->
       subscriptions = _.without(subscription, subscriptions)
@@ -772,8 +772,8 @@ class Dispatcher
     addWaiter = (listener) -> waiters = (waiters or []).concat([listener])
     @push = (event) =>
       if not pushing
-        return if event is previousEvent
-        previousEvent = event if event.isError()
+        return if event is prevError
+        prevError = event if event.isError()
         success = false
         try
           pushing = true
