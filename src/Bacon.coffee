@@ -107,7 +107,7 @@ Bacon.interval = (delay, value) ->
   Bacon.fromPoll(delay, -> next(value))
 
 Bacon.constant = (value) ->
-  new Property(sendWrapped([value], initial))
+  new Property(sendWrapped([value], initial), true)
 
 Bacon.never = -> Bacon.fromArray([])
 
@@ -212,7 +212,7 @@ Bacon.combineAsArray = (streams, more...) ->
         stream = Bacon.constant(stream) if not (stream instanceof Observable)
         unsubs[index] = stream.subscribe (sinkFor index) unless unsubscribed
       unsubAll
-    new Property(new PropertyDispatcher(subscribe).subscribe)
+    new Property(subscribe)
   else
     Bacon.constant([])
 
@@ -467,7 +467,7 @@ class Observable
             unsub()
             unsub = nop
       unsub
-    new Property(new PropertyDispatcher(subscribe).subscribe)
+    new Property(subscribe)
 
   zip: (other, f = Array) ->
     Bacon.zipWith([this,other], f)
@@ -662,8 +662,12 @@ class EventStream extends Observable
   withSubscribe: (subscribe) -> new EventStream(subscribe)
 
 class Property extends Observable
-  constructor: (@subscribe) ->
+  constructor: (subscribe, handler) ->
     super()
+    if handler is true
+      @subscribe = subscribe
+    else
+      @subscribe = new PropertyDispatcher(subscribe, handler).subscribe
     combine = (other, leftSink, rightSink) =>
       myVal = None
       otherVal = None
@@ -722,8 +726,8 @@ class Property extends Observable
     @subscribe (event) =>
       sink event unless event.isInitial()
   withHandler: (handler) ->
-    new Property(new PropertyDispatcher(@subscribe, handler).subscribe)
-  withSubscribe: (subscribe) -> new Property(new PropertyDispatcher(subscribe).subscribe)
+    new Property(@subscribe, handler)
+  withSubscribe: (subscribe) -> new Property(subscribe)
   toProperty: =>
     assertNoArguments(arguments)
     this
