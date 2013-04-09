@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
+  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, liftCallback, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, remove, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -121,7 +121,20 @@
     });
   };
 
-  Bacon.fromCallback = function() {
+  liftCallback = function(wrapped) {
+    return function() {
+      var args, f, stream;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      stream = partiallyApplied(wrapped, [
+        function(values, callback) {
+          return f.apply(null, __slice.call(values).concat([callback]));
+        }
+      ]);
+      return Bacon.combineAsArray(args).flatMap(stream);
+    };
+  };
+
+  Bacon.fromCallback = liftCallback(function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     return Bacon.fromBinder(function(handler) {
@@ -130,9 +143,9 @@
     }, function(value) {
       return [value, end()];
     });
-  };
+  });
 
-  Bacon.fromNodeCallback = function() {
+  Bacon.fromNodeCallback = liftCallback(function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     return Bacon.fromBinder(function(handler) {
@@ -144,7 +157,7 @@
       }
       return [value, end()];
     });
-  };
+  });
 
   Bacon.fromPoll = function(delay, poll) {
     return Bacon.fromBinder(function(handler) {
@@ -429,6 +442,12 @@
     } else {
       return Bacon.constant([]);
     }
+  };
+
+  Bacon.onValues = function() {
+    var f, streams, _i;
+    streams = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), f = arguments[_i++];
+    return Bacon.combineAsArray(streams).onValues(f);
   };
 
   Bacon.combineWith = function() {
@@ -1045,6 +1064,9 @@
             return sink(event);
           } else {
             child = f(event.value());
+            if (!(child instanceof Observable)) {
+              child = Bacon.once(child);
+            }
             unsubChild = void 0;
             childEnded = false;
             removeChild = function() {
@@ -1551,23 +1573,23 @@
   Dispatcher = (function() {
 
     function Dispatcher(subscribe, handleEvent) {
-      var addWaiter, done, ended, pushing, queue, removeSink, sinks, unsubscribeFromSource, waiters,
+      var addWaiter, done, ended, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters,
         _this = this;
       if (subscribe == null) {
         subscribe = function() {
           return nop;
         };
       }
-      sinks = [];
+      subscriptions = [];
       queue = null;
       pushing = false;
       ended = false;
       this.hasSubscribers = function() {
-        return sinks.length > 0;
+        return subscriptions.length > 0;
       };
       unsubscribeFromSource = nop;
-      removeSink = function(sink) {
-        return sinks = _.without(sink, sinks);
+      removeSub = function(subscription) {
+        return subscriptions = _.without(subscription, subscriptions);
       };
       waiters = null;
       done = function(event) {
@@ -1586,25 +1608,28 @@
         return waiters = (waiters || []).concat([listener]);
       };
       this.push = function(event) {
-        var reply, sink, tmpSinks, _i, _len;
+        var reply, sub, success, tmp, _i, _len;
         if (!pushing) {
+          success = false;
           try {
             pushing = true;
             event.onDone = addWaiter;
-            tmpSinks = sinks;
-            for (_i = 0, _len = tmpSinks.length; _i < _len; _i++) {
-              sink = tmpSinks[_i];
-              reply = sink(event);
+            tmp = subscriptions;
+            for (_i = 0, _len = tmp.length; _i < _len; _i++) {
+              sub = tmp[_i];
+              reply = sub.sink(event);
               if (reply === Bacon.noMore || event.isEnd()) {
-                removeSink(sink);
+                removeSub(sub);
               }
             }
-          } catch (e) {
-            queue = null;
-            throw e;
+            success = true;
           } finally {
             pushing = false;
+            if (!success) {
+              queue = null;
+            }
           }
+          success = true;
           while (queue != null ? queue.length : void 0) {
             event = _.head(queue);
             queue = _.tail(queue);
@@ -1633,18 +1658,22 @@
         return handleEvent.apply(_this, [event]);
       };
       this.subscribe = function(sink) {
+        var subscription;
         if (ended) {
           sink(end());
           return nop;
         } else {
           assertFunction(sink);
-          sinks = sinks.concat(sink);
-          if (sinks.length === 1) {
+          subscription = {
+            sink: sink
+          };
+          subscriptions = subscriptions.concat(subscription);
+          if (subscriptions.length === 1) {
             unsubscribeFromSource = subscribe(_this.handleEvent);
           }
           assertFunction(unsubscribeFromSource);
           return function() {
-            removeSink(sink);
+            removeSub(subscription);
             if (!_this.hasSubscribers()) {
               return unsubscribeFromSource();
             }
@@ -2016,11 +2045,15 @@
     return function(key) {
       return function(value) {
         var fieldValue;
-        fieldValue = value[key];
-        if (isFunction(fieldValue)) {
-          return fieldValue.apply(value, args);
+        if (!(value != null)) {
+          return void 0;
         } else {
-          return fieldValue;
+          fieldValue = value[key];
+          if (isFunction(fieldValue)) {
+            return fieldValue.apply(value, args);
+          } else {
+            return fieldValue;
+          }
         }
       };
     };

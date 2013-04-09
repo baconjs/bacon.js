@@ -1,6 +1,32 @@
+## 0.3.6
+
+- generalize combine method to all Observables
+
+## 0.3.5
+
+- Support constant values to be returned from function f in flatMap
+- Fix #148: Handle same subscriber added twice just like two separate subscribers
+
+## 0.3.4
+
+- Add Bacon.onValues shorthand function
+
+## 0.3.3
+
+- Fix #146: Avoid catch-rethrow to preserve original stack trace
+
+## 0.3.2
+
+- #133: Support EventStreams and Properties as arguments of fromCallback,
+  fromNodeCallback
+
+## 0.3.1
+
+- Fix #142: map(".foo.bar") failed if "foo" was null
+
 ## 0.3.0
 
-- Change combineWith behavior to combine n Observables using n-ary function (#124)
+- #124: Change combineWith behavior to combine n Observables using n-ary function
 - Remove combineAll which had a confusing name and no known uses
 - Support constants instead of Observables as arguments of
   combineAsArray, combineWith
@@ -52,8 +78,8 @@
 ## 0.1.9
 
 - Performance improvements
-- Fix stream ending in case an exception is thrown (#106)
-- Rewrite binder stream factory to compose all others (#105)
+- #106: Fix stream ending in case an exception is thrown
+- #105: Rewrite binder stream factory to compose all others
 
 ## 0.1.8
 

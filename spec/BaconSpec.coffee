@@ -36,9 +36,23 @@ describe "Bacon.interval", ->
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
 
+testLiftedCallback = (src, liftedCallback) ->
+  input = [
+    Bacon.constant('a')
+    'x'
+    Bacon.constant('b').toProperty()
+    'y'
+  ]
+  output = ['a', 'x', 'b', 'y']
+  expectStreamEvents(
+    -> liftedCallback(src, input...)
+    [output]
+  )
+
+
 describe "Bacon.fromCallback", ->
   it "makes an EventStream from function that takes a callback", ->
-    expectStreamEvents( 
+    expectStreamEvents(
       ->
         src = (callback) -> callback("lol")
         stream = Bacon.fromCallback(src)
@@ -49,6 +63,11 @@ describe "Bacon.fromCallback", ->
         src = (param, callback) -> callback(param)
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
+  it "supports partial application with Observable arguments", ->
+    testLiftedCallback(
+      (values..., callback) -> callback(values)
+      Bacon.fromCallback
+    )
 
 describe "Bacon.fromNodeCallback", ->
   it "makes an EventStream from function that takes a node-style callback", ->
@@ -69,6 +88,11 @@ describe "Bacon.fromNodeCallback", ->
         src = (param, callback) -> callback(null, param)
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
+  it "supports partial application with Observable arguments", ->
+    testLiftedCallback(
+      (values..., callback) -> callback(null, values)
+      Bacon.fromNodeCallback
+    )
 
 describe "Bacon.fromEventTarget", ->
   it "should create EventStream from DOM object", ->
@@ -149,7 +173,7 @@ describe "Observable.slidingWindow", ->
       -> series(1, [1,2,3]).toProperty().slidingWindow(2)
       [[], [1], [1,2], [2,3]])
 
-describe "EventStream.filter", -> 
+describe "EventStream.filter", ->
   it "should filter values", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 3]).filter(lessThan(3))
@@ -160,7 +184,7 @@ describe "EventStream.filter", ->
       ["yes"])
   it "can filter by Property value", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,1,2,3,4,4,8,7])
         odd = src.map((x) -> x % 2).toProperty()
         src.filter(odd)
@@ -297,6 +321,10 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
       [1,2])
+  it "Works also when f returns a constant value instead of an EventStream", ->
+    expectStreamEvents(
+      -> series(1, [1,2]).flatMap((x) -> x)
+      [1,2])
   it "Accepts a constant EventStream/Property as an alternative to a function", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.constant("bacon"))
@@ -308,7 +336,7 @@ describe "EventStream.flatMap", ->
 describe "Property.flatMap", ->
   it "should spawn new stream for all events including Init", ->
     expectStreamEvents(
-      -> 
+      ->
         once = (x) -> Bacon.once(x)
         series(1, [1, 2]).toProperty(0).flatMap(once)
       [0, 1, 2])
@@ -344,7 +372,7 @@ describe "Property.flatMapLatest", ->
 
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
-    expectStreamEvents( 
+    expectStreamEvents(
       ->
         left = series(1, [1, error(), 2, 3])
         right = series(1, [4, 5, 6]).delay(t(4))
@@ -561,7 +589,7 @@ describe "Property", ->
           s.end()
         p
       ["a", "b"])
-  
+
   it "passes through also Errors", ->
     expectPropertyEvents(
       -> series(1, [1, error(), 2]).toProperty()
@@ -611,7 +639,7 @@ describe "Property.map", ->
         p
       [2, 4, error()])
 
-describe "Property.filter", -> 
+describe "Property.filter", ->
   it "should filter values", ->
     expectPropertyEvents(
       -> series(1, [1, error(), 2, 3]).toProperty().filter(lessThan(3))
@@ -627,7 +655,7 @@ describe "Property.filter", ->
     expect(values).toEqual([1])
   it "can filter by Property value", ->
     expectPropertyEvents(
-      -> 
+      ->
         src = series(2, [1, 2, 3, 4]).delay(t(1)).toProperty()
         ok = series(2, [false, true, true, false]).toProperty()
         src.filter(ok)
@@ -727,7 +755,7 @@ describe "Property.changes", ->
 
 describe "Property.combine", ->
   it "combines latest values of two properties, with given combinator function, passing through errors", ->
-    expectPropertyEvents( 
+    expectPropertyEvents(
       ->
         left = series(2, [1, error(), 2, 3]).toProperty()
         right = series(2, [4, error(), 5, 6]).delay(t(1)).toProperty()
@@ -761,7 +789,16 @@ describe "Property.combine", ->
     bus.push(["fail whale"])
     expect(calls).toBe 0
 
-describe "Bacon.combineAsArray", -> 
+describe "EventStream.combine", ->
+  it "converts stream to Property, then combines", ->
+    expectPropertyEvents(
+      ->
+        left = series(2, [1, error(), 2, 3])
+        right = series(2, [4, error(), 5, 6]).delay(t(1)).toProperty()
+        left.combine(right, add)
+      [5, error(), error(), 6, 7, 8, 9])
+
+describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
       ->
@@ -831,7 +868,7 @@ describe "Bacon.mergeAll", ->
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6])
 
-describe "Property.sampledBy(stream)", -> 
+describe "Property.sampledBy(stream)", ->
   it "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
       ->
@@ -893,7 +930,7 @@ describe "Property.sampledBy(property)", ->
         prop.sampledBy(sampler, add)
       ["a1", "b2", "b1", "b2"])
 
-describe "Property.sample", -> 
+describe "Property.sample", ->
   it "samples property by given interval", ->
     expectStreamEvents(
       ->
@@ -990,7 +1027,7 @@ describe "EventStream.zip", ->
       [[1, 'a']])
   it "can zip an observable with itself", ->
     expectStreamEvents(
-      -> 
+      ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
@@ -1008,7 +1045,7 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1))
     [[1 , 2], [2 , 3], [3, 4]])
-describe "Bacon.zipWith", ->  
+describe "Bacon.zipWith", ->
   it "zips an array of streams with given function", ->
     expectStreamEvents(
       ->
@@ -1019,7 +1056,7 @@ describe "Bacon.zipWith", ->
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
     expectPropertyEvents(
-      -> 
+      ->
          firstName = Bacon.constant("juha")
          lastName = Bacon.constant("paananen")
          userName = Bacon.constant("mr.bacon")
@@ -1081,6 +1118,12 @@ describe "Observable.onValues", ->
     Bacon.constant([1,2,3]).onValues(f)
     f.verify(1,2,3)
 
+describe "Bacon.onValues", ->
+  it "is a shorthand for combineAsArray.onValues", ->
+    f = mockFunction()
+    Bacon.onValues(1, 2, 3, f)
+    f.verify(1,2,3)
+
 describe "Observable.subscribe and onValue", ->
   it "returns a dispose() for unsubscribing", ->
     s = new Bacon.Bus()
@@ -1110,11 +1153,15 @@ describe "Field value extraction", ->
     expectStreamEvents(
       -> Bacon.once({lol:{wut: "wat"}}).map(".lol.wut")
       ["wat"])
+  it "yields 'undefined' if any value on the path is 'undefined'", ->
+    expectStreamEvents(
+      -> Bacon.once({}).map(".lol.wut")
+      [undefined])
   it "if field value is method, it does a method call", ->
     context = null
     result = null
     object = {
-      method: -> 
+      method: ->
         context = this
         "result"
     }
@@ -1301,8 +1348,30 @@ describe "EventStream", ->
     expectStreamEvents(
       -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
       ["hello"])
+  it "handles one subscriber added twice just like two separate subscribers (case Bacon.noMore)", ->
+    values = []
+    bus = new Bacon.Bus()
+    f = (v) ->
+      if v.hasValue()
+        values.push(v.value())
+        return Bacon.noMore
+    bus.subscribe(f)
+    bus.subscribe(f)
+    bus.push("bacon")
+    expect(values).toEqual(["bacon", "bacon"])
+  it "handles one subscriber added twice just like two separate subscribers (case unsub)", ->
+    values = []
+    bus = new Bacon.Bus()
+    f = (v) ->
+      if v.hasValue()
+        values.push(v.value())
+    bus.subscribe(f)
+    unsub = bus.subscribe(f)
+    unsub()
+    bus.push("bacon")
+    expect(values).toEqual(["bacon"])
 
-lessThan = (limit) -> 
+lessThan = (limit) ->
   (x) -> x < limit
 times = (x, y) -> x * y
 add = (x, y) -> x + y
