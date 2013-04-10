@@ -2,7 +2,7 @@ Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
 exports.TickScheduler = ->
-  counter = 0
+  counter = 1
   currentTick = 0
   schedule = {}
   toRemove = []
@@ -11,7 +11,7 @@ exports.TickScheduler = ->
 
   add = (delay, entry) ->
     tick = currentTick + delay
-    entry.id = nextId()
+    entry.id = nextId() if not entry.id
     schedule[tick] = [] if not schedule[tick]
     schedule[tick].push entry
     entry.id
@@ -32,8 +32,11 @@ exports.TickScheduler = ->
             add entry.recur, entry if entry.recur
       delete schedule[currentTick]
       currentTick++
+    running = false
   {
     setTimeout: (fn, delay) -> boot(add delay, { fn })
     setInterval: (fn, recur) -> boot(add recur, { fn, recur })
     clearTimeout: (id) -> toRemove.push(id)
+    clearInterval: (id) -> toRemove.push(id)
+    now: -> currentTick
   }

@@ -505,7 +505,7 @@ class Observable
           unsubChild = undefined
           childEnded = false
           removeChild = ->
-            remove(unsubChild, children) if unsubChild?
+            _.remove(unsubChild, children) if unsubChild?
             checkEnd()
           handler = (event) ->
             if event.isEnd()
@@ -944,10 +944,6 @@ else
     for y, i in xs
       return i if x == y
     -1
-remove = (x, xs) ->
-  i = indexOf(xs, x)
-  if i >= 0
-    xs.splice(i, 1)
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
@@ -1042,6 +1038,10 @@ _ = {
     return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
+  remove: (x, xs) ->
+    i = indexOf(xs, x)
+    if i >= 0
+      xs.splice(i, 1)
 }
 
 Bacon._ = _
@@ -1050,3 +1050,4 @@ Bacon.scheduler =
   setTimeout: global.setTimeout
   setInterval: global.setInterval
   clearInterval: global.clearInterval
+  now: -> new Date().getTime()

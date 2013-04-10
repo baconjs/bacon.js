@@ -22,7 +22,7 @@ seqs = []
 
 @expectStreamTimings = (src, expectedEventsAndTimings) ->
   srcWithRelativeTime = () ->
-    now = () -> new Date().getTime()
+    now = Bacon.scheduler.now
     t0 = now()
     relativeTime = () -> 
       Math.floor((now() - t0 + 1) / timeUnitMillisecs)
@@ -52,7 +52,7 @@ seqs = []
           if event.isInitial()
             events2.push(event.value())
           Bacon.noMore
-  waitsFor streamEnded, t(50)
+  waitsFor streamEnded, t(1)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     expect(events2).toEqual(justValues(expectedEvents))
@@ -71,7 +71,7 @@ verifySingleSubscriber = (src, expectedEvents) ->
       expect(event instanceof Bacon.Initial).toEqual(false)
       events.push(toValue(event))
 
-  waitsFor streamEnded, t(50)
+  waitsFor streamEnded, t(1)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyExhausted(src)
@@ -93,7 +93,7 @@ verifySwitching = (src, expectedEvents) ->
         Bacon.noMore
   runs -> 
     src.subscribe(newSink())
-  waitsFor streamEnded, t(50)
+  waitsFor streamEnded, t(1)
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyExhausted(src)

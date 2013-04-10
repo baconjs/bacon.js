@@ -32,7 +32,6 @@ describe "Bacon.sequentially", ->
     expectStreamEvents(
       -> Bacon.sequentially(t(1), [error(), "lol"])
       [error(), "lol"])
-
 describe "Bacon.interval", ->
   it "repeats single element indefinitely", ->
     expectStreamEvents(
