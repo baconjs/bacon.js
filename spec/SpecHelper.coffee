@@ -3,9 +3,9 @@ _ = Bacon._
 
 browser = (typeof window) != "undefined"
 console.log("in browser") if browser
-timeUnitMillisecs = if browser then 50 else 10
-@t = (time) -> time * timeUnitMillisecs
+@t = (time) -> time
 seqs = []
+waitMs = 100
 
 @error = (msg) -> new Bacon.Error(msg)
 @soon = (f) -> setTimeout f, t(1)
@@ -25,7 +25,7 @@ seqs = []
     now = Bacon.scheduler.now
     t0 = now()
     relativeTime = () -> 
-      Math.floor((now() - t0 + 1) / timeUnitMillisecs)
+      Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
     src().map(withRelativeTime)
   @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
@@ -52,7 +52,7 @@ seqs = []
           if event.isInitial()
             events2.push(event.value())
           Bacon.noMore
-  waitsFor streamEnded, t(1)
+  waitsFor streamEnded, waitMs
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     expect(events2).toEqual(justValues(expectedEvents))
@@ -71,7 +71,7 @@ verifySingleSubscriber = (src, expectedEvents) ->
       expect(event instanceof Bacon.Initial).toEqual(false)
       events.push(toValue(event))
 
-  waitsFor streamEnded, t(1)
+  waitsFor streamEnded, waitMs
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyExhausted(src)
@@ -93,7 +93,7 @@ verifySwitching = (src, expectedEvents) ->
         Bacon.noMore
   runs -> 
     src.subscribe(newSink())
-  waitsFor streamEnded, t(1)
+  waitsFor streamEnded, waitMs
   runs -> 
     expect(events).toEqual(toValues(expectedEvents))
     verifyExhausted(src)
