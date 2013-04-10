@@ -31,6 +31,7 @@ exports.TickScheduler = ->
             entry.fn()
             add entry.recur, entry if entry.recur
       delete schedule[currentTick]
+      currentTick++
   {
     setTimeout: (fn, delay) -> boot(add delay, { fn })
     setInterval: (fn, recur) -> boot(add recur, { fn, recur })
