@@ -1,5 +1,6 @@
 Bacon = (require "../src/Bacon").Bacon
 Mocks = (require "./Mock")
+TickScheduler = (require "./TickScheduler").TickScheduler
 mock = Mocks.mock
 mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
@@ -13,6 +14,8 @@ soon = th.soon
 series = th.series
 repeat = th.repeat
 toValues = th.toValues
+sc = TickScheduler()
+Bacon.scheduler = sc
 
 describe "Bacon.later", ->
   it "should send single event and end", ->
@@ -29,7 +32,6 @@ describe "Bacon.sequentially", ->
     expectStreamEvents(
       -> Bacon.sequentially(t(1), [error(), "lol"])
       [error(), "lol"])
-
 describe "Bacon.interval", ->
   it "repeats single element indefinitely", ->
     expectStreamEvents(
@@ -434,7 +436,7 @@ describe "EventStream.bufferWithTime", ->
       -> Bacon.never().bufferWithTime(t(1))
       [])
   it "allows custom defer-function", ->
-    fast = (f) -> setTimeout(f, 0)
+    fast = (f) -> sc.setTimeout(f, 0)
     th.expectStreamTimings(
       -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
       [[0, ["a"]], [2, ["b"]]])
