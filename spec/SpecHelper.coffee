@@ -1,8 +1,6 @@
 Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
-browser = (typeof window) != "undefined"
-console.log("in browser") if browser
 @t = (time) -> time
 seqs = []
 waitMs = 100
