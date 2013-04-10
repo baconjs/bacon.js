@@ -179,7 +179,7 @@
   };
 
   Bacon.constant = function(value) {
-    return new Property(sendWrapped([value], initial));
+    return new Property(sendWrapped([value], initial), true);
   };
 
   Bacon.never = function() {
@@ -702,6 +702,8 @@
   Observable = (function() {
 
     function Observable() {
+      this.combine = __bind(this.combine, this);
+
       this.flatMapLatest = __bind(this.flatMapLatest, this);
 
       this.scan = __bind(this.scan, this);
@@ -1011,7 +1013,7 @@
         }
         return unsub;
       };
-      return new Property(new PropertyDispatcher(subscribe).subscribe);
+      return new Property(subscribe);
     };
 
     Observable.prototype.zip = function(other, f) {
@@ -1131,6 +1133,14 @@
     Observable.prototype.slidingWindow = function(n) {
       return this.scan([], function(window, value) {
         return window.concat([value]).slice(-n);
+      });
+    };
+
+    Observable.prototype.combine = function(other, f) {
+      var combinator;
+      combinator = toCombinator(f);
+      return Bacon.combineAsArray(this, other).map(function(values) {
+        return combinator(values[0], values[1]);
       });
     };
 
@@ -1355,10 +1365,7 @@
 
     __extends(Property, _super);
 
-    function Property(subscribe) {
-      var combine,
-        _this = this;
-      this.subscribe = subscribe;
+    function Property(subscribe, handler) {
       this.toEventStream = __bind(this.toEventStream, this);
 
       this.toProperty = __bind(this.toProperty, this);
@@ -1367,7 +1374,14 @@
 
       this.sample = __bind(this.sample, this);
 
+      var combine,
+        _this = this;
       Property.__super__.constructor.call(this);
+      if (handler === true) {
+        this.subscribe = subscribe;
+      } else {
+        this.subscribe = new PropertyDispatcher(subscribe, handler).subscribe;
+      }
       combine = function(other, leftSink, rightSink) {
         var myVal, otherVal;
         myVal = None;
@@ -1444,13 +1458,6 @@
           return unsubBoth;
         });
       };
-      this.combine = function(other, f) {
-        var combinator;
-        combinator = toCombinator(f);
-        return Bacon.combineAsArray(_this, other).map(function(values) {
-          return combinator(values[0], values[1]);
-        });
-      };
       this.sampledBy = function(sampler, combinator) {
         var pushPropertyValue, values;
         if (combinator == null) {
@@ -1486,11 +1493,11 @@
     };
 
     Property.prototype.withHandler = function(handler) {
-      return new Property(new PropertyDispatcher(this.subscribe, handler).subscribe);
+      return new Property(this.subscribe, handler);
     };
 
     Property.prototype.withSubscribe = function(subscribe) {
-      return new Property(new PropertyDispatcher(subscribe).subscribe);
+      return new Property(subscribe);
     };
 
     Property.prototype.toProperty = function() {
@@ -1573,7 +1580,7 @@
   Dispatcher = (function() {
 
     function Dispatcher(subscribe, handleEvent) {
-      var addWaiter, done, ended, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters,
+      var addWaiter, done, ended, prevError, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters,
         _this = this;
       if (subscribe == null) {
         subscribe = function() {
@@ -1587,6 +1594,7 @@
       this.hasSubscribers = function() {
         return subscriptions.length > 0;
       };
+      prevError = null;
       unsubscribeFromSource = nop;
       removeSub = function(subscription) {
         return subscriptions = _.without(subscription, subscriptions);
@@ -1610,6 +1618,12 @@
       this.push = function(event) {
         var reply, sub, success, tmp, _i, _len;
         if (!pushing) {
+          if (event === prevError) {
+            return;
+          }
+          if (event.isError()) {
+            prevError = event;
+          }
           success = false;
           try {
             pushing = true;

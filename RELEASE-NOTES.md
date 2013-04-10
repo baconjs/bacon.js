@@ -1,6 +1,9 @@
 ## 0.3.6
 
 - generalize combine method to all Observables
+- Fix #147: Prevent sending duplicate Errors in case the same Error is routed thru multiple paths.
+- Internal change: PropertyDispatcher now used in Property constructor
+  as a default.
 
 ## 0.3.5
 
