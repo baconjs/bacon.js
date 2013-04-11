@@ -15,7 +15,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         reply = sink(event = toEvent(event))
         if reply == Bacon.noMore or event.isEnd()
           # defer if binder calls handler in sync before returning unbinder
-          if unbinder? then unbinder() else setTimeout (-> unbinder()), 0
+          if unbinder? then unbinder() else Bacon.scheduler.setTimeout (-> unbinder()), 0
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
@@ -98,8 +98,8 @@ Bacon.fromNodeCallback = liftCallback (f, args...) ->
 
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
-    id = setInterval(handler, delay)
-    -> clearInterval(id)
+    id = Bacon.scheduler.setInterval(handler, delay)
+    -> Bacon.scheduler.clearInterval(id)
   , poll
 
 Bacon.interval = (delay, value) ->
@@ -505,7 +505,7 @@ class Observable
           unsubChild = undefined
           childEnded = false
           removeChild = ->
-            remove(unsubChild, children) if unsubChild?
+            _.remove(unsubChild, children) if unsubChild?
             checkEnd()
           handler = (event) ->
             if event.isEnd()
@@ -596,7 +596,7 @@ class EventStream extends Observable
     reply = Bacon.more
     if not isFunction(delay)
       delayMs = delay
-      delay = (f) -> setTimeout(f, delayMs)
+      delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
     @withHandler (event) ->
       buffer.push = @push
       if event.isError()
@@ -944,10 +944,6 @@ else
     for y, i in xs
       return i if x == y
     -1
-remove = (x, xs) ->
-  i = indexOf(xs, x)
-  if i >= 0
-    xs.splice(i, 1)
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
@@ -1042,6 +1038,16 @@ _ = {
     return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
+  remove: (x, xs) ->
+    i = indexOf(xs, x)
+    if i >= 0
+      xs.splice(i, 1)
 }
 
 Bacon._ = _
+
+Bacon.scheduler =
+  setTimeout: global.setTimeout
+  setInterval: global.setInterval
+  clearInterval: global.clearInterval
+  now: -> new Date().getTime()
