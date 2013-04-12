@@ -40,10 +40,10 @@ You can download the latest [generated javascript](https://raw.github.com/raimoh
 <script src="https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js"></script>
 ```
 
-Version 0.3.0 can also be found from cdnjs hosting:
+Version 0.3.5 can also be found from cdnjs hosting:
 
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.3.0/Bacon.js
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.3.0/Bacon.min.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.3.5/Bacon.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.3.5/Bacon.min.js
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
