@@ -1,3 +1,7 @@
+## 0.3.7
+
+- Fix #151: take(N) should work with N = 0
+
 ## 0.3.6
 
 - generalize combine method to all Observables

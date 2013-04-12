@@ -344,7 +344,7 @@ class Observable
       else
         @push event
   take: (count) ->
-    assert "take: count must >= 1", (count>=1)
+    return Bacon.never() if count <= 0
     @withHandler (event) ->
       if !event.hasValue()
         @push event

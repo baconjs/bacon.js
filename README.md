@@ -331,7 +331,8 @@ at the time of the event.
 
 `observable.takeWhile(f)` takes while given predicate function holds true
 
-`observable.take(n)` takes at most n elements from the stream
+`observable.take(n)` takes at most n elements from the stream. Equals to
+Bacon.never() if n <= 0.
 
 `observable.takeUntil(stream2)` takes elements from source until a Next event
 appears in the other stream. If other stream ends without value, it is

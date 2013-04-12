@@ -268,6 +268,16 @@ describe "EventStream.mapEnd", ->
       -> series(1, ["1", error()]).mapEnd()
       ["1", error(), undefined])
 
+describe "EventStream.take", ->
+  it "takes N first elements", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3,4]).take(2)
+      [1,2])
+  it "works with N=0", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3,4]).take(0)
+      [])
+
 describe "EventStream.takeWhile", ->
   it "should take while predicate is true", ->
     expectStreamEvents(
