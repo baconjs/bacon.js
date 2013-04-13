@@ -1120,6 +1120,28 @@ Bacon = require("baconjs").Bacon
 Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
 ```
 
+AMD
+===
+
+Yep. Currently exports bacon through AMD and assigns to `window` for backwards
+compatibility.
+
+If you would like to use it with jQuery and AMD, you should monkey patch jQuery
+explicitely so that module loading order does not matter
+
+```js
+define(function (require) {
+    var $ = require('jquery'),
+        Bacon = require('Bacon');
+
+    $.fn.asEventStream = Bacon.$.asEventStream;
+
+    $(document).asEventStream('click').onValue(function (e) {
+        console.log(e.clientX + ', ' + e.clientY);
+    });
+});
+```
+
 Why Bacon?
 ==========
 
