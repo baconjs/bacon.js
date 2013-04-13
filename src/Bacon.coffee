@@ -1,6 +1,8 @@
 if module?
   module.exports = Bacon = {} # for Bacon = require 'baconjs'
   Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
+else if typeof require is 'function' and require.amd?
+  define 'bacon', [], -> Bacon
 else
   @Bacon = Bacon = {} # otherwise for execution context
 
