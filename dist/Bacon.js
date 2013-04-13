@@ -929,7 +929,6 @@
     };
 
     Observable.prototype.skip = function(count) {
-      assert("skip: count must >= 0", count >= 0);
       return this.withHandler(function(event) {
         if (!event.hasValue()) {
           return this.push(event);
