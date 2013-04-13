@@ -1,3 +1,11 @@
+## 0.3.9
+
+- Fix #152: Observable.skip now accepts zero and negative values
+
+## 0.3.8
+
+- Fix #153: Remove dep on "global" to fix in browsers.
+
 ## 0.3.7
 
 - Fix #151: take(N) should work with N = 0
