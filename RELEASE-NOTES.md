@@ -1,3 +1,7 @@
+## 0.3.10
+
+- Add AMD support (#154)
+
 ## 0.3.9
 
 - Fix #152: Observable.skip now accepts zero and negative values
