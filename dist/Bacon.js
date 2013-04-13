@@ -8,6 +8,10 @@
   if (typeof module !== "undefined" && module !== null) {
     module.exports = Bacon = {};
     Bacon.Bacon = Bacon;
+  } else if (typeof require === 'function' && (require.amd != null)) {
+    define('bacon', [], function() {
+      return Bacon;
+    });
   } else {
     this.Bacon = Bacon = {};
   }
