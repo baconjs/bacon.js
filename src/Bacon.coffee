@@ -1047,7 +1047,7 @@ _ = {
 Bacon._ = _
 
 Bacon.scheduler =
-  setTimeout: global.setTimeout
-  setInterval: global.setInterval
-  clearInterval: global.clearInterval
+  setTimeout: (f,d) -> setTimeout(f,d)
+  setInterval: (f, i) -> setInterval(f, i),
+  clearInterval: (id) -> clearInterval(id),
   now: -> new Date().getTime()
