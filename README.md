@@ -1123,11 +1123,11 @@ Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
 AMD
 ===
 
-Yep. Currently exports bacon through AMD and assigns to `window` for backwards
+Yep. Currently exports Bacon through AMD and assigns to `window` for backwards
 compatibility.
 
 If you would like to use it with jQuery and AMD, you should monkey patch jQuery
-explicitely so that module loading order does not matter
+explicitly so that module loading order does not matter
 
 ```js
 define(function (require) {
