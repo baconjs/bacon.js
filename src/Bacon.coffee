@@ -414,7 +414,6 @@ class Observable
       unsubStopper = stopper.subscribe(stopperSink) unless unsubscribed
       unsubBoth
   skip : (count) ->
-    assert "skip: count must >= 0", (count>=0)
     @withHandler (event) ->
       if !event.hasValue()
         @push event

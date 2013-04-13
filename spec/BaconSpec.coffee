@@ -289,6 +289,10 @@ describe "EventStream.skip", ->
     expectStreamEvents(
       -> series(1, [1, error(), 2, error(), 3]).skip(1)
     [error(), 2, error(), 3])
+  it "accepts N <= 0", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).skip(-1)
+    [1, 2])
 
 describe "EventStream.skipDuplicates", ->
   it "drops duplicates", ->
