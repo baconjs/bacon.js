@@ -2198,9 +2198,15 @@
   Bacon._ = _;
 
   Bacon.scheduler = {
-    setTimeout: global.setTimeout,
-    setInterval: global.setInterval,
-    clearInterval: global.clearInterval,
+    setTimeout: function(f, d) {
+      return setTimeout(f, d);
+    },
+    setInterval: function(f, i) {
+      return setInterval(f, i);
+    },
+    clearInterval: function(id) {
+      return clearInterval(id);
+    },
     now: function() {
       return new Date().getTime();
     }
