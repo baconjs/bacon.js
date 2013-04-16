@@ -154,7 +154,9 @@ $("#my-div").asEventStream("click", ".more-specific-selector", function(event, a
 $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 ```
 
-`Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. This stream will contain a single value or an error, followed immediately by stream end. [Example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html)
+`Bacon.fromPromise(promise)` creates an EventStream from a Promise object such as JQuery Ajax. 
+This stream will contain a single value or an error, followed immediately by stream end. 
+Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 
 `Bacon.fromEventTarget(target, event)` creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that processes the emitted
