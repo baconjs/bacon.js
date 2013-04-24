@@ -469,6 +469,9 @@ class Observable
       unsub
     new Property(subscribe)
 
+  fold: (seed, f) =>
+    @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty())
+
   zip: (other, f = Array) ->
     Bacon.zipWith([this,other], f)
 
