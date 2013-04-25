@@ -449,6 +449,8 @@ class Observable
     acc = toOption(seed)
     subscribe = (sink) =>
       initSent = false
+      unsub = nop
+      reply = Bacon.more
       sendInit = ->
         if !initSent
           initSent = true
@@ -467,8 +469,8 @@ class Observable
             sink (event.apply(_.always(acc.get())))
         else
           if event.isEnd()
-            sendInit()
-          sink event
+            reply = sendInit()
+          sink event unless reply == Bacon.noMore
       sendInit()
       unsub
     new Property(subscribe)
