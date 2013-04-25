@@ -1017,6 +1017,10 @@ describe "Property.scan", ->
     expectPropertyEvents(
       -> series(1, [2]).toProperty(1).scan(null, add)
       [1, 3])
+  it "works with synchronously responding empty source", ->
+    expectPropertyEvents(
+      -> Bacon.never().toProperty(1).scan(0, add)
+      [1])
 
 describe "EventStream.diff", ->
   it "apply diff function to previous and current values, passing through errors", ->
