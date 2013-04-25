@@ -1,3 +1,8 @@
+## 0.3.11
+
+- Fix #160: Property.scan/debounce/throttle/delay bug with sources like
+  Bacon.once() and Bacon.constant()
+
 ## 0.3.10
 
 - Add AMD support (#154)
