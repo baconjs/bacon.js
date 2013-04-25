@@ -5,6 +5,13 @@ _ = Bacon._
 seqs = []
 waitMs = 100
 
+grep = process.env.test
+if grep
+  origDescribe = describe
+  global.describe = (desc, f) ->
+    if desc.indexOf(grep) >= 0
+      origDescribe(desc, f)
+
 @error = (msg) -> new Bacon.Error(msg)
 @soon = (f) -> setTimeout f, t(1)
 @series = (interval, values) ->
