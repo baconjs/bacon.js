@@ -754,7 +754,7 @@ addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
     value = None
     property.subscribe (event) ->
-      if event.isInitial()
+      if event.hasValue()
         value = new Some(event.value())
       Bacon.noMore
     value
