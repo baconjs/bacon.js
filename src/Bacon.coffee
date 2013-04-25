@@ -449,6 +449,14 @@ class Observable
     acc = toOption(seed)
     subscribe = (sink) =>
       initSent = false
+      sendInit = ->
+        if !initSent
+          initSent = true
+          acc.forEach (value) ->
+            reply = sink initial(value)
+            if (reply == Bacon.noMore)
+              unsub()
+              unsub = nop
       unsub = @subscribe (event) =>
         if (event.hasValue())
           if (initSent && event.isInitial())
@@ -458,14 +466,10 @@ class Observable
             acc = new Some(f(acc.getOrElse(undefined), event.value()))
             sink (event.apply(_.always(acc.get())))
         else
-          if event.isEnd() then initSent = true
+          if event.isEnd()
+            sendInit()
           sink event
-      if !initSent
-        acc.forEach (value) ->
-          reply = sink initial(value)
-          if (reply == Bacon.noMore)
-            unsub()
-            unsub = nop
+      sendInit()
       unsub
     new Property(subscribe)
 

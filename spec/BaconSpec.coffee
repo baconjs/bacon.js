@@ -746,11 +746,19 @@ describe "Property.debounce", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty().debounce(t(4))
       [3])
+  it "works with Bacon.constant (bug fix)", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1).debounce(1)
+      [1])
 describe "Property.throttle", ->
   it "throttles changes, but not initial value", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).throttle(t(4))
       [0,3])
+  it "works with Bacon.once (bug fix)", ->
+    expectPropertyEvents(
+      -> Bacon.once(1).toProperty().throttle(1)
+      [1])
 
 describe "Property.endOnError", ->
   it "terminates on Error", ->
