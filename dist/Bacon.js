@@ -989,8 +989,22 @@
       f = toCombinator(f);
       acc = toOption(seed);
       subscribe = function(sink) {
-        var initSent, unsub;
+        var initSent, reply, sendInit, unsub;
         initSent = false;
+        unsub = nop;
+        reply = Bacon.more;
+        sendInit = function() {
+          if (!initSent) {
+            initSent = true;
+            return acc.forEach(function(value) {
+              reply = sink(initial(value));
+              if (reply === Bacon.noMore) {
+                unsub();
+                return unsub = nop;
+              }
+            });
+          }
+        };
         unsub = _this.subscribe(function(event) {
           if (event.hasValue()) {
             if (initSent && event.isInitial()) {
@@ -1002,21 +1016,14 @@
             }
           } else {
             if (event.isEnd()) {
-              initSent = true;
+              reply = sendInit();
             }
-            return sink(event);
+            if (reply !== Bacon.noMore) {
+              return sink(event);
+            }
           }
         });
-        if (!initSent) {
-          acc.forEach(function(value) {
-            var reply;
-            reply = sink(initial(value));
-            if (reply === Bacon.noMore) {
-              unsub();
-              return unsub = nop;
-            }
-          });
-        }
+        sendInit();
         return unsub;
       };
       return new Property(subscribe);
@@ -1573,7 +1580,7 @@
       var value;
       value = None;
       property.subscribe(function(event) {
-        if (event.isInitial()) {
+        if (event.hasValue()) {
           value = new Some(event.value());
         }
         return Bacon.noMore;
