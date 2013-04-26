@@ -1,3 +1,7 @@
+## Next release
+
+- Support Bacon.Error in Bacon.once, Bacon.fromArray
+
 ## 0.3.11
 
 - Fix #160: Property.scan/debounce/throttle/delay bug with sources like
