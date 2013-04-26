@@ -208,7 +208,7 @@ when there are subscribers to the stream. Polling ends permanently when
 
 `Bacon.once(value)` creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
-after this value.
+after this value. 
 
 `Bacon.fromArray(values)` creates an EventStream that delivers the given
 series of values to the first subscriber. The stream ends after these
@@ -236,6 +236,10 @@ subscribe function. (See below)
 
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
+
+Pro tip: you can also put Errors into streams created with the
+constructors above, by using an `Bacon.Error` object instead of a plain
+value.
 
 The EventStream constructor for custom streams
 ----------------------------------------------

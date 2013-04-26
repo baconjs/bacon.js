@@ -22,6 +22,10 @@ describe "Bacon.later", ->
     expectStreamEvents(
       -> Bacon.later(t(1), "lol")
       ["lol"])
+  it "supports sending an Error event as well", ->
+    expectStreamEvents(
+      -> Bacon.later(t(1), new Bacon.Error("oops"))
+      [error()])
 
 describe "Bacon.sequentially", ->
   it "should send given events and end", ->
@@ -554,6 +558,10 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once("pow")
       ["pow"])
+  it "accepts an Error event as parameter", ->
+    expectStreamEvents(
+      -> Bacon.once(new Bacon.Error("oop"))
+      [error()])
 
 describe "EventStream.concat", ->
   it "provides values from streams in given order and ends when both are exhausted", ->

@@ -116,7 +116,7 @@ Bacon.never = -> Bacon.fromArray([])
 Bacon.once = (value) -> Bacon.fromArray([value])
 
 Bacon.fromArray = (values) ->
-  new EventStream(sendWrapped(values, next))
+  new EventStream(sendWrapped(values, toEvent))
 
 sendWrapped = (values, wrapper) ->
   (sink) ->
