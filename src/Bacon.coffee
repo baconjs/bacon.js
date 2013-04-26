@@ -115,6 +115,11 @@ Bacon.never = -> Bacon.fromArray([])
 
 Bacon.once = (value) -> Bacon.fromArray([value])
 
+Bacon.error = (err) -> new EventStream (sink) ->
+  sink(new Error(err))
+  sink(new End())
+  nop
+
 Bacon.fromArray = (values) ->
   new EventStream(sendWrapped(values, next))
 
@@ -536,6 +541,11 @@ class Observable
     stream = @toEventStream()
     stream.flatMap (value) =>
       f(value).takeUntil(stream)
+  flatMapError: (f) => this.mapError((err) -> new Error(err)).flatMap (x) ->
+    if x instanceof Error
+      f(x.error)
+    else
+      x
   not: -> @map((x) -> !x)
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.describe())

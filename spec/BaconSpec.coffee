@@ -555,6 +555,18 @@ describe "Bacon.once", ->
       -> Bacon.once("pow")
       ["pow"])
 
+describe "Bacon.error", ->
+  it "should send single error", ->
+    expectStreamEvents(
+      -> Bacon.error("woot")
+      [error()])
+
+describe "EventStream.flatMapError", ->
+  it "flatMaps erros and passes through values", ->
+    expectStreamEvents(
+      -> series(1, ["lol", error()]).flatMapError((err) -> Bacon.once("wot"))
+      ["lol", "wot"])
+
 describe "EventStream.concat", ->
   it "provides values from streams in given order and ends when both are exhausted", ->
     expectStreamEvents(
