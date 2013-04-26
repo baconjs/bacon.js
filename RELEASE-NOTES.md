@@ -1,4 +1,4 @@
-## Next release
+## 0.3.12
 
 - Support Bacon.Error in Bacon.once, Bacon.fromArray
 
