@@ -999,6 +999,23 @@ describe "Property.sampledBy(stream)", ->
         src = series(2, [1, 2])
         src.toProperty().sampledBy(src.map(times, 2))
       [1, 2])
+  it "uses updated property after combine", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        src = series(2, ["b", "c"]).toProperty("a")
+        combined = Bacon.constant().combine(src, latter)
+        src.sampledBy(combined, add)
+      ["aa", "bb", "cc"])
+  it "uses updated property after combine with subscriber", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        src = series(2, ["b", "c"]).toProperty("a")
+        combined = Bacon.constant().combine(src, latter)
+        combined.onValue(->)
+        src.sampledBy(combined, add)
+      ["aa", "bb", "cc"])
 
 describe "Property.sampledBy(property)", ->
   it "samples property at events, resulting to a Property", ->
