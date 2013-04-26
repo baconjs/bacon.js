@@ -196,7 +196,7 @@
   };
 
   Bacon.fromArray = function(values) {
-    return new EventStream(sendWrapped(values, next));
+    return new EventStream(sendWrapped(values, toEvent));
   };
 
   sendWrapped = function(values, wrapper) {
