@@ -54,10 +54,10 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
     -> unsub.call(target, eventName, handler)
   , eventTransformer
 
-Bacon.fromPromise = (promise) ->
+Bacon.fromPromise = (promise, abort) ->
   Bacon.fromBinder (handler) ->
     promise.then(handler, (e) -> handler(new Error(e)))
-    -> promise.abort?()
+    -> promise.abort?() if abort
   , (value) -> [value, end()]
 
 

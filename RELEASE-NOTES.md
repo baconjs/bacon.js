@@ -1,3 +1,7 @@
+## 0.3.13
+
+- Fix #162: Call Promise.abort() only if the "abort" flag is used
+
 ## 0.3.12
 
 - Support Bacon.Error in Bacon.once, Bacon.fromArray
