@@ -83,13 +83,15 @@
     }, eventTransformer);
   };
 
-  Bacon.fromPromise = function(promise) {
+  Bacon.fromPromise = function(promise, abort) {
     return Bacon.fromBinder(function(handler) {
       promise.then(handler, function(e) {
         return handler(new Error(e));
       });
       return function() {
-        return typeof promise.abort === "function" ? promise.abort() : void 0;
+        if (abort) {
+          return typeof promise.abort === "function" ? promise.abort() : void 0;
+        }
       };
     }, function(value) {
       return [value, end()];
