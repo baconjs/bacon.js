@@ -1151,6 +1151,26 @@ describe "combineTemplate", ->
     Bacon.combineTemplate(value).onValue (x) ->
       expect(x).toEqual({key: [{ x: 1 }, { x: 2 }]})
       expect(x.key instanceof Array).toEqual(true) # seems that the former passes even if x is not an array
+  it "supports nulls", ->
+    value = {key: null}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+  it "supports NaNs", ->
+    value = {key: NaN}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(isNaN(x.key)).toEqual(true)
+  it "supports dates", ->
+    value = {key: new Date()}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+  it "supports regexps", ->
+    value = {key: /[0-0]/i}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
+  it "supports functions", ->
+    value = {key: ->}
+    Bacon.combineTemplate(value).onValue (x) ->
+      expect(x).toEqual(value)
 
 describe "Property.decode", ->
   it "switches between source Properties based on property value", ->
