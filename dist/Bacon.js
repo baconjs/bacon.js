@@ -497,7 +497,7 @@
       if (value instanceof Observable) {
         streams.push(value);
         return funcs.push(applyStreamValue(key, streams.length - 1));
-      } else if (typeof value === "object") {
+      } else if (value === Object(value) && typeof value !== "function") {
         pushContext = function(key) {
           return function(ctxStack, values) {
             var newContext;
