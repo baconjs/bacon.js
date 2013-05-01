@@ -1030,6 +1030,30 @@ describe "Property.scan", ->
       -> Bacon.never().toProperty(1).scan(0, add)
       [1])
 
+describe "EventStream.withStateMachin", ->
+  it "runs state machine on the stream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1,2,3]).withStateMachine(0, (sum, event) ->
+        if event.hasValue()
+          [sum + event.value(), []]
+        else if event.isEnd()
+          [sum, [new Bacon.Next(-> sum), event]]
+        else
+          [sum, [event]])
+      [6])
+
+describe "Property.withStateMachin", ->
+  it "runs state machine on the stream", ->
+    expectPropertyEvents(
+      -> Bacon.fromArray([1,2,3]).toProperty().withStateMachine(0, (sum, event) ->
+        if event.hasValue()
+          [sum + event.value(), []]
+        else if event.isEnd()
+          [sum, [new Bacon.Next(-> sum), event]]
+        else
+          [sum, [event]])
+      [6])
+
 describe "EventStream.diff", ->
   it "apply diff function to previous and current values, passing through errors", ->
     expectPropertyEvents(

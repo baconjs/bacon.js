@@ -530,6 +530,24 @@ streams or properties using a two-arg function. Similarly to `scan`, you can use
 method name instead, so you could do `a.combine(b, ".concat")` for two
 properties with array value. The result is a Property.
 
+`observable.withStateMachine(initState, f)` lets you run a state machine
+on an observable. Give it an initial state object and a state
+transformation function that processes each incoming event and 
+returns and array containing the next state and an array of output
+events. Here's an an example, where we calculate the total sum of all
+numbers in the stream and output the value on stream end:
+
+```js
+Bacon.fromArray([1,2,3])
+  .withStateMachine(0, function(sum, event) {
+    if (event.hasValue())
+      return [sum + event.value(), []]
+    else if (event.isEnd())
+      return [undefined, [new Bacon.Next(sum), event]]
+    else
+      return [sum, [event]]
+  })
+
 EventStream
 -----------
 
