@@ -1,3 +1,7 @@
+## 0.3.14
+
+- Fix #163: add support for nulls etc in combineTemplate
+
 ## 0.3.13
 
 - Fix #162: Call Promise.abort() only if the "abort" flag is used
