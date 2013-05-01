@@ -547,6 +547,7 @@ Bacon.fromArray([1,2,3])
     else
       return [sum, [event]]
   })
+```
 
 EventStream
 -----------
