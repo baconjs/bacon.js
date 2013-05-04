@@ -844,6 +844,39 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
+describe "Property update is atomic", ->
+  it "in a diamond-shaped combine() network", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map (x) -> x
+         c = a.map (x) -> x
+         b.combine(c, (x, y) -> x + y)
+      [2, 4])
+  it "in a triangle-shaped combine() network", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map (x) -> x
+         a.combine(b, (x, y) -> x + y)
+      [2, 4])
+  it "when filter is involved", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map((x) -> x).filter(true)
+         a.combine(b, (x, y) -> x + y)
+      [2, 4])
+  it "when root property is based on combine*", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty().combine(Bacon.constant(0), (x, y) -> x)
+         b = a.map (x) -> x
+         c = a.map (x) -> x
+         b.combine(c, (x, y) -> x + y)
+      [2, 4])
+
+
 describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
