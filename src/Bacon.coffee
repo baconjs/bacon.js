@@ -707,6 +707,7 @@ class Property extends Observable
       if sampler instanceof Property then new Property(subscribe) else new EventStream(subscribe)
 
     @subscribe = (sink) =>
+      # TODO: it's unoptimal to do this bookkeepping per subscriber
       reply = Bacon.more
       class LatestEvent
         set: (event) -> @event = event
