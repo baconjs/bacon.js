@@ -707,31 +707,32 @@ class Property extends Observable
       if sampler instanceof Property then new Property(subscribe) else new EventStream(subscribe)
 
     @subscribe = (sink) =>
-      # TODO: nämä tehdään nyt joka listenerille erikseen
-      _value = undefined
-      _end = undefined
       reply = Bacon.more
+      class LatestEvent
+        set: (event) -> @event = event
+        send: ->
+          event = @event
+          @event = null
+          if event? and reply != Bacon.noMore
+            reply = sink event
+      value = new LatestEvent()
+      end = new LatestEvent()
       unsub = @subscribeInternal (event) =>
         if event.isError()
           reply = sink event if reply != Bacon.noMore
           reply
         else
           if event.hasValue()
-            _value = event
+            value.set(event)
           else if event.isEnd()
-            _end = event
+            end.set(event)
           PropertyTransaction.onDone ->
-            __value = _value
-            __end = _end
-            _value = undefined
-            _end = undefined
-            reply = sink(__value) if __value? and reply != Bacon.noMore
-            reply = sink(__end) if __end? and reply != Bacon.noMore
-            if reply == Bacon.noMore
-              if unsub?
-                unsub()
-              else
-                setTimeout 0, unsub
+            value.send()
+            end.send()
+      unsub() if reply == Bacon.noMore
+      ->
+        reply = Bacon.noMore
+        unsub()
 
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
