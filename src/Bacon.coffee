@@ -675,57 +675,36 @@ class Property extends Observable
       @subscribeInternal = subscribe
     else
       @subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe
-    combine = (other, leftSink, rightSink) =>
+
+    @sampledBy = (sampler, combinator) =>
+      lazyCombinator = 
+        if (combinator?)
+          combinator = toCombinator(combinator)
+          (myVal, otherVal) ->
+            combinator(myVal.value(), otherVal.value())
+        else
+          (myVal, otherVal) -> myVal.value()
       myVal = None
-      otherVal = None
-      new Property (sink) =>
+      subscribe = (sink) => 
         unsubscribed = false
         unsubMe = nop
         unsubOther = nop
         unsubBoth = -> unsubMe() ; unsubOther() ; unsubscribed = true
-        myEnd = false
-        otherEnd = false
-        checkEnd = ->
-          if myEnd and otherEnd
-            reply = sink end()
-            unsubBoth() if reply == Bacon.noMore
-            reply
-        initialSent = false
-        combiningSink = (markEnd, setValue, thisSink) =>
-          (event) =>
-            if (event.isEnd())
-              markEnd()
-              checkEnd()
-              Bacon.noMore
-            else if event.isError()
-                reply = sink event
-                unsubBoth() if reply == Bacon.noMore
-                reply
-            else
-              setValue(new Some(event.value))
-              if (myVal.isDefined and otherVal.isDefined)
-                if initialSent and event.isInitial()
-                  # don't send duplicate Initial
-                  Bacon.more
-                else
-                  initialSent = true
-                  reply = thisSink(sink, event, myVal.value, otherVal.value)
-                  unsubBoth() if reply == Bacon.noMore
-                  reply
-              else
-                Bacon.more
-
-        mySink = combiningSink (-> myEnd = true), ((value) -> myVal = value), leftSink
-        otherSink = combiningSink (-> otherEnd = true), ((value) -> otherVal = value), rightSink
-        unsubMe = this.subscribeInternal mySink
-        unsubOther = other.subscribeInternal otherSink unless unsubscribed
+        unsubMe = this.subscribeInternal (event) =>
+          if event.hasValue()
+            myVal = new Some(event)
+          else if event.isError()
+            sink event
+        unsubOther = sampler.subscribe (event) =>
+          if event.hasValue()
+            myVal.forEach (myVal) =>
+              sink(event.apply(lazyCombinator(myVal, event)))
+          else
+            if event.isEnd()
+              unsubMe()
+            sink event
         unsubBoth
-    @sampledBy = (sampler, combinator = former) =>
-      combinator = toCombinator(combinator)
-      pushPropertyValue = (sink, event, propertyVal, streamVal) -> sink(event.apply( ->combinator(propertyVal(), streamVal())))
-      values = combine(sampler, nop, pushPropertyValue)
-      values = values.changes() if sampler instanceof EventStream
-      values.takeUntil(sampler.filter(false).mapEnd())
+      if sampler instanceof Property then new Property(subscribe) else new EventStream(subscribe)
 
     @subscribe = (sink) =>
       # TODO: nämä tehdään nyt joka listenerille erikseen
