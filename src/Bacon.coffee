@@ -716,8 +716,10 @@ class Property extends Observable
           @event = null
           if event? and reply != Bacon.noMore
             reply = sink event
+            unsub() if reply == Bacon.noMore
       value = new LatestEvent()
       end = new LatestEvent()
+      unsub = nop
       unsub = @subscribeInternal (event) =>
         if event.isError()
           reply = sink event if reply != Bacon.noMore
@@ -730,7 +732,6 @@ class Property extends Observable
           PropertyTransaction.onDone ->
             value.send()
             end.send()
-      unsub() if reply == Bacon.noMore
       ->
         reply = Bacon.noMore
         unsub()

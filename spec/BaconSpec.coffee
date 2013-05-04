@@ -882,7 +882,10 @@ describe "Property update is atomic", ->
          c = a.map (x) -> x
          b.combine(c, (x, y) -> x + y)
       [2, 4])
-
+  it "yet respects subscriber return values (bug fix)", ->
+    expectStreamEvents(
+      -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
+      [1])
 
 describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
