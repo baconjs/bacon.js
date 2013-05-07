@@ -540,9 +540,9 @@ class Observable
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.describe())
     this
-  slidingWindow: (n) ->
-    @scan [], (window, value) ->
-      window.concat([value]).slice(-n)
+  slidingWindow: (n, minValues = 0) ->
+    this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
+        .filter(((values) -> values.length >= minValues))
   combine: (other, f) =>
     combinator = toCombinator(f)
     Bacon.combineAsArray(this, other)

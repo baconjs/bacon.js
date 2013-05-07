@@ -178,6 +178,13 @@ describe "Observable.slidingWindow", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty().slidingWindow(2)
       [[], [1], [1,2], [2,3]])
+  it "accepts second parameter for minimum amount of values", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3,4]).slidingWindow(3, 2)
+      [[1,2], [1,2,3], [2,3,4]])
+    expectPropertyEvents(
+      -> series(1, [1,2,3,4]).toProperty(0).slidingWindow(3, 2)
+      [[0,1], [0, 1, 2], [1,2,3], [2,3,4]])
 
 describe "EventStream.filter", ->
   it "should filter values", ->

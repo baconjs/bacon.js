@@ -1,3 +1,7 @@
+## 0.3.15
+
+- Add support for "min" parameter in slidingWindow.
+
 ## 0.3.14
 
 - Fix #163: add support for nulls etc in combineTemplate

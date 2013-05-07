@@ -502,11 +502,17 @@ var y = obs.map('.y')
 x.zip(y, makeComplex)
 ```
 
-`observable.slidingWindow(n)` returns a Property that represents a
-"sliding window" into the history of the values of the Observable. For
-example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
+`observable.slidingWindow(max[, min])` returns a Property that represents a
+"sliding window" into the history of the values of the Observable. The
+result Property will have a value that is an array containing the last `n`
+values of the original observable, where `n` is at most the value of the
+`max` argument, and at least the value of the `min` argument. If the
+`min` argument is omitted, there's no lower limit of values.
+
+For example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
 respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
-[2,3] - [3,4] - [4,5].
+[2,3] - [3,4] - [4,5]. The values of `s.slidingWindow(2,2)`would be
+[1,2] - [2,3] - [4,5].
 
 `observable.log()` logs each value of the Observable to the console.
 It optionally takes arguments to pass to console.log() alongside each
