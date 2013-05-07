@@ -1145,10 +1145,15 @@
       return this;
     };
 
-    Observable.prototype.slidingWindow = function(n) {
-      return this.scan([], function(window, value) {
+    Observable.prototype.slidingWindow = function(n, minValues) {
+      if (minValues == null) {
+        minValues = 0;
+      }
+      return this.scan([], (function(window, value) {
         return window.concat([value]).slice(-n);
-      });
+      })).filter((function(values) {
+        return values.length >= minValues;
+      }));
     };
 
     Observable.prototype.combine = function(other, f) {
