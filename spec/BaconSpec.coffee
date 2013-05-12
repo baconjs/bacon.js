@@ -879,6 +879,16 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
+  it "acthp", ->
+    values = []
+    a = new Bacon.Bus();
+    b = a.map ((v) -> "b" + v)
+    c = Bacon.combineAsArray(a, b)
+    c.onValue ((x) -> values.push x)
+    a.push(1)
+    expect(values).toEqual([[1, "b1"]])
+    a.push(2);
+    expect(values).toEqual([[1, "b1"], [2, "b2"]])
 
 describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
