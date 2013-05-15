@@ -14,25 +14,26 @@
           return function(event) { return event.keyCode == keyCode }
         }
 
-        function keyDowns(keyCode) { 
+        function keyDownEvents(keyCode) { 
           return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
         }
 
-        function keyUps(keyCode) { 
+        function keyUpEvents(keyCode) { 
           return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
         }
 
-        function keyState(keyCode) { 
-          return keyDowns(keyCode).map(always("DOWN"))
-            .merge(keyUps(keyCode).map(always("UP"))).toProperty("UP")
+        function keyStateProperty(keyCode) { 
+          return keyDownEvents(keyCode).map(always("DOWN"))
+            .merge(keyUpEvents(keyCode).map(always("UP"))).toProperty("UP")
         }
 
-        keyState(32).onValue(function(state) {
-          $("#state").text(state)
+        keyStateProperty(32).onValue(function(value) {
+          $("#spacebar-value").text(value)
         })
-        function isEmpty(s) { return s.length == 0 }
-        $("#enabling input").asEventStream("keyup").map(function(event) { return $(event.target).val()}).toProperty("").map(isEmpty).assign($("#enabling button"), "attr", "disabled") 
 
+        function isEmpty(s) { return s.length == 0 }
+
+        $("#enabling input").asEventStream("keyup").map(function(event) { return $(event.target).val()}).toProperty("").map(isEmpty).assign($("#enabling button"), "attr", "disabled") 
       })
     </script>
   </head>
@@ -44,7 +45,7 @@
     </div>
     <div>
       <h2>Combinators example</h2>
-      SPACEBAR status=<span id="state"></span>
+      SPACEBAR value=<span id="spacebar-value"></span>
     </div>
     <div id="enabling">
       <h2>Enable/disable</h2>
