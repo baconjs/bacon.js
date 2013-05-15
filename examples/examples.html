@@ -4,9 +4,7 @@
     <script src="../dist/Bacon.js"></script>
     <script>
       $(function() {
-        $("#clikme").asEventStream("click").subscribe(function(event) {
-          alert("mmmm... bacon!")
-        })
+        function isEmpty(s) { return s.length == 0 }
 
         function always(value) { return function() { return value }}
         
@@ -23,17 +21,24 @@
         }
 
         function keyStateProperty(keyCode) { 
-          return keyDownEvents(keyCode).map(always("DOWN"))
-            .merge(keyUpEvents(keyCode).map(always("UP"))).toProperty("UP")
+          return keyDownEvents(keyCode).map(always("DOWN")).
+            merge(keyUpEvents(keyCode).map(always("UP"))).
+            toProperty("UP")
         }
 
-        keyStateProperty(32).onValue(function(value) {
-          $("#spacebar-value").text(value)
-        })
+        $("#clikme").
+          asEventStream("click").
+          subscribe(function(event) { alert("mmmm... bacon!") })
 
-        function isEmpty(s) { return s.length == 0 }
+        keyStateProperty(32).
+          onValue(function(value) { $("#spacebar-value").text(value) })
 
-        $("#enabling input").asEventStream("keyup").map(function(event) { return $(event.target).val()}).toProperty("").map(isEmpty).assign($("#enabling button"), "attr", "disabled") 
+        $("#enabling input").
+          asEventStream("keyup").
+          map(function(event) { return $(event.target).val() }).
+          toProperty("").
+          map(isEmpty).
+          assign($("#enabling button"), "attr", "disabled") 
       })
     </script>
   </head>
@@ -44,11 +49,11 @@
       <span id="clikme">click me</span>
     </div>
     <div>
-      <h2>Combinators example</h2>
+      <h2>Combinators example:</h2>
       SPACEBAR value=<span id="spacebar-value"></span>
     </div>
     <div id="enabling">
-      <h2>Enable/disable</h2>
+      <h2>Enable/disable example:</h2>
       <input type="text" placeholder="required field">
       <button>Don't push me</button>
   </body>
