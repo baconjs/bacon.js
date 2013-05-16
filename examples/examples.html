@@ -21,24 +21,24 @@
         }
 
         function keyStateProperty(keyCode) { 
-          return keyDownEvents(keyCode).map(always("DOWN")).
-            merge(keyUpEvents(keyCode).map(always("UP"))).
-            toProperty("UP")
+          return keyDownEvents(keyCode).map(always("DOWN"))
+            .merge(keyUpEvents(keyCode).map(always("UP")))
+            .toProperty("UP")
         }
 
-        $("#clikme").
-          asEventStream("click").
-          subscribe(function(event) { alert("mmmm... bacon!") })
+        $("#clikme")
+          .asEventStream("click")
+          .subscribe(function(event) { alert("mmmm... bacon!") })
 
-        keyStateProperty(32).
-          onValue(function(value) { $("#spacebar-value").text(value) })
+        keyStateProperty(32)
+          .onValue(function(value) { $("#spacebar-value").text(value) })
 
-        $("#enabling input").
-          asEventStream("keyup").
-          map(function(event) { return $(event.target).val() }).
-          toProperty("").
-          map(isEmpty).
-          assign($("#enabling button"), "attr", "disabled") 
+        $("#enabling input")
+          .asEventStream("keyup")
+          .map(function(event) { return $(event.target).val() })
+          .toProperty("")
+          .map(isEmpty)
+          .assign($("#enabling button"), "attr", "disabled")
       })
     </script>
   </head>
