@@ -318,13 +318,15 @@ rules below apply here.
 the given property. This is equivalent to `property.sampledBy(stream)`.
 
 `observable.mapError(f)` maps errors using given function. More
-spedifically, feeds the "error" field of the error event to the function
+spexifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
-Construction rules apply.
+Construction rules apply. You can omit the argument to
+produce a Next event with `undefined` value.
 
 `observable.mapEnd(f)` Adds an extra Next event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
-function, a static value can be used. You can even omit the argument if
+function, a static value can be used. You can omit the argument to
+produce a Next event with `undefined` value.
 
 `observable.filter(f)` filters values using given predicate function.
 Instead of a function, you can use a constant value (true/false) or a
