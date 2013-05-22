@@ -318,7 +318,7 @@ rules below apply here.
 the given property. This is equivalent to `property.sampledBy(stream)`.
 
 `observable.mapError(f)` maps errors using given function. More
-spexifically, feeds the "error" field of the error event to the function
+specifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
 Construction rules apply. You can omit the argument to
 produce a Next event with `undefined` value.
