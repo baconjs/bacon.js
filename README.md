@@ -592,9 +592,11 @@ isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
 use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
 
-`stream.concat(stream2)` concatenates two streams into one stream so that
-it will contain events from former and latter parts, delivered sequentially
-after completion of each other.
+`stream1.concat(stream2)` concatenates two streams into one stream so that
+it will deliver events from `stream1` until it ends and then deliver
+events from `stream2`. This means too that events from `stream2`,
+occurring before the end of `stream1` will not be included in the result
+stream.
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
