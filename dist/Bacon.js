@@ -1463,7 +1463,10 @@
             event = this.event;
             this.event = null;
             if ((event != null) && reply !== Bacon.noMore) {
-              return reply = sink(event);
+              reply = sink(event);
+              if (reply === Bacon.noMore) {
+                return unsub();
+              }
             }
           };
 
@@ -1472,27 +1475,25 @@
         })();
         value = new LatestEvent();
         end = new LatestEvent();
+        unsub = nop;
         unsub = _this.subscribeInternal(function(event) {
           if (event.isError()) {
             if (reply !== Bacon.noMore) {
               reply = sink(event);
             }
-            return reply;
           } else {
             if (event.hasValue()) {
               value.set(event);
             } else if (event.isEnd()) {
               end.set(event);
             }
-            return PropertyTransaction.onDone(function() {
+            PropertyTransaction.onDone(function() {
               value.send();
               return end.send();
             });
           }
+          return reply;
         });
-        if (reply === Bacon.noMore) {
-          unsub();
-        }
         return function() {
           reply = Bacon.noMore;
           return unsub();
