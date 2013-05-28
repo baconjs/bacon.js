@@ -713,6 +713,8 @@
 
       this.flatMapLatest = __bind(this.flatMapLatest, this);
 
+      this.fold = __bind(this.fold, this);
+
       this.scan = __bind(this.scan, this);
 
       this.takeUntil = __bind(this.takeUntil, this);
@@ -1031,6 +1033,10 @@
       return new Property(subscribe);
     };
 
+    Observable.prototype.fold = function(seed, f) {
+      return this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty());
+    };
+
     Observable.prototype.zip = function(other, f) {
       if (f == null) {
         f = Array;
@@ -1167,6 +1173,8 @@
     return Observable;
 
   })();
+
+  Observable.prototype.reduce = Observable.prototype.fold;
 
   EventStream = (function(_super) {
 
