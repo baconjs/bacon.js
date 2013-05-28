@@ -1055,7 +1055,7 @@
       });
     };
 
-    Observable.prototype.flatMap = function(f) {
+    Observable.prototype.flatMap = function(f, firstOnly) {
       var root;
       f = makeSpawner(f);
       root = this;
@@ -1085,6 +1085,8 @@
             return checkEnd();
           } else if (event.isError()) {
             return sink(event);
+          } else if (firstOnly && children.length) {
+            return Bacon.more;
           } else {
             child = f(event.value());
             if (!(child instanceof Observable)) {
@@ -1124,6 +1126,10 @@
         unsubRoot = root.subscribe(spawner);
         return unbind;
       });
+    };
+
+    Observable.prototype.flatMapFirst = function(f) {
+      return this.flatMap(f, true);
     };
 
     Observable.prototype.flatMapLatest = function(f) {
@@ -1209,6 +1215,12 @@
     EventStream.prototype.debounce = function(delay) {
       return this.flatMapLatest(function(value) {
         return Bacon.later(delay, value);
+      });
+    };
+
+    EventStream.prototype.debounceImmediate = function(delay) {
+      return this.flatMapFirst(function(value) {
+        return Bacon.once(value).concat(Bacon.later(delay).filter(false));
       });
     };
 
