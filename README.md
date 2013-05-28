@@ -1049,6 +1049,27 @@ this value to the new subscriber.
 3. Property may or may not have a current value to start with. Depends
 on how the Property was created.
 
+Atomic updates
+--------------
+
+From version 0.4.0, Bacon.js supports atomic updates to properties, with
+known limitations.
+
+Assume you have properties A and B and property C = A + B. Assume that
+both A and B depend on D, so that when D changes, both A and B will
+change too.
+
+When D changes `d1 -> d2`, the value of A `a1 -> a2` and B changes `b1
+-> b2` simultaneously, you'd like C to update atomically so that it
+would go directly `a1+b1 -> a2+b2`. And, in fact, it does exactly that.
+Prior to version 0.4.0, C would have an additional transitional
+state like `a1+b1 -> a2+b1 -> a2+b2`
+
+Atomic updates are limited to Properties only, meaning that simultaneous
+events in EventStreams will not be recognized as simultaneous and may
+cause extra transitional states to Properties. But as long as you're
+just combining Properties, you'll updates will be atomic.
+
 For RxJs Users
 --------------
 

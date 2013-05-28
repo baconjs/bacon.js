@@ -1,3 +1,6 @@
+## 0.4.0
+
+- Fix #85 Make Property updates atomic (with known limitations)
 ## 0.3.15
 
 - Add support for "min" parameter in slidingWindow.
