@@ -460,6 +460,12 @@ identically to EventStream.scan: the `seed` will be the initial value of
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
 
+`observable.fold(seed, f)` is like `scan` but only emits the final
+value, i.e. the value just before the observable ends. Returns a
+Property.
+
+`observable.reduce(seed,f)` synonym for `fold`.
+
 `observable.diff(start, f)` returns a Property that represents the result of a comparison
 between the previous and current value of the Observable. For the initial value of the Observable,
 the previous value will be the given start.

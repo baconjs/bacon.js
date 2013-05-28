@@ -475,6 +475,9 @@ class Observable
       unsub
     new Property(subscribe)
 
+  fold: (seed, f) =>
+    @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty())
+
   zip: (other, f = Array) ->
     Bacon.zipWith([this,other], f)
 
@@ -548,6 +551,8 @@ class Observable
     Bacon.combineAsArray(this, other)
       .map (values) ->
         combinator(values[0], values[1])
+
+Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable
   constructor: (subscribe) ->

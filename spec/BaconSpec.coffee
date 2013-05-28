@@ -1069,6 +1069,16 @@ describe "EventStream.scan", ->
       -> series(1, [1]).scan(null, ->1)
       [null, 1])
 
+describe "EventStream.fold", ->
+  it "folds stream into a single-valued Property, passes through errors", ->
+    expectPropertyEvents(
+      -> series(1, [1, 2, error(), 3]).fold(0, add)
+      [error(), 6])
+  it "has reduce as synonym", ->
+    expectPropertyEvents(
+      -> series(1, [1, 2, error(), 3]).fold(0, add)
+      [error(), 6])
+
 describe "Property.scan", ->
   it "with Init value, starts with f(seed, init)", ->
     expectPropertyEvents(
@@ -1112,6 +1122,12 @@ describe "Property.withStateMachin", ->
           [sum, [new Bacon.Next(-> sum), event]]
         else
           [sum, [event]])
+      [6])
+
+describe "Property.fold", ->
+  it "Folds Property into a single-valued one", ->
+    expectPropertyEvents(
+      -> series(1, [2,3]).toProperty(1).fold(0, add)
       [6])
 
 describe "EventStream.diff", ->
