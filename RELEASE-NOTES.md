@@ -1,3 +1,8 @@
+## 0.4.1
+
+- Add flatMapFirst and debounceImmediate (#132)
+- Add reduce/fold (#158)
+
 ## 0.4.0
 
 - Fix #85 Make Property updates atomic (with known limitations)
