@@ -387,14 +387,20 @@ same methods in jQuery.
 
 Example:
 
-```js
-var debounced = source.debounce(2)
+```
+source:             asdf----asdf----
+source.debounce(2): -----f-------f--
 ```
 
+`observable.debounceImmediate(delay)` passes the first event in the
+stream through, but after that, only passes events after a given number
+of milliseconds have passed since previous output.
+
+Example:
+
 ```
-source:    asdf----asdf----
-debounce: -----f-------f--
-```
+source:                      asdf----asdf----
+source.debounceImmediate(2): a-d-----a-d-----
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -430,6 +436,9 @@ all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream. The old name for
 this method is `switch`. Note that instead of a function, you can
 provide a stream/property too.
+
+`observable.flatMapFirst(f)` like flatMap, but doesn't spawns a new
+stream only if the previously spawned stream has ended.
 
 `observable.scan(seed, f)` scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
