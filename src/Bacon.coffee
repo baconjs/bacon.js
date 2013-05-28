@@ -488,7 +488,7 @@ class Observable
     .filter((tuple) -> tuple.length == 2)
     .map((tuple) -> tuple[1])
 
-  flatMap: (f) ->
+  flatMap: (f, firstOnly) ->
     f = makeSpawner(f)
     root = this
     new EventStream (sink) ->
@@ -509,6 +509,8 @@ class Observable
           checkEnd()
         else if event.isError()
           sink event
+        else if firstOnly and children.length
+          Bacon.more
         else
           child = f event.value()
           child = Bacon.once(child) if not (child instanceof Observable)
@@ -534,6 +536,9 @@ class Observable
           children.push unsubChild if not childEnded
       unsubRoot = root.subscribe(spawner)
       unbind
+
+  flatMapFirst: (f) -> @flatMap(f, true)
+
   flatMapLatest: (f) =>
     f = makeSpawner(f)
     stream = @toEventStream()
@@ -573,6 +578,10 @@ class EventStream extends Observable
   debounce: (delay) ->
     @flatMapLatest (value) ->
       Bacon.later delay, value
+
+  debounceImmediate: (delay) ->
+    @flatMapFirst (value) ->
+      Bacon.once(value).concat(Bacon.later(delay).filter(false))
 
   throttle: (delay) ->
     @bufferWithTime(delay).map((values) -> values[values.length - 1])
