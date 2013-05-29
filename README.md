@@ -401,6 +401,7 @@ Example:
 ```
 source:                      asdf----asdf----
 source.debounceImmediate(2): a-d-----a-d-----
+```
 
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
