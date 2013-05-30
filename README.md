@@ -755,7 +755,7 @@ property values as its value. The input array may contain both Properties
 and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
 
-`Bacon.combineAsArray(s1, s2, ...) just like above, but with streams
+`Bacon.combineAsArray(s1, s2, ...)` just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
 ```js
