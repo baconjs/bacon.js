@@ -571,13 +571,17 @@ class EventStream extends Observable
   throttle: (delay) ->
     @bufferWithTime(delay).map((values) -> values[values.length - 1])
 
-  bufferWithTime: (delay) ->
-    schedule = (buffer) => buffer.schedule()
-    @buffer(delay, schedule, schedule)
+  bufferWithTime: (delay) -> @bufferWithTimeOrCount(delay, Number.MAX_VALUE)
+  bufferWithCount: (count) -> @bufferWithTimeOrCount(undefined, count)
 
-  bufferWithCount: (count) ->
-    flushOnCount = (buffer) -> buffer.flush() if buffer.values.length == count
-    @buffer(0, flushOnCount)
+  bufferWithTimeOrCount: (delay, count) ->
+    flushOrSchedule = (buffer) -> 
+      if buffer.values.length == count
+        buffer.flush()
+      else if (delay != undefined)
+        buffer.schedule()
+    @buffer(delay, flushOrSchedule, flushOrSchedule)
+
 
   buffer: (delay, onInput = (->), onFlush = (->)) ->
     buffer = {

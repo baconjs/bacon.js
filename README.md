@@ -613,6 +613,10 @@ The buffer is flushed when it contains the given number of elements. So, if
 you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
 events with values [1, 2], [3, 4] and [5].
 
+`stream.bufferWithTimeOrCount(delay, count)` buffers stream events and
+flushes when either the buffer contains the given number elements or the
+given amount of milliseconds has passed since last buffered event.
+
 `stream.toProperty()` creates a Property based on the
 EventStream. Without arguments, you'll get a Property without an initial value.
 The Property will get its first actual value from the stream, and after that it'll

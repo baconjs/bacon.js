@@ -477,6 +477,16 @@ describe "EventStream.bufferWithCount", ->
       -> series(1, [1, 2, 3, error(), 4, 5]).bufferWithCount(2)
       [[1, 2], error(), [3, 4], [5]])
 
+describe "EventStream.bufferWithTimeOrCount", ->
+  it "flushes on count", ->
+    expectStreamEvents(
+      -> series(1, [1, 2, 3, error(), 4, 5]).bufferWithTimeOrCount(t(10), 2)
+      [[1, 2], error(), [3, 4], [5]])
+  it "flushes on timeout", ->
+    expectStreamEvents(
+      -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTimeOrCount(t(7), 10)
+      [error(), [1, 2, 3, 4], [5, 6, 7]])
+
 describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectStreamEvents(
