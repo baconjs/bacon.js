@@ -397,6 +397,13 @@ describe "Property.flatMapLatest", ->
       -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"])
 
+describe "EventStream.flatMapFirst", ->
+  it "spawns new streams and ignores source events until current spawned stream has ended", ->
+    expectStreamEvents(
+      -> series(2, [2, 4, 6, 8]).flatMapFirst (value) ->
+        series(1, ["a" + value, "b" + value, "c" + value])
+      ["a2", "b2", "c2", "a6", "b6", "c6"])
+
 describe "EventStream.merge", ->
   it "merges two streams and ends when both are exhausted", ->
     expectStreamEvents(
@@ -430,7 +437,7 @@ describe "EventStream.delay", ->
         left.merge(right)
       [error(), 1, 2, 3, 4, 5, 6])
 
-describe "EventStream.debounce", ->
+describe "EventStream.debounce(delay)", ->
   it "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).debounce(t(7))
@@ -439,6 +446,12 @@ describe "EventStream.debounce", ->
     expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounce(t(3))
       [[11, 4]])
+
+describe "EventStream.debounceImmediate(delay)", ->
+  it "outputs first event immediately, then ignores events for given amount of milliseconds", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
+      [[2, 1], [6, 3]])
 
 describe "EventStream.throttle(delay)", ->
   it "outputs at steady intervals, without waiting for quite period", ->
@@ -861,6 +874,42 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
+describe "Property update is atomic", ->
+  it "in a diamond-shaped combine() network", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map (x) -> x
+         c = a.map (x) -> x
+         b.combine(c, (x, y) -> x + y)
+      [2, 4])
+  it "in a triangle-shaped combine() network", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map (x) -> x
+         a.combine(b, (x, y) -> x + y)
+      [2, 4])
+  it "when filter is involved", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty()
+         b = a.map((x) -> x).filter(true)
+         a.combine(b, (x, y) -> x + y)
+      [2, 4])
+  it "when root property is based on combine*", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2]).toProperty().combine(Bacon.constant(0), (x, y) -> x)
+         b = a.map (x) -> x
+         c = a.map (x) -> x
+         b.combine(c, (x, y) -> x + y)
+      [2, 4])
+  it "yet respects subscriber return values (bug fix)", ->
+    expectStreamEvents(
+      -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
+      [1])
+
 describe "Bacon.combineAsArray", ->
   it "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
@@ -976,6 +1025,23 @@ describe "Property.sampledBy(stream)", ->
         src = series(2, [1, 2])
         src.toProperty().sampledBy(src.map(times, 2))
       [1, 2])
+  it "uses updated property after combine", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        src = series(2, ["b", "c"]).toProperty("a")
+        combined = Bacon.constant().combine(src, latter)
+        src.sampledBy(combined, add)
+      ["aa", "bb", "cc"])
+  it "uses updated property after combine with subscriber", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        src = series(2, ["b", "c"]).toProperty("a")
+        combined = Bacon.constant().combine(src, latter)
+        combined.onValue(->)
+        src.sampledBy(combined, add)
+      ["aa", "bb", "cc"])
 
 describe "Property.sampledBy(property)", ->
   it "samples property at events, resulting to a Property", ->
@@ -1026,6 +1092,16 @@ describe "EventStream.scan", ->
       -> series(1, [1]).scan(null, ->1)
       [null, 1])
 
+describe "EventStream.fold", ->
+  it "folds stream into a single-valued Property, passes through errors", ->
+    expectPropertyEvents(
+      -> series(1, [1, 2, error(), 3]).fold(0, add)
+      [error(), 6])
+  it "has reduce as synonym", ->
+    expectPropertyEvents(
+      -> series(1, [1, 2, error(), 3]).fold(0, add)
+      [error(), 6])
+
 describe "Property.scan", ->
   it "with Init value, starts with f(seed, init)", ->
     expectPropertyEvents(
@@ -1069,6 +1145,12 @@ describe "Property.withStateMachin", ->
           [sum, [new Bacon.Next(-> sum), event]]
         else
           [sum, [event]])
+      [6])
+
+describe "Property.fold", ->
+  it "Folds Property into a single-valued one", ->
+    expectPropertyEvents(
+      -> series(1, [2,3]).toProperty(1).fold(0, add)
       [6])
 
 describe "EventStream.diff", ->

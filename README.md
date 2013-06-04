@@ -387,13 +387,20 @@ same methods in jQuery.
 
 Example:
 
-```js
-var debounced = source.debounce(2)
+```
+source:             asdf----asdf----
+source.debounce(2): -----f-------f--
 ```
 
+`observable.debounceImmediate(delay)` passes the first event in the
+stream through, but after that, only passes events after a given number
+of milliseconds have passed since previous output.
+
+Example:
+
 ```
-source:    asdf----asdf----
-debounce: -----f-------f--
+source:                      asdf----asdf----
+source.debounceImmediate(2): a-d-----a-d-----
 ```
 
 `observable.doAction(f)` returns a stream/property where the function f
@@ -431,6 +438,9 @@ You can think this as switching from stream to stream. The old name for
 this method is `switch`. Note that instead of a function, you can
 provide a stream/property too.
 
+`observable.flatMapFirst(f)` like flatMap, but doesn't spawns a new
+stream only if the previously spawned stream has ended.
+
 `observable.scan(seed, f)` scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
@@ -459,6 +469,12 @@ identically to EventStream.scan: the `seed` will be the initial value of
 `r`. However, if `r` already has a current/initial value `x`, the
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
+
+`observable.fold(seed, f)` is like `scan` but only emits the final
+value, i.e. the value just before the observable ends. Returns a
+Property.
+
+`observable.reduce(seed,f)` synonym for `fold`.
 
 `observable.diff(start, f)` returns a Property that represents the result of a comparison
 between the previous and current value of the Observable. For the initial value of the Observable,
@@ -591,6 +607,12 @@ checking by default. If the isEqual argument is supplied, checks by calling
 isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
 use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
+
+`stream1.concat(stream2)` concatenates two streams into one stream so that
+it will deliver events from `stream1` until it ends and then deliver
+events from `stream2`. This means too that events from `stream2`,
+occurring before the end of `stream1` will not be included in the result
+stream.
 
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
@@ -737,7 +759,7 @@ property values as its value. The input array may contain both Properties
 and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
 
-`Bacon.combineAsArray(s1, s2, ...) just like above, but with streams
+`Bacon.combineAsArray(s1, s2, ...)` just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
 ```js
@@ -1046,6 +1068,27 @@ to its subscribers and that is the latest value emitted, it will deliver
 this value to the new subscriber.
 3. Property may or may not have a current value to start with. Depends
 on how the Property was created.
+
+Atomic updates
+--------------
+
+From version 0.4.0, Bacon.js supports atomic updates to properties, with
+known limitations.
+
+Assume you have properties A and B and property C = A + B. Assume that
+both A and B depend on D, so that when D changes, both A and B will
+change too.
+
+When D changes `d1 -> d2`, the value of A `a1 -> a2` and B changes `b1
+-> b2` simultaneously, you'd like C to update atomically so that it
+would go directly `a1+b1 -> a2+b2`. And, in fact, it does exactly that.
+Prior to version 0.4.0, C would have an additional transitional
+state like `a1+b1 -> a2+b1 -> a2+b2`
+
+Atomic updates are limited to Properties only, meaning that simultaneous
+events in EventStreams will not be recognized as simultaneous and may
+cause extra transitional states to Properties. But as long as you're
+just combining Properties, you'll updates will be atomic.
 
 For RxJs Users
 --------------
