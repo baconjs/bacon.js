@@ -1,3 +1,7 @@
+## 0.4.2
+
+- add bufferWithTimeOrCount (#181)
+
 ## 0.4.1
 
 - Add flatMapFirst and debounceImmediate (#132)
