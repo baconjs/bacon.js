@@ -8,7 +8,7 @@
   "dependencies": {},
   "devDependencies": {
     "jasmine-node": "~1.4.0",
-    "coffee-script": "1.4.0",
+    "coffee-script": "~1.6.3",
     "grunt": "0.4",
     "grunt-cli": "0.1.6",
     "grunt-contrib-coffee": "~0.7.0",
