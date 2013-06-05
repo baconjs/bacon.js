@@ -9,14 +9,15 @@
   "devDependencies": {
     "jasmine-node": "~1.4.0",
     "coffee-script": "1.4.0",
-    "grunt": "0.3",
+    "grunt": "0.4",
     "grunt-cli": "0.1.6",
-    "grunt-contrib-coffee": "~0.3",
-    "grunt-contrib-clean": "~0.3",
-    "grunt-contrib-copy": "~0.3.2",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-clean": "~0.4.1",
+    "grunt-contrib-copy": "~0.4.1",
     "benchmark": "1.0.0",
     "browserify": "1.18.0",
-    "sinon": "~1.6.0"
+    "sinon": "~1.6.0",
+    "grunt-contrib-uglify": "~0.2.2"
   },
   "testling": {
     "browsers": {
