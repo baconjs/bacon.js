@@ -1231,22 +1231,23 @@
     };
 
     EventStream.prototype.bufferWithTime = function(delay) {
-      var schedule,
-        _this = this;
-      schedule = function(buffer) {
-        return buffer.schedule();
-      };
-      return this.buffer(delay, schedule, schedule);
+      return this.bufferWithTimeOrCount(delay, Number.MAX_VALUE);
     };
 
     EventStream.prototype.bufferWithCount = function(count) {
-      var flushOnCount;
-      flushOnCount = function(buffer) {
+      return this.bufferWithTimeOrCount(void 0, count);
+    };
+
+    EventStream.prototype.bufferWithTimeOrCount = function(delay, count) {
+      var flushOrSchedule;
+      flushOrSchedule = function(buffer) {
         if (buffer.values.length === count) {
           return buffer.flush();
+        } else if (delay !== void 0) {
+          return buffer.schedule();
         }
       };
-      return this.buffer(0, flushOnCount);
+      return this.buffer(delay, flushOrSchedule, flushOrSchedule);
     };
 
     EventStream.prototype.buffer = function(delay, onInput, onFlush) {
