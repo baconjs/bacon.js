@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, liftCallback, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref,
+  var Bacon, Bus, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertFunction, assertNoArguments, assertString, cloneArray, end, former, indexOf, initial, isFieldKey, isFunction, latter, liftCallback, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -534,7 +534,6 @@
   };
 
   Event = (function() {
-
     function Event() {}
 
     Event.prototype.isEvent = function() {
@@ -574,7 +573,6 @@
   })();
 
   Next = (function(_super) {
-
     __extends(Next, _super);
 
     function Next(valueF, sourceEvent) {
@@ -623,11 +621,11 @@
   })(Event);
 
   Initial = (function(_super) {
-
     __extends(Initial, _super);
 
     function Initial() {
-      return Initial.__super__.constructor.apply(this, arguments);
+      _ref1 = Initial.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     Initial.prototype.isInitial = function() {
@@ -651,11 +649,11 @@
   })(Next);
 
   End = (function(_super) {
-
     __extends(End, _super);
 
     function End() {
-      return End.__super__.constructor.apply(this, arguments);
+      _ref2 = End.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     End.prototype.isEnd = function() {
@@ -679,7 +677,6 @@
   })(Event);
 
   Error = (function(_super) {
-
     __extends(Error, _super);
 
     function Error(error) {
@@ -707,16 +704,11 @@
   })(Event);
 
   Observable = (function() {
-
     function Observable() {
       this.combine = __bind(this.combine, this);
-
       this.flatMapLatest = __bind(this.flatMapLatest, this);
-
       this.fold = __bind(this.fold, this);
-
       this.scan = __bind(this.scan, this);
-
       this.takeUntil = __bind(this.takeUntil, this);
       this.assign = this.onValue;
     }
@@ -1183,7 +1175,6 @@
   Observable.prototype.reduce = Observable.prototype.fold;
 
   EventStream = (function(_super) {
-
     __extends(EventStream, _super);
 
     function EventStream(subscribe) {
@@ -1404,18 +1395,13 @@
   })(Observable);
 
   Property = (function(_super) {
-
     __extends(Property, _super);
 
     function Property(subscribe, handler) {
       this.toEventStream = __bind(this.toEventStream, this);
-
       this.toProperty = __bind(this.toProperty, this);
-
       this.changes = __bind(this.changes, this);
-
       this.sample = __bind(this.sample, this);
-
       var _this = this;
       Property.__super__.constructor.call(this);
       if (handler === true) {
@@ -1472,7 +1458,6 @@
         var LatestEvent, end, reply, unsub, value;
         reply = Bacon.more;
         LatestEvent = (function() {
-
           function LatestEvent() {}
 
           LatestEvent.prototype.set = function(event) {
@@ -1623,7 +1608,6 @@
   };
 
   Dispatcher = (function() {
-
     function Dispatcher(subscribe, handleEvent) {
       var addWaiter, done, ended, prevError, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters,
         _this = this;
@@ -1746,7 +1730,6 @@
   })();
 
   PropertyDispatcher = (function(_super) {
-
     __extends(PropertyDispatcher, _super);
 
     function PropertyDispatcher(subscribe, handleEvent) {
@@ -1831,7 +1814,6 @@
   })();
 
   Bus = (function(_super) {
-
     __extends(Bus, _super);
 
     function Bus() {
@@ -1876,12 +1858,12 @@
         }
       };
       subscribeAll = function(newSink) {
-        var subscription, unsubFuncs, _i, _len, _ref1;
+        var subscription, unsubFuncs, _i, _len, _ref3;
         sink = newSink;
         unsubFuncs = [];
-        _ref1 = cloneArray(subscriptions);
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          subscription = _ref1[_i];
+        _ref3 = cloneArray(subscriptions);
+        for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+          subscription = _ref3[_i];
           subscribeInput(subscription);
         }
         return unsubAll;
@@ -1921,7 +1903,6 @@
   })(EventStream);
 
   Some = (function() {
-
     function Some(value) {
       this.value = value;
     }
@@ -2136,7 +2117,7 @@
     return function(key) {
       return function(value) {
         var fieldValue;
-        if (!(value != null)) {
+        if (value == null) {
           return void 0;
         } else {
           fieldValue = value[key];
