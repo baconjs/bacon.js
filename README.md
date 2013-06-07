@@ -798,7 +798,7 @@ streams using that template, whenever any of the streams/properties
 get a new value. For instance, it could yield a value such as
 
 ```js
-{ magicNumer: 3,
+{ magicNumber: 3,
   userid: "juha",
   passwd: "easy",
   name : { first: "juha", last: "paananen" }}
@@ -918,7 +918,7 @@ instance:
 object `{ isMouseClick: true }`
 
 Methods that support function construction include
-at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError` and `do`.
+at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError` and `doAction`.
 
 Latest value of Property or EventStream
 ---------------------------------------
