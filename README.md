@@ -901,9 +901,7 @@ array that is a field in the stream value. For example, you'd get 2 for
 "jack"] }`.
 
 `stream.doAction(".preventDefault")` would call the "preventDefault" method of
-stream values. The old name for
-this method is `do` which is temporarily supported for backward
-compatibility.
+stream values.
 
 `stream.filter(".attr", "disabled").not()` would call `.attr("disabled")` on
 stream values and filter by the return value. This would practically
