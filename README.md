@@ -408,9 +408,7 @@ is executed for each value, before dispatching to subscribers. This is
 useful for debugging, but also for stuff like calling the
 preventDefault() method for events. In fact, you can
 also use a property-extractor string instead of a function, as in
-".preventDefault". The old name for
-this method is `do` which is temporarily supported for backward
-compatibility.
+".preventDefault".
 
 `observable.not()` returns a stream/property that inverts boolean
 values
@@ -898,7 +896,7 @@ for `["cat", "dog"]`
 array that is a field in the stream value. For example, you'd get 2 for
 `{ stuffs : ["thing", "object"] }`
 
-`stream.map(".dudes.1") would pick the second object from the nested
+`stream.map(".dudes.1")` would pick the second object from the nested
 "dudes" array. For example, you'd get "jack" for `{ dudes : ["john",
 "jack"] }`.
 
