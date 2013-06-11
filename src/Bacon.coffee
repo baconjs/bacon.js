@@ -556,6 +556,7 @@ class Observable
     Bacon.combineAsArray(this, other)
       .map (values) ->
         combinator(values[0], values[1])
+  decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
 
 Observable :: reduce = Observable :: fold
 
@@ -774,7 +775,6 @@ class Property extends Observable
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
   or:  (other) -> @combine(other, (x, y) -> x || y)
-  decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
   delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
   debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
