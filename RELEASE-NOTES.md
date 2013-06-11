@@ -1,3 +1,7 @@
+## 0.4.3
+
+- Generalize `decode` to all Observables (#189)
+
 ## 0.4.2
 
 - Add bufferWithTimeOrCount (#181)
