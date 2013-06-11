@@ -1168,6 +1168,12 @@
       });
     };
 
+    Observable.prototype.decode = function(cases) {
+      return this.combine(Bacon.combineTemplate(cases), function(key, values) {
+        return values[key];
+      });
+    };
+
     return Observable;
 
   })();
@@ -1556,12 +1562,6 @@
     Property.prototype.or = function(other) {
       return this.combine(other, function(x, y) {
         return x || y;
-      });
-    };
-
-    Property.prototype.decode = function(cases) {
-      return this.combine(Bacon.combineTemplate(cases), function(key, values) {
-        return values[key];
       });
     };
 
