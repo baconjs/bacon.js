@@ -575,6 +575,24 @@ Bacon.fromArray([1,2,3])
   })
 ```
 
+`observable.decode(mapping)` decodes input using the given mapping. Is a
+bit like a switch-case or the decode function in Oracle SQL. For
+example, the following would map the value 1 into the the string "mike"
+and the value 2 into the value of the `who` property.
+
+```js
+property.decode({1 : "mike", 2 : who})
+```
+
+This is actually based on `combineTemplate` so you can compose static
+and dynamic data quite freely, as in
+
+```js
+property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
+```
+
+The return value of `decode` is always a `Property`.
+
 EventStream
 -----------
 
@@ -731,22 +749,6 @@ events. Note that property.changes() does NOT skip duplicate values, use .skipDu
 `property.and(other)` combines properties with the `&&` operator.
 
 `property.or(other)` combines properties with the `||` operator.
-
-`property.decode(mapping)` decodes input using the given mapping. Is a
-bit like a switch-case or the decode function in Oracle SQL. For
-example, the following would map the value 1 into the the string "mike"
-and the value 2 into the value of the `who` property.
-
-```js
-property.decode({1 : "mike", 2 : who})
-```
-
-This is actually based on `combineTemplate` so you can compose static
-and dynamic data quite freely, as in
-
-```js
-property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
-```
 
 Combining multiple streams and properties
 -----------------------------------------
