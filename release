@@ -5,7 +5,7 @@ if [ -z $1 ]; then
   exit 1
 fi
 version=$1
-files="component.json package.json"
+files="component.json package.json bower.json"
 echo "Releasing with version $version"
 
 echo "Pulling from origin"

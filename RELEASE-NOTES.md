@@ -1,3 +1,7 @@
+## 0.4.4
+
+- Add bower.json (component.json deprecated by bower)
+
 ## 0.4.3
 
 - Generalize `decode` to all Observables (#189)
