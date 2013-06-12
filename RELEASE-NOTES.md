@@ -1,4 +1,4 @@
-## 0.4.4
+## 0.4.5
 
 - Add bower.json (component.json deprecated by bower)
 
