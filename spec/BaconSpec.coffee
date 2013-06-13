@@ -979,6 +979,14 @@ describe "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6])
+  it ("supports varargs"), ->
+    expectStreamEvents(
+      ->
+        Bacon.mergeAll(
+          series(3, [1, 2])
+          series(3, [3, 4]).delay(t(1))
+          series(3, [5, 6]).delay(t(2)))
+      [1, 3, 5, 2, 4, 6])
 
 describe "Property.sampledBy(stream)", ->
   it "samples property at events, resulting to EventStream", ->

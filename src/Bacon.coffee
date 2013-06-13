@@ -125,8 +125,9 @@ sendWrapped = (values, wrapper) ->
     sink (end())
     nop
 
-Bacon.mergeAll = (streams) ->
-  assertArray streams
+Bacon.mergeAll = (streams, more...) ->
+  if not (streams instanceof Array)
+    streams = [streams].concat(more)
   stream = _.head streams
   for next in (_.tail streams)
     stream = stream.merge(next)
