@@ -213,9 +213,12 @@
     };
   };
 
-  Bacon.mergeAll = function(streams) {
-    var next, stream, _i, _len, _ref1;
-    assertArray(streams);
+  Bacon.mergeAll = function() {
+    var more, next, stream, streams, _i, _len, _ref1;
+    streams = arguments[0], more = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!(streams instanceof Array)) {
+      streams = [streams].concat(more);
+    }
     stream = _.head(streams);
     _ref1 = _.tail(streams);
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -234,7 +237,14 @@
     return Bacon.zipWith(streams, Array);
   };
 
-  Bacon.zipWith = function(streams, f) {
+  Bacon.zipWith = function() {
+    var f, g, more, streams;
+    streams = arguments[0], f = arguments[1], more = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    if (isFunction(streams)) {
+      g = streams;
+      streams = [f].concat(more);
+      f = g;
+    }
     return new EventStream(function(sink) {
       var bufs, handle, j, s, unsubAll, unsubs, unsubscribed, zipSink, _i, _len;
       bufs = (function() {
