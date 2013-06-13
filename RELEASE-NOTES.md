@@ -1,3 +1,7 @@
+## 0.4.6
+
+- Support n-ary syntax in Bacon.mergeAll and Bacon.zipWith
+
 ## 0.4.5
 
 - Add bower.json (component.json deprecated by bower)
