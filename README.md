@@ -815,6 +815,7 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 ```
 
 `Bacon.mergeAll(streams)` merges given array of EventStreams.
+`Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 
 `Bacon.zipAsArray(streams)` zips the array of stream in to a new
 EventStream that will have an array of values from each source stream as
@@ -843,6 +844,9 @@ provided as a list of arguments as opposed to a single array.
 
 `Bacon.zipWith(streams, f)` like `zipAsArray` but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
+
+`Bacon.zipWith(f, stream1, stream1 ...)` just like above, but with streams
+provided as a list of arguments as opposed to a single array.
 
 `Bacon.onValues(a, b [, c...], f)` is a shorthand for combining multiple
 sources (streams, properties, constants) as array and assigning the

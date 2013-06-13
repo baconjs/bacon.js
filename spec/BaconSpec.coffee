@@ -979,7 +979,7 @@ describe "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6])
-  it ("supports varargs"), ->
+  it ("supports n-ary syntax"), ->
     expectStreamEvents(
       ->
         Bacon.mergeAll(
@@ -1232,6 +1232,13 @@ describe "Bacon.zipWith", ->
       ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipWith([obs, obs.skip(1), obs.skip(2)], ((x,y,z) -> (x + y + z)))
+    [1 + 2 + 3, 2 + 3 + 4])
+  it "supports n-ary syntax", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        f = ((x,y,z) -> (x + y + z))
+        Bacon.zipWith(f, obs, obs.skip(1), obs.skip(2))
     [1 + 2 + 3, 2 + 3 + 4])
 
 describe "combineTemplate", ->

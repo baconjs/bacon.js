@@ -138,7 +138,11 @@ Bacon.zipAsArray = (streams, more...) ->
     streams = [streams].concat(more)
   Bacon.zipWith(streams, Array)
 
-Bacon.zipWith = (streams, f) ->
+Bacon.zipWith = (streams, f, more...) ->
+    if isFunction(streams)
+      g = streams
+      streams = [f].concat(more)
+      f = g
     new EventStream (sink) ->
       bufs = ([] for s in streams)
       unsubscribed = false
