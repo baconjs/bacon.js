@@ -1392,6 +1392,10 @@
       });
     };
 
+    EventStream.prototype.skipUntil = function(starter) {
+      return starter.take(1).flatMap(this);
+    };
+
     EventStream.prototype.awaiting = function(other) {
       return this.map(true).merge(other.map(false)).toProperty(false);
     };
