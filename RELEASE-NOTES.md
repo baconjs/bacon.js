@@ -1,3 +1,7 @@
+## 0.4.7
+
+- Fix #191: End properly even if an exception is thrown (sequentially, take)
+
 ## 0.4.6
 
 - Support n-ary syntax in Bacon.mergeAll and Bacon.zipWith
