@@ -28,7 +28,10 @@ exports.TickScheduler = ->
           if _.contains(toRemove, entry.id)
             _.remove(entry.id, toRemove)
           else
-            entry.fn()
+            try
+              entry.fn()
+            catch e
+              console.log("TickScheduler caught", e)
             add entry.recur, entry if entry.recur
       delete schedule[currentTick]
       currentTick++

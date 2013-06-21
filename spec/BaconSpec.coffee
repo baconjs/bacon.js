@@ -36,6 +36,15 @@ describe "Bacon.sequentially", ->
     expectStreamEvents(
       -> Bacon.sequentially(t(1), [error(), "lol"])
       [error(), "lol"])
+  it "will stop properly even when exception thrown", ->
+    expectStreamEvents(
+      ->
+        s = Bacon.sequentially(t(1), ["lol", "wut"])
+        s.onValue (value) ->
+          throw "testing" if value == "lol"
+        s
+      ["wut"])
+
 describe "Bacon.interval", ->
   it "repeats single element indefinitely", ->
     expectStreamEvents(
