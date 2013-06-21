@@ -651,6 +651,7 @@ class EventStream extends Observable
       reply
 
   merge: (right) ->
+    assertEventStream(right)
     left = this
     new EventStream (sink) ->
       unsubLeft = nop
@@ -1023,6 +1024,7 @@ else
     -1
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
+assertEventStream = (event) -> assert "not an EventStream : " + event, event instanceof EventStream
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array

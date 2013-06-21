@@ -1,3 +1,7 @@
+## 0.4.9
+
+- (#192) Throw runtime error if trying to merge Properties
+
 ## 0.4.8
 
 - Add EventStream.skipUntil (#194)
