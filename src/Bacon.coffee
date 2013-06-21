@@ -426,6 +426,7 @@ class Observable
       unsubSrc = src.subscribe(srcSink)
       unsubStopper = stopper.subscribe(stopperSink) unless unsubscribed
       unsubBoth
+
   skip : (count) ->
     @withHandler (event) ->
       if !event.hasValue()
@@ -435,6 +436,7 @@ class Observable
         Bacon.more
       else
         @push event
+
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
     @withStateMachine None, (prev, event) ->
       if !event.hasValue()
@@ -686,6 +688,9 @@ class EventStream extends Observable
         else
           sink(e)
       -> unsub()
+
+  skipUntil: (starter) ->
+    starter.take(1).flatMap(this)
 
   awaiting: (other) ->
     this.map(true).merge(other.map(false)).toProperty(false)

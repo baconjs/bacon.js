@@ -633,6 +633,10 @@ stream.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
+`stream.takeUntil(stream2)` skips elements from `stream` until a Next event
+appears in `stream2`. In other words, starts delivering values
+from `stream` after first event appears in `stream2`.
+
 `stream.bufferWithTime(delay)` buffers stream events with given delay.
 The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]

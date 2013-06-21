@@ -517,6 +517,16 @@ describe "EventStream.bufferWithTimeOrCount", ->
       -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTimeOrCount(t(7), 10)
       [error(), [1, 2, 3, 4], [5, 6, 7]])
 
+describe "EventStream.skipUntil", ->
+  it "skips events until one appears in given starter stream", ->
+    expectStreamEvents(
+      ->
+        src = series(3, [1,2,3])
+        src.onValue(->) # to start "time" immediately instead of on subscribe
+        starter = series(4, ["start"])
+        src.skipUntil(starter)
+      [2,3])
+
 describe "EventStream.takeUntil", ->
   it "takes elements from source until an event appears in the other stream", ->
     expectStreamEvents(
