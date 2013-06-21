@@ -31,7 +31,7 @@ exports.TickScheduler = ->
             try
               entry.fn()
             catch e
-              console.log("TickScheduler caught", e)
+              console.log("TickScheduler caught", e) unless e == "testing"
             add entry.recur, entry if entry.recur
       delete schedule[currentTick]
       currentTick++
