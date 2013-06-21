@@ -634,7 +634,7 @@ stream.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
-`stream.takeUntil(stream2)` skips elements from `stream` until a Next event
+`stream.skipUntil(stream2)` skips elements from `stream` until a Next event
 appears in `stream2`. In other words, starts delivering values
 from `stream` after first event appears in `stream2`.
 
