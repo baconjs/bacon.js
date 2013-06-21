@@ -13,6 +13,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
       value = eventTransformer(args...)
       unless value instanceof Array and _.last(value) instanceof Event
         value = [value]
+
       for event in value
         reply = sink(event = toEvent(event))
         if reply == Bacon.noMore or event.isEnd()
@@ -72,7 +73,12 @@ Bacon.sequentially = (delay, values) ->
   index = 0
   Bacon.fromPoll delay, ->
     value = values[index++]
-    if index < values.length then value else [value, end()]
+    if index < values.length 
+      value 
+    else if index == values.length
+      [value, end()]
+    else
+      end()
 
 Bacon.repeatedly = (delay, values) ->
   index = 0
@@ -360,8 +366,9 @@ class Observable
         if count > 0
           @push event
         else
-          @push event
-          @push end()
+          if count == 0
+            @push event
+            @push end()
           Bacon.noMore
 
   map: (f, args...) ->
