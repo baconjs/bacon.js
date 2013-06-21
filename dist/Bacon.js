@@ -114,8 +114,10 @@
       value = values[index++];
       if (index < values.length) {
         return value;
-      } else {
+      } else if (index === values.length) {
         return [value, end()];
+      } else {
+        return end();
       }
     });
   };
@@ -832,7 +834,9 @@
           if (count > 0) {
             return this.push(event);
           } else {
-            this.push(event);
+            if (count === 0) {
+              this.push(event);
+            }
             this.push(end());
             return Bacon.noMore;
           }
