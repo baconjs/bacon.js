@@ -1,3 +1,7 @@
+## 0.4.8
+
+- Add EventStream.skipUntil (#194)
+
 ## 0.4.7
 
 - Fix #191: End properly even if an exception is thrown (sequentially, take)
