@@ -1092,6 +1092,11 @@ describe "Property.sampledBy(stream)", ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]))
       [1, 1, 2])
+    expectPropertyEvents(
+      -> 
+        p = series(5, [1, 2]).toProperty()
+        p.sampledBy(series(3, [0, 0, 0, 0]).toProperty())
+      [1, 1, 2])
 
 describe "Property.sampledBy(property)", ->
   it "samples property at events, resulting to a Property", ->
