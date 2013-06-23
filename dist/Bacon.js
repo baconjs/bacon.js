@@ -216,18 +216,14 @@
   };
 
   Bacon.mergeAll = function() {
-    var more, next, stream, streams, _i, _len, _ref1;
+    var more, streams;
     streams = arguments[0], more = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (!(streams instanceof Array)) {
       streams = [streams].concat(more);
     }
-    stream = _.head(streams);
-    _ref1 = _.tail(streams);
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      next = _ref1[_i];
-      stream = stream.merge(next);
-    }
-    return stream;
+    return _.fold(streams, Bacon.never(), (function(a, b) {
+      return a.merge(b);
+    }));
   };
 
   Bacon.zipAsArray = function() {
@@ -2279,6 +2275,14 @@
       if (i >= 0) {
         return xs.splice(i, 1);
       }
+    },
+    fold: function(xs, seed, f) {
+      var x, _i, _len;
+      for (_i = 0, _len = xs.length; _i < _len; _i++) {
+        x = xs[_i];
+        seed = f(seed, x);
+      }
+      return seed;
     }
   };
 
