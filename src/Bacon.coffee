@@ -134,10 +134,7 @@ sendWrapped = (values, wrapper) ->
 Bacon.mergeAll = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
-  stream = _.head streams
-  for next in (_.tail streams)
-    stream = stream.merge(next)
-  stream
+  _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
 
 Bacon.zipAsArray = (streams, more...) ->
   if not (streams instanceof Array)
@@ -1121,6 +1118,10 @@ _ = {
     i = indexOf(xs, x)
     if i >= 0
       xs.splice(i, 1)
+  fold: (xs, seed, f) ->
+    for x in xs
+      seed = f(seed, x)
+    seed
 }
 
 Bacon._ = _

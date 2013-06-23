@@ -1,3 +1,7 @@
+## 0.4.10
+
+- Fix #195: Bacon.mergeAll for empty list should return Bacon.never()
+
 ## 0.4.9
 
 - (#192) Throw runtime error if trying to merge Properties

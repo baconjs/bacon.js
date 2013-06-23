@@ -1014,6 +1014,10 @@ describe "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2)))
       [1, 3, 5, 2, 4, 6])
+  it "returns empty stream for zero input", ->
+    expectStreamEvents(
+      -> Bacon.mergeAll([])
+      [])
 
 describe "Property.sampledBy(stream)", ->
   it "samples property at events, resulting to EventStream", ->
