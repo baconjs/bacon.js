@@ -1094,13 +1094,13 @@ _ = {
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
-  all: (xs) ->
+  all: (xs, f = _.id) ->
     for x in xs
-      return false if not x
+      return false if not f(x)
     return true
-  any: (xs) ->
+  any: (xs, f = _.id) ->
     for x in xs
-      return true if x
+      return true if f(x)
     return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
