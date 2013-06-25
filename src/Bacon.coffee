@@ -951,10 +951,10 @@ Bacon.when = (patterns...) ->
     pats = []
     i = 0
     while (i < len)
-       patterns[i] = [patterns[i]] unless patterns[i] instanceof Array
+       patSources = _.toArray patterns[i]
        f = patterns[i+1]
        pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
-       for s in patterns[i]
+       for s in patSources
          assert (s instanceof Observable), usage
          index = sources.indexOf s
          if index < 0
