@@ -1273,6 +1273,13 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1))
     [[1 , 2], [2 , 3], [3, 4]])
+  it "does not synchronize on properties", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        Bacon.zipAsArray(obs, obs.skip(1), Bacon.constant(5))
+    [[1 , 2, 5], [2 , 3, 5], [3, 4, 5]])
+
 describe "Bacon.zipWith", ->
   it "zips an array of streams with given function", ->
     expectStreamEvents(
@@ -1287,6 +1294,81 @@ describe "Bacon.zipWith", ->
         f = ((x,y,z) -> (x + y + z))
         Bacon.zipWith(f, obs, obs.skip(1), obs.skip(2))
     [1 + 2 + 3, 2 + 3 + 4])
+
+describe "Bacon.when", ->
+  it "synchronizes on join patterns", ->
+    expectStreamEvents(
+      ->
+        [a,b,_] = ['a','b','_']
+        as = series(1, [a, _, a, a, _, a, _, _, a, a]).filter((x) -> x == a)
+        bs = series(1, [_, b, _, _, b, _, b, b, _, _]).filter((x) -> x == b)
+        Bacon.when(
+          [as, bs], (a,b) ->  a + b,
+          [as],     (a)   ->  a)
+      ['a', 'ab', 'a', 'ab', 'ab', 'ab'])
+  it "consider the join patterns from top to bottom", ->
+    expectStreamEvents(
+      ->
+        [a,b,_] = ['a','b','_']
+        as = series(1, [a, _, a, a, _, a, _, _, a, a]).filter((x) -> x == a)
+        bs = series(1, [_, b, _, _, b, _, b, b, _, _]).filter((x) -> x == b)
+        Bacon.when(
+          [as],     (a)   ->  a,
+          [as, bs], (a,b) ->  a + b)
+      ['a', 'a', 'a', 'a', 'a', 'a'])
+  it "handles any number of join patterns", ->
+    expectStreamEvents(
+      ->
+        [a,b,c,_] = ['a','b','c','_']
+        as = series(1, [a, _, a, _, a, _, a, _, _, _, a, a]).filter((x) -> x == a)
+        bs = series(1, [_, b, _, _, _, b, _, b, _, b, _, _]).filter((x) -> x == b)
+        cs = series(1, [_, _, _, c, _, _, _, _, c, _, _, _]).filter((x) -> x == c)
+        Bacon.when(
+          [as, bs, cs], (a,b,c) ->  a + b + c,
+          [as, bs],     (a,b) ->  a + b,
+          [as],         (a)   ->  a)
+      ['a', 'ab', 'a', 'abc', 'abc', 'ab'])
+  it "does'nt synchronize on properties", ->
+    expectStreamEvents(
+      ->
+        [a,b,c,_] = ['a','b','c','_']
+        as = series(1, [a, _, a, _, a, _, a, _, _, _, a, _, a]).filter((x) -> x == a)
+        bs = series(1, [_, b, _, _, _, b, _, b, _, b, _, _, _]).filter((x) -> x == b)
+        cs = series(1, [_, _, _, c, _, _, _, _, c, _, _, c, _]).filter((x) -> x == c).map(1).scan 0, ((x,y) -> x + y)
+        Bacon.when(
+          [as, bs, cs], (a,b,c) ->  a + b + c,
+          [as],         (a)   ->  a)
+      ['a', 'ab0', 'a', 'ab1', 'ab2', 'ab3'])
+  it "returns Bacon.never() on the empty list of patterns", ->
+    expectStreamEvents(
+      ->
+        Bacon.when()
+      [])
+  it "works with multiples of streams", ->
+    expectStreamEvents(
+      -> 
+        [h,o,c,_] = ['h','o','c','_']
+        hs = series(1, [h, _, h, _, h, _, h, _, _, _, h, _, h]).filter((x) -> x == h)
+        os = series(1, [_, o, _, _, _, o, _, o, _, o, _, _, _]).filter((x) -> x == o)
+        cs = series(1, [_, _, _, c, _, _, _, _, c, _, _, c, _]).filter((x) -> x == c)
+        Bacon.when(
+          [hs, hs, os], (h1,h2,o) ->  [h1,h2,o],
+          [cs, os],    (c,o) -> [c,o])
+      [['h', 'h', 'o'], ['c', 'o'], ['h', 'h', 'o'], ['c', 'o']])
+
+describe "Bacon.update", ->
+  it "works like Bacon.when, but produces a property, and can be defined in terms of a current value", ->
+    expectPropertyEvents(
+      ->
+        [r,i,_] = ['r','i',0]
+        incr  = series(1, [1, _, 1, _, 2, _, 1, _, _, _, 2, _, 1]).filter((x) -> x != _)
+        reset = series(1, [_, r, _, _, _, r, _, r, _, r, _, _, _]).filter((x) -> x == r)
+        Bacon.update(
+          0,
+          [reset], ->  0,
+          [incr], (i,c) -> i+c)
+      [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3])
+
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->

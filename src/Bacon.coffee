@@ -142,37 +142,9 @@ Bacon.zipAsArray = (streams, more...) ->
   Bacon.zipWith(streams, Array)
 
 Bacon.zipWith = (streams, f, more...) ->
-    if isFunction(streams)
-      g = streams
-      streams = [f].concat(more)
-      f = g
-    new EventStream (sink) ->
-      bufs = ([] for s in streams)
-      unsubscribed = false
-      unsubs = (nop for s in streams)
-      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
-      zipSink = (e) ->
-        reply = sink e
-        if reply == Bacon.noMore or e.isEnd()
-          unsubAll()
-        reply
-      handle = (i) -> (e) ->
-       if e.isError()
-         zipSink e
-       else if e.isInitial()
-         Bacon.more
-       else
-         bufs[i].push(e)
-         if not e.isEnd() and _.all(b.length for b in bufs)
-           vs = (b.shift().value() for b in bufs)
-           reply = zipSink e.apply _.always f(vs ...)
-         if _.any(b.length and b[0].isEnd() for b in bufs)
-           reply = zipSink end()
-         reply or Bacon.more
-      for s,j in streams
-        unsubs[j] = do (i=j) ->
-          s.subscribe (handle i) unless unsubscribed
-      unsubAll
+  if isFunction(streams)
+    [streams, f] = [[f].concat(more), streams]
+  Bacon.when streams, f
 
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
@@ -970,6 +942,117 @@ class Bus extends EventStream
       unsubAll()
       sink? end()
 
+Bacon.when = (patterns...) ->
+    return Bacon.never() if patterns.length == 0
+    len = patterns.length
+    usage = "when: expecting arguments on the form (Observable+,function)+"
+    assert usage, len % 2 == 0
+    sources = []
+    pats = []
+    i = 0
+    while (i < len)
+       patterns[i] = [patterns[i]] unless patterns[i] instanceof Array
+       assert (p instanceof Observable), usage for p in patterns[i]
+       patterns[i+1] = (-> patterns[i+1]) unless patterns[i+1] instanceof Function
+       pat = {f: patterns[i+1], ixs: []}
+       for s in patterns[i]
+         index = sources.indexOf s
+         if index < 0
+            sources.push(s)
+            index = sources.length - 1
+         (ix.count++ if ix.index == index) for ix in pat.ixs
+         pat.ixs.push {index: index, count: 1}
+       pats.push pat
+       i = i + 2
+    
+    class src 
+      constructor: (s) ->
+        @obs = s
+        @queue = []
+        @isEnded = false
+        if s instanceof Property
+          @value = ()  -> @queue[0]
+          @push  = (x) -> @queue = [x]
+          @ended = ()  -> false
+        else
+          @value = ()  -> @queue.shift()
+          @push  = (x) -> @queue.push(x)
+          @ended = (c) -> @queue.length < c && @isEnded
+      
+    sources = _.map ((s) -> new src(s)), sources
+
+    fromStreams = new EventStream (sink) ->
+      match = (p) ->
+        _.all(p.ixs, (i) -> sources[i.index].queue.length >= i.count)
+      cannotMatch = (p) ->
+        _.any(p.ixs, (i) -> sources[i.index].ended(i.count))
+      part = (source, j) -> (unsubAll) ->
+        source.obs.subscribe (e) ->
+          if e.isEnd()
+            sources[j].isEnded = true
+            if _.all(pats, cannotMatch)
+              reply = Bacon.noMore
+              sink end()
+          else if e.isError()
+            reply = sink e
+          else
+            sources[j].push e.value()
+            for p in pats
+               if match(p)
+                 val = p.f(sources[i.index].value() for i in p.ixs ...)
+                 reply = sink next(val)
+                 break;
+          unsubAll() if reply == Bacon.noMore
+          reply or Bacon.more
+
+      compositeUnsubscribe (part s,i for s,i in sources)...
+    
+Bacon.update = (initial, patterns...) ->
+  lateBindFirst = (f) -> (args) -> (i) -> f([i].concat(args)...)
+  i = patterns.length - 1
+  while (i > 0)
+    unless patterns[i] instanceof Function
+      patterns[i] = do(x=patterns[i])->(->x)
+    patterns[i] = lateBindFirst patterns[i]
+    i = i - 2
+  Bacon.when(patterns...).scan initial, ((x,f) -> f x)
+
+compositeUnsubscribe = (ss...) ->
+  new CompositeUnsubscribe(ss).unsubscribe
+
+class CompositeUnsubscribe
+  constructor: (ss = []) ->
+    @unsubscribed = false
+    @subscriptions = []
+    @starting = []
+    @add s for s in ss
+  add: (subscription) =>
+    return if @unsubscribed
+    ended = false
+    unsub = nop
+    @starting.push subscription
+    unsubMe = =>
+      unsub()
+      ended = true
+      @remove unsub
+      _.remove subscription, @starting
+    unsub = subscription @unsubscribe, unsubMe
+    @subscriptions.push unsub unless (@unsubscribed or ended)
+    _.remove subscription, @starting
+    unsub
+  remove: (subscription) ->
+    return if @unsubscribed
+    _.remove subscription, @subscriptions
+  unsubscribe: =>
+    return if @unsubscribed
+    @unsubscribed = true
+    s() for s in @subscriptions
+    @subscriptions = []
+    @starting = []
+  empty: =>
+    not @subscriptions.length and not @starting.length
+
+
 class Some
   constructor: (@value) ->
   getOrElse: -> @value
@@ -1104,13 +1187,13 @@ _ = {
   contains: (xs, x) -> indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
-  all: (xs) ->
+  all: (xs, f = _.id) ->
     for x in xs
-      return false if not x
+      return false if not f(x)
     return true
-  any: (xs) ->
+  any: (xs, f = _.id) ->
     for x in xs
-      return true if x
+      return true if f(x)
     return false
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
