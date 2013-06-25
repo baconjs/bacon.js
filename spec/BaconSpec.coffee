@@ -1355,6 +1355,13 @@ describe "Bacon.when", ->
           [hs, hs, os], (h1,h2,o) ->  [h1,h2,o],
           [cs, os],    (c,o) -> [c,o])
       [['h', 'h', 'o'], ['c', 'o'], ['h', 'h', 'o'], ['c', 'o']])
+  it "works with multiples of properties", ->
+    expectStreamEvents(
+      ->
+        c = Bacon.constant("c")
+        Bacon.when(
+          [c, c, Bacon.once(1)], (c1, c2, _) -> c1 + c2)
+      ["cc"])
   it "accepts constants instead of functions too", ->
     expectStreamEvents(
       -> Bacon.when(Bacon.once(1), 2)

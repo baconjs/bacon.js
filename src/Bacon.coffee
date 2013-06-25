@@ -974,15 +974,17 @@ Bacon.when = (patterns...) ->
           @value = ()  -> @queue[0]
           @push  = (x) -> @queue = [x]
           @ended = ()  -> false
+          @hasAtLeast = (c) -> @queue.length
         else
           @value = ()  -> @queue.shift()
           @push  = (x) -> @queue.push(x)
           @ended = (c) -> @queue.length < c && @isEnded
+          @hasAtLeast = (c) -> @queue.length >= c
     sources = _.map ((s) -> new Source(s)), sources
 
     new EventStream (sink) ->
       match = (p) ->
-        _.all(p.ixs, (i) -> sources[i.index].queue.length >= i.count)
+        _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> sources[i.index].ended(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
