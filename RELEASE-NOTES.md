@@ -1,6 +1,8 @@
 ## 0.5.0
 
 - Added Join Patterns, i.e. Bacon.when and Bacon.update (#167)
+- Corrected the name to "bacon" instead of "baconjs" in bower.json,
+  component.json (#197)
 
 ## 0.4.10
 
