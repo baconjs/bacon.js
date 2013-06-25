@@ -1355,6 +1355,10 @@ describe "Bacon.when", ->
           [hs, hs, os], (h1,h2,o) ->  [h1,h2,o],
           [cs, os],    (c,o) -> [c,o])
       [['h', 'h', 'o'], ['c', 'o'], ['h', 'h', 'o'], ['c', 'o']])
+  it "accepts constants instead of functions too", ->
+    expectStreamEvents(
+      -> Bacon.when(Bacon.once(1), 2)
+      [2])
 
 describe "Bacon.update", ->
   it "works like Bacon.when, but produces a property, and can be defined in terms of a current value", ->
