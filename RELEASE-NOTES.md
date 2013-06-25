@@ -1,3 +1,7 @@
+## 0.5.0
+
+- Added Join Patterns, i.e. Bacon.when and Bacon.update (#167)
+
 ## 0.4.10
 
 - Fix #195: Bacon.mergeAll for empty list should return Bacon.never()
