@@ -967,30 +967,31 @@ Bacon.when = (patterns...) ->
 
     class Source 
       constructor: (s) ->
-        @obs = s
-        @queue = []
-        @isEnded = false
+        queue = []
+        isEnded = false
+        @subscribe = s.subscribe
+        @markEnded = -> isEnded = true
         if s instanceof Property
-          @value = ()  -> @queue[0]
-          @push  = (x) -> @queue = [x]
-          @ended = ()  -> false
-          @hasAtLeast = (c) -> @queue.length
+          @consume = () -> queue[0]
+          @push  = (x) -> queue = [x]
+          @mayHave = -> true
+          @hasAtLeast = (c) -> queue.length
         else
-          @value = ()  -> @queue.shift()
-          @push  = (x) -> @queue.push(x)
-          @ended = (c) -> @queue.length < c && @isEnded
-          @hasAtLeast = (c) -> @queue.length >= c
+          @consume = () -> queue.shift()
+          @push  = (x) -> queue.push(x)
+          @mayHave = (c) -> !isEnded || queue.length >= c
+          @hasAtLeast = (c) -> queue.length >= c
     sources = _.map ((s) -> new Source(s)), sources
 
     new EventStream (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotMatch = (p) ->
-        _.any(p.ixs, (i) -> sources[i.index].ended(i.count))
+        _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
-        source.obs.subscribe (e) ->
+        source.subscribe (e) ->
           if e.isEnd()
-            sources[sourceIndex].isEnded = true
+            sources[sourceIndex].markEnded()
             if _.all(pats, cannotMatch)
               reply = Bacon.noMore
               sink end()
@@ -1000,7 +1001,7 @@ Bacon.when = (patterns...) ->
             sources[sourceIndex].push e.value()
             for p in pats
                if match(p)
-                 val = p.f(sources[i.index].value() for i in p.ixs ...)
+                 val = p.f(sources[i.index].consume() for i in p.ixs ...)
                  reply = sink next(val)
                  break
           unsubAll() if reply == Bacon.noMore
