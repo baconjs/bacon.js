@@ -1369,7 +1369,7 @@ describe "Bacon.update", ->
         reset = series(1, [_, r, _, _, _, r, _, r, _, r, _, _, _]).filter((x) -> x == r)
         Bacon.update(
           0,
-          [reset], ->  0,
+          [reset], 0,
           [incr], (i,c) -> i+c)
       [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3])
 
