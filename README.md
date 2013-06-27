@@ -18,6 +18,7 @@ Here's the stuff.
 - [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
+- [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
 - [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
 
