@@ -1010,7 +1010,7 @@ Bacon.when = (patterns...) ->
       compositeUnsubscribe (part s,i for s,i in sources)...
 
 Bacon.update = (initial, patterns...) ->
-  lateBindFirst = (f) -> (args) -> (i) -> f([i].concat(args)...)
+  lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
   i = patterns.length - 1
   while (i > 0)
     unless patterns[i] instanceof Function

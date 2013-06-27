@@ -1380,6 +1380,15 @@ describe "Bacon.update", ->
           [incr], (i,c) -> i+c)
       [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3])
 
+  it "Correctly handles multiple arguments in parameter list", ->
+    expectPropertyEvents(
+      ->
+        one = Bacon.once(1)
+        two = Bacon.once(2)
+        Bacon.update(
+          0,
+          [one, two],  (i, a, b) -> [i,a,b])
+      [[0,1,2]])
 
 describe "combineTemplate", ->
   it "combines streams according to a template object", ->
