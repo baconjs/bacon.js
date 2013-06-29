@@ -1,3 +1,4 @@
+expect = require("chai").expect
 Bacon = (require "../src/Bacon").Bacon
 
 success = undefined
@@ -17,20 +18,20 @@ describe "Bacon.fromPromise", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     success("a")
-    expect(_.map(((e) -> e.describe()), events)).toEqual(["a", "<end>"])
+    expect(_.map(((e) -> e.describe()), events)).to.deep.equal(["a", "<end>"])
 
   it "should produce error and end on error", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     fail("a")
-    expect(events).toEqual([new Bacon.Error("a"), new Bacon.End()])
+    expect(events).to.deep.equal([new Bacon.Error("a"), new Bacon.End()])
 
   it "should respect unsubscription", ->
     events = []
     dispose = Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     dispose()
     success("a")
-    expect(events).toEqual([])
+    expect(events).to.deep.equal([])
 
   it "should abort ajax promise on unsub, if abort flag is set", ->
     isAborted = false
@@ -39,7 +40,7 @@ describe "Bacon.fromPromise", ->
     dispose = Bacon.fromPromise(promise, true).subscribe(nop)
     dispose()
     delete promise.abort
-    expect(isAborted).toEqual(true)
+    expect(isAborted).to.deep.equal(true)
   
   it "should not abort ajax promise on unsub, if abort flag is not set", ->
     isAborted = false
@@ -48,10 +49,10 @@ describe "Bacon.fromPromise", ->
     dispose = Bacon.fromPromise(promise).subscribe(nop)
     dispose()
     delete promise.abort
-    expect(isAborted).toEqual(false)
+    expect(isAborted).to.deep.equal(false)
 
   it "should not abort non-ajax promise", ->
     isAborted = false
     dispose = Bacon.fromPromise(promise).subscribe(nop)
     dispose()
-    expect(isAborted).toEqual(false)
+    expect(isAborted).to.deep.equal(false)

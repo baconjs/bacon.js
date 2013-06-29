@@ -1,2 +1,7 @@
-export test=$1
-npm install&&npm test
+#!/bin/bash -e
+
+npm install
+
+export grep=$1
+
+./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/BaconSpec.coffee

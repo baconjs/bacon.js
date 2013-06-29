@@ -1,15 +1,22 @@
+expect = require("chai").expect
 Bacon = (require "../src/Bacon").Bacon
 _ = Bacon._
 
-@t = (time) -> time
+t = @t = (time) -> time
 seqs = []
 waitMs = 100
 
-grep = process.env.test
+grep = process.env.grep
 if grep
+  console.log("running with grep:", grep)
   origDescribe = describe
+  match = false
   global.describe = (desc, f) ->
     if desc.indexOf(grep) >= 0
+      match = true
+      origDescribe(desc, f)
+      match = false
+    else if match
       origDescribe(desc, f)
 
 @error = (msg) -> new Bacon.Error(msg)
@@ -36,79 +43,86 @@ if grep
   @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
 
 @expectStreamEvents = (src, expectedEvents) ->
-  runs -> verifySingleSubscriber src(), expectedEvents
-  runs -> verifySwitching src(), expectedEvents
+  verifySingleSubscriber src, expectedEvents
+  verifySwitching src, expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents) ->
-  expect(expectedEvents.length > 0).toEqual(true)
+  expect(expectedEvents.length > 0).to.deep.equal(true)
+  property = null
   events = []
   events2 = []
-  ended = false
   streamEnded = -> ended
-  property = src()
-  expect(property instanceof Bacon.Property).toEqual(true)
-  runs -> property.subscribe (event) -> 
-    if event.isEnd()
-      ended = true
-    else
-      events.push(toValue(event))
-      if event.hasValue()
-        property.subscribe (event) ->
-          if event.isInitial()
-            events2.push(event.value())
-          Bacon.noMore
-  waitsFor streamEnded, waitMs
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    expect(events2).toEqual(justValues(expectedEvents))
+  before ->
+    property = src()
+    expect(property instanceof Bacon.Property).to.deep.equal(true)
+  before (done) ->
+    property.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
+        events.push(toValue(event))
+        if event.hasValue()
+          property.subscribe (event) ->
+            if event.isInitial()
+              events2.push(event.value())
+            Bacon.noMore
+
+  it "outputs expected events in order", ->
+    expect(events).to.deep.equal(toValues(expectedEvents))
+  it "outputs expected events in order when subscribing after each value", ->
+    expect(events2).to.deep.equal(justValues(expectedEvents))
+  it "has correct final state", ->
     verifyFinalState(property, lastNonError(expectedEvents))
-    verifyCleanup()
+  it "cleans up observers", verifyCleanup
 
-verifySingleSubscriber = (src, expectedEvents) ->
-  expect(src instanceof Bacon.EventStream).toEqual(true)
+verifySingleSubscriber = (srcF, expectedEvents) ->
+  src = null
   events = []
-  ended = false
-  streamEnded = -> ended
-  runs -> src.subscribe (event) -> 
-    if event.isEnd()
-      ended = true
-    else
-      expect(event instanceof Bacon.Initial).toEqual(false)
-      events.push(toValue(event))
-
-  waitsFor streamEnded, waitMs
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    verifyExhausted(src)
-    verifyCleanup()
+  before -> 
+    src = srcF()
+    expect(src instanceof Bacon.EventStream).to.equal(true)
+  before (done) ->
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
+        expect(event instanceof Bacon.Initial).to.deep.equal(false)
+        events.push(toValue(event))
+  it "outputs expected events in order", ->
+    expect(events).to.deep.equal(toValues(expectedEvents))
+  it "the stream is exhausted", ->
+     verifyExhausted src
+  it "cleans up observers", verifyCleanup
 
 # get each event with new subscriber
-verifySwitching = (src, expectedEvents) ->
+verifySwitching = (srcF, expectedEvents, done) ->
+  src = null
   events = []
-  ended = false
-  streamEnded = -> ended
-  newSink = -> 
-    (event) ->
-      if event.isEnd()
-        ended = true
-      else
-        expect(event instanceof Bacon.Initial).toEqual(false)
-        events.push(toValue(event))
-        src.subscribe(newSink())
-        Bacon.noMore
-  runs -> 
+  before -> 
+    src = srcF()
+    expect(src instanceof Bacon.EventStream).to.equal(true)
+  before (done) ->
+    newSink = -> 
+      (event) ->
+        if event.isEnd()
+          done()
+        else
+          expect(event instanceof Bacon.Initial).to.deep.equal(false)
+          events.push(toValue(event))
+          src.subscribe(newSink())
+          Bacon.noMore
     src.subscribe(newSink())
-  waitsFor streamEnded, waitMs
-  runs -> 
-    expect(events).toEqual(toValues(expectedEvents))
-    verifyExhausted(src)
-    verifyCleanup()
+  it "outputs expected value in order when switching to new observer after each event", ->
+    expect(events).to.deep.equal(toValues(expectedEvents))
+  it "the stream is exhausted", ->
+     verifyExhausted src
+  it "cleans up observers", verifyCleanup
 
 verifyExhausted = (src) ->
   events = []
   src.subscribe (event) ->
     events.push(event)
-  expect(events[0].isEnd()).toEqual(true)
+  expect(events[0].isEnd()).to.deep.equal(true)
 
 lastNonError = (events) ->
   _.last(_.filter(((e) -> toValue(e) != "<error>"), events))
@@ -117,12 +131,11 @@ verifyFinalState = (property, value) ->
   events = []
   property.subscribe (event) ->
     events.push(event)
-  expect(toValues(events)).toEqual(toValues([value, "<end>"]))
+  expect(toValues(events)).to.deep.equal(toValues([value, "<end>"]))
 
 verifyCleanup = @verifyCleanup = ->
   for seq in seqs
-    #console.log("verify cleanup: #{seq.values}")
-    expect(seq.source.hasSubscribers()).toEqual(false)
+    expect(seq.source.hasSubscribers()).to.deep.equal(false)
   seqs = []
 
 toValues = (xs) ->

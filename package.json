@@ -17,7 +17,9 @@
     "benchmark": "1.0.0",
     "browserify": "1.18.0",
     "sinon": "~1.6.0",
-    "grunt-contrib-uglify": "~0.2.2"
+    "grunt-contrib-uglify": "~0.2.2",
+    "chai": "1.6.0",
+    "mocha": "1.10.0"
   },
   "repository": {
     "type": "git",
@@ -66,7 +68,7 @@
     "files": "browsertest/jasmine-harness.coffee"
   },
   "scripts": {
-    "test": "jasmine-node --coffee spec",
+    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/**",
     "pre-publish": "grunt"
   },
   "main": "dist/Bacon.js"
