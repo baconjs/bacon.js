@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-npm install
+npm install --silent
 
 export grep=$1
 
