@@ -881,13 +881,14 @@ PropertyTransaction = (->
       #console.log "start tx"
       tx = true
       try
-        f()
+        result = f()
       finally
         tx = false
       gs = txListeners
       #console.log "after tx", txListeners.length
       txListeners = []
       g() for g in gs
+      result
   { onDone, inTransaction }
  )()
 
