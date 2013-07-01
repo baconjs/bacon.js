@@ -310,13 +310,19 @@ class Observable
         else
           Bacon.more
   takeWhile: (f, args...) ->
-    f = makeFunction(f, args)
-    @withHandler (event) ->
-      if event.filter(f)
-        @push event
-      else
-        @push end()
-        Bacon.noMore
+    if (f instanceof Property)
+      # TODO: this is identical (except method name) to to the same in filter
+      f.sampledBy(this, (p,s) -> [p,s])
+       .takeWhile(([p, s]) -> p)
+       .map(([p, s]) -> s)
+    else
+      f = makeFunction(f, args)
+      @withHandler (event) ->
+        if event.filter(f)
+          @push event
+        else
+          @push end()
+          Bacon.noMore
   endOnError: ->
     @withHandler (event) ->
       if event.isError()

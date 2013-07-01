@@ -311,10 +311,22 @@ describe "EventStream.take", ->
       [])
 
 describe "EventStream.takeWhile", ->
-  describe "should take while predicate is true", ->
+  describe "takes while predicate is true", ->
     expectStreamEvents(
       -> repeat(1, [1, error("wat"), 2, 3]).takeWhile(lessThan(3))
       [1, error("wat"), 2])
+  describe "extracts field values", ->
+    expectStreamEvents(
+      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+           .takeWhile(".good").map(".value")
+      ["yes"])
+  describe "can filter by Property value", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1,1,2,3,4,4,8,7])
+        odd = src.map((x) -> x % 2).toProperty()
+        src.takeWhile(odd)
+      [1,1])
 
 describe "EventStream.skip", ->
   describe "should skip first N items", ->
@@ -787,6 +799,27 @@ describe "Bacon.once().take(1)", ->
     expectStreamEvents(
       -> Bacon.once(1).take(1)
       [1])
+
+describe "Property.takeWhile", ->
+  describe "takes while predicate is true", ->
+    expectPropertyEvents(
+      -> series(1, [1, error("wat"), 2, 3])
+        .toProperty()
+        .takeWhile(lessThan(3))
+      [1, error("wat"), 2])
+  describe "extracts field values", ->
+    expectPropertyEvents(
+      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+           .toProperty()
+           .takeWhile(".good").map(".value")
+      ["yes"])
+  describe "can filter by Property value", ->
+    expectPropertyEvents(
+      ->
+        src = series(1, [1,1,2,3,4,4,8,7]).toProperty()
+        odd = src.map((x) -> x % 2)
+        src.takeWhile(odd)
+      [1,1])
 
 describe "Property.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
