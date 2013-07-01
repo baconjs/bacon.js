@@ -298,25 +298,14 @@ class Observable
       f() if event.isEnd()
   errors: -> @filter(-> false)
   filter: (f, args...) ->
-    if (f instanceof Property)
-      f.sampledBy(this, (p,s) -> [p,s])
-       .filter(([p, s]) -> p)
-       .map(([p, s]) -> s)
-    else
-      f = makeFunction(f, args)
+    convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if event.filter(f)
           @push event
         else
           Bacon.more
   takeWhile: (f, args...) ->
-    if (f instanceof Property)
-      # TODO: this is identical (except method name) to to the same in filter
-      f.sampledBy(this, (p,s) -> [p,s])
-       .takeWhile(([p, s]) -> p)
-       .map(([p, s]) -> s)
-    else
-      f = makeFunction(f, args)
+    convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if event.filter(f)
           @push event
@@ -345,9 +334,9 @@ class Observable
           Bacon.noMore
 
   map: (f, args...) ->
-    f = makeFunction(f, args)
-    @withHandler (event) ->
-      @push event.fmap(f)
+    convertArgsToFunction this, f, args, (f) ->
+      @withHandler (event) ->
+        @push event.fmap(f)
   mapError : (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
@@ -653,8 +642,9 @@ class EventStream extends Observable
            .filter(({started}) -> started)
            .map(({val}) -> val)
 
-  skipWhile: (f) ->
-    @skipUntil(this.filter(_.negate(f)))
+  skipWhile: (f, args...) ->
+    convertArgsToFunction this, f, args, (f) ->
+      @skipUntil(this.filter(_.negate(f)))
 
   awaiting: (other) ->
     this.map(true).merge(other.map(false)).toProperty(false)
@@ -762,6 +752,15 @@ class Property extends Observable
   takeUntil: (stopper) ->
     changes = this.changes().takeUntil(stopper)
     addPropertyInitValueToStream(this, changes)
+
+convertArgsToFunction = (obs, f, args, method) ->
+  if f instanceof Property
+    sampled = f.sampledBy(obs, (p,s) -> [p,s])
+    method.apply(sampled, [([p, s]) -> p])
+     .map(([p, s]) -> s)
+  else
+    f = makeFunction(f, args)
+    method.apply(obs, [f])
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->

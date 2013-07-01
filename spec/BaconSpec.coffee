@@ -343,6 +343,18 @@ describe "EventStream.skipWhile", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 3, 2]).skipWhile(lessThan(3))
       [error(), 3, 2])
+  describe "extracts field values", ->
+    expectStreamEvents(
+      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+           .skipWhile(".good").map(".value")
+      ["no"])
+  describe "can filter by Property value", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1,1,2,3,4,4,8,7])
+        odd = src.map((x) -> x % 2).toProperty()
+        src.skipWhile(odd)
+      [2,3,4,4,8,7])
 
 describe "EventStream.skipUntil", ->
   describe "skips events until one appears in given starter stream", ->
