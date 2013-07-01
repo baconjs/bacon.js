@@ -342,7 +342,11 @@ property extractor string (like ".isValuable") instead. Just like with
 property. Event will be included in output iff the property holds `true`
 at the time of the event.
 
-`observable.takeWhile(f)` takes while given predicate function holds true
+`observable.takeWhile(f)` takes while given predicate function holds
+true. Function Construction rules apply.
+
+`observable.takeWhile(property)` takes values while the value of a
+property holds `true`.
 
 `observable.take(n)` takes at most n elements from the stream. Equals to
 Bacon.never() if n <= 0.
@@ -635,7 +639,10 @@ stream.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
-`stream.skipWhile(f)` skips elements while given predicate function holds true
+`stream.skipWhile(f)` skips elements while given predicate function holds true. Function construction rules apply. 
+
+`stream.skipWhile(property)` skips elements while the value of the given
+Property is `true`.
 
 `stream.skipUntil(stream2)` skips elements from `stream` until a Next event
 appears in `stream2`. In other words, starts delivering values
