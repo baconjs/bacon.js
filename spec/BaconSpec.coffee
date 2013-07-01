@@ -832,6 +832,12 @@ describe "Property.takeWhile", ->
         odd = src.map((x) -> x % 2)
         src.takeWhile(odd)
       [1,1])
+  describe "works with never-ending Property", ->
+    expectPropertyEvents(
+      -> repeat(1, [1, error("wat"), 2, 3])
+        .toProperty()
+        .takeWhile(lessThan(3))
+      [1, error("wat"), 2])
 
 describe "Property.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
