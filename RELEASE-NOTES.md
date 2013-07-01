@@ -1,3 +1,16 @@
+## 0.6
+
+- Add EventStream.skipWhile, support "Property Bool" instead of predicate function in takeWhile (#204)
+  skipWhile
+- Fix Property.take(n) etc in case of a never-ending Property (#205)
+- Fix EventStream.skipUntil in case of self-derived stopper
+- Re-implement EventStream.takeUntil
+- Switch test framework from Jasmine to Mocha
+
+## 0.5.1
+
+- Fix bug in Bacon.update (#199)
+
 ## 0.5.0
 
 - Added Join Patterns, i.e. Bacon.when and Bacon.update (#167)
