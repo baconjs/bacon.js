@@ -243,7 +243,6 @@ class Event
   isError: -> false
   hasValue: -> false
   filter: (f) -> true
-  onDone : (listener) -> listener()
 
 class Next extends Event
   constructor: (valueF, sourceEvent) ->
@@ -364,37 +363,6 @@ class Observable
     @withHandler (event) ->
       f(event.value()) if event.hasValue()
       @push event
-  takeUntil: (stopper) =>
-    src = this
-    @withSubscribe (sink) ->
-      unsubscribed = false
-      unsubSrc = nop
-      unsubStopper = nop
-      unsubBoth = -> unsubSrc() ; unsubStopper() ; unsubscribed = true
-      srcSink = (event) ->
-        if event.isEnd()
-          unsubStopper()
-          sink event
-          Bacon.noMore
-        else
-          event.onDone ->
-            if !unsubscribed
-              reply = sink event
-              if reply == Bacon.noMore
-                unsubBoth()
-          Bacon.more
-      stopperSink = (event) ->
-        if event.isError()
-          Bacon.more
-        else if event.isEnd()
-          Bacon.noMore
-        else
-          unsubSrc()
-          sink end()
-          Bacon.noMore
-      unsubSrc = src.subscribe(srcSink)
-      unsubStopper = stopper.subscribe(stopperSink) unless unsubscribed
-      unsubBoth
 
   skip : (count) ->
     @withHandler (event) ->
@@ -414,6 +382,13 @@ class Observable
         [new Some(event.value()), [event]]
       else
         [prev, []]
+  skipErrors: ->
+    @withHandler (event) ->
+      if event.isError()
+        Bacon.more
+      else
+        @push event
+
   withStateMachine: (initState, f) ->
     state = initState
     @withHandler (event) ->
@@ -659,6 +634,13 @@ class EventStream extends Observable
           sink(e)
       -> unsub()
 
+  takeUntil: (stopper) =>
+    stopped = stopper.skipErrors().map(true).toProperty(false).take(2)
+    withFlag = stopped.combine(this, (stopped, value) -> {value, stopped})
+      .takeWhile((({stopped}) -> !stopped))
+      .changes()
+      .map(({value}) -> value)
+
   skipUntil: (starter) ->
     started = starter.map(true).toProperty(false).take(2)
     started.sampledBy(this, (started, val) -> { val, started })
@@ -771,6 +753,9 @@ class Property extends Observable
   debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
   delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes()))
+  takeUntil: (stopper) ->
+    changes = this.changes().takeUntil(stopper)
+    addPropertyInitValueToStream(this, changes)
 
 addPropertyInitValueToStream = (property, stream) ->
   getInitValue = (property) ->
@@ -800,8 +785,6 @@ class Dispatcher
         ws = waiters
         waiters = null
         w() for w in ws
-      event.onDone = Event.prototype.onDone
-    addWaiter = (listener) -> waiters = (waiters or []).concat([listener])
     @push = (event) =>
       if not pushing
         return if event is prevError
@@ -809,7 +792,6 @@ class Dispatcher
         success = false
         try
           pushing = true
-          event.onDone = addWaiter
           tmp = subscriptions
           for sub in tmp
             reply = sub.sink event
