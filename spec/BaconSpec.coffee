@@ -805,6 +805,13 @@ describe "Property.take(1)", ->
     expectPropertyEvents(
       -> Bacon.constant(1)
       [1])
+  describe "works for never-ending Property", ->
+    expectPropertyEvents(
+      -> repeat(1, [1,2,3]).toProperty(0).take(1)
+      [0])
+    expectPropertyEvents(
+      -> repeat(1, [1,2,3]).toProperty().take(1)
+      [1])
 
 describe "Bacon.once().take(1)", ->
   describe "works", ->
