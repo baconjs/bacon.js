@@ -333,10 +333,14 @@ class Observable
           @push end()
           Bacon.noMore
 
-  map: (f, args...) ->
-    convertArgsToFunction this, f, args, (f) ->
-      @withHandler (event) ->
-        @push event.fmap(f)
+  map: (p, args...) ->
+    if (p instanceof Property)
+      p.sampledBy(this, former)
+    else
+      convertArgsToFunction this, p, args, (f) ->
+        @withHandler (event) ->
+          @push event.fmap(f)
+
   mapError : (f, args...) ->
     f = makeFunction(f, args)
     @withHandler (event) ->
@@ -520,11 +524,6 @@ class EventStream extends Observable
     @subscribe = dispatcher.subscribe
     @subscribeInternal = @subscribe
     @hasSubscribers = dispatcher.hasSubscribers
-  map: (p, args...) ->
-    if (p instanceof Property)
-      p.sampledBy(this, former)
-    else
-      super(p, args...)
   delay: (delay) ->
     @flatMap (value) ->
       Bacon.later delay, value
