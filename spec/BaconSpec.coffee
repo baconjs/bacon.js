@@ -326,6 +326,29 @@ describe "EventStream.skip", ->
       -> series(1, [1, 2]).skip(-1)
     [1, 2])
 
+describe "EventStream.skipWhile", ->
+  describe "skips filter predicate holds true", ->
+    expectStreamEvents(
+      -> series(1, [1, 2, error(), 3, 2]).skipWhile(lessThan(3))
+      [error(), 3, 2])
+
+describe "EventStream.skipUntil", ->
+  describe "skips events until one appears in given starter stream", ->
+    expectStreamEvents(
+      ->
+        src = series(3, [1,2,3])
+        src.onValue(->) # to start "time" immediately instead of on subscribe
+        starter = series(4, ["start"])
+        src.skipUntil(starter)
+      [2,3])
+  describe "works with self-derived starter", ->
+    expectStreamEvents(
+      ->
+        src = series(3, [1,2,3])
+        starter = src.filter((x) -> x == 3)
+        src.skipUntil(starter)
+      [3])
+
 describe "EventStream.skipDuplicates", ->
   describe "drops duplicates", ->
     expectStreamEvents(
@@ -520,16 +543,6 @@ describe "EventStream.bufferWithTimeOrCount", ->
     expectStreamEvents(
       -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTimeOrCount(t(7), 10)
       [error(), [1, 2, 3, 4], [5, 6, 7]])
-
-describe "EventStream.skipUntil", ->
-  describe "skips events until one appears in given starter stream", ->
-    expectStreamEvents(
-      ->
-        src = series(3, [1,2,3])
-        src.onValue(->) # to start "time" immediately instead of on subscribe
-        starter = series(4, ["start"])
-        src.skipUntil(starter)
-      [2,3])
 
 describe "EventStream.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->

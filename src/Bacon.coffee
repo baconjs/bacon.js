@@ -660,7 +660,13 @@ class EventStream extends Observable
       -> unsub()
 
   skipUntil: (starter) ->
-    starter.take(1).flatMap(this)
+    started = starter.map(true).toProperty(false).take(2)
+    started.sampledBy(this, (started, val) -> { val, started })
+           .filter(({started}) -> started)
+           .map(({val}) -> val)
+
+  skipWhile: (f) ->
+    @skipUntil(this.filter(_.negate(f)))
 
   awaiting: (other) ->
     this.map(true).merge(other.map(false)).toProperty(false)
@@ -1173,6 +1179,7 @@ if define? and define.amd? then define? -> Bacon
 _ = {
   head: (xs) -> xs[0],
   always: (x) -> (-> x),
+  negate: (f) -> (x) -> not f(x)
   empty: (xs) -> xs.length == 0,
   tail: (xs) -> xs[1...xs.length],
   filter: (f, xs) ->

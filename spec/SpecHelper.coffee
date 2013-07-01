@@ -54,7 +54,6 @@ if grep
   streamEnded = -> ended
   before ->
     property = src()
-    expect(property instanceof Bacon.Property).to.deep.equal(true)
   before (done) ->
     property.subscribe (event) -> 
       if event.isEnd()
@@ -66,7 +65,8 @@ if grep
             if event.isInitial()
               events2.push(event.value())
             Bacon.noMore
-
+  it "is a Property", ->
+    expect(property instanceof Bacon.Property).to.deep.equal(true)
   it "outputs expected events in order", ->
     expect(events).to.deep.equal(toValues(expectedEvents))
   it "outputs expected events in order when subscribing after each value", ->
@@ -80,7 +80,6 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
   events = []
   before -> 
     src = srcF()
-    expect(src instanceof Bacon.EventStream).to.equal(true)
   before (done) ->
     src.subscribe (event) -> 
       if event.isEnd()
@@ -88,6 +87,8 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
       else
         expect(event instanceof Bacon.Initial).to.deep.equal(false)
         events.push(toValue(event))
+  it "is an EventStream", ->
+    expect(src instanceof Bacon.EventStream).to.equal(true)
   it "outputs expected events in order", ->
     expect(events).to.deep.equal(toValues(expectedEvents))
   it "the stream is exhausted", ->
