@@ -629,7 +629,7 @@ class EventStream extends Observable
       -> unsub()
 
   takeUntil: (stopper) =>
-    stopped = stopper.skipErrors().map(true).toProperty(false).take(2)
+    stopped = stopper.skipErrors().map(true).toProperty(false)
     withFlag = stopped.combine(this, (stopped, value) -> {value, stopped})
       .takeWhile((({stopped}) -> !stopped))
       .changes()
