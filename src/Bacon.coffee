@@ -630,7 +630,7 @@ class EventStream extends Observable
 
   takeUntil: (stopper) =>
     stopped = stopper.skipErrors().map(true).toProperty(false)
-    withFlag = stopped.combine(this, (stopped, value) -> {value, stopped})
+    stopped.combine(this, (stopped, value) -> {value, stopped})
       .takeWhile((({stopped}) -> !stopped))
       .changes()
       .map(({value}) -> value)
