@@ -1237,9 +1237,9 @@
     };
 
     EventStream.prototype.takeUntil = function(stopper) {
-      var stopped, withFlag;
-      stopped = stopper.skipErrors().map(true).toProperty(false).take(2);
-      return withFlag = stopped.combine(this, function(stopped, value) {
+      var stopped;
+      stopped = stopper.toEventStream().skipErrors().map(true).toProperty(false);
+      return stopped.combine(this, function(stopped, value) {
         return {
           value: value,
           stopped: stopped
