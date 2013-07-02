@@ -1,4 +1,8 @@
-## 0.6
+## 0.6.1
+
+- Fix #206: takeUntil should work with Property as stopper
+
+## 0.6.0
 
 - Add EventStream.skipWhile, support "Property Bool" instead of predicate function in takeWhile (#204)
   skipWhile
