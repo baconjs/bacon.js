@@ -590,6 +590,20 @@ describe "EventStream.takeUntil", ->
         stopper = repeat(7, ["stop!"]).merge(repeat(1, [error()]))
         src.takeUntil(stopper)
       [1, error(), 2])
+  describe "works with Property as stopper", ->
+    expectStreamEvents(
+      ->
+        src = repeat(3, [1, 2, 3])
+        stopper = repeat(7, ["stop!"]).toProperty()
+        src.takeUntil(stopper)
+      [1, 2])
+  describe "considers Property init value as stopper", ->
+    expectStreamEvents(
+      ->
+        src = repeat(3, [1, 2, 3])
+        stopper = Bacon.constant("stop")
+        src.takeUntil(stopper)
+      [])
 
 describe "When an Event triggers another one in the same stream, while dispatching", ->
   it "Delivers triggered events correctly", ->
