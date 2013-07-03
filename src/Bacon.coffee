@@ -1027,6 +1027,7 @@ class CompositeUnsubscribe
     unsub = nop
     @starting.push subscription
     unsubMe = =>
+      return if @unsubscribed
       unsub()
       ended = true
       @remove unsub
@@ -1044,8 +1045,11 @@ class CompositeUnsubscribe
     s() for s in @subscriptions
     @subscriptions = []
     @starting = []
+  count: =>
+    return 0 if @unsubscribed
+    @subscriptions.length + @starting.length
   empty: =>
-    not @subscriptions.length and not @starting.length
+    @count() == 0
 
 
 class Some
