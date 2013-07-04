@@ -152,21 +152,16 @@ Bacon.combineAsArray = (streams, more...) ->
   if streams.length
     values = (None for s in streams)
     new Property (sink) =>
-      unsubscribed = false
-      unsubs = (nop for s in streams)
-      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
-      ends = (false for s in streams)
-      checkEnd = ->
-        if _.all(ends)
-          reply = sink end()
-          unsubAll() if reply == Bacon.noMore
-          reply
+      composite = new CompositeUnsubscribe()
       initialSent = false
-      combiningSink = (markEnd, setValue) =>
-        (event) =>
-          if (event.isEnd())
-            markEnd()
-            checkEnd()
+      ended = 0
+      combiningSink = (stream, setValue) -> composite.add (unsubAll, unsubMe) ->
+        stream.subscribeInternal (event) =>
+          if event.isEnd()
+            unsubMe()
+            if ++ended == streams.length
+              reply = sink end()
+              unsubAll() if reply == Bacon.noMore
             Bacon.noMore
           else if event.isError()
             reply = sink event
@@ -174,7 +169,7 @@ Bacon.combineAsArray = (streams, more...) ->
             reply
           else
             setValue(event.value)
-            if _.all(_.map(((x) -> x.isDefined), values))
+            if _.all(values, ((x) -> x.isDefined))
               if initialSent and event.isInitial()
                 # don't send duplicate Initial
                 Bacon.more
@@ -186,14 +181,14 @@ Bacon.combineAsArray = (streams, more...) ->
                 reply
             else
               Bacon.more
-      sinkFor = (index) ->
+      sinkFor = (stream, index) ->
         combiningSink(
-          (-> ends[index] = true)
+          stream,
           ((x) -> values[index] = new Some(x)))
       for stream, index in streams
         stream = Bacon.constant(stream) if not (stream instanceof Observable)
-        unsubs[index] = stream.subscribeInternal (sinkFor index) unless unsubscribed
-      unsubAll
+        sinkFor(stream, index)
+      composite.unsubscribe
   else
     Bacon.constant([])
 
