@@ -152,10 +152,9 @@ Bacon.combineAsArray = (streams, more...) ->
   if streams.length
     values = (None for s in streams)
     new Property (sink) =>
-      composite = new CompositeUnsubscribe()
       initialSent = false
       ended = 0
-      combiningSink = (stream, setValue) -> composite.add (unsubAll, unsubMe) ->
+      combiningSink = (stream, setValue) -> (unsubAll, unsubMe) ->
         stream.subscribeInternal (event) =>
           if event.isEnd()
             unsubMe()
@@ -185,10 +184,10 @@ Bacon.combineAsArray = (streams, more...) ->
         combiningSink(
           stream,
           ((x) -> values[index] = new Some(x)))
-      for stream, index in streams
-        stream = Bacon.constant(stream) if not (stream instanceof Observable)
-        sinkFor(stream, index)
-      composite.unsubscribe
+      compositeUnsubscribe(
+        for stream, index in streams
+          stream = Bacon.constant(stream) if not (stream instanceof Observable)
+          sinkFor(stream, index))
   else
     Bacon.constant([])
 
@@ -978,7 +977,7 @@ Bacon.when = (patterns...) ->
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
-      compositeUnsubscribe (part s,i for s,i in sources)...
+      compositeUnsubscribe (part s,i for s,i in sources)
 
 Bacon.update = (initial, patterns...) ->
   lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
@@ -990,7 +989,7 @@ Bacon.update = (initial, patterns...) ->
     i = i - 2
   Bacon.when(patterns...).scan initial, ((x,f) -> f x)
 
-compositeUnsubscribe = (ss...) ->
+compositeUnsubscribe = (ss) ->
   new CompositeUnsubscribe(ss).unsubscribe
 
 class CompositeUnsubscribe
