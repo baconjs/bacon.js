@@ -1,3 +1,7 @@
+## 0.6.2
+
+- Fix sampledBy with stream of functions (#208)
+
 ## 0.6.1
 
 - Fix #206: takeUntil should work with Property as stopper
