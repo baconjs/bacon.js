@@ -1347,7 +1347,9 @@
           unsubOther = sampler.subscribe(function(event) {
             if (event.hasValue()) {
               return myVal.forEach(function(myVal) {
-                return sink(event.apply(lazyCombinator(myVal, event)));
+                return sink(event.apply(function() {
+                  return lazyCombinator(myVal, event);
+                }));
               });
             } else {
               if (event.isEnd()) {
