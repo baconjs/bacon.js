@@ -686,7 +686,7 @@ class Property extends Observable
         unsubOther = sampler.subscribe (event) =>
           if event.hasValue()
             myVal.forEach (myVal) =>
-              sink(event.apply(lazyCombinator(myVal, event)))
+              sink(event.apply(-> lazyCombinator(myVal, event)))
           else
             if event.isEnd()
               unsubMe()
