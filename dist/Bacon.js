@@ -807,7 +807,7 @@
       return this.withStateMachine(None, function(prev, event) {
         if (!event.hasValue()) {
           return [prev, [event]];
-        } else if (prev === None || !isEqual(prev.get(), event.value())) {
+        } else if (event.isInitial() || prev === None || !isEqual(prev.get(), event.value())) {
           return [new Some(event.value()), [event]];
         } else {
           return [prev, []];
