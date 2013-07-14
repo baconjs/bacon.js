@@ -1,3 +1,7 @@
+## 0.6.3
+
+- Fix Property.skipDuplicates: don't ever skip an Initial event (#211)
+
 ## 0.6.2
 
 - Fix sampledBy with stream of functions (#208)
