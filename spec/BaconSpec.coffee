@@ -374,6 +374,18 @@ describe "EventStream.skipUntil", ->
       [3])
 
 describe "EventStream.skipDuplicates", ->
+  it "Drops duplicates with subscribers with non-overlapping subscription time (#211)", ->
+    b = new Bacon.Bus()
+    noDups = b.skipDuplicates()
+    round = (expected) ->
+      values = []
+      noDups.take(1).onValue (x) -> values.push(x)
+      b.push 1
+      expect(values).to.deep.equal(expected)
+    round([1])
+    round([])
+    round([])
+
   describe "drops duplicates", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 2, 3, 1]).skipDuplicates()
@@ -926,6 +938,19 @@ describe "Property.skipDuplicates", ->
     expectPropertyEvents(
       -> series(1, [1, 2, error(), 2, 3, 1]).toProperty(0).skipDuplicates()
     [0, 1, 2, error(), 3, 1])
+  describe "Doesn't skip initial value (bug fix #211)", ->
+    b = new Bacon.Bus()
+    p = b.toProperty()
+    p.onValue -> # force property update
+    s = p.skipDuplicates()
+    b.push 'foo'
+
+    describe "series 1", ->
+      expectPropertyEvents((-> s.take(1)), ["foo"])
+    describe "series 2", ->
+      expectPropertyEvents((-> s.take(1)), ["foo"])
+    describe "series 3", ->
+      expectPropertyEvents((-> s.take(1)), ["foo"])
 
 describe "Property.changes", ->
   describe "sends property change events", ->

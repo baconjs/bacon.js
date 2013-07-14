@@ -377,7 +377,7 @@ class Observable
     @withStateMachine None, (prev, event) ->
       if !event.hasValue()
         [prev, [event]]
-      else if prev == None or not isEqual(prev.get(), event.value())
+      else if event.isInitial() or prev == None or not isEqual(prev.get(), event.value())
         [new Some(event.value()), [event]]
       else
         [prev, []]
