@@ -1275,7 +1275,7 @@ describe "Property.scan", ->
       -> Bacon.never().toProperty(1).scan(0, add)
       [1])
 
-describe "EventStream.withStateMachin", ->
+describe "EventStream.withStateMachine", ->
   describe "runs state machine on the stream", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3]).withStateMachine(0, (sum, event) ->
@@ -1287,7 +1287,7 @@ describe "EventStream.withStateMachin", ->
           [sum, [event]])
       [6])
 
-describe "Property.withStateMachin", ->
+describe "Property.withStateMachine", ->
   describe "runs state machine on the stream", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).toProperty().withStateMachine(0, (sum, event) ->
