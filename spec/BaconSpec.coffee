@@ -616,6 +616,15 @@ describe "EventStream.takeUntil", ->
         stopper = Bacon.constant("stop")
         src.takeUntil(stopper)
       [])
+   describe "unsubscribes its source as soon as possible", ->
+     expectStreamEvents(
+       ->
+        startTick = sc.now()
+        Bacon.once().delay(20)
+        .onUnsub(->
+          expect(sc.now()).to.equal(startTick + 1))
+        .takeUntil Bacon.later(1)
+      [])
 
 describe "When an Event triggers another one in the same stream, while dispatching", ->
   it "Delivers triggered events correctly", ->

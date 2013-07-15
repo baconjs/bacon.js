@@ -157,3 +157,12 @@ hasValue = (x) ->
   toValue(x) != "<error>"
 
 @toValues = toValues
+
+Bacon.Observable.prototype.onUnsub = (f) ->
+  self = this;
+  ended = false
+  return new Bacon.EventStream (sink) ->
+    unsub = self.subscribe sink
+    -> 
+      f()
+      unsub()
