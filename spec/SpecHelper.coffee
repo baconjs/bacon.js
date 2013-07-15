@@ -170,7 +170,7 @@ verifySwitching2 = (srcF, expectedEvents, done) ->
           expect(event instanceof Bacon.Initial).to.deep.equal(false)
           events.push(toValue(event))
           unsub() if unsub?
-          src.subscribe(newSink())
+          unsub = src.subscribe(newSink())
           Bacon.noMore
     unsub = src.subscribe(newSink())
   it "outputs expected value in order when switching to new observer after each event", ->
