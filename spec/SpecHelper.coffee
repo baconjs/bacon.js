@@ -45,6 +45,7 @@ if grep
 @expectStreamEvents = (src, expectedEvents) ->
   verifySingleSubscriber src, expectedEvents
   verifySwitching src, expectedEvents
+  verifySwitchingWithUnsub src, expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents) ->
   expect(expectedEvents.length > 0).to.deep.equal(true)
@@ -97,6 +98,26 @@ verifySwitching = (srcF, expectedEvents, done) ->
           src.subscribe(newSink())
           Bacon.noMore
     src.subscribe(newSink())
+
+# get each event with new subscriber. Unsub using the unsub function
+# instead of Bacon.noMore
+verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
+  verifyStreamWith "(switching subscribers with unsub)", srcF, expectedEvents, (src, events, done) ->
+    unsub = null
+    newSink = -> 
+      (event) ->
+        if event.isEnd()
+          done()
+        else
+          expect(event instanceof Bacon.Initial).to.deep.equal(false)
+          events.push(toValue(event))
+          prevUnsub = unsub
+          unsub = src.subscribe(newSink())
+          if prevUnsub?
+            prevUnsub()
+          else
+            Bacon.noMore
+    unsub = src.subscribe(newSink())
 
 verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
   describe description, ->
