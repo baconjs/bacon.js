@@ -595,6 +595,13 @@ describe "EventStream.takeUntil", ->
         stopper = src.filter(lessThan(3))
         src.takeUntil(stopper)
       [3])
+  describe "ends even with a never-ending stopper", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1,2,3])
+        stopper = new Bacon.Bus()
+        src.takeUntil(stopper)
+      [1,2,3])
   describe "includes source errors, ignores stopper errors", ->
     expectStreamEvents(
       ->
