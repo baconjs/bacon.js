@@ -599,6 +599,15 @@ property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
 
 The return value of `decode` is always a `Property`.
 
+`observable1.awaiting(observable2)` creates a Property that indicates whether
+observable1 is awaiting observable2, i.e. has produced a value after the latest
+value from observable2. This is handy for keeping track whether we are
+currently awaiting an AJAX response:
+
+```js
+var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
+```
+
 EventStream
 -----------
 
@@ -678,15 +687,6 @@ always have a current value.
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream with the given initial value that will be used as the current value until
 the first value comes from the stream.
-
-`stream1.awaiting(stream2)` creates a Property that indicates whether
-stream1 is awaiting stream2, i.e. has produced a value after the latest
-value from stream2. This is handy for keeping track whether we are
-currently awaiting an AJAX response:
-
-```js
-var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
-```
 
 Property
 --------

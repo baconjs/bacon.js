@@ -514,6 +514,10 @@ class Observable
         combinator(values[0], values[1])
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
 
+  awaiting: (other) ->
+    this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false)
+
+
 Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable
@@ -644,9 +648,6 @@ class EventStream extends Observable
   skipWhile: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
       @skipUntil(this.filter(_.negate(f)))
-
-  awaiting: (other) ->
-    this.map(true).merge(other.map(false)).toProperty(false)
 
   startWith: (seed) ->
     Bacon.once(seed).concat(this)

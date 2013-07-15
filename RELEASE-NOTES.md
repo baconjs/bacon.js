@@ -1,3 +1,7 @@
+## 0.6.4
+
+- Generalize `awaiting` to Properties too
+
 ## 0.6.3
 
 - Fix Property.skipDuplicates: don't ever skip an Initial event (#211)
