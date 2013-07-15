@@ -76,7 +76,7 @@ if grep
   it "cleans up observers", verifyCleanup
 
 verifySingleSubscriber = (srcF, expectedEvents) ->
-  verifyStreamWith srcF, expectedEvents, (src, events, done) ->
+  verifyStreamWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) -> 
       if event.isEnd()
         done()
@@ -86,7 +86,7 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
 
 # get each event with new subscriber
 verifySwitching = (srcF, expectedEvents, done) ->
-  verifyStreamWith srcF, expectedEvents, (src, events, done) ->
+  verifyStreamWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
     newSink = -> 
       (event) ->
         if event.isEnd()
@@ -98,19 +98,20 @@ verifySwitching = (srcF, expectedEvents, done) ->
           Bacon.noMore
     src.subscribe(newSink())
 
-verifyStreamWith = (srcF, expectedEvents, collectF) ->
-  src = null
-  events = []
-  before -> 
-    src = srcF()
-    expect(src instanceof Bacon.EventStream).to.equal(true)
-  before (done) ->
-    collectF(src, events, done)
-  it "outputs expected value in order", ->
-    expect(events).to.deep.equal(toValues(expectedEvents))
-  it "the stream is exhausted", ->
-     verifyExhausted src
-  it "cleans up observers", verifyCleanup
+verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
+  describe description, ->
+    src = null
+    events = []
+    before -> 
+      src = srcF()
+      expect(src instanceof Bacon.EventStream).to.equal(true)
+    before (done) ->
+      collectF(src, events, done)
+    it "outputs expected value in order", ->
+      expect(events).to.deep.equal(toValues(expectedEvents))
+    it "the stream is exhausted", ->
+       verifyExhausted src
+    it "cleans up observers", verifyCleanup
 
 verifyExhausted = (src) ->
   events = []
