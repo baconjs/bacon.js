@@ -633,11 +633,16 @@ class EventStream extends Observable
       -> unsub()
 
   takeUntil: (stopper) =>
-    stopped = stopper.toEventStream().skipErrors().map(true).toProperty(false)
-    stopped.combine(this, (stopped, value) -> {value, stopped})
-      .takeWhile((({stopped}) -> !stopped))
-      .changes()
-      .map(({value}) -> value)
+    self = this
+    new EventStream (sink) ->
+      stop = (unsubAll) -> 
+        stopper.onValue ->
+          sink end()
+          unsubAll()
+          Bacon.noMore
+      produce = ->
+        self.subscribe sink
+      compositeUnsubscribe stop, produce
 
   skipUntil: (starter) ->
     started = starter.map(true).toProperty(false).take(2)
