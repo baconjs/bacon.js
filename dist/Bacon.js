@@ -1241,21 +1241,24 @@
     };
 
     EventStream.prototype.takeUntil = function(stopper) {
-      var stopped;
-      stopped = stopper.toEventStream().skipErrors().map(true).toProperty(false);
-      return stopped.combine(this, function(stopped, value) {
-        return {
-          value: value,
-          stopped: stopped
+      var self;
+      self = this;
+      return new EventStream(function(sink) {
+        var produce, stop;
+        stop = function(unsubAll) {
+          return stopper.subscribe(function(x) {
+            if (x.hasValue()) {
+              sink(end());
+              unsubAll();
+              Bacon.noMore;
+            }
+            return Bacon.more;
+          });
         };
-      }).takeWhile((function(_arg) {
-        var stopped;
-        stopped = _arg.stopped;
-        return !stopped;
-      })).changes().map(function(_arg) {
-        var value;
-        value = _arg.value;
-        return value;
+        produce = function() {
+          return self.subscribe(sink);
+        };
+        return compositeUnsubscribe(stop, produce);
       });
     };
 
