@@ -620,11 +620,25 @@ describe "EventStream.takeUntil", ->
      expectStreamEvents(
        ->
         startTick = sc.now()
-        Bacon.once().delay(20)
+        Bacon.later(20)
         .onUnsub(->
           expect(sc.now()).to.equal(startTick + 1))
         .takeUntil Bacon.later(1)
       [])
+   describe "it should unsubscribe its stopper on end", ->
+     expectStreamEvents(
+       -> 
+         startTick = sc.now()
+         Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
+           expect(sc.now()).to.equal(startTick + 1)))
+       ['x'])
+   describe "it should unsubscribe its stopper on no more", ->
+     expectStreamEvents(
+       -> 
+         startTick = sc.now()
+         Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
+           expect(sc.now()).to.equal(startTick + 1)))
+       ['x'])
 
 describe "When an Event triggers another one in the same stream, while dispatching", ->
   it "Delivers triggered events correctly", ->

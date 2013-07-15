@@ -640,8 +640,11 @@ class EventStream extends Observable
           sink end()
           unsubAll()
           Bacon.noMore
-      produce = ->
-        self.subscribe sink
+      produce = (unsubAll) ->
+        self.subscribe (x) ->
+          reply = sink x
+          unsubAll() if x.isEnd() or reply == Bacon.noMore
+          reply
       compositeUnsubscribe stop, produce
 
   skipUntil: (starter) ->
