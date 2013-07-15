@@ -1040,6 +1040,10 @@
       });
     };
 
+    Observable.prototype.awaiting = function(other) {
+      return this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false);
+    };
+
     return Observable;
 
   })();
@@ -1280,10 +1284,6 @@
       return convertArgsToFunction(this, f, args, function(f) {
         return this.skipUntil(this.filter(_.negate(f)));
       });
-    };
-
-    EventStream.prototype.awaiting = function(other) {
-      return this.map(true).merge(other.map(false)).toProperty(false);
     };
 
     EventStream.prototype.startWith = function(seed) {
