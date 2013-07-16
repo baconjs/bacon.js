@@ -648,10 +648,8 @@ class EventStream extends Observable
       compositeUnsubscribe stop, produce
 
   skipUntil: (starter) ->
-    started = starter.map(true).toProperty(false).take(2)
-    started.sampledBy(this, (started, val) -> { val, started })
-           .filter(({started}) -> started)
-           .map(({val}) -> val)
+    started = starter.take(1).map(true).toProperty(false)
+    this.filter(started)
 
   skipWhile: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
