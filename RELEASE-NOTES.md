@@ -1,3 +1,7 @@
+## 0.6.6
+
+- Simplify skipUntil implementation
+
 ## 0.6.5
 
 - Fix `takeUntil` to work correctly with never-ending stopper (#214)
