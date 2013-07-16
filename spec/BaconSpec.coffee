@@ -616,6 +616,13 @@ describe "EventStream.takeUntil", ->
         stopper = Bacon.constant("stop")
         src.takeUntil(stopper)
       [])
+   describe "ends properly with a never-ending stopper", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1,2,3])
+        stopper = new Bacon.Bus()
+        src.takeUntil(stopper)
+      [1,2,3])
    describe "unsubscribes its source as soon as possible", ->
      expectStreamEvents(
        ->
