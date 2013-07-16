@@ -640,7 +640,7 @@ class EventStream extends Observable
       .map(({value}) -> value)
 
   skipUntil: (starter) ->
-    started = starter.map(true).toProperty(false)
+    started = starter.take(1).map(true).toProperty(false)
     this.filter(started)
 
   skipWhile: (f, args...) ->
