@@ -1,3 +1,7 @@
+## 0.6.5
+
+- Fix `takeUntil` to work correctly with never-ending stopper (#214)
+
 ## 0.6.4
 
 - Generalize `awaiting` to Properties too
