@@ -1246,17 +1246,21 @@
       return new EventStream(function(sink) {
         var produce, stop;
         stop = function(unsubAll) {
-          return stopper.subscribe(function(x) {
-            if (x.hasValue()) {
-              sink(end());
-              unsubAll();
-              Bacon.noMore;
-            }
-            return Bacon.more;
+          return stopper.onValue(function() {
+            sink(end());
+            unsubAll();
+            return Bacon.noMore;
           });
         };
-        produce = function() {
-          return self.subscribe(sink);
+        produce = function(unsubAll) {
+          return self.subscribe(function(x) {
+            var reply;
+            reply = sink(x);
+            if (x.isEnd() || reply === Bacon.noMore) {
+              unsubAll();
+            }
+            return reply;
+          });
         };
         return compositeUnsubscribe(stop, produce);
       });
