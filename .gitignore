@@ -6,3 +6,4 @@ npm-debug.log
 *.iml
 browsertest/bundle.js
 src/Testing*
+testing
