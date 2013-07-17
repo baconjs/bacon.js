@@ -420,6 +420,7 @@ class Observable
           if (initSent && event.isInitial())
             Bacon.more # init already sent, skip this one
           else
+            sendInit() unless event.isInitial()
             initSent = true
             acc = new Some(f(acc.getOrElse(undefined), event.value()))
             sink (event.apply(_.always(acc.get())))

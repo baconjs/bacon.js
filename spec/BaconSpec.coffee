@@ -1308,6 +1308,10 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> series(1, [1]).scan(null, ->1)
       [null, 1])
+  describe "works with synchronous streams", ->
+    expectPropertyEvents(
+      -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
+      [0,1,3,6])
 
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->
@@ -1550,7 +1554,7 @@ describe "Bacon.update", ->
         Bacon.update(
           0,
           [one, two],  (i, a, b) -> [i,a,b])
-      [[0,1,2]])
+      [0, [0,1,2]])
 
 describe "combineTemplate", ->
   describe "combines streams according to a template object", ->
