@@ -1,6 +1,6 @@
 ## 0.6.7
 
-- Fix EventStream.skipWhile with synchronous sources (#218)
+- Fix #218: EventStream.skipWhile with synchronous sources
 
 ## 0.6.6
 
