@@ -309,6 +309,10 @@ describe "EventStream.take", ->
           throw "testing"
         s
       [])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1,2,3,4]).take(2)
+      [1,2])
 
 describe "EventStream.takeWhile", ->
   describe "takes while predicate is true", ->
@@ -327,6 +331,10 @@ describe "EventStream.takeWhile", ->
         odd = src.map((x) -> x % 2).toProperty()
         src.takeWhile(odd)
       [1,1])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3]).takeWhile(lessThan(3))
+      [1, 2])
 
 describe "EventStream.skip", ->
   describe "should skip first N items", ->
@@ -337,6 +345,10 @@ describe "EventStream.skip", ->
     expectStreamEvents(
       -> series(1, [1, 2]).skip(-1)
     [1, 2])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3]).skip(1)
+    [2, 3])
 
 describe "EventStream.skipWhile", ->
   describe "skips filter predicate holds true", ->
@@ -402,6 +414,11 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> series(1, [a, b, error(), c, d, e]).skipDuplicates(isEqual)
       [a, b, error(), d, e])
+  
+  describe "works with synchrounous sources", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
+    [1, 2, 3, 1])
 
 describe "EventStream.flatMap", ->
   describe "should spawn new stream for each value and collect results into a single stream", ->
@@ -1339,10 +1356,19 @@ describe "Property.scan", ->
     expectPropertyEvents(
       -> series(1, [2]).toProperty(1).scan(null, add)
       [1, 3])
-  describe "works with synchronously responding empty source", ->
-    expectPropertyEvents(
-      -> Bacon.never().toProperty(1).scan(0, add)
-      [1])
+  describe "for synchronous source", ->
+    describe "with Init value, starts with f(seed, init)", ->
+      expectPropertyEvents(
+        -> Bacon.fromArray([2,3]).toProperty(1).scan(0, add)
+        [1, 3, 6])
+    describe "without Init value, starts with seed", ->
+      expectPropertyEvents(
+        -> Bacon.fromArray([2,3]).toProperty().scan(0, add)
+        [0, 2, 5])
+    describe "works with synchronously responding empty source", ->
+      expectPropertyEvents(
+        -> Bacon.never().toProperty(1).scan(0, add)
+        [1])
 
 describe "EventStream.withStateMachine", ->
   describe "runs state machine on the stream", ->
