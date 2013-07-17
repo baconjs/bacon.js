@@ -1554,7 +1554,7 @@ describe "Bacon.update", ->
         Bacon.update(
           0,
           [one, two],  (i, a, b) -> [i,a,b])
-      [[0,1,2]])
+      [0, [0,1,2]])
 
 describe "combineTemplate", ->
   describe "combines streams according to a template object", ->
