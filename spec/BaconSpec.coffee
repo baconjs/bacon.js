@@ -311,8 +311,8 @@ describe "EventStream.take", ->
       [])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> Bacon.fromArray([1,2,3,4]).take(2)
-      [1,2])
+      -> endlessly(1).take(2)
+      [1,1])
 
 describe "EventStream.takeWhile", ->
   describe "takes while predicate is true", ->
@@ -333,7 +333,7 @@ describe "EventStream.takeWhile", ->
       [1,1])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> Bacon.fromArray([1, 2, 3]).takeWhile(lessThan(3))
+      -> endlessly(1, 2, 3).takeWhile(lessThan(3))
       [1, 2])
 
 describe "EventStream.skip", ->
@@ -2036,6 +2036,9 @@ describe "EventStream", ->
     bus.push("bacon")
     expect(values).to.deep.equal(["bacon"])
 
+endlessly = (values...) ->
+  index = 0
+  Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
 lessThan = (limit) ->
   (x) -> x < limit
 times = (x, y) -> x * y

@@ -124,6 +124,23 @@ Bacon.once = (value) -> Bacon.fromArray([value])
 Bacon.fromArray = (values) ->
   new EventStream(sendWrapped(values, toEvent))
 
+Bacon.fromGenerator = (generator) ->
+  new EventStream (sink) ->
+    unsubd = false
+    push = (events) ->
+      events = _.toArray(events)
+      for event in events
+        return if unsubd
+        reply = sink event
+        return if event.isEnd() or reply == Bacon.noMore
+      generator(push)
+    push []
+    -> unsubd = true
+
+Bacon.fromSynchronousGenerator = (generator) ->
+  Bacon.fromGenerator (push) ->
+    push generator()
+
 sendWrapped = (values, wrapper) ->
   (sink) ->
     for value in values
