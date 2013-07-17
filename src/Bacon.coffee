@@ -653,8 +653,14 @@ class EventStream extends Observable
     this.filter(started)
 
   skipWhile: (f, args...) ->
+    ok = false
     convertArgsToFunction this, f, args, (f) ->
-      @skipUntil(this.filter(_.negate(f)))
+      @withHandler (event) ->
+        if ok or !event.hasValue() or !f(event.value())
+          ok = true
+          @push event
+        else
+          Bacon.more
 
   startWith: (seed) ->
     Bacon.once(seed).concat(this)

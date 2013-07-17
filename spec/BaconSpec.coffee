@@ -372,13 +372,6 @@ describe "EventStream.skipWhile", ->
       expectStreamEvents(
         -> Bacon.fromArray([1, 2, 3, 2]).skipWhile(lessThan(3))
         [3, 2])
-    describe "can filter by Property value", ->
-      expectStreamEvents(
-        ->
-          src = Bacon.fromArray([1,1,2,3,4,4,8,7])
-          odd = src.map((x) -> x % 2).toProperty()
-          src.skipWhile(odd)
-        [2,3,4,4,8,7])
 
 describe "EventStream.skipUntil", ->
   describe "skips events until one appears in given starter stream", ->
