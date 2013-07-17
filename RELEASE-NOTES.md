@@ -1,5 +1,6 @@
 ## 0.6.6
 
+- Fix #217: EventStream.scan for synchronous streams
 - Simplify skipUntil implementation
 
 ## 0.6.5
