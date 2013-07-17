@@ -446,6 +446,10 @@ describe "EventStream.flatMap", ->
       -> Bacon.once(1).flatMap (value) ->
          Bacon.once(value)
       [1])
+    expectStreamEvents(
+      -> Bacon.once(1).flatMap (value) ->
+         Bacon.later(0, value)
+      [1])
   describe "Works also when f returns a Property instead of an EventStream", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
@@ -476,6 +480,12 @@ describe "Property.flatMap", ->
     expectPropertyEvents(
       -> series(1, [1,2]).toProperty().flatMap(Bacon.constant).toProperty()
       [1,2])
+  describe "works for synchronous source", ->
+    expectStreamEvents(
+      ->
+        once = (x) -> Bacon.once(x)
+        Bacon.fromArray([1, 2]).toProperty(0).flatMap(once)
+      [0, 1, 2])
 
 describe "EventStream.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
@@ -529,6 +539,10 @@ describe "EventStream.merge", ->
         right = src.map((x) -> x * 2)
         left.merge(right)
       [1, 2, error(), 2, 4, error(), 3, 6])
+  describe "works with synchronous sources", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1,2]).merge(Bacon.fromArray([3,4]))
+      [1,2,3,4])
 
 describe "EventStream.delay", ->
   describe "delays all events (except errors) by given delay in milliseconds", ->
@@ -538,8 +552,15 @@ describe "EventStream.delay", ->
         right = series(1, [error(), 4, 5, 6]).delay(t(6))
         left.merge(right)
       [error(), 1, 2, 3, 4, 5, 6])
+  describe "works with synchronous streams", ->
+    expectStreamEvents(
+      ->
+        left = Bacon.fromArray([1, 2, 3])
+        right = Bacon.fromArray([4, 5, 6]).delay(t(6))
+        left.merge(right)
+      [1, 2, 3, 4, 5, 6])
 
-describe "EventStream.debounce(delay)", ->
+describe "EventStream.debounce", ->
   describe "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).debounce(t(7))
@@ -548,18 +569,31 @@ describe "EventStream.debounce(delay)", ->
     th.expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounce(t(3))
       [[11, 4]])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3, 4]).debounce(t(3))
+      [4])
+
 
 describe "EventStream.debounceImmediate(delay)", ->
   describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
     th.expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
       [[2, 1], [6, 3]])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3, 4]).debounceImmediate(t(3))
+      [1])
 
 describe "EventStream.throttle(delay)", ->
-  describe "outputs at steady intervals, without waiting for quite period", ->
+  describe "outputs at steady intervals, without waiting for quiet period", ->
     th.expectStreamTimings(
       -> series(2, [1, 2, 3]).throttle(t(3))
       [[5, 2], [8, 3]])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3]).throttle(t(3))
+      [3])
 
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
@@ -585,12 +619,20 @@ describe "EventStream.bufferWithTime", ->
     th.expectStreamTimings(
       -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(sync)
       [[0, ["a"]], [2, ["b"]]])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> series(2, [1,2,3]).bufferWithTime(t(7))
+      [[1,2,3]])
 
 describe "EventStream.bufferWithCount", ->
   describe "returns events in chunks of fixed size, passing through errors", ->
     expectStreamEvents(
       -> series(1, [1, 2, 3, error(), 4, 5]).bufferWithCount(2)
       [[1, 2], error(), [3, 4], [5]])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1,2,3,4,5]).bufferWithCount(2)
+      [[1, 2], [3, 4], [5]])
 
 describe "EventStream.bufferWithTimeOrCount", ->
   describe "flushes on count", ->
@@ -638,14 +680,21 @@ describe "EventStream.takeUntil", ->
         stopper = Bacon.constant("stop")
         src.takeUntil(stopper)
       [])
-   describe "ends properly with a never-ending stopper", ->
+  describe "ends immediately with synchronous stopper", ->
+    expectStreamEvents(
+      ->
+        src = repeat(3, [1, 2, 3])
+        stopper = Bacon.once("stop")
+        src.takeUntil(stopper)
+      [])
+  describe "ends properly with a never-ending stopper", ->
     expectStreamEvents(
       ->
         src = series(1, [1,2,3])
         stopper = new Bacon.Bus()
         src.takeUntil(stopper)
       [1,2,3])
-   describe "unsubscribes its source as soon as possible", ->
+  describe "unsubscribes its source as soon as possible", ->
      expectStreamEvents(
        ->
         startTick = sc.now()
@@ -654,14 +703,14 @@ describe "EventStream.takeUntil", ->
           expect(sc.now()).to.equal(startTick + 1))
         .takeUntil Bacon.later(1)
       [])
-   describe "it should unsubscribe its stopper on end", ->
+  describe "it should unsubscribe its stopper on end", ->
      expectStreamEvents(
        -> 
          startTick = sc.now()
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
        ['x'])
-   describe "it should unsubscribe its stopper on no more", ->
+  describe "it should unsubscribe its stopper on no more", ->
      expectStreamEvents(
        -> 
          startTick = sc.now()
@@ -704,6 +753,10 @@ describe "EventStream.endOnError", ->
   describe "terminates on error", ->
     expectStreamEvents(
       -> repeat(1, [1, 2, error(), 3]).endOnError()
+      [1, 2, error()])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, error(), 3]).endOnError()
       [1, 2, error()])
 
 describe "Bacon.constant", ->
@@ -790,8 +843,14 @@ describe "EventStream.startWith", ->
         left = series(1, [1, 2, 3])
         left.startWith('pow')
       ['pow', 1, 2, 3])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      ->
+        left = Bacon.fromArray([1, 2, 3])
+        left.startWith('pow')
+      ['pow', 1, 2, 3])
 
-describe "Property", ->
+describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
     expectPropertyEvents(
       ->
@@ -821,11 +880,22 @@ describe "Property", ->
           Bacon.noMore
         prop
       [0, 1, 2, 3])
+  describe "works with synchronous source", ->
+    expectPropertyEvents(
+      -> Bacon.fromArray([1,2,3]).toProperty()
+      [1,2,3])
+    expectPropertyEvents(
+      -> Bacon.fromArray([1,2,3]).toProperty(0)
+      [0,1,2,3])
 
 describe "Property.toEventStream", ->
   describe "creates a stream that starts with current property value", ->
     expectStreamEvents(
       -> series(1, [1, 2]).toProperty(0).toEventStream()
+      [0, 1, 2])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2]).toProperty(0).toEventStream()
       [0, 1, 2])
 
 describe "Property.toProperty", ->
@@ -1026,6 +1096,10 @@ describe "Property.changes", ->
           s.end()
         p
       ["b", error()])
+ describe "works with synchronous source", ->
+   expectStreamEvents(
+     -> Bacon.fromArray([1,2,3]).toProperty(0).changes()
+     [1,2,3])
 
 describe "Property.combine", ->
   describe "combines latest values of two properties, with given combinator function, passing through errors", ->
@@ -1281,6 +1355,13 @@ describe "Property.sampledBy(stream)", ->
         p = series(1, [f]).toProperty()
         p.sampledBy(series(1, [1, 2, 3]))
       [f, f, f])
+  describe "works with synchronous sampler stream", ->
+    expectStreamEvents(
+      -> Bacon.constant(1).sampledBy(Bacon.fromArray([1,2,3]))
+      [1,1,1])
+    expectStreamEvents(
+      -> Bacon.later(1, 1).toProperty().sampledBy(Bacon.fromArray([1,2,3]))
+      [])
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
@@ -1311,6 +1392,12 @@ describe "Property.sample", ->
         prop = series(2, [1, error(), 2]).toProperty()
         prop.sample(t(5)).take(2)
       [error(), 1, 2])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      ->
+        prop = Bacon.constant(1)
+        prop.sample(t(3)).take(4)
+      [1, 1, 1, 1])
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->
@@ -1344,6 +1431,10 @@ describe "EventStream.fold", ->
     expectPropertyEvents(
       -> series(1, [1, 2, error(), 3]).fold(0, add)
       [error(), 6])
+  describe "works with synchronous source", ->
+    expectPropertyEvents(
+      -> Bacon.fromArray([1, 2, error(), 3]).fold(0, add)
+      [error(), 6])
 
 describe "Property.scan", ->
   describe "with Init value, starts with f(seed, init)", ->
@@ -1376,15 +1467,16 @@ describe "Property.scan", ->
         [1])
 
 describe "EventStream.withStateMachine", ->
+  f = (sum, event) ->
+    if event.hasValue()
+      [sum + event.value(), []]
+    else if event.isEnd()
+      [sum, [new Bacon.Next(-> sum), event]]
+    else
+      [sum, [event]]
   describe "runs state machine on the stream", ->
     expectStreamEvents(
-      -> Bacon.fromArray([1,2,3]).withStateMachine(0, (sum, event) ->
-        if event.hasValue()
-          [sum + event.value(), []]
-        else if event.isEnd()
-          [sum, [new Bacon.Next(-> sum), event]]
-        else
-          [sum, [event]])
+      -> Bacon.fromArray([1,2,3]).withStateMachine(0, f)
       [6])
 
 describe "Property.withStateMachine", ->
@@ -1563,6 +1655,15 @@ describe "Bacon.when", ->
     expectStreamEvents(
       -> Bacon.when(Bacon.once(1), 2)
       [2])
+  describe "works with synchronous sources", ->
+    expectStreamEvents(
+      ->
+        xs = Bacon.once "x"
+        ys = Bacon.once "y"
+        Bacon.when(
+          [xs, ys], (x, y) -> x + y
+        )
+      ["xy"])
 
 describe "Bacon.update", ->
   describe "works like Bacon.when, but produces a property, and can be defined in terms of a current value", ->
@@ -1577,7 +1678,7 @@ describe "Bacon.update", ->
           [incr], (i,c) -> i+c)
       [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3])
 
-  describe "Correctly handles multiple arguments in parameter list", ->
+  describe "Correctly handles multiple arguments in parameter list, and synchronous sources", ->
     expectPropertyEvents(
       ->
         one = Bacon.once(1)
