@@ -872,6 +872,9 @@
             if (initSent && event.isInitial()) {
               return Bacon.more;
             } else {
+              if (!event.isInitial()) {
+                sendInit();
+              }
               initSent = true;
               acc = new Some(f(acc.getOrElse(void 0), event.value()));
               return sink(event.apply(_.always(acc.get())));
@@ -1268,21 +1271,8 @@
 
     EventStream.prototype.skipUntil = function(starter) {
       var started;
-      started = starter.map(true).toProperty(false).take(2);
-      return started.sampledBy(this, function(started, val) {
-        return {
-          val: val,
-          started: started
-        };
-      }).filter(function(_arg) {
-        var started;
-        started = _arg.started;
-        return started;
-      }).map(function(_arg) {
-        var val;
-        val = _arg.val;
-        return val;
-      });
+      started = starter.take(1).map(true).toProperty(false);
+      return this.filter(started);
     };
 
     EventStream.prototype.skipWhile = function() {
