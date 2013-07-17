@@ -1276,10 +1276,18 @@
     };
 
     EventStream.prototype.skipWhile = function() {
-      var args, f;
+      var args, f, ok;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      ok = false;
       return convertArgsToFunction(this, f, args, function(f) {
-        return this.skipUntil(this.filter(_.negate(f)));
+        return this.withHandler(function(event) {
+          if (ok || !event.hasValue() || !f(event.value())) {
+            ok = true;
+            return this.push(event);
+          } else {
+            return Bacon.more;
+          }
+        });
       });
     };
 
