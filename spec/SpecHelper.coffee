@@ -103,21 +103,37 @@ verifySwitching = (srcF, expectedEvents, done) ->
 # instead of Bacon.noMore
 verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
   verifyStreamWith "(switching subscribers with unsub)", srcF, expectedEvents, (src, events, done) ->
-    unsub = null
-    newSink = -> 
-      (event) ->
-        if event.isEnd()
-          done()
-        else
-          expect(event instanceof Bacon.Initial).to.deep.equal(false)
-          events.push(toValue(event))
-          prevUnsub = unsub
-          unsub = src.subscribe(newSink())
-          if prevUnsub?
-            prevUnsub()
+    globalEnded = false
+    subNext = ->
+      unsub = null
+      newSink = -> 
+        ended = false
+        noMoreExpected = false
+        usedUnsub = false
+        (event) ->
+          if noMoreExpected
+            console.log "got unexp", event.describe(), "usedUnsub", usedUnsub
+          if event.isEnd()
+            if ended
+              console.log("one stream, two ends")
+            else if globalEnded
+              console.log("two ends")
+            globalEnded = true
+            ended = true
+            done()
           else
-            Bacon.noMore
-    unsub = src.subscribe(newSink())
+            expect(event instanceof Bacon.Initial).to.deep.equal(false)
+            events.push(toValue(event))
+            prevUnsub = unsub
+            noMoreExpected = true
+            subNext()
+            if unsub?
+              usedUnsub = true
+              unsub()
+            else
+              Bacon.noMore
+      unsub = src.subscribe(newSink())
+    subNext()
 
 verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
   describe description, ->
