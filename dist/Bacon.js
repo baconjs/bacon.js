@@ -1282,7 +1282,9 @@
       return convertArgsToFunction(this, f, args, function(f) {
         return this.withHandler(function(event) {
           if (ok || !event.hasValue() || !f(event.value())) {
-            ok = true;
+            if (event.hasValue()) {
+              ok = true;
+            }
             return this.push(event);
           } else {
             return Bacon.more;
