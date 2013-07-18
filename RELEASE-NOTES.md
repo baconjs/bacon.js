@@ -1,3 +1,7 @@
+## 0.6.8
+
+- Fix skipWhile in case of Error events before first match (refix #218)
+
 ## 0.6.7
 
 - Fix #218: EventStream.skipWhile with synchronous sources
