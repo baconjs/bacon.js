@@ -805,6 +805,10 @@ describe "EventStream.concat", ->
         right = series(1, [4, 5, 6])
         left.concat(right)
       [1, error(), 2, 3, 4, 5, 6])
+  describe "supports multiple streams", ->
+    expectStreamEvents(
+      -> Bacon.once(1).concat(Bacon.once(2)).concat(Bacon.once(3))
+      [1,2,3])
   describe "respects subscriber return value when providing events from left stream", ->
     expectStreamEvents(
       ->

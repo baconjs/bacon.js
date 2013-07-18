@@ -623,15 +623,19 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  concat: (right) ->
-    left = this
+  concat: (streams...) ->
+    first = this
     new EventStream (sink) ->
-      unsub = left.subscribe (e) ->
-        if e.isEnd()
-          unsub = right.subscribe sink
-        else
-          sink(e)
-      -> unsub()
+      unsub = nop
+      next = ->
+        unsub = first.subscribe (e) ->
+          if e.isEnd() and streams.length
+            first = streams.splice(0, 1)[0]
+            next()
+          else
+            sink(e)
+      next()
+      unsub
 
   takeUntil: (stopper) =>
     self = this
