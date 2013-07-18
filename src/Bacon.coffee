@@ -657,7 +657,7 @@ class EventStream extends Observable
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if ok or !event.hasValue() or !f(event.value())
-          ok = true
+          ok = true if event.hasValue()
           @push event
         else
           Bacon.more

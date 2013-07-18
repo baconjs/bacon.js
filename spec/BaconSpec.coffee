@@ -353,8 +353,8 @@ describe "EventStream.skip", ->
 describe "EventStream.skipWhile", ->
   describe "skips filter predicate holds true", ->
     expectStreamEvents(
-      -> series(1, [1, 2, error(), 3, 2]).skipWhile(lessThan(3))
-      [error(), 3, 2])
+      -> series(1, [1, error(), 2, error(), 3, 2]).skipWhile(lessThan(3))
+      [error(), error(), 3, 2])
   describe "extracts field values", ->
     expectStreamEvents(
       -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
