@@ -835,6 +835,14 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.never().concat(Bacon.once(1))
       [1])
+  describe "works with Bacon.once() and async source", ->
+    expectStreamEvents(
+      -> Bacon.once(1).concat(series(1, [2, 3]))
+      [1, 2, 3])
+  describe "works with Bacon.once() and Bacon.fromArray()", ->
+    expectStreamEvents(
+      -> Bacon.once(1).concat(Bacon.fromArray([2, 3]))
+      [1, 2, 3])
 
 describe "EventStream.startWith", ->
   describe "provides seed value, then the rest", ->
