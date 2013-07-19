@@ -454,12 +454,14 @@ class Observable
     new EventStream (sink) ->
       children = []
       rootEnd = false
+      unbound = false
       unsubRoot = ->
       unbind = ->
         unsubRoot()
         for unsubChild in children
           unsubChild()
         children = []
+        unbound = true
       checkEnd = ->
         if rootEnd and (children.length == 0)
           sink end()
@@ -494,6 +496,7 @@ class Observable
               reply
           unsubChild = child.subscribe handler
           children.push unsubChild if not childEnded
+          if unbound then Bacon.noMore else Bacon.more
       unsubRoot = root.subscribe(spawner)
       unbind
 
