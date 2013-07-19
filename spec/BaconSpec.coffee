@@ -2073,6 +2073,12 @@ describe "Infinite synchronous sequences", ->
     expectStreamEvents(
       -> endlessly(1,2,3).take(4)
       [1,2,3,1])
+    expectStreamEvents(
+      -> endlessly(1,2,3).take(4).concat(Bacon.once(5))
+      [1,2,3,1,5])
+    expectStreamEvents(
+      -> endlessly(1,2,3).take(4).concat(endlessly(5, 6).take(2))
+      [1,2,3,1,5,6])
 
 endlessly = (values...) ->
   index = 0
