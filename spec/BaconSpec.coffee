@@ -2044,6 +2044,57 @@ describe "EventStream", ->
     bus.push("bacon")
     expect(values).to.deep.equal(["bacon"])
 
+describe "Bacon.fromBinder", ->
+  describe "Provides an easier alternative to the EventStream constructor, allowing sending multiple events at a time", ->
+    expectStreamEvents(
+      -> 
+        Bacon.fromBinder (sink) ->
+          sink([new Bacon.Next(1), new Bacon.End()])
+          (->)
+      [1])
+  describe "Allows sending unwrapped values", ->
+    expectStreamEvents(
+      -> 
+        Bacon.fromBinder (sink) ->
+          sink([1, new Bacon.End()])
+          (->)
+      [1])
+  describe "Allows sending single value without wrapping array", ->
+    expectStreamEvents(
+      -> 
+        Bacon.fromBinder (sink) ->
+          sink(1)
+          sink(new Bacon.End())
+          (->)
+      [1])
+
+describe "Infinite synchronous sequences", ->
+  describe "Limiting length with take(n)", ->
+    expectStreamEvents(
+      -> endlessly(1,2,3).take(4)
+      [1,2,3,1])
+
+endlessly = (values...) ->
+  index = 0
+  Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
+
+Bacon.fromGenerator = (generator) ->
+  Bacon.fromBinder (sink) ->
+    unsubd = false
+    push = (events) ->
+      events = Bacon._.toArray(events)
+      for event in events
+        return if unsubd
+        reply = sink event
+        return if event.isEnd() or reply == Bacon.noMore
+      generator(push)
+    push []
+    -> unsubd = true
+
+Bacon.fromSynchronousGenerator = (generator) ->
+  Bacon.fromGenerator (push) ->
+    push generator()
+
 lessThan = (limit) ->
   (x) -> x < limit
 times = (x, y) -> x * y
