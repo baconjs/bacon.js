@@ -124,6 +124,7 @@ Bacon.never = -> Bacon.fromArray([])
 Bacon.once = (value) -> Bacon.fromArray([value])
 
 Bacon.fromArray = (values) ->
+  assertArray values
   new EventStream(sendWrapped(values, toEvent))
 
 sendWrapped = (values, wrapper) ->

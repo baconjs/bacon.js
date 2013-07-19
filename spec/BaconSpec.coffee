@@ -443,9 +443,13 @@ describe "EventStream.flatMap", ->
       [1, 2])
   describe "should work with a source stream responding synchronously", ->
     expectStreamEvents(
-      -> Bacon.once(1).flatMap (value) ->
+      -> Bacon.fromArray([1, 2]).flatMap (value) ->
          Bacon.once(value)
-      [1])
+      [1, 2])
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2]).flatMap (value) ->
+         Bacon.fromArray([value, value*10])
+      [1, 10, 2, 20])
     expectStreamEvents(
       -> Bacon.once(1).flatMap (value) ->
          Bacon.later(0, value)
