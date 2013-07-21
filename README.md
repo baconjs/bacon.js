@@ -262,12 +262,12 @@ For example:
 ```js
 new Bacon.EventStream(function(subscriber) {
   subscriber(new Bacon.Next("a value here"))
-  subscriber(new Bacon.Next(function() {
+  subscriber(new Bacon.Next(function() {
     return "This one will be evaluated lazily"
   }))
   subscriber(new Bacon.Error("oops, an error"))
   subscriber(new Bacon.End())
-  return function() { // unsub functionality here, this one's a no-op }
+  return function() { /* unsub functionality here, this one's a no-op */ }
 })
 ```
 
