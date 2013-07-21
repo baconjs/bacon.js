@@ -1042,7 +1042,7 @@ patterns into a resulting event-stream.
 
 Consider implementing a game with discrete time ticks. We want to
 handle key-events synchronized on tick-events, with at most one key
-event handled per tick. If there are no tick events, we want to just
+event handled per tick. If there are no key events, we want to just
 process a tick.
 
 ```js
