@@ -308,6 +308,7 @@ class Observable
         else
           Bacon.more
   takeWhile: (f, args...) ->
+    return Bacon.never() if not f
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if event.filter(f)
