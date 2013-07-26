@@ -37,7 +37,7 @@
       "ipad": [ 6 ]
     },
     "harness": "mocha",
-    "files": "spec/CompatibilityTest.coffee"
+    "files": "spec/*Spec.coffee"
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/**",
