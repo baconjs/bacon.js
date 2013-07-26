@@ -40,7 +40,7 @@
     "files": "spec/*Spec.coffee"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/**",
+    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/*Spec.coffee",
     "pre-publish": "grunt"
   },
   "main": "dist/Bacon.js"
