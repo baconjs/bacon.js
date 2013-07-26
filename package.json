@@ -30,8 +30,8 @@
     "browsers": {
       "ie": [ 8, 9, 10 ],
       "ff": [ 12, 17, 22 ],
-      "chrome": [ 20, 23, 28 ],
-      "opera": [ 10, 15 ],
+      "chrome": [ 22 ],
+      "opera": [ 12 ],
       "safari": [ 5.1, 6 ],
       "iphone": [ 6 ],
       "ipad": [ 6 ]
