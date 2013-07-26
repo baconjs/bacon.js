@@ -36,7 +36,7 @@
       "iphone": [ 6 ],
       "ipad": [ 6 ]
     },
-    "harness": "mocha-bdd",
+    "harness": "mocha",
     "files": "spec/CompatibilityTest.coffee"
   },
   "scripts": {
