@@ -6,6 +6,10 @@ t = @t = (time) -> time
 seqs = []
 waitMs = 100
 
+browser = (typeof window == "object")
+if browser
+  console.log("Running in browser, narrowing test set")
+
 grep = process.env.grep
 if grep
   console.log("running with grep:", grep)
@@ -44,8 +48,8 @@ if grep
 
 @expectStreamEvents = (src, expectedEvents) ->
   verifySingleSubscriber src, expectedEvents
-  verifySwitching src, expectedEvents
-  verifySwitchingWithUnsub src, expectedEvents
+  verifySwitching src, expectedEvents unless browser
+  verifySwitchingWithUnsub src, expectedEvents unless browser
 
 @expectPropertyEvents = (src, expectedEvents) ->
   expect(expectedEvents.length > 0).to.deep.equal(true)
