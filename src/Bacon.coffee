@@ -606,7 +606,6 @@ class EventStream extends Observable
     new EventStream (sink) ->
       ends = 0
       smartSink = (obs) -> (unsubBoth) -> obs.subscribe (event) ->
-        
         if event.isEnd()
           ends++
           if ends == 2
@@ -618,7 +617,7 @@ class EventStream extends Observable
           unsubBoth() if reply == Bacon.noMore
           reply
       compositeUnsubscribe (smartSink left), (smartSink right)
-      
+
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
     @scan(initValue, latter)
