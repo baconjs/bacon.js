@@ -20,6 +20,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         if reply == Bacon.noMore or event.isEnd()
           # defer if binder calls handler in sync before returning unbinder
           if unbinder? then unbinder() else Bacon.scheduler.setTimeout (-> unbinder()), 0
+          return reply
       reply
 
 # eventTransformer - defaults to returning the first argument to handler
