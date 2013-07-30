@@ -603,12 +603,9 @@ class EventStream extends Observable
     assertEventStream(right)
     left = this
     new EventStream (sink) ->
-      unsubLeft = nop
-      unsubRight = nop
-      unsubscribed = false
-      unsubBoth = -> unsubLeft() ; unsubRight() ; unsubscribed = true
       ends = 0
-      smartSink = (event) ->
+      smartSink = (obs) -> (unsubBoth) -> obs.subscribe (event) ->
+        
         if event.isEnd()
           ends++
           if ends == 2
@@ -619,10 +616,8 @@ class EventStream extends Observable
           reply = sink event
           unsubBoth() if reply == Bacon.noMore
           reply
-      unsubLeft = left.subscribe(smartSink)
-      unsubRight = right.subscribe(smartSink) unless unsubscribed
-      unsubBoth
-
+      compositeUnsubscribe (smartSink left), (smartSink right)
+      
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
     @scan(initValue, latter)
