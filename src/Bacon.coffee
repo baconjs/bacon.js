@@ -689,24 +689,21 @@ class Property extends Observable
           (myVal, otherVal) -> myVal.value()
       myVal = None
       subscribe = (sink) => 
-        unsubscribed = false
-        unsubMe = nop
-        unsubOther = nop
-        unsubBoth = -> unsubMe() ; unsubOther() ; unsubscribed = true
-        unsubMe = this.subscribeInternal (event) =>
+        unsubMe = (usubAll) => this.subscribeInternal (event) =>
           if event.hasValue()
             myVal = new Some(event)
           else if event.isError()
             sink event
-        unsubOther = sampler.subscribe (event) =>
+        unsubOther = (unsubAll) => sampler.subscribe (event) =>
           if event.hasValue()
             myVal.forEach (myVal) =>
               sink(event.apply(-> lazyCombinator(myVal, event)))
           else
             if event.isEnd()
-              unsubMe()
+              unsubAll()
             sink event
-        unsubBoth
+        compositeUnsubscribe unsubMe, unsubOther
+
       if sampler instanceof Property then new Property(subscribe) else new EventStream(subscribe)
 
     @subscribe = (sink) =>
