@@ -453,53 +453,33 @@ class Observable
     f = makeSpawner(f)
     root = this
     new EventStream (sink) ->
-      children = []
-      rootEnd = false
-      unbound = false
-      unsubRoot = ->
-      unbind = ->
-        unsubRoot()
-        for unsubChild in children
-          unsubChild()
-        children = []
-        unbound = true
-      checkEnd = ->
-        if rootEnd and (children.length == 0)
-          sink end()
-      spawner = (event) ->
+      composite = new CompositeUnsubscribe()
+      checkEnd = (unsub) ->
+        unsub()
+        sink end() if composite.empty()
+      composite.add (__, unsubRoot) -> root.subscribe (event) ->
         if event.isEnd()
-          rootEnd = true
-          checkEnd()
+          checkEnd(unsubRoot)
         else if event.isError()
           sink event
-        else if firstOnly and children.length
+        else if firstOnly and composite.count() > 1
           Bacon.more
         else
+          return Bacon.noMore if composite.unsubscribed
           child = f event.value()
           child = Bacon.once(child) if not (child instanceof Observable)
-          unsubChild = undefined
-          childEnded = false
-          removeChild = ->
-            _.remove(unsubChild, children) if unsubChild?
-            checkEnd()
-          handler = (event) ->
+          composite.add (unsubAll, unsubMe) -> child.subscribe (event) ->
             if event.isEnd()
-              removeChild()
-              childEnded = true
+              checkEnd(unsubMe)
               Bacon.noMore
             else
               if event instanceof Initial
                 # To support Property as the spawned stream
                 event = event.toNext()
               reply = sink event
-              if reply == Bacon.noMore
-                unbind()
+              unsubAll() if reply == Bacon.noMore
               reply
-          unsubChild = child.subscribe handler
-          children.push unsubChild if not childEnded
-          if unbound then Bacon.noMore else Bacon.more
-      unsubRoot = root.subscribe(spawner)
-      unbind
+      composite.unsubscribe
 
   flatMapFirst: (f) -> @flatMap(f, true)
 
