@@ -174,13 +174,13 @@ Bacon.combineAsArray = (streams, more...) ->
             reply
           else
             setValue(event.value)
-            if _.all(_.map(((x) -> x.isDefined), values))
+            if _.all(values, ((x) -> x != None))
               if initialSent and event.isInitial()
                 # don't send duplicate Initial
                 Bacon.more
               else
                 initialSent = true
-                valueArrayF = -> (x.get()() for x in values)
+                valueArrayF = -> (x() for x in values)
                 reply = sink(event.apply(valueArrayF))
                 unsubAll() if reply == Bacon.noMore
                 reply
@@ -189,7 +189,7 @@ Bacon.combineAsArray = (streams, more...) ->
       sinkFor = (index, stream) ->
         combiningSink(
           (-> ends[index] = true)
-          ((x) -> values[index] = new Some(x))
+          ((x) -> values[index] = x)
           stream)
       subs = for stream, index in streams 
         do (stream, index) ->
