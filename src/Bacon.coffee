@@ -153,6 +153,8 @@ Bacon.zipWith = (streams, f, more...) ->
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
+  for stream, index in streams
+    streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
   if streams.length
     values = (None for s in streams)
     new Property (sink) =>
@@ -188,7 +190,6 @@ Bacon.combineAsArray = (streams, more...) ->
               Bacon.more
       subs = for stream, index in streams 
         do (stream, index) ->
-          stream = Bacon.constant(stream) if not (stream instanceof Observable)
           combiningSink stream, index
       compositeUnsubscribe subs...
   else
