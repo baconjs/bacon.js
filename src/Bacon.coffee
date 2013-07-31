@@ -153,51 +153,40 @@ Bacon.zipWith = (streams, f, more...) ->
 Bacon.combineAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
+  for stream, index in streams
+    streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
   if streams.length
     values = (None for s in streams)
     new Property (sink) =>
-      unsubscribed = false
-      unsubs = (nop for s in streams)
-      unsubAll = (-> f() for f in unsubs ; unsubscribed = true)
       ends = (false for s in streams)
-      checkEnd = ->
-        if _.all(ends)
-          reply = sink end()
-          unsubAll() if reply == Bacon.noMore
-          reply
       initialSent = false
-      combiningSink = (markEnd, setValue) =>
-        (event) =>
+      combiningSink = (index) => (unsubAll) ->
+        streams[index].subscribeInternal (event) =>
           if (event.isEnd())
-            markEnd()
-            checkEnd()
+            ends[index] = true
+            if _.all(ends)
+              reply = sink end()
+              unsubAll() if reply == Bacon.noMore
             Bacon.noMore
           else if event.isError()
             reply = sink event
             unsubAll() if reply == Bacon.noMore
             reply
           else
-            setValue(event.value)
-            if _.all(_.map(((x) -> x.isDefined), values))
+            values[index] = event.value
+            if _.all(values, ((x) -> x != None))
               if initialSent and event.isInitial()
                 # don't send duplicate Initial
                 Bacon.more
               else
                 initialSent = true
-                valueArrayF = -> (x.get()() for x in values)
+                valueArrayF = -> (x() for x in values)
                 reply = sink(event.apply(valueArrayF))
                 unsubAll() if reply == Bacon.noMore
                 reply
             else
               Bacon.more
-      sinkFor = (index) ->
-        combiningSink(
-          (-> ends[index] = true)
-          ((x) -> values[index] = new Some(x)))
-      for stream, index in streams
-        stream = Bacon.constant(stream) if not (stream instanceof Observable)
-        unsubs[index] = stream.subscribeInternal (sinkFor index) unless unsubscribed
-      unsubAll
+      compositeUnsubscribe (combiningSink index for s, index in streams )...
   else
     Bacon.constant([])
 
