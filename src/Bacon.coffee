@@ -164,8 +164,8 @@ Bacon.combineAsArray = (streams, more...) ->
           reply = sink end()
           unsubAll() if reply == Bacon.noMore
       initialSent = false
-      combiningSink = (stream, index) => (unsubAll) ->
-        stream.subscribeInternal (event) =>
+      combiningSink = (index) => (unsubAll) ->
+        streams[index].subscribeInternal (event) =>
           if (event.isEnd())
             ends[index] = true
             checkEnd(unsubAll)
@@ -188,10 +188,7 @@ Bacon.combineAsArray = (streams, more...) ->
                 reply
             else
               Bacon.more
-      subs = for stream, index in streams 
-        do (stream, index) ->
-          combiningSink stream, index
-      compositeUnsubscribe subs...
+      compositeUnsubscribe (combiningSink index for s, index in streams )...
   else
     Bacon.constant([])
 
