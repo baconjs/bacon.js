@@ -162,8 +162,8 @@ Bacon.combineAsArray = (streams, more...) ->
           reply = sink end()
           unsubAll() if reply == Bacon.noMore
       initialSent = false
-      combiningSink = (unsubAll, markEnd, setValue) =>
-        (event) =>
+      combiningSink = (markEnd, setValue, stream) => (unsubAll) ->
+        stream.subscribeInternal (event) =>
           if (event.isEnd())
             markEnd()
             checkEnd(unsubAll)
@@ -186,15 +186,15 @@ Bacon.combineAsArray = (streams, more...) ->
                 reply
             else
               Bacon.more
-      sinkFor = (unsubAll, index) ->
+      sinkFor = (index, stream) ->
         combiningSink(
-          unsubAll
           (-> ends[index] = true)
-          ((x) -> values[index] = new Some(x)))
+          ((x) -> values[index] = new Some(x))
+          stream)
       subs = for stream, index in streams 
         do (stream, index) ->
           stream = Bacon.constant(stream) if not (stream instanceof Observable)
-          (unsubAll) -> stream.subscribeInternal (sinkFor unsubAll, index)
+          sinkFor index, stream
       compositeUnsubscribe subs...
   else
     Bacon.constant([])
