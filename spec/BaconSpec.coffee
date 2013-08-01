@@ -1417,7 +1417,7 @@ describe "Property.sampledBy(stream)", ->
     expectStreamEvents(
       -> Bacon.later(1, 1).toProperty().sampledBy(Bacon.fromArray([1,2,3]))
       [])
-  describe.only "laziness", ->
+  describe "laziness", ->
     calls = 0
     id = (x) -> 
       calls++
