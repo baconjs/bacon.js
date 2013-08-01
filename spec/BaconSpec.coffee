@@ -1204,8 +1204,9 @@ describe "Bacon.combineAsArray", ->
   describe "initial value", ->
     event = null
     before ->
-      Bacon.combineAsArray(Bacon.constant(1)).subscribe (x) ->
-        event = x
+      prop = Bacon.constant(1)
+      Bacon.combineAsArray(prop).subscribe (x) ->
+        event = x if x.hasValue()
     it "is output as Initial event", ->
       expect(event.isInitial()).to.equal(true)
   describe "combines properties and latest values of streams, into a Property having arrays as values", ->
