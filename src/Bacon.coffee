@@ -366,7 +366,8 @@ class Observable
           return reply
       reply
   scan: (seed, f, lazyF) =>
-    f = toCombinator(f)
+    f_ = toCombinator(f)
+    f = if lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
     subscribe = (sink) =>
       initSent = false
@@ -388,11 +389,7 @@ class Observable
             sendInit() unless event.isInitial()
             initSent = true
             prev = acc.getOrElse(-> undefined)
-            next = -> 
-              if lazyF
-                f(prev, event.value)
-              else
-                f(prev(), event.value())
+            next = -> f(prev, event.value)
             acc = new Some(next)
             sink (event.apply(next))
         else
