@@ -1710,6 +1710,16 @@ describe "Bacon.update", ->
           [one, two],  (i, a, b) -> [i,a,b])
       [0, [0,1,2]])
 
+describe "Bacon.ordered", ->
+  describe "matches values from streams in order", ->
+    expectStreamEvents(
+      ->
+        as = repeat(3, ["a"])
+        bs = repeat(2, ["b"])
+        cs = repeat(1, ["c"])
+        Bacon.ordered as, bs, cs
+      [["a", "b", "c"]])
+
 describe "combineTemplate", ->
   describe "combines streams according to a template object", ->
     expectPropertyEvents(

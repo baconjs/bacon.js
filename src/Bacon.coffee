@@ -993,6 +993,14 @@ Bacon.update = (initial, patterns...) ->
     i = i - 2
   Bacon.when(patterns...).scan initial, ((x,f) -> f x)
 
+Bacon.ordered = (inputs...) ->
+  if not inputs.length
+    Bacon.once []
+  else
+    inputs[0].take(1).flatMap (firstValue) ->
+      rest = Bacon.ordered (inputs.slice(1))...
+      rest.map (restValues) -> [firstValue].concat(restValues)
+
 compositeUnsubscribe = (ss...) ->
   new CompositeUnsubscribe(ss).unsubscribe
 
