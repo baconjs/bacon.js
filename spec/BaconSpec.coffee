@@ -1650,6 +1650,14 @@ describe "Bacon.when", ->
           [as, bs, cs], (a,b,c) ->  a + b + c,
           [as],         (a)   ->  a)
       ['a', 'ab0', 'a', 'ab1', 'ab2', 'ab3'])
+  describe "doesn't output before properties have values", ->
+    expectStreamEvents(
+      ->
+        p = series(2, ["p"])
+        s = series(1, ["s"])
+        Bacon.when(
+          [s, p], (s, p) -> s + p)
+      ["sp"])
   describe "returns Bacon.never() on the empty list of patterns", ->
     expectStreamEvents(
       ->
