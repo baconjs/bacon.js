@@ -1417,6 +1417,19 @@ describe "Property.sampledBy(stream)", ->
     expectStreamEvents(
       -> Bacon.later(1, 1).toProperty().sampledBy(Bacon.fromArray([1,2,3]))
       [])
+  describe.only "laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    sampler = Bacon.later(5)
+    property = repeat(1, [1]).toProperty().map(id)
+    sampled = property.sampledBy sampler
+    sampled.onValue()
+    before (done) ->
+      sampled.onEnd(done)
+    it "preserves laziness", ->
+      expect(calls).to.equal(1)
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
