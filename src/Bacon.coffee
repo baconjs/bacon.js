@@ -156,37 +156,9 @@ Bacon.combineAsArray = (streams, more...) ->
   for stream, index in streams
     streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
   if streams.length
-    values = (None for s in streams)
-    new Property (sink) =>
-      ends = (false for s in streams)
-      initialSent = false
-      combiningSink = (index) => (unsubAll) ->
-        streams[index].subscribeInternal (event) =>
-          if (event.isEnd())
-            ends[index] = true
-            if _.all(ends)
-              reply = sink end()
-              unsubAll() if reply == Bacon.noMore
-            Bacon.noMore
-          else if event.isError()
-            reply = sink event
-            unsubAll() if reply == Bacon.noMore
-            reply
-          else
-            values[index] = event.value
-            if _.all(values, ((x) -> x != None))
-              if initialSent and event.isInitial()
-                # don't send duplicate Initial
-                Bacon.more
-              else
-                initialSent = true
-                valueArrayF = -> (x() for x in values)
-                reply = sink(event.apply(valueArrayF))
-                unsubAll() if reply == Bacon.noMore
-                reply
-            else
-              Bacon.more
-      compositeUnsubscribe (combiningSink index for s, index in streams )...
+    sources = for s in streams
+      new Source(s, true, false, s.subscribeInternal)
+    Bacon.when(sources, Array).toProperty()
   else
     Bacon.constant([])
 
@@ -917,24 +889,30 @@ class Bus extends EventStream
       sink? end()
 
 class Source 
-  constructor: (s) ->
+  constructor: (s, @sync, consume, @subscribe) ->
     queue = []
     isEnded = false
-    @subscribe = s.subscribe
+    @subscribe = s.subscribe if not @subscribe?
     @markEnded = -> isEnded = true
     @ended = -> isEnded
-    if s instanceof Property
-      @consume = () -> queue[0]
-      @push  = (x) -> queue = [x]
-      @mayHave = -> true
-      @hasAtLeast = (c) -> queue.length
-      @sync = false
-    else
+    if consume
       @consume = () -> queue.shift()
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !isEnded || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
-      @sync = true
+    else
+      @consume = () -> queue[0]
+      @push  = (x) -> queue = [x]
+      @mayHave = -> true
+      @hasAtLeast = (c) -> queue.length
+
+Source.fromObservable = (s) ->
+  if s instanceof Source
+    s
+  else if s instanceof Property
+    new Source(s, false, false)
+  else
+    new Source(s, true, true)
 
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
@@ -959,7 +937,7 @@ Bacon.when = (patterns...) ->
        pats.push pat
        i = i + 2
 
-    sources = _.map ((s) -> new Source(s)), sources
+    sources = _.map ((s) -> Source.fromObservable(s)), sources
 
     new EventStream (sink) ->
       match = (p) ->
