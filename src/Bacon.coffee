@@ -159,7 +159,6 @@ Bacon.combineAsArray = (streams, more...) ->
     values = (None for s in streams)
     new Property (sink) =>
       ends = (false for s in streams)
-      initialSent = false
       combiningSink = (index) => (unsubAll) ->
         streams[index].subscribeInternal (event) =>
           if event.isEnd()
@@ -170,8 +169,7 @@ Bacon.combineAsArray = (streams, more...) ->
             reply = sink event
           else
             values[index] = event.value
-            if _.all(values, ((x) -> x != None)) and not(event.isInitial() and initialSent)
-              initialSent = true
+            if _.all(values, (x) -> x != None)
               valueArrayF = -> (x() for x in values)
               reply = sink event.apply(valueArrayF)
           unsubAll() if reply == Bacon.noMore
