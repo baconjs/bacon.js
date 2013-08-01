@@ -967,14 +967,14 @@ Bacon.when = (patterns...) ->
       part = (source, sourceIndex) -> (unsubAll) ->
         source.subscribe (e) ->
           if e.isEnd()
-            sources[sourceIndex].markEnded()
+            source.markEnded()
             if _.all(pats, cannotMatch)
               reply = Bacon.noMore
               sink end()
           else if e.isError()
             reply = sink e
           else
-            sources[sourceIndex].push e.value()
+            source.push e.value()
             for p in pats
                if match(p)
                  val = p.f(sources[i.index].consume() for i in p.ixs ...)
