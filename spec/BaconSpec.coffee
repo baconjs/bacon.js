@@ -1201,6 +1201,13 @@ describe "Property update is atomic", ->
       [1])
 
 describe "Bacon.combineAsArray", ->
+  describe "initial value", ->
+    event = null
+    before ->
+      Bacon.combineAsArray(Bacon.constant(1)).subscribe (x) ->
+        event = x
+    it "is output as Initial event", ->
+      expect(event.isInitial()).to.equal(true)
   describe "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
       ->
