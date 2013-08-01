@@ -916,6 +916,24 @@ class Bus extends EventStream
       unsubAll()
       sink? end()
 
+class Source 
+  constructor: (s) ->
+    queue = []
+    isEnded = false
+    @subscribe = s.subscribe
+    @markEnded = -> isEnded = true
+    @ended = -> isEnded
+    if s instanceof Property
+      @consume = () -> queue[0]
+      @push  = (x) -> queue = [x]
+      @mayHave = -> true
+      @hasAtLeast = (c) -> queue.length
+    else
+      @consume = () -> queue.shift()
+      @push  = (x) -> queue.push(x)
+      @mayHave = (c) -> !isEnded || queue.length >= c
+      @hasAtLeast = (c) -> queue.length >= c
+
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
     len = patterns.length
@@ -939,22 +957,6 @@ Bacon.when = (patterns...) ->
        pats.push pat
        i = i + 2
 
-    class Source 
-      constructor: (s) ->
-        queue = []
-        isEnded = false
-        @subscribe = s.subscribe
-        @markEnded = -> isEnded = true
-        if s instanceof Property
-          @consume = () -> queue[0]
-          @push  = (x) -> queue = [x]
-          @mayHave = -> true
-          @hasAtLeast = (c) -> queue.length
-        else
-          @consume = () -> queue.shift()
-          @push  = (x) -> queue.push(x)
-          @mayHave = (c) -> !isEnded || queue.length >= c
-          @hasAtLeast = (c) -> queue.length >= c
     sources = _.map ((s) -> new Source(s)), sources
 
     new EventStream (sink) ->
