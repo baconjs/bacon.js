@@ -253,6 +253,13 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> series(1, [1,2,3]).map(Bacon.constant(2))
       [2,2,2])
+  it "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "EventStream.mapError", ->
   describe "should map error events with given function", ->
@@ -873,7 +880,6 @@ describe "EventStream.toProperty", ->
           s.end()
         p
       ["a", "b"])
-
   describe "passes through also Errors", ->
     expectPropertyEvents(
       -> series(1, [1, error(), 2]).toProperty()
@@ -899,6 +905,13 @@ describe "EventStream.toProperty", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).toProperty(0)
       [0,1,2,3])
+  it "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "Property.toEventStream", ->
   describe "creates a stream that starts with current property value", ->
