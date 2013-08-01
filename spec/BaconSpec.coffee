@@ -1249,6 +1249,13 @@ describe "Bacon.combineAsArray", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
     [[1,2,3]])
+  it.only "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "Bacon.combineWith", ->
   describe "combines n properties, streams and constants using an n-ary function", ->
