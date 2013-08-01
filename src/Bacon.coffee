@@ -961,7 +961,7 @@ Bacon.when = (patterns...) ->
               for p in pats
                  if match(p)
                    val = p.f(sources[i.index].consume() for i in p.ixs ...)
-                   reply = sink next(val)
+                   reply = sink e.apply(-> val)
                    break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
