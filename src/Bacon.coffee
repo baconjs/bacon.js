@@ -158,7 +158,7 @@ Bacon.combineAsArray = (streams, more...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true, false, s.subscribeInternal)
-    Bacon.when(sources, Array).toProperty()
+    Bacon.when(sources, ((xs...) -> xs)).toProperty()
   else
     Bacon.constant([])
 

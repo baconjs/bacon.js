@@ -1213,10 +1213,15 @@ describe "Bacon.combineAsArray", ->
         stream = series(1, ["a", "b"])
         Bacon.combineAsArray(Bacon.constant(1), Bacon.constant(2), stream)
       [[1, 2, "a"], [1, 2, "b"]])
-  describe "works with single stream", ->
+  describe "works with single property", ->
     expectPropertyEvents(
       ->
         Bacon.combineAsArray([Bacon.constant(1)])
+      [[1]])
+  describe "works with single stream", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineAsArray([Bacon.once(1)])
       [[1]])
   describe "works with arrays as values, with first array being empty (bug fix)", ->
     expectPropertyEvents(
@@ -1676,6 +1681,10 @@ describe "Bacon.when", ->
       ->
         Bacon.when()
       [])
+  describe "works with single stream", ->
+    expectStreamEvents(
+      -> Bacon.when([Bacon.once(1)], (x) -> x)
+      [1])
   describe "works with multiples of streams", ->
     expectStreamEvents(
       -> 
