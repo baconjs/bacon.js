@@ -545,22 +545,9 @@ class EventStream extends Observable
       reply
 
   merge: (right) ->
-    assertEventStream(right)
-    left = this
-    new EventStream (sink) ->
-      ends = 0
-      smartSink = (obs) -> (unsubBoth) -> obs.subscribe (event) ->
-        if event.isEnd()
-          ends++
-          if ends == 2
-            sink end()
-          else
-            Bacon.more
-        else
-          reply = sink event
-          unsubBoth() if reply == Bacon.noMore
-          reply
-      compositeUnsubscribe (smartSink left), (smartSink right)
+    Bacon.when(
+      [this], _.id,
+      [right], _.id)
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
