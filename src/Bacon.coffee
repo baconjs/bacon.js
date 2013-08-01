@@ -928,11 +928,13 @@ class Source
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = (c) -> queue.length
+      @sync = false
     else
       @consume = () -> queue.shift()
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !isEnded || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
+      @sync = true
 
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
@@ -962,24 +964,27 @@ Bacon.when = (patterns...) ->
     new EventStream (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
+      cannotSync = (source) ->
+        !source.sync or source.ended()
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
         source.subscribe (e) ->
           if e.isEnd()
             source.markEnded()
-            if _.all(pats, cannotMatch)
+            if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
               reply = Bacon.noMore
               sink end()
           else if e.isError()
             reply = sink e
           else
             source.push e.value()
-            for p in pats
-               if match(p)
-                 val = p.f(sources[i.index].consume() for i in p.ixs ...)
-                 reply = sink next(val)
-                 break
+            if source.sync
+              for p in pats
+                 if match(p)
+                   val = p.f(sources[i.index].consume() for i in p.ixs ...)
+                   reply = sink next(val)
+                   break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
