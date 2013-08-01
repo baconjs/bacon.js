@@ -919,10 +919,8 @@ class Bus extends EventStream
 class Source 
   constructor: (s) ->
     queue = []
-    isEnded = false
     @subscribe = s.subscribe
-    @markEnded = -> isEnded = true
-    @ended = -> isEnded
+    @markEnded = -> @ended = true
     if s instanceof Property
       @consume = () -> queue[0]
       @push  = (x) -> queue = [x]
@@ -932,7 +930,7 @@ class Source
     else
       @consume = () -> queue.shift()
       @push  = (x) -> queue.push(x)
-      @mayHave = (c) -> !isEnded || queue.length >= c
+      @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
       @sync = true
 
@@ -965,7 +963,7 @@ Bacon.when = (patterns...) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotSync = (source) ->
-        !source.sync or source.ended()
+        !source.sync or source.ended
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
