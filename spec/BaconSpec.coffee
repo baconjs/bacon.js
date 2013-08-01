@@ -1249,7 +1249,7 @@ describe "Bacon.combineAsArray", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
     [[1,2,3]])
-  it.only "preserves laziness", ->
+  it "preserves laziness", ->
     calls = 0
     id = (x) -> 
       calls++
