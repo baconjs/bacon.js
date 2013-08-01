@@ -658,7 +658,7 @@ class Property extends Observable
           (myVal, otherVal) -> myVal.value()
       myVal = None
       subscribe = (sink) => 
-        unsubMe = (usubAll) => this.subscribeInternal (event) =>
+        unsubMe = (unsubAll) => this.subscribeInternal (event) =>
           if event.hasValue()
             myVal = new Some(event)
           else if event.isError()
