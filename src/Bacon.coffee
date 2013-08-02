@@ -898,12 +898,12 @@ class Source
     @subscribe = s.subscribe if not @subscribe?
     @markEnded = -> @ended = true
     if consume
-      @consume = () -> queue.shift()
+      @consume = () -> queue.shift()()
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
     else
-      @consume = () -> queue[0]
+      @consume = () -> queue[0]()
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = (c) -> queue.length
@@ -962,7 +962,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               for p in pats
                  if match(p)
-                   val = -> p.f(sources[i.index].consume()() for i in p.ixs ...)
+                   val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                    reply = sink e.apply(val)
                    break
           unsubAll() if reply == Bacon.noMore
