@@ -150,9 +150,9 @@ Bacon.zipWith = (streams, f, more...) ->
     [streams, f] = [[f].concat(more), streams]
   Bacon.when streams, f
 
-Bacon.combineAsArray = (streams, more...) ->
-  if not (streams instanceof Array)
-    streams = [streams].concat(more)
+Bacon.combineAsArray = (streams...) ->
+  if (streams.length == 1 and streams[0] instanceof Array)
+    streams = streams[0]
   for stream, index in streams
     streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
   if streams.length

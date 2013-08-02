@@ -1258,6 +1258,10 @@ describe "Bacon.combineAsArray", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray([])
       [[]])
+  describe "works with empty args list", ->
+    expectPropertyEvents(
+      -> Bacon.combineAsArray()
+      [[]])
   describe "accepts constant values instead of Observables", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
