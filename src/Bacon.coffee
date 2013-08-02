@@ -150,43 +150,15 @@ Bacon.zipWith = (streams, f, more...) ->
     [streams, f] = [[f].concat(more), streams]
   Bacon.when streams, f
 
-Bacon.combineAsArray = (streams, more...) ->
-  if not (streams instanceof Array)
-    streams = [streams].concat(more)
+Bacon.combineAsArray = (streams...) ->
+  if (streams.length == 1 and streams[0] instanceof Array)
+    streams = streams[0]
   for stream, index in streams
     streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
   if streams.length
-    values = (None for s in streams)
-    new Property (sink) =>
-      ends = (false for s in streams)
-      initialSent = false
-      combiningSink = (index) => (unsubAll) ->
-        streams[index].subscribeInternal (event) =>
-          if (event.isEnd())
-            ends[index] = true
-            if _.all(ends)
-              reply = sink end()
-              unsubAll() if reply == Bacon.noMore
-            Bacon.noMore
-          else if event.isError()
-            reply = sink event
-            unsubAll() if reply == Bacon.noMore
-            reply
-          else
-            values[index] = event.value
-            if _.all(values, ((x) -> x != None))
-              if initialSent and event.isInitial()
-                # don't send duplicate Initial
-                Bacon.more
-              else
-                initialSent = true
-                valueArrayF = -> (x() for x in values)
-                reply = sink(event.apply(valueArrayF))
-                unsubAll() if reply == Bacon.noMore
-                reply
-            else
-              Bacon.more
-      compositeUnsubscribe (combiningSink index for s, index in streams )...
+    sources = for s in streams
+      new Source(s, true, false, s.subscribeInternal)
+    Bacon.when(sources, ((xs...) -> xs)).toProperty()
   else
     Bacon.constant([])
 
@@ -393,9 +365,10 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  scan: (seed, f) =>
-    f = toCombinator(f)
-    acc = toOption(seed)
+  scan: (seed, f, lazyF) =>
+    f_ = toCombinator(f)
+    f = if lazyF then f_ else (x,y) -> f_(x(), y())
+    acc = toOption(seed).map((x) -> _.always(x))
     subscribe = (sink) =>
       initSent = false
       unsub = nop
@@ -403,8 +376,8 @@ class Observable
       sendInit = ->
         if !initSent
           initSent = true
-          acc.forEach (value) ->
-            reply = sink initial(value)
+          acc.forEach (valueF) ->
+            reply = sink(new Initial(valueF))
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
@@ -415,8 +388,10 @@ class Observable
           else
             sendInit() unless event.isInitial()
             initSent = true
-            acc = new Some(f(acc.getOrElse(undefined), event.value()))
-            sink (event.apply(_.always(acc.get())))
+            prev = acc.getOrElse(-> undefined)
+            next = -> f(prev, event.value)
+            acc = new Some(next)
+            sink (event.apply(next))
         else
           if event.isEnd()
             reply = sendInit()
@@ -589,7 +564,7 @@ class EventStream extends Observable
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
-    @scan(initValue, latter)
+    @scan(initValue, latterF, true)
 
   toEventStream: -> this
 
@@ -829,7 +804,7 @@ class PropertyDispatcher extends Dispatcher
       if event.isEnd()
         ended = true
       if event.hasValue()
-        current = new Some(event.value())
+        current = new Some(event.value)
         #console.log "push", event.value()
       PropertyTransaction.inTransaction =>
         push.apply(this, [event])
@@ -841,7 +816,8 @@ class PropertyDispatcher extends Dispatcher
       # after the first one
       shouldBounceInitialValue = => @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map(
-        (val) -> sink initial(val))
+        (val) -> 
+          sink initial(val()))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
       else if ended
@@ -916,6 +892,30 @@ class Bus extends EventStream
       unsubAll()
       sink? end()
 
+class Source 
+  constructor: (s, @sync, consume, @subscribe) ->
+    queue = []
+    @subscribe = s.subscribe if not @subscribe?
+    @markEnded = -> @ended = true
+    if consume
+      @consume = () -> queue.shift()()
+      @push  = (x) -> queue.push(x)
+      @mayHave = (c) -> !@ended || queue.length >= c
+      @hasAtLeast = (c) -> queue.length >= c
+    else
+      @consume = () -> queue[0]()
+      @push  = (x) -> queue = [x]
+      @mayHave = -> true
+      @hasAtLeast = (c) -> queue.length
+
+Source.fromObservable = (s) ->
+  if s instanceof Source
+    s
+  else if s instanceof Property
+    new Source(s, false, false)
+  else
+    new Source(s, true, true)
+
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
     len = patterns.length
@@ -939,45 +939,32 @@ Bacon.when = (patterns...) ->
        pats.push pat
        i = i + 2
 
-    class Source 
-      constructor: (s) ->
-        queue = []
-        isEnded = false
-        @subscribe = s.subscribe
-        @markEnded = -> isEnded = true
-        if s instanceof Property
-          @consume = () -> queue[0]
-          @push  = (x) -> queue = [x]
-          @mayHave = -> true
-          @hasAtLeast = (c) -> queue.length
-        else
-          @consume = () -> queue.shift()
-          @push  = (x) -> queue.push(x)
-          @mayHave = (c) -> !isEnded || queue.length >= c
-          @hasAtLeast = (c) -> queue.length >= c
-    sources = _.map ((s) -> new Source(s)), sources
+    sources = _.map Source.fromObservable, sources
 
     new EventStream (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
+      cannotSync = (source) ->
+        !source.sync or source.ended
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
         source.subscribe (e) ->
           if e.isEnd()
-            sources[sourceIndex].markEnded()
-            if _.all(pats, cannotMatch)
+            source.markEnded()
+            if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
               reply = Bacon.noMore
               sink end()
           else if e.isError()
             reply = sink e
           else
-            sources[sourceIndex].push e.value()
-            for p in pats
-               if match(p)
-                 val = p.f(sources[i.index].consume() for i in p.ixs ...)
-                 reply = sink next(val)
-                 break
+            source.push e.value
+            if source.sync
+              for p in pats
+                 if match(p)
+                   val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+                   reply = sink e.apply(val)
+                   break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
@@ -1067,7 +1054,7 @@ Bacon.End = End
 Bacon.Error = Error
 
 nop = ->
-latter = (_, x) -> x
+latterF = (_, x) -> x()
 former = (x, _) -> x
 initial = (value) -> new Initial(_.always(value))
 next = (value) -> new Next(_.always(value))
@@ -1140,6 +1127,7 @@ toCombinator = (f) ->
       left[key](right)
   else
     assert "not a function or a field key: " + f, false
+
 toOption = (v) ->
   if v instanceof Some || v == None
     v

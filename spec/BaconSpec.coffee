@@ -253,6 +253,13 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> series(1, [1,2,3]).map(Bacon.constant(2))
       [2,2,2])
+  it "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "EventStream.mapError", ->
   describe "should map error events with given function", ->
@@ -873,7 +880,6 @@ describe "EventStream.toProperty", ->
           s.end()
         p
       ["a", "b"])
-
   describe "passes through also Errors", ->
     expectPropertyEvents(
       -> series(1, [1, error(), 2]).toProperty()
@@ -899,6 +905,13 @@ describe "EventStream.toProperty", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).toProperty(0)
       [0,1,2,3])
+  it "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "Property.toEventStream", ->
   describe "creates a stream that starts with current property value", ->
@@ -1201,6 +1214,14 @@ describe "Property update is atomic", ->
       [1])
 
 describe "Bacon.combineAsArray", ->
+  describe "initial value", ->
+    event = null
+    before ->
+      prop = Bacon.constant(1)
+      Bacon.combineAsArray(prop).subscribe (x) ->
+        event = x if x.hasValue()
+    it "is output as Initial event", ->
+      expect(event.isInitial()).to.equal(true)
   describe "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
       ->
@@ -1213,10 +1234,15 @@ describe "Bacon.combineAsArray", ->
         stream = series(1, ["a", "b"])
         Bacon.combineAsArray(Bacon.constant(1), Bacon.constant(2), stream)
       [[1, 2, "a"], [1, 2, "b"]])
-  describe "works with single stream", ->
+  describe "works with single property", ->
     expectPropertyEvents(
       ->
         Bacon.combineAsArray([Bacon.constant(1)])
+      [[1]])
+  describe "works with single stream", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineAsArray([Bacon.once(1)])
       [[1]])
   describe "works with arrays as values, with first array being empty (bug fix)", ->
     expectPropertyEvents(
@@ -1232,10 +1258,21 @@ describe "Bacon.combineAsArray", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray([])
       [[]])
+  describe "works with empty args list", ->
+    expectPropertyEvents(
+      -> Bacon.combineAsArray()
+      [[]])
   describe "accepts constant values instead of Observables", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
     [[1,2,3]])
+  it "preserves laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
+    expect(calls).to.equal(1)
 
 describe "Bacon.combineWith", ->
   describe "combines n properties, streams and constants using an n-ary function", ->
@@ -1384,6 +1421,19 @@ describe "Property.sampledBy(stream)", ->
     expectStreamEvents(
       -> Bacon.later(1, 1).toProperty().sampledBy(Bacon.fromArray([1,2,3]))
       [])
+  describe "laziness", ->
+    calls = 0
+    id = (x) -> 
+      calls++
+      x
+    sampler = Bacon.later(5)
+    property = repeat(1, [1]).toProperty().map(id)
+    sampled = property.sampledBy sampler
+    sampled.onValue()
+    before (done) ->
+      sampled.onEnd(done)
+    it "preserves laziness", ->
+      expect(calls).to.equal(1)
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
@@ -1642,6 +1692,27 @@ describe "Bacon.when", ->
   describe "does'nt synchronize on properties", ->
     expectStreamEvents(
       ->
+        p = repeat(1, ["p"]).take(100).toProperty()
+        s = series(3, ["1", "2", "3"])
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      ["p1", "p2", "p3"])
+    expectStreamEvents(
+      ->
+        p = series(3, ["p"]).toProperty()
+        s = series(1, ["1"])
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      [])
+    expectStreamEvents(
+      ->
+        p = repeat(1, ["p"]).take(100).toProperty()
+        s = series(3, ["1", "2", "3"]).toProperty()
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      [])
+    expectStreamEvents(
+      ->
         [a,b,c,_] = ['a','b','c','_']
         as = series(1, [a, _, a, _, a, _, a, _, _, _, a, _, a]).filter((x) -> x == a)
         bs = series(1, [_, b, _, _, _, b, _, b, _, b, _, _, _]).filter((x) -> x == b)
@@ -1663,6 +1734,10 @@ describe "Bacon.when", ->
       ->
         Bacon.when()
       [])
+  describe "works with single stream", ->
+    expectStreamEvents(
+      -> Bacon.when([Bacon.once(1)], (x) -> x)
+      [1])
   describe "works with multiples of streams", ->
     expectStreamEvents(
       -> 
