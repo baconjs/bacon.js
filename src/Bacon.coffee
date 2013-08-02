@@ -623,10 +623,14 @@ class Property extends Observable
     else
       @subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe
 
-    @sampledBy = (sampler, combinator = former) =>
-      combinator = toCombinator combinator
-      thisSource = new Source(this, false, false, this.subscribeInternal)
-      samplerSource = new Source(sampler, true, false)
+    @sampledBy = (sampler, combinator) =>
+      if combinator?
+        combinator = toCombinator combinator
+      else
+        lazy = true
+        combinator = (f) -> f()
+      thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
+      samplerSource = new Source(sampler, true, false, sampler.subscribe, lazy)
       stream = Bacon.when([thisSource, samplerSource], combinator)
       if sampler instanceof Property then stream.toProperty() else stream
 
@@ -873,17 +877,18 @@ class Bus extends EventStream
       sink? end()
 
 class Source 
-  constructor: (s, @sync, consume, @subscribe) ->
+  constructor: (s, @sync, consume, @subscribe, lazy = false) ->
     queue = []
+    invoke = if lazy then _.id else (f) -> f()
     @subscribe = s.subscribe if not @subscribe?
     @markEnded = -> @ended = true
     if consume
-      @consume = () -> queue.shift()()
+      @consume = () -> invoke(queue.shift())
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
     else
-      @consume = () -> queue[0]()
+      @consume = () -> invoke(queue[0])
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = (c) -> queue.length
