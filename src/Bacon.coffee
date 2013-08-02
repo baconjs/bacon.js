@@ -939,7 +939,7 @@ Bacon.when = (patterns...) ->
        pats.push pat
        i = i + 2
 
-    sources = _.map ((s) -> Source.fromObservable(s)), sources
+    sources = _.map Source.fromObservable, sources
 
     new EventStream (sink) ->
       match = (p) ->
