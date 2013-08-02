@@ -623,32 +623,12 @@ class Property extends Observable
     else
       @subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe
 
-    @sampledBy = (sampler, combinator) =>
-      lazyCombinator = 
-        if (combinator?)
-          combinator = toCombinator(combinator)
-          (myVal, otherVal) ->
-            combinator(myVal.value(), otherVal.value())
-        else
-          (myVal, otherVal) -> myVal.value()
-      myVal = None
-      subscribe = (sink) => 
-        unsubMe = (unsubAll) => this.subscribeInternal (event) =>
-          if event.hasValue()
-            myVal = new Some(event)
-          else if event.isError()
-            sink event
-        unsubOther = (unsubAll) => sampler.subscribe (event) =>
-          if event.hasValue()
-            myVal.forEach (myVal) =>
-              sink(event.apply(-> lazyCombinator(myVal, event)))
-          else
-            if event.isEnd()
-              unsubAll()
-            sink event
-        compositeUnsubscribe unsubMe, unsubOther
-
-      if sampler instanceof Property then new Property(subscribe) else new EventStream(subscribe)
+    @sampledBy = (sampler, combinator = former) =>
+      combinator = toCombinator combinator
+      thisSource = new Source(this, false, false, this.subscribeInternal)
+      samplerSource = new Source(sampler, true, false)
+      stream = Bacon.when([thisSource, samplerSource], combinator)
+      if sampler instanceof Property then stream.toProperty() else stream
 
     @subscribe = (sink) =>
       # TODO: it's unoptimal to do this bookkeepping per subscriber
