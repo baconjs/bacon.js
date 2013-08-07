@@ -38,6 +38,12 @@ suite.add 'Bacon.combineTemplate.sample', ->
 .add 'EventStream.map', ->
   f.withGenerator (gen) ->
     gen.stream().map((x) -> x * 2)
+.add 'EventStream.scan', ->
+  f.withGenerator (gen) ->
+    gen.stream().scan(0, (x,y) -> x+y)
+.add 'EventStream.toProperty', ->
+  f.withGenerator (gen) ->
+    gen.stream().toProperty()
 .on 'cycle', (event) ->
   console.log(String(event.target))
 .on "error", (error) ->
