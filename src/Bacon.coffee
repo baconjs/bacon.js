@@ -916,6 +916,24 @@ class Bus extends EventStream
       unsubAll()
       sink? end()
 
+class Source 
+  constructor: (s) ->
+    queue = []
+    @subscribe = s.subscribe
+    @markEnded = -> @ended = true
+    if s instanceof Property
+      @consume = () -> queue[0]
+      @push  = (x) -> queue = [x]
+      @mayHave = -> true
+      @hasAtLeast = (c) -> queue.length
+      @sync = false
+    else
+      @consume = () -> queue.shift()
+      @push  = (x) -> queue.push(x)
+      @mayHave = (c) -> !@ended || queue.length >= c
+      @hasAtLeast = (c) -> queue.length >= c
+      @sync = true
+
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
     len = patterns.length
@@ -939,45 +957,32 @@ Bacon.when = (patterns...) ->
        pats.push pat
        i = i + 2
 
-    class Source 
-      constructor: (s) ->
-        queue = []
-        isEnded = false
-        @subscribe = s.subscribe
-        @markEnded = -> isEnded = true
-        if s instanceof Property
-          @consume = () -> queue[0]
-          @push  = (x) -> queue = [x]
-          @mayHave = -> true
-          @hasAtLeast = (c) -> queue.length
-        else
-          @consume = () -> queue.shift()
-          @push  = (x) -> queue.push(x)
-          @mayHave = (c) -> !isEnded || queue.length >= c
-          @hasAtLeast = (c) -> queue.length >= c
     sources = _.map ((s) -> new Source(s)), sources
 
     new EventStream (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
+      cannotSync = (source) ->
+        !source.sync or source.ended
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source, sourceIndex) -> (unsubAll) ->
         source.subscribe (e) ->
           if e.isEnd()
-            sources[sourceIndex].markEnded()
-            if _.all(pats, cannotMatch)
+            source.markEnded()
+            if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
               reply = Bacon.noMore
               sink end()
           else if e.isError()
             reply = sink e
           else
-            sources[sourceIndex].push e.value()
-            for p in pats
-               if match(p)
-                 val = p.f(sources[i.index].consume() for i in p.ixs ...)
-                 reply = sink next(val)
-                 break
+            source.push e.value()
+            if source.sync
+              for p in pats
+                 if match(p)
+                   val = p.f(sources[i.index].consume() for i in p.ixs ...)
+                   reply = sink next(val)
+                   break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 

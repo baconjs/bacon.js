@@ -1642,6 +1642,27 @@ describe "Bacon.when", ->
   describe "does'nt synchronize on properties", ->
     expectStreamEvents(
       ->
+        p = repeat(1, ["p"]).take(100).toProperty()
+        s = series(3, ["1", "2", "3"])
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      ["p1", "p2", "p3"])
+    expectStreamEvents(
+      ->
+        p = series(3, ["p"]).toProperty()
+        s = series(1, ["1"])
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      [])
+    expectStreamEvents(
+      ->
+        p = repeat(1, ["p"]).take(100).toProperty()
+        s = series(3, ["1", "2", "3"]).toProperty()
+        Bacon.when(
+          [p,s], (p, s) -> p + s)
+      [])
+    expectStreamEvents(
+      ->
         [a,b,c,_] = ['a','b','c','_']
         as = series(1, [a, _, a, _, a, _, a, _, _, _, a, _, a]).filter((x) -> x == a)
         bs = series(1, [_, b, _, _, _, b, _, b, _, b, _, _, _]).filter((x) -> x == b)
