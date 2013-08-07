@@ -1,6 +1,7 @@
 ## 0.6.9
 
 - Fix Bacon.when with Properties (#232)
+- Fix laziness of evaluation. Added tests to prevent further regression.
 - Re-implemented `combineAsArray` and `sampledBy` using Bacon.when
 
 ## 0.6.8
