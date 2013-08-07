@@ -28,7 +28,7 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/raimohanska/bacon.js.png)](https://travis-ci.org/raimohanska/bacon.js)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.png)](https://travis-ci.org/baconjs/bacon.js)
 
 Install
 =======
