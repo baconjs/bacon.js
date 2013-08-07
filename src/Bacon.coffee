@@ -155,38 +155,28 @@ Bacon.combineAsArray = (streams, more...) ->
     streams = [streams].concat(more)
   for stream, index in streams
     streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
-  if streams.length
+  n = streams.length
+  if n
     values = (None for s in streams)
     new Property (sink) =>
       ends = (false for s in streams)
-      initialSent = false
       combiningSink = (index) => (unsubAll) ->
         streams[index].subscribeInternal (event) =>
-          if (event.isEnd())
+          if event.isEnd()
             ends[index] = true
             if _.all(ends)
               reply = sink end()
-              unsubAll() if reply == Bacon.noMore
-            Bacon.noMore
           else if event.isError()
             reply = sink event
-            unsubAll() if reply == Bacon.noMore
-            reply
           else
+            n-- if values[index] == None
             values[index] = event.value
-            if _.all(values, ((x) -> x != None))
-              if initialSent and event.isInitial()
-                # don't send duplicate Initial
-                Bacon.more
-              else
-                initialSent = true
-                valueArrayF = -> (x() for x in values)
-                reply = sink(event.apply(valueArrayF))
-                unsubAll() if reply == Bacon.noMore
-                reply
-            else
-              Bacon.more
-      compositeUnsubscribe (combiningSink index for s, index in streams )...
+            if n == 0
+              valueArrayF = -> (x() for x in values)
+              reply = sink event.apply(valueArrayF)
+          unsubAll() if reply == Bacon.noMore
+          reply || Bacon.more
+      compositeUnsubscribe (combiningSink index for s, index in streams)...
   else
     Bacon.constant([])
 
