@@ -13,11 +13,11 @@ It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
 
 Here's the stuff.
 
-- [CoffeeScript source](https://github.com/raimohanska/bacon.js/blob/master/src/Bacon.coffee)
-- [Generated javascript](https://github.com/raimohanska/bacon.js/blob/master/dist/)
-- [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
-- [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
-- [Wiki](https://github.com/raimohanska/bacon.js/wiki/) with more docs, related projects and more
+- [CoffeeScript source](https://github.com/baconjs/bacon.js/blob/master/src/Bacon.coffee)
+- [Generated javascript](https://github.com/baconjs/bacon.js/blob/master/dist/)
+- [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffee)
+- [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
+- [Wiki](https://github.com/baconjs/bacon.js/wiki/) with more docs, related projects and more
 - [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
 - [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
@@ -38,7 +38,7 @@ You can download the latest [generated javascript](https://raw.github.com/raimoh
 ..or you can use script tags to include this file directly from Github:
 
 ```html
-<script src="https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js"></script>
+<script src="https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js"></script>
 ```
 
 Version 0.6.8 can also be found from cdnjs hosting:
@@ -1279,9 +1279,9 @@ that ends on error!
 Examples
 ========
 
-See [Examples](https://github.com/raimohanska/bacon.js/blob/master/examples/examples.html)
+See [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 
-See [Specs](https://github.com/raimohanska/bacon.js/blob/master/spec/BaconSpec.coffee)
+See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffee)
 
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 
