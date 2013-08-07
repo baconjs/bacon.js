@@ -155,7 +155,8 @@ Bacon.combineAsArray = (streams, more...) ->
     streams = [streams].concat(more)
   for stream, index in streams
     streams[index] = Bacon.constant(stream) if not (stream instanceof Observable)
-  if streams.length
+  n = streams.length
+  if n
     values = (None for s in streams)
     new Property (sink) =>
       ends = (false for s in streams)
@@ -168,9 +169,9 @@ Bacon.combineAsArray = (streams, more...) ->
           else if event.isError()
             reply = sink event
           else
+            n-- if values[index] == None
             values[index] = event.value
-            if sent or _.all(values, (x) -> x != None)
-              sent = true
+            if n == 0
               valueArrayF = -> (x() for x in values)
               reply = sink event.apply(valueArrayF)
           unsubAll() if reply == Bacon.noMore
