@@ -169,7 +169,8 @@ Bacon.combineAsArray = (streams, more...) ->
             reply = sink event
           else
             values[index] = event.value
-            if _.all(values, (x) -> x != None)
+            if sent or _.all(values, (x) -> x != None)
+              sent = true
               valueArrayF = -> (x() for x in values)
               reply = sink event.apply(valueArrayF)
           unsubAll() if reply == Bacon.noMore
