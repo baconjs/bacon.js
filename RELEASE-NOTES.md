@@ -1,3 +1,7 @@
+## 0.6.9
+
+- Fix Bacon.when with Properties (#232)
+
 ## 0.6.8
 
 - Fix skipWhile in case of Error events before first match (refix #218)
