@@ -1426,7 +1426,7 @@ describe "Property.sampledBy(stream)", ->
     id = (x) -> 
       calls++
       x
-    sampler = Bacon.later(5)
+    sampler = Bacon.later(5).map(id)
     property = repeat(1, [1]).toProperty().map(id)
     sampled = property.sampledBy sampler
     sampled.onValue()
