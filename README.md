@@ -33,7 +33,7 @@ Please contribute!
 Install
 =======
 
-You can download the latest [generated javascript](https://raw.github.com/raimohanska/bacon.js/master/dist/Bacon.js).
+You can download the latest [generated javascript](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
 ..or you can use script tags to include this file directly from Github:
 
