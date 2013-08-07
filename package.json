@@ -1,7 +1,11 @@
 {
   "name": "baconjs",
   "version": "0.6.9",
-  "author": {name: "Juha Paananen", email: "juha.paananen@gmail.com", url: "https://twitter.com/raimohanska"},
+  "author": {
+    "name": "Juha Paananen",
+     "email": "juha.paananen@gmail.com", 
+     "url": "https://twitter.com/raimohanska"
+  },
   "licenses": [
     "MIT"
   ],
