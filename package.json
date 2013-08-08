@@ -6,6 +6,13 @@
      "email": "juha.paananen@gmail.com", 
      "url": "https://twitter.com/raimohanska"
   },
+  "contributors": [
+    {
+      "name": "Daniel K",
+      "email": "x.flowwolf@gmail.com",
+      "url": "https://twitter.com/xflowwolf"
+    }
+  ],
   "licenses": [
     "MIT"
   ],
