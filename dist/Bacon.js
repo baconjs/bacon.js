@@ -216,10 +216,10 @@
   };
 
   Bacon.mergeAll = function() {
-    var more, streams;
-    streams = arguments[0], more = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (!(streams instanceof Array)) {
-      streams = [streams].concat(more);
+    var streams;
+    streams = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    if (streams[0] instanceof Array) {
+      streams = streams[0];
     }
     return _.fold(streams, Bacon.never(), (function(a, b) {
       return a.merge(b);
@@ -227,10 +227,10 @@
   };
 
   Bacon.zipAsArray = function() {
-    var more, streams;
-    streams = arguments[0], more = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (!(streams instanceof Array)) {
-      streams = [streams].concat(more);
+    var streams;
+    streams = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    if (streams[0] instanceof Array) {
+      streams = streams[0];
     }
     return Bacon.zipWith(streams, function() {
       var xs;
@@ -240,10 +240,10 @@
   };
 
   Bacon.zipWith = function() {
-    var f, more, streams, _ref1;
-    streams = arguments[0], f = arguments[1], more = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    if (isFunction(streams)) {
-      _ref1 = [[f].concat(more), streams], streams = _ref1[0], f = _ref1[1];
+    var f, streams, _ref1;
+    f = arguments[0], streams = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!isFunction(f)) {
+      _ref1 = [f, streams[0]], streams = _ref1[0], f = _ref1[1];
     }
     return Bacon.when(streams, f);
   };
