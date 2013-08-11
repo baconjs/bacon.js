@@ -1640,6 +1640,17 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1), Bacon.constant(5))
     [[1 , 2, 5], [2 , 3, 5], [3, 4, 5]])
+  describe "works with single stream", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2])
+        Bacon.zipAsArray([obs])
+    [[1], [2]])
+  describe "works with 0 streams (=Bacon.never())", ->
+    expectStreamEvents(
+      ->
+        Bacon.zipAsArray([])
+    [])
 
 describe "Bacon.zipWith", ->
   describe "zips an array of streams with given function", ->
@@ -1733,6 +1744,11 @@ describe "Bacon.when", ->
     expectStreamEvents(
       ->
         Bacon.when()
+      [])
+  describe "returns Bacon.never() when all patterns are zero-length", ->
+    expectStreamEvents(
+      ->
+        Bacon.when([], ->)
       [])
   describe "works with single stream", ->
     expectStreamEvents(

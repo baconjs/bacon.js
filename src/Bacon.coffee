@@ -143,7 +143,7 @@ Bacon.mergeAll = (streams, more...) ->
 Bacon.zipAsArray = (streams, more...) ->
   if not (streams instanceof Array)
     streams = [streams].concat(more)
-  Bacon.zipWith(streams, Array)
+  Bacon.zipWith(streams, (xs...) -> xs)
 
 Bacon.zipWith = (streams, f, more...) ->
   if isFunction(streams)
@@ -923,6 +923,9 @@ Bacon.when = (patterns...) ->
          pat.ixs.push {index: index, count: 1}
        pats.push pat
        i = i + 2
+
+    if !sources.length 
+      return Bacon.never()
 
     sources = _.map Source.fromObservable, sources
 
