@@ -1,3 +1,7 @@
+## 0.6.12
+
+- Fix mergeAll, zipAsArray, zipWith with 0 sources, n-ary syntax
+
 ## 0.6.11
 
 - Fix Bacon.zipAsArray with 0 or 1 sources
