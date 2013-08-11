@@ -1282,6 +1282,18 @@ describe "Bacon.combineWith", ->
         f = (x, y, z) -> x + y + z
         Bacon.combineWith(f, stream, Bacon.constant(10), 100)
       [111, 112])
+  describe "works with single input", ->
+    expectPropertyEvents(
+      ->
+        stream = series(1, [1, 2])
+        f = (x) -> x * 2
+        Bacon.combineWith(f, stream)
+      [2, 4])
+  describe "works with 0 inputs (results to a constant)", ->
+    expectPropertyEvents(
+      ->
+        Bacon.combineWith(-> 1)
+      [1])
 
 describe "Boolean logic", ->
   describe "combines Properties with and()", ->
