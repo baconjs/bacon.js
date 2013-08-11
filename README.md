@@ -226,7 +226,7 @@ indefinitely with the given interval (in milliseconds)
 values (given as array). Delivered with given interval in milliseconds.
 
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
-with given interval in milliseconds. For example, sequentially(10, [1,2,3])
+with given interval in milliseconds. For example, repeatedly(10, [1,2,3])
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
 `Bacon.never()` creates an EventStream that immediately ends.
