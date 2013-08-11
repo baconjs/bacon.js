@@ -232,7 +232,11 @@
     if (!(streams instanceof Array)) {
       streams = [streams].concat(more);
     }
-    return Bacon.zipWith(streams, Array);
+    return Bacon.zipWith(streams, function() {
+      var xs;
+      xs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return xs;
+    });
   };
 
   Bacon.zipWith = function() {
@@ -1809,8 +1813,13 @@
           count: 1
         });
       }
-      pats.push(pat);
+      if (patSources.length > 0) {
+        pats.push(pat);
+      }
       i = i + 2;
+    }
+    if (!sources.length) {
+      return Bacon.never();
     }
     sources = _.map(Source.fromObservable, sources);
     return new EventStream(function(sink) {
