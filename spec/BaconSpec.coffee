@@ -1328,9 +1328,15 @@ describe "Bacon.mergeAll", ->
     expectStreamEvents(
       -> Bacon.mergeAll([Bacon.once(1)])
       [1])
+    expectStreamEvents(
+      -> Bacon.mergeAll(Bacon.once(1))
+      [1])
   describe "returns empty stream for zero input", ->
     expectStreamEvents(
       -> Bacon.mergeAll([])
+      [])
+    expectStreamEvents(
+      -> Bacon.mergeAll()
       [])
 
 describe "Property.sampledBy(stream)", ->
@@ -1650,11 +1656,18 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2])
         Bacon.zipAsArray([obs])
     [[1], [2]])
-  describe "works with 0 streams (=Bacon.never())", ->
     expectStreamEvents(
       ->
-        Bacon.zipAsArray([])
-    [])
+        obs = series(1, [1, 2])
+        Bacon.zipAsArray(obs)
+    [[1], [2]])
+  describe "works with 0 streams (=Bacon.never())", ->
+    expectStreamEvents(
+      -> Bacon.zipAsArray([])
+      [])
+    expectStreamEvents(
+      -> Bacon.zipAsArray()
+      [])
 
 describe "Bacon.zipWith", ->
   describe "zips an array of streams with given function", ->

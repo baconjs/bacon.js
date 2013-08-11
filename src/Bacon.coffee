@@ -135,14 +135,14 @@ sendWrapped = (values, wrapper) ->
     sink (end())
     nop
 
-Bacon.mergeAll = (streams, more...) ->
-  if not (streams instanceof Array)
-    streams = [streams].concat(more)
+Bacon.mergeAll = (streams...) ->
+  if streams[0] instanceof Array
+    streams = streams[0]
   _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
 
-Bacon.zipAsArray = (streams, more...) ->
-  if not (streams instanceof Array)
-    streams = [streams].concat(more)
+Bacon.zipAsArray = (streams...) ->
+  if streams[0] instanceof Array
+    streams = streams[0]
   Bacon.zipWith(streams, (xs...) -> xs)
 
 Bacon.zipWith = (f, streams...) ->
