@@ -921,7 +921,7 @@ Bacon.when = (patterns...) ->
             index = sources.length - 1
          (ix.count++ if ix.index == index) for ix in pat.ixs
          pat.ixs.push {index: index, count: 1}
-       pats.push pat
+       pats.push pat if patSources.length > 0
        i = i + 2
 
     if !sources.length 

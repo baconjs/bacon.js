@@ -1750,6 +1750,17 @@ describe "Bacon.when", ->
       ->
         Bacon.when([], ->)
       [])
+  describe "works with empty patterns", ->
+    expectStreamEvents(
+      -> Bacon.when(
+           [Bacon.once(1)], (x) -> x,
+           [], ->)
+      [1])
+    expectStreamEvents(
+      -> Bacon.when(
+           [], ->,
+           [Bacon.once(1)], (x) -> x)
+      [1])
   describe "works with single stream", ->
     expectStreamEvents(
       -> Bacon.when([Bacon.once(1)], (x) -> x)
