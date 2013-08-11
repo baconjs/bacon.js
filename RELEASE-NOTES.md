@@ -1,3 +1,8 @@
+## 0.6.11
+
+- Fix Bacon.zipAsArray with 0 or 1 sources
+- Fix Bacon.when with 0 sources and 0-length patterns
+
 ## 0.6.9
 
 - Fix Bacon.when with Properties (#232)
