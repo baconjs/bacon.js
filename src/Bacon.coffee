@@ -145,9 +145,9 @@ Bacon.zipAsArray = (streams, more...) ->
     streams = [streams].concat(more)
   Bacon.zipWith(streams, (xs...) -> xs)
 
-Bacon.zipWith = (streams, f, more...) ->
-  if isFunction(streams)
-    [streams, f] = [[f].concat(more), streams]
+Bacon.zipWith = (f, streams...) ->
+  if !isFunction(f)
+    [streams, f] = [f, streams[0]]
   Bacon.when streams, f
 
 Bacon.combineAsArray = (streams...) ->

@@ -1324,6 +1324,10 @@ describe "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2)))
       [1, 3, 5, 2, 4, 6])
+  describe "works with a single stream", ->
+    expectStreamEvents(
+      -> Bacon.mergeAll([Bacon.once(1)])
+      [1])
   describe "returns empty stream for zero input", ->
     expectStreamEvents(
       -> Bacon.mergeAll([])
@@ -1666,6 +1670,22 @@ describe "Bacon.zipWith", ->
         f = ((x,y,z) -> (x + y + z))
         Bacon.zipWith(f, obs, obs.skip(1), obs.skip(2))
     [1 + 2 + 3, 2 + 3 + 4])
+  describe "works with single stream", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1,2])
+        f = (x) -> x * 2
+        Bacon.zipWith(f, obs)
+      [1 * 2, 2 * 2])
+  describe "works with 0 streams (=Bacon.never())", ->
+    expectStreamEvents(
+      ->
+        Bacon.zipWith([], ->)
+      [])
+    expectStreamEvents(
+      ->
+        Bacon.zipWith(->)
+      [])
 
 describe "Bacon.when", ->
   describe "synchronizes on join patterns", ->
