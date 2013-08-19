@@ -36,7 +36,7 @@ if grep
     Bacon.later(t(tv[0]), tv[1])
   Bacon.mergeAll(streams)
 
-@expectStreamTimings = (src, expectedEventsAndTimings) ->
+@expectStreamTimings = (src, expectedEventsAndTimings, options) ->
   srcWithRelativeTime = () ->
     now = Bacon.scheduler.now
     t0 = now()
@@ -44,13 +44,14 @@ if grep
       Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
     src().map(withRelativeTime)
-  @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings)
+  @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
 
-@expectStreamEvents = (src, expectedEvents) ->
+@expectStreamEvents = (src, expectedEvents, {unstable} = {unstable: false}) ->
   verifySingleSubscriber src, expectedEvents
   verifySwitching src, expectedEvents unless browser
   verifySwitchingWithUnsub src, expectedEvents unless browser
-  verifySwitching2 src, expectedEvents
+  if not unstable
+    verifySwitching2 src, expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents) ->
   expect(expectedEvents.length > 0).to.deep.equal(true)
@@ -174,7 +175,7 @@ verifySwitching2 = (srcF, expectedEvents, done) ->
           unsub = src.subscribe(newSink())
           Bacon.noMore
     unsub = src.subscribe(newSink())
-  it "outputs expected value in order when switching to new observer after each event", ->
+  it "outputs expected value in order (switching aggressively)", ->
     expect(events).to.deep.equal(toValues(expectedEvents))
   it "the stream is exhausted", ->
      verifyExhausted src
