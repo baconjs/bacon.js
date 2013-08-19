@@ -1167,6 +1167,7 @@ _ = {
     ->
       if value == None
         value = new Some(f())
+        f = null
       value.get()
 }
 
