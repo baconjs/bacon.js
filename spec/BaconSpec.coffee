@@ -17,7 +17,9 @@ repeat = th.repeat
 toValues = th.toValues
 sc = TickScheduler()
 Bacon.scheduler = sc
-# some streams are unstable when testing with verifySwitching2.
+# Some streams are unstable when testing with verifySwitching2.
+# Generally, all flatMap-based streams are unstable because flatMap discards
+# child streams on unsubscribe.
 unstable = {unstable:true}
 
 
