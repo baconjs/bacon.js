@@ -589,6 +589,14 @@ describe "EventStream.debounce", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 3, 4]).debounce(t(3))
       [4])
+  describe "works in combination with scan", ->
+    count = 0
+    expectPropertyEvents(
+      -> series(2, [1,2,3]).debounce(1).scan(0, (x,y) -> count++; x + y)
+      [0, 1, 3, 6]
+    )
+    it "calls accumulator once per value", ->
+      expect(count).to.equal(3)
 
 
 describe "EventStream.debounceImmediate(delay)", ->
@@ -1521,6 +1529,14 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
       [0,1,3,6])
+  describe "calls accumulator function once per value", ->
+    count = 0
+    expectPropertyEvents(
+      -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
+      [0, 1, 3, 6]
+    )
+    it "calls accumulator once per value", ->
+      expect(count).to.equal(3)
 
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->

@@ -389,7 +389,7 @@ class Observable
             sendInit() unless event.isInitial()
             initSent = true
             prev = acc.getOrElse(-> undefined)
-            next = -> f(prev, event.value)
+            next = _.cached(-> f(prev, event.value))
             acc = new Some(next)
             sink (event.apply(next))
         else
@@ -1162,6 +1162,12 @@ _ = {
     for x in xs
       seed = f(seed, x)
     seed
+  cached: (f) ->
+    value = None
+    ->
+      if value == None
+        value = new Some(f())
+      value.get()
 }
 
 Bacon._ = _
