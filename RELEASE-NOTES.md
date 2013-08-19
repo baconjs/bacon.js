@@ -1,3 +1,7 @@
+## 0.6.13
+
+- Fix #240: call accumulator function once per event in `scan`
+
 ## 0.6.12
 
 - Fix mergeAll, zipAsArray, zipWith with 0 sources, n-ary syntax
