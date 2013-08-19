@@ -798,9 +798,9 @@
               prev = acc.getOrElse(function() {
                 return void 0;
               });
-              next = function() {
+              next = _.cached(function() {
                 return f(prev, event.value);
-              };
+              });
               acc = new Some(next);
               return sink(event.apply(next));
             }
@@ -2386,6 +2386,17 @@
         seed = f(seed, x);
       }
       return seed;
+    },
+    cached: function(f) {
+      var value;
+      value = None;
+      return function() {
+        if (value === None) {
+          value = new Some(f());
+          f = null;
+        }
+        return value.get();
+      };
     }
   };
 
