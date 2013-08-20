@@ -210,7 +210,7 @@ class Event
   filter: (f) -> true
 
 class Next extends Event
-  constructor: (valueF, sourceEvent) ->
+  constructor: (valueF) ->
     if isFunction(valueF)
       @value = _.cached(valueF)
     else
