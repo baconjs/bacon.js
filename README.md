@@ -1,5 +1,7 @@
-Bacon.js
+﻿Bacon.js
 ========
+
+<img src="/logo.png" align="right" width="300px" />
 
 A small functional reactive programming lib for JavaScript.
 
