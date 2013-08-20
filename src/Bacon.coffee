@@ -212,10 +212,7 @@ class Event
 class Next extends Event
   constructor: (valueF, sourceEvent) ->
     if isFunction(valueF)
-      @value = =>
-        v = valueF()
-        @value = _.always(v)
-        v
+      @value = _.cached(valueF)
     else
       @value = _.always(valueF)
   isNext: -> true
