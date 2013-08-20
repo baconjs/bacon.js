@@ -1166,9 +1166,9 @@ _ = {
     value = None
     ->
       if value == None
-        value = new Some(f())
+        value = f()
         f = null
-      value.get()
+      value
 }
 
 Bacon._ = _
