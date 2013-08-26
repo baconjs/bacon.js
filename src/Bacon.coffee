@@ -2,8 +2,8 @@ if module?
   module.exports = Bacon = {} # for Bacon = require 'baconjs'
   Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
 else
-  if typeof require is 'function' and require.amd?
-      define 'bacon', [], -> Bacon
+  if define? and define.amd?
+    define (-> Bacon)
   @Bacon = Bacon = {} # otherwise for execution context
 
 # eventTransformer - should return one value or one or many events
@@ -1118,8 +1118,6 @@ toOption = (v) ->
     v
   else
     new Some(v)
-
-if define? and define.amd? then define? -> Bacon
 
 _ = {
   head: (xs) -> xs[0],
