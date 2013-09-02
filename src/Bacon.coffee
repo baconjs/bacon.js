@@ -1119,11 +1119,11 @@ toOption = (v) ->
     new Some(v)
 
 _ = {
-  head: (xs) -> xs[0],
-  always: (x) -> (-> x),
+  head: (xs) -> xs[0]
+  always: (x) -> (-> x)
   negate: (f) -> (x) -> not f(x)
-  empty: (xs) -> xs.length == 0,
-  tail: (xs) -> xs[1...xs.length],
+  empty: (xs) -> xs.length == 0
+  tail: (xs) -> xs[1...xs.length]
   filter: (f, xs) ->
     filtered = []
     for x in xs
@@ -1169,6 +1169,6 @@ Bacon._ = _
 
 Bacon.scheduler =
   setTimeout: (f,d) -> setTimeout(f,d)
-  setInterval: (f, i) -> setInterval(f, i),
-  clearInterval: (id) -> clearInterval(id),
+  setInterval: (f, i) -> setInterval(f, i)
+  clearInterval: (id) -> clearInterval(id)
   now: -> new Date().getTime()
