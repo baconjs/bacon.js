@@ -173,18 +173,18 @@ Bacon.combineTemplate = (template) ->
   current = (ctxStack) -> ctxStack[ctxStack.length - 1]
   setValue = (ctxStack, key, value) -> current(ctxStack)[key] = value
   applyStreamValue = (key, index) -> (ctxStack, values) -> setValue(ctxStack, key, values[index])
-  constantValue = (key, value) -> (ctxStack, values) -> setValue(ctxStack, key, value)
+  constantValue = (key, value) -> (ctxStack) -> setValue(ctxStack, key, value)
   mkContext = (template) -> if template instanceof Array then [] else {}
   compile = (key, value) ->
     if (value instanceof Observable)
       streams.push(value)
       funcs.push(applyStreamValue(key, streams.length - 1))
     else if (value == Object(value) and typeof value != "function")
-      pushContext = (key) -> (ctxStack, values) ->
+      pushContext = (key) -> (ctxStack) ->
         newContext = mkContext(value)
         setValue(ctxStack, key, newContext)
         ctxStack.push(newContext)
-      popContext = (ctxStack, values) -> ctxStack.pop()
+      popContext = (ctxStack) -> ctxStack.pop()
       funcs.push(pushContext(key))
       compileTemplate(value)
       funcs.push(popContext)
@@ -207,7 +207,7 @@ class Event
   isNext: -> false
   isError: -> false
   hasValue: -> false
-  filter: (f) -> true
+  filter: -> true
 
 class Next extends Event
   constructor: (valueF) ->
@@ -721,7 +721,7 @@ class Dispatcher
     removeSub = (subscription) ->
       subscriptions = _.without(subscription, subscriptions)
     waiters = null
-    done = (event) ->
+    done = ->
       if waiters?
         ws = waiters
         waiters = null
@@ -853,7 +853,6 @@ class Bus extends EventStream
           return
     subscribeAll = (newSink) =>
       sink = newSink
-      unsubFuncs = []
       for subscription in cloneArray(subscriptions)
         subscribeInput(subscription)
       unsubAll
@@ -888,7 +887,7 @@ class Source
       @consume = () -> invoke(queue[0])
       @push  = (x) -> queue = [x]
       @mayHave = -> true
-      @hasAtLeast = (c) -> queue.length
+      @hasAtLeast = -> queue.length
 
 Source.fromObservable = (s) ->
   if s instanceof Source
@@ -933,7 +932,7 @@ Bacon.when = (patterns...) ->
         !source.sync or source.ended
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
-      part = (source, sourceIndex) -> (unsubAll) ->
+      part = (source) -> (unsubAll) ->
         source.subscribe (e) ->
           if e.isEnd()
             source.markEnded()
