@@ -1,7 +1,7 @@
 expect = require("chai").expect
-Bacon = (require "../src/Bacon").Bacon
-Mocks = (require "./Mock")
-TickScheduler = (require "./TickScheduler").TickScheduler
+Bacon = require("../src/Bacon").Bacon
+Mocks = require( "./Mock")
+TickScheduler = require("./TickScheduler").TickScheduler
 mock = Mocks.mock
 mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
@@ -1478,6 +1478,13 @@ describe "Property.sampledBy(property)", ->
         prop = series(2, [1, 2]).toProperty()
         sampler = repeat(3, ["troll"]).take(4).toProperty()
         prop.sampledBy(sampler)
+      [1, 2, 2, 2])
+  describe "works on an event stream by automatically converting to property", ->
+    expectPropertyEvents(
+      ->
+        stream = series(2, [1, 2])
+        sampler = repeat(3, ["troll"]).take(4).toProperty()
+        stream.sampledBy(sampler)
       [1, 2, 2, 2])
   describe "accepts optional combinator function f(Vp, Vs)", ->
     expectPropertyEvents(
