@@ -37,12 +37,6 @@ Install
 
 You can download the latest [generated javascript](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
-..or you can use script tags to include this file directly from Github:
-
-```html
-<script src="https://rawgithub.com/baconjs/bacon.js/master/dist/Bacon.js"></script>
-```
-
 Version 0.6.8 can also be found from cdnjs hosting:
 
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.6.8/Bacon.js
