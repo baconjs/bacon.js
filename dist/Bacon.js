@@ -9,10 +9,10 @@
     module.exports = Bacon = {};
     Bacon.Bacon = Bacon;
   } else {
-    if (typeof require === 'function' && (require.amd != null)) {
-      define('bacon', [], function() {
+    if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+      define((function() {
         return Bacon;
-      });
+      }));
     }
     this.Bacon = Bacon = {};
   }
@@ -310,7 +310,7 @@
       };
     };
     constantValue = function(key, value) {
-      return function(ctxStack, values) {
+      return function(ctxStack) {
         return setValue(ctxStack, key, value);
       };
     };
@@ -328,14 +328,14 @@
         return funcs.push(applyStreamValue(key, streams.length - 1));
       } else if (value === Object(value) && typeof value !== "function") {
         pushContext = function(key) {
-          return function(ctxStack, values) {
+          return function(ctxStack) {
             var newContext;
             newContext = mkContext(value);
             setValue(ctxStack, key, newContext);
             return ctxStack.push(newContext);
           };
         };
-        popContext = function(ctxStack, values) {
+        popContext = function(ctxStack) {
           return ctxStack.pop();
         };
         funcs.push(pushContext(key));
@@ -389,7 +389,7 @@
       return false;
     };
 
-    Event.prototype.filter = function(f) {
+    Event.prototype.filter = function() {
       return true;
     };
 
@@ -400,15 +400,9 @@
   Next = (function(_super) {
     __extends(Next, _super);
 
-    function Next(valueF, sourceEvent) {
-      var _this = this;
+    function Next(valueF) {
       if (isFunction(valueF)) {
-        this.value = function() {
-          var v;
-          v = valueF();
-          _this.value = _.always(v);
-          return v;
-        };
+        this.value = _.cached(valueF);
       } else {
         this.value = _.always(valueF);
       }
@@ -1442,7 +1436,7 @@
         return subscriptions = _.without(subscription, subscriptions);
       };
       waiters = null;
-      done = function(event) {
+      done = function() {
         var w, ws, _i, _len, _results;
         if (waiters != null) {
           ws = waiters;
@@ -1667,9 +1661,8 @@
         }
       };
       subscribeAll = function(newSink) {
-        var subscription, unsubFuncs, _i, _len, _ref3;
+        var subscription, _i, _len, _ref3;
         sink = newSink;
-        unsubFuncs = [];
         _ref3 = cloneArray(subscriptions);
         for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
           subscription = _ref3[_i];
@@ -1752,7 +1745,7 @@
         this.mayHave = function() {
           return true;
         };
-        this.hasAtLeast = function(c) {
+        this.hasAtLeast = function() {
           return queue.length;
         };
       }
@@ -1837,7 +1830,7 @@
           return !sources[i.index].mayHave(i.count);
         });
       };
-      part = function(source, sourceIndex) {
+      part = function(source) {
         return function(unsubAll) {
           return source.subscribe(function(e) {
             var p, reply, val, _k, _len2;
@@ -2268,14 +2261,6 @@
     }
   };
 
-  if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-    if (typeof define === "function") {
-      define(function() {
-        return Bacon;
-      });
-    }
-  }
-
   _ = {
     head: function(xs) {
       return xs[0];
@@ -2392,10 +2377,10 @@
       value = None;
       return function() {
         if (value === None) {
-          value = new Some(f());
+          value = f();
           f = null;
         }
-        return value.get();
+        return value;
       };
     }
   };
