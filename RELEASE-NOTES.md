@@ -1,3 +1,7 @@
+## 0.6.14
+
+- Simplifications and cleanup
+
 ## 0.6.13
 
 - Fix #240: call accumulator function once per event in `scan`
