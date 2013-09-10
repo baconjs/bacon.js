@@ -644,6 +644,9 @@ stream.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
+`stream.startWith(value)` adds a starting value to the stream, i.e. concats a 
+single-element stream contains `value` with this stream.
+
 `stream.skipWhile(f)` skips elements while given predicate function holds true. Function construction rules apply. 
 
 `stream.skipWhile(property)` skips elements while the value of the given
@@ -760,6 +763,11 @@ events. Note that property.changes() does NOT skip duplicate values, use .skipDu
 `property.and(other)` combines properties with the `&&` operator.
 
 `property.or(other)` combines properties with the `||` operator.
+
+`property.startWith(value)` adds an initial "default" value for the
+Property. If the Property doesn't have an initial value of it's own, the
+given value will be used as the initial value. If the property has an
+initial value of its own, the given value will be ignored.
 
 Combining multiple streams and properties
 -----------------------------------------

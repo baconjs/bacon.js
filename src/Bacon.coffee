@@ -688,6 +688,8 @@ class Property extends Observable
   takeUntil: (stopper) ->
     changes = this.changes().takeUntil(stopper)
     addPropertyInitValueToStream(this, changes)
+  startWith: (value) ->
+    @scan(value, (prev, next) -> next)
 
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property

@@ -883,6 +883,26 @@ describe "EventStream.startWith", ->
         left.startWith('pow')
       ['pow', 1, 2, 3], unstable)
 
+describe "Property.startWith", ->
+  describe "starts with given value if the Property doesn't have an initial value", ->
+    expectPropertyEvents(
+      ->
+        left = series(1, [1, 2, 3]).toProperty()
+        left.startWith('pow')
+      ['pow', 1, 2, 3], unstable)
+  describe "works with synchronous source", ->
+    expectPropertyEvents(
+      ->
+        left = Bacon.fromArray([1, 2, 3]).toProperty()
+        left.startWith('pow')
+      ['pow', 1, 2, 3], unstable)
+  describe "starts with the initial value of the Property if any", ->
+    expectPropertyEvents(
+      ->
+        left = series(1, [1, 2, 3]).toProperty(0)
+        left.startWith('pow')
+      [0, 1, 2, 3], unstable)
+
 describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
     expectPropertyEvents(
