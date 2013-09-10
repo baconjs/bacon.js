@@ -1,3 +1,7 @@
+## 0.6.15
+
+- Add Property.startWith
+
 ## 0.6.14
 
 - Simplifications and cleanup
