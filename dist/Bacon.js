@@ -1371,6 +1371,12 @@
       return addPropertyInitValueToStream(this, changes);
     };
 
+    Property.prototype.startWith = function(value) {
+      return this.scan(value, function(prev, next) {
+        return next;
+      });
+    };
+
     return Property;
 
   })(Observable);
