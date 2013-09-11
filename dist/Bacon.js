@@ -959,6 +959,7 @@
 
     function EventStream(subscribe) {
       this.takeUntil = __bind(this.takeUntil, this);
+      this.sampledBy = __bind(this.sampledBy, this);
       var dispatcher;
       EventStream.__super__.constructor.call(this);
       assertFunction(subscribe);
@@ -1116,6 +1117,10 @@
 
     EventStream.prototype.toEventStream = function() {
       return this;
+    };
+
+    EventStream.prototype.sampledBy = function(sampler, combinator) {
+      return this.toProperty().sampledBy(sampler, combinator);
     };
 
     EventStream.prototype.concat = function(right) {
