@@ -1,3 +1,7 @@
+## 0.6.16
+
+- Add EventStream.sampledBy
+
 ## 0.6.15
 
 - Add Property.startWith
