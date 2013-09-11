@@ -565,6 +565,9 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
+  sampledBy: (sampler, combinator) =>
+    @toProperty().sampledBy(sampler, combinator)
+  
   concat: (right) ->
     left = this
     new EventStream (sink) ->
