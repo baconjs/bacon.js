@@ -612,6 +612,24 @@ the given predicate function returns true. The error is included in the
 output of the returned Observable. Function construction rules apply, so
 you can do for example `.endOnError(".serious")`.
 
+`observable.withHandler(f)` lets you do more custom event handling: you
+get all events to your function and you can output any number of events
+and end the stream if you choose. For example, to send an error and end
+the stream in case a value is below zero:
+
+```js
+if (event.hasValue() && event.value() < 0) {
+  this.push(new Bacon.Error("Value below zero"));
+  return this.push(end());
+} else {
+  return this.push(event);
+}
+```
+
+Note that it's important to return the value from `this.push` so that
+the connection to the underlying stream will be closed when no more
+events are needed.
+
 EventStream
 -----------
 
