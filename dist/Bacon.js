@@ -606,13 +606,20 @@
     };
 
     Observable.prototype.endOnError = function() {
-      return this.withHandler(function(event) {
-        if (event.isError()) {
-          this.push(event);
-          return this.push(end());
-        } else {
-          return this.push(event);
-        }
+      var args, f;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (f == null) {
+        f = true;
+      }
+      return convertArgsToFunction(this, f, args, function(f) {
+        return this.withHandler(function(event) {
+          if (event.isError() && f(event.error)) {
+            this.push(event);
+            return this.push(end());
+          } else {
+            return this.push(event);
+          }
+        });
       });
     };
 
