@@ -274,13 +274,15 @@ class Observable
         else
           @push end()
           Bacon.noMore
-  endOnError: ->
-    @withHandler (event) ->
-      if event.isError()
-        @push event
-        @push end()
-      else
-        @push event
+  endOnError: (f, args...) ->
+    f = true if !f?
+    convertArgsToFunction this, f, args, (f) ->
+      @withHandler (event) ->
+        if event.isError() && f(event.error)
+          @push event
+          @push end()
+        else
+          @push event
   take: (count) ->
     return Bacon.never() if count <= 0
     @withHandler (event) ->

@@ -604,6 +604,14 @@ currently awaiting an AJAX response:
 var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
 ```
 
+`observable.endOnError` ends the Observable on first Error event. The
+error is included in the output of the returned Observable.
+
+`observable.endOnError(f)` ends the Observable on first error for which
+the given predicate function returns true. The error is included in the 
+output of the returned Observable. Function construction rules apply, so
+you can do for example `.endOnError(".serious")`.
+
 EventStream
 -----------
 
