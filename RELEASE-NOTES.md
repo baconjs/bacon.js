@@ -1,3 +1,7 @@
+## 0.6.17
+
+- Allow predicate function in Observable.endOnError
+
 ## 0.6.16
 
 - Add EventStream.sampledBy
