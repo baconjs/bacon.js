@@ -25,7 +25,7 @@ unstable = {unstable:true}
 
 describe "Bacon.later", ->
   describe "should send single event and end", ->
-    expectStreamEvents( 
+    expectStreamEvents(
       -> Bacon.later(t(1), "lol")
       ["lol"])
   describe "supports sending an Error event as well", ->
@@ -117,7 +117,7 @@ describe "Bacon.fromNodeCallback", ->
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->
-  addEventListener: (event, handler) -> 
+  addEventListener: (event, handler) ->
     emitter.addListener(event, handler)
   removeEventListener: (event, handler) -> emitter.removeListener(event, handler)
 
@@ -125,7 +125,7 @@ describe "Bacon.fromEventTarget", ->
   soon = (f) -> setTimeout f, 0
   describe "should create EventStream from DOM object", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "click", "x"
@@ -136,7 +136,7 @@ describe "Bacon.fromEventTarget", ->
 
   describe "should create EventStream from EventEmitter", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "data", "x"
@@ -146,7 +146,7 @@ describe "Bacon.fromEventTarget", ->
 
   describe "should allow a custom map function for EventStream from EventEmitter", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "data", "x", "y"
@@ -260,7 +260,7 @@ describe "EventStream.map", ->
       [2,2,2])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
@@ -431,7 +431,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> series(1, [a, b, error(), c, d, e]).skipDuplicates(isEqual)
       [a, b, error(), d, e])
-  
+
   describe "works with synchrounous sources", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
@@ -730,14 +730,14 @@ describe "EventStream.takeUntil", ->
       [])
   describe "it should unsubscribe its stopper on end", ->
      expectStreamEvents(
-       -> 
+       ->
          startTick = sc.now()
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
        ['x'])
   describe "it should unsubscribe its stopper on no more", ->
      expectStreamEvents(
-       -> 
+       ->
          startTick = sc.now()
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
@@ -949,7 +949,7 @@ describe "EventStream.toProperty", ->
       [0,1,2,3])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
@@ -1310,7 +1310,7 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
@@ -1462,12 +1462,12 @@ describe "Property.sampledBy(stream)", ->
         p.sampledBy(series(3, [0]))
       [])
     expectStreamEvents(
-      -> 
+      ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]))
       [1, 1, 2], unstable)
     expectPropertyEvents(
-      -> 
+      ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]).toProperty())
       [1, 1, 2], unstable)
@@ -1487,7 +1487,7 @@ describe "Property.sampledBy(stream)", ->
       [])
   describe "laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     sampler = Bacon.later(5).map(id)
@@ -1869,7 +1869,7 @@ describe "Bacon.when", ->
       [1])
   describe "works with multiples of streams", ->
     expectStreamEvents(
-      -> 
+      ->
         [h,o,c,_] = ['h','o','c','_']
         hs = series(1, [h, _, h, _, h, _, h, _, _, _, h, _, h]).filter((x) -> x == h)
         os = series(1, [_, o, _, _, _, o, _, o, _, o, _, _, _]).filter((x) -> x == o)
@@ -2273,21 +2273,21 @@ describe "EventStream", ->
 describe "Bacon.fromBinder", ->
   describe "Provides an easier alternative to the EventStream constructor, allowing sending multiple events at a time", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink([new Bacon.Next(1), new Bacon.End()])
           (->)
       [1])
   describe "Allows sending unwrapped values", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink([1, new Bacon.End()])
           (->)
       [1])
   describe "Allows sending single value without wrapping array", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink(1)
           sink(new Bacon.End())

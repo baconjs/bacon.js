@@ -76,8 +76,8 @@ Bacon.sequentially = (delay, values) ->
   index = 0
   Bacon.fromPoll delay, ->
     value = values[index++]
-    if index < values.length 
-      value 
+    if index < values.length
+      value
     else if index == values.length
       [value, end()]
     else
@@ -497,7 +497,7 @@ class EventStream extends Observable
   bufferWithCount: (count) -> @bufferWithTimeOrCount(undefined, count)
 
   bufferWithTimeOrCount: (delay, count) ->
-    flushOrSchedule = (buffer) -> 
+    flushOrSchedule = (buffer) ->
       if buffer.values.length == count
         buffer.flush()
       else if (delay != undefined)
@@ -569,7 +569,7 @@ class EventStream extends Observable
 
   sampledBy: (sampler, combinator) =>
     @toProperty().sampledBy(sampler, combinator)
-  
+
   concat: (right) ->
     left = this
     new EventStream (sink) ->
@@ -583,7 +583,7 @@ class EventStream extends Observable
   takeUntil: (stopper) =>
     self = this
     new EventStream (sink) ->
-      stop = (unsubAll) -> 
+      stop = (unsubAll) ->
         stopper.onValue ->
           sink end()
           unsubAll()
@@ -804,7 +804,7 @@ class PropertyDispatcher extends Dispatcher
       # after the first one
       shouldBounceInitialValue = => @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map(
-        (val) -> 
+        (val) ->
           sink initial(val()))
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
@@ -879,7 +879,7 @@ class Bus extends EventStream
       unsubAll()
       sink? end()
 
-class Source 
+class Source
   constructor: (s, @sync, consume, @subscribe, lazy = false) ->
     queue = []
     invoke = if lazy then _.id else (f) -> f()
@@ -927,7 +927,7 @@ Bacon.when = (patterns...) ->
        pats.push pat if patSources.length > 0
        i = i + 2
 
-    if !sources.length 
+    if !sources.length
       return Bacon.never()
 
     sources = _.map Source.fromObservable, sources
