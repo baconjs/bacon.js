@@ -22,10 +22,91 @@ Bacon.scheduler = sc
 # child streams on unsubscribe.
 unstable = {unstable:true}
 
+describe "Bacon._", ->
+  _ = Bacon._
+  describe "head", ->
+    expect(_.head([5,2,9])).to.equal(5)
+    expect(_.head([])).to.equal(undefined)
+    expect(_.head(5)).to.equal(undefined)
+  describe "always", -> expect(_.always(5)("francis")).to.equal(5)
+  describe "negate", ->
+    expect(_.negate(_.always(true))("timanttikobra")).to.be.false
+  describe "empty", ->
+    expect(_.empty([])).to.be.true
+    expect(_.empty("")).to.be.true
+    expect(_.empty([1])).to.be.false
+    expect(_.empty("1")).to.be.false
+  describe "tail", ->
+    expect(_.tail([1,2,3])).to.deep.equal([2,3])
+    expect(_.tail([1])).to.deep.equal([])
+    expect(_.tail([])).to.deep.equal([])
+  describe "filter", ->
+    expect(_.filter(_.empty, ["","1",[],[2]])).to.deep.equal(["",[]])
+  describe "map", ->
+    expect(_.map(_.head, [
+      [], [1], [2,2], [3,3,3]
+    ])).to.deep.equal([
+      undefined, 1, 2, 3
+    ])
+  describe "each", ->
+    it "provides key and value to iterator", ->
+      expectKeyVals = (x, expectedKeys, expectedValues) ->
+        keys = []
+        values = []
+        _.each(x, (key, value) ->
+          keys.push(key)
+          values.push(value)
+        )
+        expect([keys, values]).to.deep.equal([expectedKeys, expectedValues])
+      expectKeyVals(
+        {cat:"furry",bird:"feathery"}, ["cat","bird"], ["furry","feathery"]
+      )
+      expectKeyVals([1,2,3], ["0","1","2"], [1,2,3])
+  describe "toArray", ->
+    expect(_.toArray(2)).to.deep.equal([2])
+    it "ignores rest of arguments", ->
+      expect(_.toArray(1,1,2)).to.deep.equal([1])
+    it "should, when given an array, return it back (not a copy)", ->
+      arr = []
+      expect(_.toArray(arr)).to.equal(arr)
+  describe "contains", ->
+    expect(_.contains("abc", "c")).to.be.true
+    expect(_.contains("abc", "x")).to.be.false
+    expect(_.contains([2,4,6], 4)).to.be.true
+    expect(_.contains([2,4,6], 3)).to.be.false
+  describe "id", ->
+    obj = {}
+    expect(_.id(obj)).to.equal(obj)
+  describe "last", ->
+    expect(_.last([2,4])).to.equal(4)
+    expect(_.last("last")).to.equal("t")
+  describe "all", ->
+    expect(_.all([ [false,true], [true,true] ], _.head)).to.be.false
+    expect(_.all([ [true,false], [true,true] ], _.head)).to.be.true
+    it "should test truthiness if no function given", ->
+      expect(_.all([true, false, true])).to.be.false
+      expect(_.all([true, true, true])).to.be.true
+      expect(_.all([1, true, 1])).to.be.true
+  describe "any", ->
+    expect(_.any([ [false,true], [true,true] ], _.head)).to.be.true
+    expect(_.any([ [false,false], [false,true] ], _.head)).to.be.false
+    it "should test truthiness if no function given", ->
+      expect(_.any([false, false, false])).to.be.false
+      expect(_.any([true, false, true])).to.be.true
+  describe "without", ->
+    expect(_.without("apple", ["bacon","apple","apple","omelette"]))
+      .to.deep.equal(["bacon","omelette"])
+  describe "remove", ->
+    expect(_.remove("apple", ["bacon","apple","apple","omelette"]))
+      .to.deep.equal(["apple"])
+    expect(_.remove("raisin", ["bacon","apple","apple","omelette"]))
+      .to.deep.equal(undefined)
+  describe "fold", ->
+    expect(_.fold([1,2,3,4,5], 0, (s, n) -> s + n)).to.equal(15)
 
 describe "Bacon.later", ->
   describe "should send single event and end", ->
-    expectStreamEvents( 
+    expectStreamEvents(
       -> Bacon.later(t(1), "lol")
       ["lol"])
   describe "supports sending an Error event as well", ->
@@ -117,7 +198,7 @@ describe "Bacon.fromNodeCallback", ->
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->
-  addEventListener: (event, handler) -> 
+  addEventListener: (event, handler) ->
     emitter.addListener(event, handler)
   removeEventListener: (event, handler) -> emitter.removeListener(event, handler)
 
@@ -125,7 +206,7 @@ describe "Bacon.fromEventTarget", ->
   soon = (f) -> setTimeout f, 0
   describe "should create EventStream from DOM object", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "click", "x"
@@ -136,7 +217,7 @@ describe "Bacon.fromEventTarget", ->
 
   describe "should create EventStream from EventEmitter", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "data", "x"
@@ -146,7 +227,7 @@ describe "Bacon.fromEventTarget", ->
 
   describe "should allow a custom map function for EventStream from EventEmitter", ->
     expectStreamEvents(
-      -> 
+      ->
         emitter = new EventEmitter()
         emitter.on "newListener", ->
           soon -> emitter.emit "data", "x", "y"
@@ -260,7 +341,7 @@ describe "EventStream.map", ->
       [2,2,2])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
@@ -431,7 +512,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> series(1, [a, b, error(), c, d, e]).skipDuplicates(isEqual)
       [a, b, error(), d, e])
-  
+
   describe "works with synchrounous sources", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
@@ -730,14 +811,14 @@ describe "EventStream.takeUntil", ->
       [])
   describe "it should unsubscribe its stopper on end", ->
      expectStreamEvents(
-       -> 
+       ->
          startTick = sc.now()
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
        ['x'])
   describe "it should unsubscribe its stopper on no more", ->
      expectStreamEvents(
-       -> 
+       ->
          startTick = sc.now()
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
@@ -949,7 +1030,7 @@ describe "EventStream.toProperty", ->
       [0,1,2,3])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
@@ -1310,7 +1391,7 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   it "preserves laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
@@ -1462,12 +1543,12 @@ describe "Property.sampledBy(stream)", ->
         p.sampledBy(series(3, [0]))
       [])
     expectStreamEvents(
-      -> 
+      ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]))
       [1, 1, 2], unstable)
     expectPropertyEvents(
-      -> 
+      ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]).toProperty())
       [1, 1, 2], unstable)
@@ -1487,7 +1568,7 @@ describe "Property.sampledBy(stream)", ->
       [])
   describe "laziness", ->
     calls = 0
-    id = (x) -> 
+    id = (x) ->
       calls++
       x
     sampler = Bacon.later(5).map(id)
@@ -1869,7 +1950,7 @@ describe "Bacon.when", ->
       [1])
   describe "works with multiples of streams", ->
     expectStreamEvents(
-      -> 
+      ->
         [h,o,c,_] = ['h','o','c','_']
         hs = series(1, [h, _, h, _, h, _, h, _, _, _, h, _, h]).filter((x) -> x == h)
         os = series(1, [_, o, _, _, _, o, _, o, _, o, _, _, _]).filter((x) -> x == o)
@@ -2273,21 +2354,21 @@ describe "EventStream", ->
 describe "Bacon.fromBinder", ->
   describe "Provides an easier alternative to the EventStream constructor, allowing sending multiple events at a time", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink([new Bacon.Next(1), new Bacon.End()])
           (->)
       [1])
   describe "Allows sending unwrapped values", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink([1, new Bacon.End()])
           (->)
       [1])
   describe "Allows sending single value without wrapping array", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon.fromBinder (sink) ->
           sink(1)
           sink(new Bacon.End())
