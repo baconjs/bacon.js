@@ -171,7 +171,7 @@ describe "Bacon.fromCallback", ->
       Bacon.fromCallback
     )
 
-describe.only "Bacon.fromNodeCallback", ->
+describe "Bacon.fromNodeCallback", ->
   describe "makes an EventStream from function that takes a node-style callback", ->
     expectStreamEvents(
       ->
