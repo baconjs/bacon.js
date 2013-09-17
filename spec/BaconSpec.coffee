@@ -171,7 +171,7 @@ describe "Bacon.fromCallback", ->
       Bacon.fromCallback
     )
 
-describe "Bacon.fromNodeCallback", ->
+describe.only "Bacon.fromNodeCallback", ->
   describe "makes an EventStream from function that takes a node-style callback", ->
     expectStreamEvents(
       ->
@@ -195,6 +195,12 @@ describe "Bacon.fromNodeCallback", ->
       (values..., callback) -> callback(null, values)
       Bacon.fromNodeCallback
     )
+  describe "supports object, methodName, partial application", ->
+    expectStreamEvents(
+      ->
+        src = { "go": (param, callback) -> callback(null, param) }
+        stream = Bacon.fromNodeCallback(src, "go", "lol")
+      ["lol"])
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->

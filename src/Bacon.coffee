@@ -87,8 +87,18 @@ Bacon.repeatedly = (delay, values) ->
   index = 0
   Bacon.fromPoll(delay, -> values[index++ % values.length])
 
+withMethodCallSupport = (wrapped) ->
+  (f, args...) ->
+    if typeof f == "object" and args.length
+      context = f
+      methodName = args[0]
+      f = ->
+        context[methodName](arguments...)
+      args = args.slice(1)
+    wrapped(f, args...)
+
 liftCallback = (wrapped) ->
-  return (f, args...) ->
+  withMethodCallSupport (f, args...) ->
     stream = partiallyApplied(wrapped, [(values, callback) ->
       f(values..., callback)])
     Bacon.combineAsArray(args).flatMap(stream)
