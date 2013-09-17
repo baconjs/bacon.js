@@ -254,18 +254,18 @@ class Error extends Event
 class Observable
   constructor: ->
     @assign = @onValue
-  onValue: (f, args...) ->
-    f = makeFunction(f, args)
+  onValue: ->
+    f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.value() if event.hasValue()
   onValues: (f) ->
     @onValue (args) -> f(args...)
-  onError: (f, args...) ->
-    f = makeFunction(f, args)
+  onError: ->
+    f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.error if event.isError()
-  onEnd: (f, args...) ->
-    f = makeFunction(f, args)
+  onEnd: ->
+    f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f() if event.isEnd()
   errors: -> @filter(-> false)
@@ -315,15 +315,15 @@ class Observable
         @withHandler (event) ->
           @push event.fmap(f)
 
-  mapError : (f, args...) ->
-    f = makeFunction(f, args)
+  mapError : ->
+    f = makeFunctionArgs(arguments)
     @withHandler (event) ->
       if event.isError()
         @push next (f event.error)
       else
         @push event
-  mapEnd : (f, args...) ->
-    f = makeFunction(f, args)
+  mapEnd : ->
+    f = makeFunctionArgs(arguments)
     @withHandler (event) ->
       if (event.isEnd())
         @push next(f(event))
@@ -331,8 +331,8 @@ class Observable
         Bacon.noMore
       else
         @push event
-  doAction: (f, args...) ->
-    f = makeFunction(f, args)
+  doAction: ->
+    f = makeFunctionArgs(arguments)
     @withHandler (event) ->
       f(event.value()) if event.hasValue()
       @push event
@@ -1084,6 +1084,9 @@ makeSpawner = (f) ->
     f = _.always(f) if f instanceof Observable
     assertFunction(f)
     f
+makeFunctionArgs = (args) ->
+  args = Array.prototype.slice.call(args)
+  makeFunction_ args...
 makeFunction_ = withMethodCallSupport (f, args...) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f
