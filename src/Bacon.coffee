@@ -1078,25 +1078,23 @@ isFunction = (f) -> typeof f == "function"
 assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
 assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> assert "not a string : " + x, typeof x == "string"
-methodCall = (obj, method, args) ->
-  assertString(method)
-  if args == undefined then args = []
-  (value) -> obj[method]((args.concat([value]))...)
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
 makeSpawner = (f) ->
     f = _.always(f) if f instanceof Observable
     assertFunction(f)
     f
-makeFunction = (f, args) ->
+makeFunction_ = withMethodCallSupport (f, args...) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f
   else if isFieldKey(f)
     toFieldExtractor(f, args)
-  else if typeof f == "object" and args.length
-    methodCall(f, _.head(args), _.tail(args))
   else
     _.always f
+
+makeFunction = (f, args) ->
+  makeFunction_(f, args...)
+
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
 Bacon.isFieldKey = isFieldKey
