@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, Bus, CompositeUnsubscribe, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, Source, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, end, former, indexOf, initial, isFieldKey, isFunction, latterF, liftCallback, makeFunction, makeSpawner, methodCall, next, nop, partiallyApplied, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, _, _ref, _ref1, _ref2,
+  var Bacon, Bus, CompositeUnsubscribe, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, Source, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, end, former, indexOf, initial, isFieldKey, isFunction, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -129,8 +129,24 @@
     });
   };
 
-  liftCallback = function(wrapped) {
+  withMethodCallSupport = function(wrapped) {
     return function() {
+      var args, context, f, methodName;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (typeof f === "object" && args.length) {
+        context = f;
+        methodName = args[0];
+        f = function() {
+          return context[methodName].apply(context, arguments);
+        };
+        args = args.slice(1);
+      }
+      return wrapped.apply(null, [f].concat(__slice.call(args)));
+    };
+  };
+
+  liftCallback = function(wrapped) {
+    return withMethodCallSupport(function() {
       var args, f, stream;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       stream = partiallyApplied(wrapped, [
@@ -139,7 +155,7 @@
         }
       ]);
       return Bacon.combineAsArray(args).flatMap(stream);
-    };
+    });
   };
 
   Bacon.fromCallback = liftCallback(function() {
@@ -532,9 +548,8 @@
     }
 
     Observable.prototype.onValue = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.subscribe(function(event) {
         if (event.hasValue()) {
           return f(event.value());
@@ -549,9 +564,8 @@
     };
 
     Observable.prototype.onError = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.subscribe(function(event) {
         if (event.isError()) {
           return f(event.error);
@@ -560,9 +574,8 @@
     };
 
     Observable.prototype.onEnd = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.subscribe(function(event) {
         if (event.isEnd()) {
           return f();
@@ -660,9 +673,8 @@
     };
 
     Observable.prototype.mapError = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.withHandler(function(event) {
         if (event.isError()) {
           return this.push(next(f(event.error)));
@@ -673,9 +685,8 @@
     };
 
     Observable.prototype.mapEnd = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.withHandler(function(event) {
         if (event.isEnd()) {
           this.push(next(f(event)));
@@ -688,9 +699,8 @@
     };
 
     Observable.prototype.doAction = function() {
-      var args, f;
-      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      f = makeFunction(f, args);
+      var f;
+      f = makeFunctionArgs(arguments);
       return this.withHandler(function(event) {
         if (event.hasValue()) {
           f(event.value());
@@ -2173,16 +2183,6 @@
     return assert("not a string : " + x, typeof x === "string");
   };
 
-  methodCall = function(obj, method, args) {
-    assertString(method);
-    if (args === void 0) {
-      args = [];
-    }
-    return function(value) {
-      return obj[method].apply(obj, args.concat([value]));
-    };
-  };
-
   partiallyApplied = function(f, applied) {
     return function() {
       var args;
@@ -2199,7 +2199,14 @@
     return f;
   };
 
-  makeFunction = function(f, args) {
+  makeFunctionArgs = function(args) {
+    args = Array.prototype.slice.call(args);
+    return makeFunction_.apply(null, args);
+  };
+
+  makeFunction_ = withMethodCallSupport(function() {
+    var args, f;
+    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (isFunction(f)) {
       if (args.length) {
         return partiallyApplied(f, args);
@@ -2208,11 +2215,13 @@
       }
     } else if (isFieldKey(f)) {
       return toFieldExtractor(f, args);
-    } else if (typeof f === "object" && args.length) {
-      return methodCall(f, _.head(args), _.tail(args));
     } else {
       return _.always(f);
     }
+  });
+
+  makeFunction = function(f, args) {
+    return makeFunction_.apply(null, [f].concat(__slice.call(args)));
   };
 
   isFieldKey = function(f) {
