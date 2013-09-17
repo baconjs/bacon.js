@@ -163,7 +163,7 @@ events' parameters.
 Bacon.fromEventTarget(document.body, "click").onValue(function() { alert("Bacon!") })
 ```
 
-`Bacon.fromCallback(f)` creates an Event stream from a function that
+`Bacon.fromCallback(f [, args...])` creates an Event stream from a function that
 accepts a callback. The function is supposed to call its callback just
 once. For example:
 
@@ -190,7 +190,10 @@ Bacon.fromCallback(function(a, b, callback) {
 }, bacon, 'rules').log();
 ```
 
-`Bacon.fromNodeCallback(f)` behaves the same way as `Bacon.fromCallback`,
+`Bacon.fromCallback(object, methodName [, args...])` a variant of
+fromCallback which calls the named method of a given object.
+
+`Bacon.fromNodeCallback(f [, args...])` behaves the same way as `Bacon.fromCallback`,
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
 
@@ -201,6 +204,9 @@ var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
 read.onError(function(error) { console.log("Reading failed: " + error); });
 read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
+
+`Bacon.fromNodeCallback(object, methodName [, args...])` a variant of
+fromNodeCallback which calls the named method of a given object.
 
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
 Function should return Events: either Bacon.Next or Bacon.End. Polling occurs only
