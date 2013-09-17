@@ -1,3 +1,7 @@
+## 0.6.18
+
+- Allow (object, methodName, args...) syntax in from(Node)Callback
+
 ## 0.6.17
 
 - Allow predicate function in Observable.endOnError
