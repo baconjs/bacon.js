@@ -1151,6 +1151,8 @@ and `total` such that
 ```js
   var $price, $total, $quantity = ...
   
+  var quantity = $quantity.toProperty(1)
+  
   var price = Bacon.when(
     [$price], id,
     [$total, quantity], function(x,y) { return x/y })
@@ -1162,7 +1164,6 @@ and `total` such that
     [price, $quantity], function(x,y) { return x*y })
    .toProperty(0)
    
-  var quantity = $quantity.toProperty(1)
 ```
 
 **Join patterns and Bacon.bus**
