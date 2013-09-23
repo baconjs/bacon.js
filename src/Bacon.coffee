@@ -1,10 +1,4 @@
-if module?
-  module.exports = Bacon = {} # for Bacon = require 'baconjs'
-  Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
-else
-  if define? and define.amd?
-    define (-> Bacon)
-  @Bacon = Bacon = {} # otherwise for execution context
+Bacon = {}
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
@@ -1190,3 +1184,11 @@ Bacon.scheduler =
   setInterval: (f, i) -> setInterval(f, i)
   clearInterval: (id) -> clearInterval(id)
   now: -> new Date().getTime()
+
+if module?
+  module.exports = Bacon # for Bacon = require 'baconjs'
+  Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
+else
+  if define? and define.amd?
+    define [], -> Bacon
+  @Bacon = Bacon # otherwise for execution context
