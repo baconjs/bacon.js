@@ -481,6 +481,7 @@ class EventStream extends Observable
     assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
+    @subscribeWeak = dispatcher.subscribeWeak
     @subscribeInternal = @subscribe
     @hasSubscribers = dispatcher.hasSubscribers
   delay: (delay) ->
@@ -490,6 +491,9 @@ class EventStream extends Observable
     @flatMapLatest (value) ->
       Bacon.later delay, value
 
+  weakly: () =>
+    new EventStream(@subscribeWeak)
+  
   debounceImmediate: (delay) ->
     @flatMapFirst (value) ->
       Bacon.once(value).concat(Bacon.later(delay).filter(false))
@@ -726,7 +730,7 @@ class Dispatcher
     queue = null
     pushing = false
     ended = false
-    @hasSubscribers = -> subscriptions.length > 0
+    @hasSubscribers = -> _.any(subscriptions, (s) -> !s.isWeak)
     prevError = null
     unsubscribeFromSource = nop
     removeSub = (subscription) ->
@@ -770,20 +774,24 @@ class Dispatcher
       if event.isEnd()
         ended = true
       handleEvent.apply(this, [event])
-    @subscribe = (sink) =>
+    @subscribeGen = (sink, isWeak) =>
       if ended
         sink end()
         nop
       else
         assertFunction sink
-        subscription = { sink: sink }
+        subscription = { sink: sink, isWeak: isWeak }
         subscriptions = subscriptions.concat(subscription)
-        if subscriptions.length == 1
-          unsubscribeFromSource = subscribe @handleEvent
-        assertFunction unsubscribeFromSource
+        if not isWeak  
+          if subscriptions.filter((x) -> !x.isWeak).length == 1
+            unsubscribeFromSource = subscribe @handleEvent
+          assertFunction unsubscribeFromSource
         =>
           removeSub subscription
           unsubscribeFromSource() unless @hasSubscribers()
+    
+    @subscribe = (sink) => @subscribeGen(sink, false)
+    @subscribeWeak = (sink) => @subscribeGen(sink, true)
 
 class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
