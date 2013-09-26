@@ -1014,6 +1014,7 @@ class CompositeUnsubscribe
   empty: =>
     @count() == 0
 
+Bacon.CompositeUnsubscribe = CompositeUnsubscribe
 
 class Some
   constructor: (@value) ->
