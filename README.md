@@ -239,7 +239,11 @@ produces given value after given delay (milliseconds).
 `new Bacon.EventStream(subscribe)` creates an event stream with the given
 subscribe function. (See below)
 
-`property.changes()` creates a stream of changes to the Property (see Property API below)
+`property.changes()` creates a stream of changes to the Property (see Property API below). The stream *does not* include
+an event for the current value of the Property at the time this method was called.
+
+`property.toEventStream()` creates an EventStream based on this Property. The stream contains also an event for the current
+value of this Property at the time this method was called.
 
 `new Bacon.Bus()` creates a pushable/pluggable stream (see Bus section
 below)
