@@ -922,7 +922,7 @@ Bacon.when = (patterns...) ->
        pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
        for s in patSources
          assert (s instanceof Observable), usage
-         index = sources.indexOf s
+         index = indexOf(sources, s)
          if index < 0
             sources.push(s)
             index = sources.length - 1
