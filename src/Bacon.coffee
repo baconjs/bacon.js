@@ -27,6 +27,14 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
+Bacon.socketio = asEventStream: (eventName, selector, eventTransformer) ->
+  [eventTransformer, selector] = [selector, null] if isFunction(selector)
+  Bacon.fromBinder (handler) =>
+    @on(eventName, handler)
+    => @off(eventName, handler)
+  , eventTransformer
+
+(io ? null)?.SocketNamespace.asEventStream = Bacon.socketio.asEventStream
 # Wrap DOM EventTarget, Node EventEmitter, or
 # [un]bind: (Any, (Any) -> None) -> None interfaces
 # common in MVCs as EventStream
