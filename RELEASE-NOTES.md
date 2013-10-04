@@ -1,3 +1,7 @@
+## 0.6.19
+
+- Fix AMD support that was partially broken in 0.6.14
+
 ## 0.6.18
 
 - Allow (object, methodName, args...) syntax in from(Node)Callback
