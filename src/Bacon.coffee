@@ -991,7 +991,6 @@ class CompositeUnsubscribe
     @starting.push subscription
     unsubMe = =>
       return if @unsubscribed
-      unsub()
       ended = true
       @remove unsub
       _.remove subscription, @starting
@@ -999,9 +998,9 @@ class CompositeUnsubscribe
     @subscriptions.push unsub unless (@unsubscribed or ended)
     _.remove subscription, @starting
     unsub
-  remove: (subscription) ->
+  remove: (unsub) ->
     return if @unsubscribed
-    _.remove subscription, @subscriptions
+    unsub() if (_.remove unsub, @subscriptions) != undefined
   unsubscribe: =>
     return if @unsubscribed
     @unsubscribed = true
