@@ -81,6 +81,19 @@ Bacon.repeatedly = (delay, values) ->
   index = 0
   Bacon.fromPoll(delay, -> values[index++ % values.length])
 
+Bacon.spy = (spy) -> spys.push(spy)
+
+spys = []
+registerObs = (obs) -> 
+  if spys.length
+    if not registerObs.running
+      try
+        registerObs.running = true
+        _.each spys, (_, spy) -> 
+          spy(obs)
+      finally
+        delete registerObs.running
+
 withMethodCallSupport = (wrapped) ->
   (f, args...) ->
     if typeof f == "object" and args.length
@@ -487,6 +500,7 @@ class EventStream extends Observable
     @subscribe = dispatcher.subscribe
     @subscribeInternal = @subscribe
     @hasSubscribers = dispatcher.hasSubscribers
+    registerObs(this)
   delay: (delay) ->
     @flatMap (value) ->
       Bacon.later delay, value
@@ -680,6 +694,7 @@ class Property extends Observable
       ->
         reply = Bacon.noMore
         unsub()
+    registerObs(this)
 
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
