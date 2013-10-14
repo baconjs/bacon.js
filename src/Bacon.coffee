@@ -246,7 +246,7 @@ class Error extends Event
   describe: -> "<error> #{@error}"
 
 class Observable
-  constructor: ->
+  constructor: (@deps) ->
     @assign = @onValue
   onValue: ->
     f = makeFunctionArgs(arguments)
@@ -401,7 +401,7 @@ class Observable
           sink event unless reply == Bacon.noMore
       sendInit()
       unsub
-    new Property(subscribe)
+    new Property [this], subscribe
 
   fold: (seed, f) =>
     @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty())
@@ -419,7 +419,7 @@ class Observable
   flatMap: (f, firstOnly) ->
     f = makeSpawner(f)
     root = this
-    new EventStream (sink) ->
+    new EventStream [root], (sink) ->
       composite = new CompositeUnsubscribe()
       checkEnd = (unsub) ->
         unsub()
@@ -476,8 +476,12 @@ class Observable
 Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable
-  constructor: (subscribe) ->
-    super()
+  constructor: (deps, subscribe) ->
+    if isFunction(deps)
+      subscribe = deps
+      deps = []
+    assertArray(deps)
+    super(deps)
     assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribe = dispatcher.subscribe
@@ -550,7 +554,7 @@ class EventStream extends Observable
   merge: (right) ->
     assertEventStream(right)
     left = this
-    new EventStream (sink) ->
+    new EventStream [left, right], (sink) ->
       ends = 0
       smartSink = (obs) -> (unsubBoth) -> obs.subscribe (event) ->
         if event.isEnd()
@@ -576,7 +580,7 @@ class EventStream extends Observable
 
   concat: (right) ->
     left = this
-    new EventStream (sink) ->
+    new EventStream [left, right], (sink) ->
       unsub = left.subscribe (e) ->
         if e.isEnd()
           unsub = right.subscribe sink
@@ -586,7 +590,7 @@ class EventStream extends Observable
 
   takeUntil: (stopper) =>
     self = this
-    new EventStream (sink) ->
+    new EventStream [self, stopper], (sink) ->
       stop = (unsubAll) ->
         stopper.onValue ->
           sink end()
@@ -618,12 +622,19 @@ class EventStream extends Observable
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
-    new EventStream(dispatcher.subscribe)
-  withSubscribe: (subscribe) -> new EventStream(subscribe)
+    new EventStream [this], dispatcher.subscribe
+
+  withSubscribe: (subscribe) -> new EventStream [this], subscribe
 
 class Property extends Observable
-  constructor: (subscribe, handler) ->
-    super()
+  constructor: (deps, subscribe, handler) ->
+    if isFunction(deps)
+      handler = subscribe
+      subscribe = deps
+      deps = []
+    assertArray(deps)
+    super(deps)
+    assertFunction(subscribe)
     if handler is true
       @subscribeInternal = subscribe
     else
@@ -673,18 +684,18 @@ class Property extends Observable
   sample: (interval) =>
     @sampledBy Bacon.interval(interval, {})
 
-  changes: => new EventStream (sink) =>
+  changes: => new EventStream [this], (sink) =>
     @subscribe (event) =>
       #console.log "CHANGES", event.describe()
       sink event unless event.isInitial()
   withHandler: (handler) ->
-    new Property(@subscribeInternal, handler)
-  withSubscribe: (subscribe) -> new Property(subscribe)
+    new Property [this], @subscribeInternal, handler
+  withSubscribe: (subscribe) -> new Property [this], subscribe
   toProperty: =>
     assertNoArguments(arguments)
     this
   toEventStream: =>
-    new EventStream (sink) =>
+    new EventStream [this], (sink) =>
       @subscribe (event) =>
         event = event.toNext() if event.isInitial()
         sink event
@@ -884,10 +895,10 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (s, @sync, consume, @subscribe, lazy = false) ->
+  constructor: (@obs, @sync, consume, @subscribe, lazy = false) ->
     queue = []
     invoke = if lazy then _.id else (f) -> f()
-    @subscribe = s.subscribe if not @subscribe?
+    @subscribe = obs.subscribe if not @subscribe?
     @markEnded = -> @ended = true
     if consume
       @consume = () -> invoke(queue.shift())
@@ -935,8 +946,9 @@ Bacon.when = (patterns...) ->
       return Bacon.never()
 
     sources = _.map Source.fromObservable, sources
+    observables = _.map ((s) -> s.obs), sources
 
-    new EventStream (sink) ->
+    new EventStream observables, (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotSync = (source) ->
