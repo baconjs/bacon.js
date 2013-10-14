@@ -1803,6 +1803,12 @@ describe "EventStream.zip", ->
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
 
+describe "Property.zip", ->
+  describe "pairwise combines values from two properties", ->
+    expectStreamEvents(
+      -> series(1, [1, 2, 3]).toProperty().zip(series(1, ['a', 'b', 'c']).toProperty())
+      [[1, 'a'], [2, 'b'], [3, 'c']])
+
 describe "Bacon.zipAsArray", ->
   describe "zips an array of streams into a stream of arrays", ->
     expectStreamEvents(
