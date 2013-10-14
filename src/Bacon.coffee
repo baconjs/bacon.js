@@ -152,7 +152,7 @@ Bacon.zipAsArray = (streams...) ->
 Bacon.zipWith = (f, streams...) ->
   if !isFunction(f)
     [streams, f] = [f, streams[0]]
-  Bacon.when streams, f
+  Bacon.when _.map(((s) -> s.toEventStream()), streams), f
 
 Bacon.combineAsArray = (streams...) ->
   if (streams.length == 1 and streams[0] instanceof Array)
