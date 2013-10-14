@@ -1807,7 +1807,7 @@ describe "Property.zip", ->
   describe "pairwise combines values from two properties", ->
     expectStreamEvents(
       -> series(1, [1, 2, 3]).toProperty().zip(series(1, ['a', 'b', 'c']).toProperty())
-      [[1, 'a'], [2, 'b'], [3, 'c']])
+      [[1, 'a'], [2, 'b'], [3, 'c']], { unstable })
 
 describe "Bacon.zipAsArray", ->
   describe "zips an array of streams into a stream of arrays", ->
@@ -1822,12 +1822,12 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1))
     [[1 , 2], [2 , 3], [3, 4]])
-  describe "does not synchronize on properties", ->
+  describe "accepts Properties as well as EventStreams", ->
     expectStreamEvents(
       ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1), Bacon.constant(5))
-    [[1 , 2, 5], [2 , 3, 5], [3, 4, 5]])
+    [[1 , 2, 5]])
   describe "works with single stream", ->
     expectStreamEvents(
       ->
