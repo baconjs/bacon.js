@@ -577,12 +577,13 @@ class EventStream extends Observable
   concat: (right) ->
     left = this
     new EventStream (sink) ->
-      unsub = left.subscribe (e) ->
+      unsubRight = nop
+      unsubLeft = left.subscribe (e) ->
         if e.isEnd()
-          unsub = right.subscribe sink
+          unsubRight = right.subscribe sink
         else
           sink(e)
-      -> unsub()
+      -> unsubLeft() ; unsubRight()
 
   takeUntil: (stopper) =>
     self = this

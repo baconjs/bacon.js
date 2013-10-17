@@ -979,6 +979,15 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.once(1).concat(Bacon.fromArray([2, 3]))
       [1, 2, 3], unstable)
+  describe "Works with synchronized left stream and doAction", ->
+    expectStreamEvents(
+      ->
+        bus = new Bacon.Bus()
+        stream = Bacon.fromArray([1,2]).flatMapLatest (x) ->
+          Bacon.once(x).concat(Bacon.later(10, x).doAction((x) -> bus.push(x); bus.end()))
+        stream.onValue ->
+        bus
+      [2])
 
 describe "EventStream.startWith", ->
   describe "provides seed value, then the rest", ->
