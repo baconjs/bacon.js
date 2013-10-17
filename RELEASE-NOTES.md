@@ -1,3 +1,7 @@
+## 0.6.21
+
+- Fix bug in concat with synchronous left stream (#262)
+
 ## 0.6.20
 
 - Fix Property.zip (#260)
