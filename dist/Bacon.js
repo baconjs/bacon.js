@@ -1136,16 +1136,18 @@
       var left;
       left = this;
       return new EventStream(function(sink) {
-        var unsub;
-        unsub = left.subscribe(function(e) {
+        var unsubLeft, unsubRight;
+        unsubRight = nop;
+        unsubLeft = left.subscribe(function(e) {
           if (e.isEnd()) {
-            return unsub = right.subscribe(sink);
+            return unsubRight = right.subscribe(sink);
           } else {
             return sink(e);
           }
         });
         return function() {
-          return unsub();
+          unsubLeft();
+          return unsubRight();
         };
       });
     };
