@@ -18,7 +18,7 @@ describe "Bacon.fromPromise", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     success("a")
-    expect(_.map(((e) -> e.describe()), events)).to.deep.equal(["a", "<end>"])
+    expect(_.map(((e) -> e.toString()), events)).to.deep.equal(["a", "<end>"])
 
   it "should produce error and end on error", ->
     events = []

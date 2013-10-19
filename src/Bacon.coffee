@@ -239,7 +239,7 @@ class Next extends Event
   fmap: (f) -> @apply(=> f(@value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
-  describe: -> @value()
+  toString: -> @value()
 
 class Initial extends Next
   isInitial: -> true
@@ -251,14 +251,14 @@ class End extends Event
   isEnd: -> true
   fmap: -> this
   apply: -> this
-  describe: -> "<end>"
+  toString: -> "<end>"
 
 class Error extends Event
   constructor: (@error) ->
   isError: -> true
   fmap: -> this
   apply: -> this
-  describe: -> "<error> #{@error}"
+  toString: -> "<error> #{@error}"
 
 class Observable
   constructor: (desc) ->
@@ -475,7 +475,7 @@ class Observable
       f(value).takeUntil(stream)
   not: -> @map((x) -> !x)
   log: (args...) ->
-    @subscribe (event) -> console?.log?(args..., event.describe())
+    @subscribe (event) -> console?.log?(args..., event.toString())
     this
   slidingWindow: (n, minValues = 0) ->
     this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
@@ -705,7 +705,7 @@ class Property extends Observable
 
   changes: => new EventStream describe("changes", this), (sink) =>
     @subscribe (event) =>
-      #console.log "CHANGES", event.describe()
+      #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
   withHandler: (desc, handler) ->
     if not handler?
