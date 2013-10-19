@@ -48,6 +48,8 @@ describe "Bacon._", ->
     ])).to.deep.equal([
       undefined, 1, 2, 3
     ])
+  describe "flatMap", ->
+    expect(_.flatMap(((x) -> [x, x]), [1,2,3])).to.deep.equal([1,1,2,2,3,3])
   describe "each", ->
     it "provides key and value to iterator", ->
       expectKeyVals = (x, expectedKeys, expectedValues) ->
