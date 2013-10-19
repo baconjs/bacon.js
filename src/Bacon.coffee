@@ -2,7 +2,7 @@ Bacon = {}
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id, desc) ->
-  new EventStream desc, (sink) ->
+  new EventStream describe((desc||"fromBinder"), binder), (sink) ->
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
       unless isArray(value) and _.last(value) instanceof Event
@@ -262,6 +262,7 @@ class Error extends Event
 
 class Observable
   constructor: (desc) ->
+    desc = describe(desc)
     @assign = @onValue
     @deps = desc.deps
     @toString = desc.toString
