@@ -261,10 +261,10 @@ class Error extends Event
   describe: -> "<error> #{@error}"
 
 class Observable
-  constructor: (@desc) ->
+  constructor: (desc) ->
     @assign = @onValue
-  toString: -> @desc.toString()
-  deps: -> @desc.deps
+    @deps = desc.deps
+    @toString = desc.toString
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
