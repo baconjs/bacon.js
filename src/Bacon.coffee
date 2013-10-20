@@ -177,7 +177,7 @@ Bacon.combineAsArray = (streams...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true, false, s.subscribeInternal)
-    Bacon.when(sources, ((xs...) -> xs), describe("combineAsArray", streams)).scan(None, latterF, true, describe("combineAsArray", streams))
+    Bacon.when(sources, ((xs...) -> xs), describe("combineAsArray", streams)).toProperty().withDescription("combineAsArray", streams)
   else
     Bacon.constant([])
 
@@ -422,7 +422,7 @@ class Observable
     new Property describe(desc || "scan", this, seed, f), subscribe
 
   fold: (seed, f) =>
-    @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty())
+    @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()).withDescription("fold", this, seed, f)
 
   zip: (other, f = Array) ->
     Bacon.zipWith([this,other], f)
@@ -490,6 +490,8 @@ class Observable
   awaiting: (other) ->
     this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false)
 
+  withDescription: ->
+    this.withHandler describe(arguments...), (event) -> @push event
 
 Observable :: reduce = Observable :: fold
 
@@ -589,7 +591,7 @@ class EventStream extends Observable
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
-    @scan(initValue, latterF, true)
+    @scan(initValue, latterF, true, describe("toProperty", this, initValue))
 
   toEventStream: -> this
 
