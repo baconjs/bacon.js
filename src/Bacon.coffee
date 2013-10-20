@@ -1,8 +1,8 @@
 Bacon = {}
 
 # eventTransformer - should return one value or one or many events
-Bacon.fromBinder = (binder, eventTransformer = _.id, desc) ->
-  new EventStream describe((desc||"fromBinder"), binder), (sink) ->
+Bacon.fromBinder = (binder, eventTransformer = _.id) ->
+  new EventStream describe("fromBinder", binder, eventTransformer), (sink) ->
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
       unless isArray(value) and _.last(value) instanceof Event
@@ -20,10 +20,10 @@ Bacon.fromBinder = (binder, eventTransformer = _.id, desc) ->
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
-  Bacon.fromBinder (handler) =>
+  withDescription("asEventStream", this, eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
-  , eventTransformer, describe("asEventStream", this, eventName)
+  , eventTransformer)
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
 
@@ -47,16 +47,16 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
   sub = target.addEventListener ? (target.addListener ? target.bind)
   unsub = target.removeEventListener ? (target.removeListener ? target.unbind)
-  Bacon.fromBinder (handler) ->
+  withDescription("fromEventTarget", target, eventName, Bacon.fromBinder (handler) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
-  , eventTransformer, describe("fromEventTarget", target, eventName)
+  , eventTransformer)
 
 Bacon.fromPromise = (promise, abort) ->
-  Bacon.fromBinder (handler) ->
+  withDescription("fromPromise", promise, Bacon.fromBinder (handler) ->
     promise.then(handler, (e) -> handler(new Error(e)))
     -> promise.abort?() if abort
-  , ((value) -> [value, end()]), describe("fromPromise", promise)
+  , ((value) -> [value, end()]))
 
 
 Bacon.noMore = ["<no-more>"]
@@ -64,18 +64,18 @@ Bacon.noMore = ["<no-more>"]
 Bacon.more = ["<more>"]
 
 Bacon.later = (delay, value) ->
-  Bacon.sequentially(delay, [value])
+  withDescription("later", delay, value, Bacon.sequentially(delay, [value]))
 
 Bacon.sequentially = (delay, values) ->
   index = 0
-  Bacon.fromPoll delay, ->
+  withDescription("sequentially", delay, values, Bacon.fromPoll delay, ->
     value = values[index++]
     if index < values.length
       value
     else if index == values.length
       [value, end()]
     else
-      end()
+      end())
 
 Bacon.repeatedly = (delay, values) ->
   index = 0
@@ -104,26 +104,25 @@ withMethodCallSupport = (wrapped) ->
       args = args.slice(1)
     wrapped(f, args...)
 
-liftCallback = (wrapped) ->
+liftCallback = (desc, wrapped) ->
   withMethodCallSupport (f, args...) ->
     stream = partiallyApplied(wrapped, [(values, callback) ->
       f(values..., callback)])
-    Bacon.combineAsArray(args).flatMap(stream)
+    withDescription desc, f, args..., Bacon.combineAsArray(args).flatMap(stream)
 
-Bacon.fromCallback = liftCallback (f, args...) ->
+Bacon.fromCallback = liftCallback "fromCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
-  , ((value) -> [value, end()]), describe("fromCallback", f, args...)
+  , ((value) -> [value, end()])
 
-Bacon.fromNodeCallback = liftCallback (f, args...) ->
+Bacon.fromNodeCallback = liftCallback "fromNodeCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
   , (error, value) ->
       return [new Error(error), end()] if error
       [value, end()]
-  , describe("fromNodeCallback", f, args...)
 
 Bacon.fromPoll = (delay, poll) ->
   Bacon.fromBinder (handler) ->
@@ -134,14 +133,14 @@ Bacon.fromPoll = (delay, poll) ->
 
 Bacon.interval = (delay, value) ->
   value = {} unless value?
-  Bacon.fromPoll(delay, -> next(value))
+  withDescription("interval", delay, value, Bacon.fromPoll(delay, -> next(value)))
 
 Bacon.constant = (value) ->
   new Property(describe("constant", value), sendWrapped([value], initial), true)
 
-Bacon.never = -> Bacon.fromArray([])
+Bacon.never = -> withDescription("never", Bacon.fromArray([]))
 
-Bacon.once = (value) -> Bacon.fromArray([value])
+Bacon.once = (value) -> withDescription("once", value, Bacon.fromArray([value]))
 
 Bacon.fromArray = (values) ->
   assertArray values
@@ -484,8 +483,8 @@ class Observable
     @subscribe (event) -> console?.log?(args..., event.toString())
     this
   slidingWindow: (n, minValues = 0) ->
-    this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
-        .filter(((values) -> values.length >= minValues))
+    withDescription("slidingWindow", this, n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
+          .filter(((values) -> values.length >= minValues)))
   combine: (other, f) =>
     combinator = toCombinator(f)
     Bacon.combineAsArray(this, other)

@@ -115,6 +115,8 @@ describe "Bacon.later", ->
     expectStreamEvents(
       -> Bacon.later(t(1), new Bacon.Error("oops"))
       [error()])
+  it "toString", ->
+    expect(Bacon.later(1, "wat").toString()).to.equal("later(1,wat)")
 
 describe "Bacon.sequentially", ->
   describe "should send given events and end", ->
@@ -133,12 +135,16 @@ describe "Bacon.sequentially", ->
           throw "testing"
         s
       [])
+  it "toString", ->
+    expect(Bacon.sequentially(1, [2]).toString()).to.equal("sequentially(1,[2])")
 
 describe "Bacon.interval", ->
   describe "repeats single element indefinitely", ->
     expectStreamEvents(
       -> Bacon.interval(t(1), "x").take(3)
       ["x", "x", "x"])
+  it "toString", ->
+    expect(Bacon.interval(1, 2).toString()).to.equal("interval(1,2)")
 
 testLiftedCallback = (src, liftedCallback) ->
   input = [
@@ -181,6 +187,8 @@ describe "Bacon.fromCallback", ->
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
+  it "toString", ->
+    expect(Bacon.fromCallback((->), "lol").toString()).to.equal("fromCallback(function,lol)")
 
 describe "Bacon.fromNodeCallback", ->
   describe "makes an EventStream from function that takes a node-style callback", ->
@@ -215,6 +223,8 @@ describe "Bacon.fromNodeCallback", ->
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
+  it "toString", ->
+    expect(Bacon.fromNodeCallback((->), "lol").toString()).to.equal("fromNodeCallback(function,lol)")
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->
@@ -269,6 +279,9 @@ describe "Bacon.fromEventTarget", ->
     dispose()
     expect(emitter.listeners("click").length).to.deep.equal(0)
 
+  it "toString", ->
+    expect(Bacon.fromEventTarget({}, "click").toString()).to.equal("fromEventTarget([object Object],click)")
+
 describe "Observable.log", ->
   preservingLog = (f) ->
     originalConsole = console
@@ -287,6 +300,8 @@ describe "Observable.log", ->
     preservingLog ->
       console.log = undefined
       Bacon.constant(1).log()
+  it "toString", ->
+    expect(Bacon.never().log().toString()).to.equal("never()")
 
 describe "Observable.slidingWindow", ->
   describe "slides the window for EventStreams", ->
@@ -304,6 +319,8 @@ describe "Observable.slidingWindow", ->
     expectPropertyEvents(
       -> series(1, [1,2,3,4]).toProperty(0).slidingWindow(3, 2)
       [[0,1], [0, 1, 2], [1,2,3], [2,3,4]])
+  it "toString", ->
+    expect(Bacon.never().slidingWindow(2).toString()).to.equal("slidingWindow(never(),2,0)")
 
 describe "EventStream.filter", ->
   describe "should filter values", ->
@@ -321,6 +338,8 @@ describe "EventStream.filter", ->
         odd = src.map((x) -> x % 2).toProperty()
         src.filter(odd)
       [1,1,3,7])
+  describe "toString", ->
+    expect(Bacon.never().filter(false).toString()).to.equal("filter(never(),function)")
 
 describe "EventStream.map", ->
   describe "should map with given function", ->
@@ -366,6 +385,8 @@ describe "EventStream.map", ->
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
     expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.once(1).map(true).toString()).to.equal("map(once(1),function)")
 
 describe "EventStream.mapError", ->
   describe "should map error events with given function", ->
