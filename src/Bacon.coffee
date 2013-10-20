@@ -304,7 +304,7 @@ class Observable
   endOnError: (f, args...) ->
     f = true if !f?
     convertArgsToFunction this, f, args, (f) ->
-      @withHandler "endOnError", (event) ->
+      @withHandler describe("endOnError", this), (event) ->
         if event.isError() && f(event.error)
           @push event
           @push end()
@@ -341,7 +341,7 @@ class Observable
         @push event
   mapEnd : ->
     f = makeFunctionArgs(arguments)
-    @withHandler "mapEnd", (event) ->
+    @withHandler describe("mapEnd", this, f), (event) ->
       if (event.isEnd())
         @push next(f(event))
         @push end()
@@ -365,13 +365,15 @@ class Observable
         @push event
 
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
-    @withStateMachine None, (prev, event) ->
-      if !event.hasValue()
-        [prev, [event]]
-      else if event.isInitial() or prev == None or not isEqual(prev.get(), event.value())
-        [new Some(event.value()), [event]]
-      else
-        [prev, []]
+    withDescription("skipDuplicates", this, 
+      @withStateMachine None, (prev, event) ->
+        if !event.hasValue()
+          [prev, [event]]
+        else if event.isInitial() or prev == None or not isEqual(prev.get(), event.value())
+          [new Some(event.value()), [event]]
+        else
+          [prev, []])
+
   skipErrors: ->
     @withHandler "skipErrors", (event) ->
       if event.isError()
@@ -442,7 +444,7 @@ class Observable
   flatMap: (f, firstOnly) ->
     f = makeSpawner(f)
     root = this
-    new EventStream describe("flatMap", root, f), (sink) ->
+    new EventStream describe("flatMap" + (if firstOnly then "First" else ""), root, f), (sink) ->
       composite = new CompositeUnsubscribe()
       checkEnd = (unsub) ->
         unsub()
@@ -476,8 +478,8 @@ class Observable
   flatMapLatest: (f) =>
     f = makeSpawner(f)
     stream = @toEventStream()
-    stream.flatMap (value) =>
-      f(value).takeUntil(stream)
+    withDescription("flatMapLatest", this, f, stream.flatMap (value) =>
+      f(value).takeUntil(stream))
   not: -> @map((x) -> !x)
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.toString())
@@ -493,7 +495,8 @@ class Observable
   decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
 
   awaiting: (other) ->
-    this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false)
+    withDescription("awaiting", this, other, 
+    this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false))
 
 Observable :: reduce = Observable :: fold
 
@@ -510,21 +513,23 @@ class EventStream extends Observable
     @hasSubscribers = dispatcher.hasSubscribers
     registerObs(this)
   delay: (delay) ->
-    @flatMap (value) ->
-      Bacon.later delay, value
+    withDescription("delay", this, delay, @flatMap (value) ->
+      Bacon.later delay, value)
   debounce: (delay) ->
-    @flatMapLatest (value) ->
-      Bacon.later delay, value
+    withDescription("debounce", this, delay, @flatMapLatest (value) ->
+      Bacon.later delay, value)
 
   debounceImmediate: (delay) ->
-    @flatMapFirst (value) ->
-      Bacon.once(value).concat(Bacon.later(delay).filter(false))
+    withDescription("debounceImmediate", this, delay, @flatMapFirst (value) ->
+      Bacon.once(value).concat(Bacon.later(delay).filter(false)))
 
   throttle: (delay) ->
-    @bufferWithTime(delay).map((values) -> values[values.length - 1])
+    withDescription("throttle", this, delay, @bufferWithTime(delay).map((values) -> values[values.length - 1]))
 
-  bufferWithTime: (delay) -> @bufferWithTimeOrCount(delay, Number.MAX_VALUE)
-  bufferWithCount: (count) -> @bufferWithTimeOrCount(undefined, count)
+  bufferWithTime: (delay) -> 
+    withDescription("bufferWithTime", this, delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
+  bufferWithCount: (count) -> 
+    withDescription("bufferWithCount", this, count, @bufferWithTimeOrCount(undefined, count))
 
   bufferWithTimeOrCount: (delay, count) ->
     flushOrSchedule = (buffer) ->
@@ -532,7 +537,7 @@ class EventStream extends Observable
         buffer.flush()
       else if (delay != undefined)
         buffer.schedule()
-    @buffer(delay, flushOrSchedule, flushOrSchedule)
+    withDescription("bufferWithTimeOrCount", this, delay, count, @buffer(delay, flushOrSchedule, flushOrSchedule))
 
 
   buffer: (delay, onInput = (->), onFlush = (->)) ->
@@ -627,7 +632,7 @@ class EventStream extends Observable
 
   skipUntil: (starter) ->
     started = starter.take(1).map(true).toProperty(false)
-    this.filter(started)
+    withDescription("skipUntil", this, starter, this.filter(started))
 
   skipWhile: (f, args...) ->
     ok = false
