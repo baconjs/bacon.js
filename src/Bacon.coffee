@@ -177,7 +177,7 @@ Bacon.combineAsArray = (streams...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true, false, s.subscribeInternal)
-    Bacon.when(sources, ((xs...) -> xs), describe("combineAsArray", streams)).toProperty().withDescription("combineAsArray", streams)
+    withDescription("combineAsArray", streams, Bacon.when(sources, ((xs...) -> xs), describe("combineAsArray", streams)).toProperty())
   else
     Bacon.constant([])
 
@@ -259,6 +259,12 @@ class Error extends Event
   fmap: -> this
   apply: -> this
   toString: -> "<error> #{@error}"
+
+withDescription = (desc..., obs) ->
+  desc = describe(desc...)
+  obs.deps = desc.deps
+  obs.toString = desc.toString
+  obs
 
 class Observable
   constructor: (desc) ->
@@ -422,7 +428,7 @@ class Observable
     new Property describe(desc || "scan", this, seed, f), subscribe
 
   fold: (seed, f) =>
-    @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()).withDescription("fold", this, seed, f)
+    withDescription("fold", this, seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
     Bacon.zipWith([this,other], f)
@@ -489,9 +495,6 @@ class Observable
 
   awaiting: (other) ->
     this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false)
-
-  withDescription: ->
-    this.withHandler describe(arguments...), (event) -> @push event
 
 Observable :: reduce = Observable :: fold
 
