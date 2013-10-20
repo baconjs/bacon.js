@@ -334,7 +334,7 @@ class Observable
 
   mapError : ->
     f = makeFunctionArgs(arguments)
-    @withHandler "mapError", (event) ->
+    @withHandler describe("mapError", this, f), (event) ->
       if event.isError()
         @push next (f event.error)
       else

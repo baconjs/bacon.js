@@ -397,6 +397,8 @@ describe "EventStream.mapError", ->
     expectStreamEvents(
         -> repeat(1, [1, error()]).mapError("ERR").take(2)
         [1, "ERR"])
+  it "toString", ->
+    expect(Bacon.never().mapError(true).toString()).to.equal("mapError(never(),function)")
 
 describe "EventStream.doAction", ->
   it "calls function before sending value to listeners", ->
