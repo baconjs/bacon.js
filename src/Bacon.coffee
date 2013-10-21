@@ -261,9 +261,6 @@ class Error extends Event
   apply: -> this
   toString: -> "<error> #{@error}"
 
-withDescription = (desc..., obs) ->
-  describe(desc...).apply(obs)
-
 class Observable
   constructor: (desc) ->
     @assign = @onValue
@@ -946,12 +943,14 @@ Source.fromObservable = (s) ->
   else
     new Source(s, true, true)
 
-describe = (context, desc, args...) -> 
-  if context instanceof Desc
-    context
-  else if desc instanceof Desc
-    desc
+describe = (context, method, args...) -> 
+  if (context || method) instanceof Desc
+    context || method
   else
+    new Desc(context, method, args)
+
+class Desc
+  constructor: (context, method, args) ->
     findDeps = (x) ->
       if isArray(x)
         _.flatMap findDeps, x
@@ -959,17 +958,14 @@ describe = (context, desc, args...) ->
         [x]
       else
         []
-    new Desc(findDeps(args), -> _.toString(context) + "." + _.toString(desc) + "(" + _.map(_.toString, args) + ")")
+    @apply = (obs) ->
+      obs.deps = -> findDeps(args)
+      obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
+      obs.desc = -> { context, method, args }
+      obs
 
-
-class Desc
-  constructor: (@deps, @toString) ->
-  apply: (obs) ->
-    obs.deps = this.deps
-    obs.toString = this.toString
-    obs
-    # TODO: add structural description
-    # TODO: take advantage of the new "context" thingie
+withDescription = (desc..., obs) ->
+  describe(desc...).apply(obs)
 
 Bacon.when = (patterns...) ->
     return Bacon.never() if patterns.length == 0
