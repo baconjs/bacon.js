@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="../lib/jquery.js"></script>
     <script src="../dist/Bacon.js"></script>
     <script>
@@ -45,6 +46,14 @@
           .map(function(event) { return $(event.target).val() })
           .toProperty("")
           .assign($("#echo .output"), "text")
+
+        function strikeout () {
+          $("#batter-up .ump-call").text("Strike three, you're out!") 
+        }
+
+        $("#batter-up button")
+          .asEventStream("click").skip(2).take(1).onValue(strikeout)
+
       })
     </script>
   </head>
@@ -67,6 +76,12 @@
       <h2>Echo example:</h2>
       <input type="text">
       <span class="output"></span>
+    </div>
+    <div id="batter-up">
+      <h2>Batter up! (take/skip example):</h2>
+      <button>Swing</button>
+      <span class="ump-call" style="font-weight:bold"></span>
+      <p style="font-style:italic">♪♫  ...for it's one, two, three strikes you're out at the old ball game ♪♫ </p>
     </div>
   </body>
 </html>
