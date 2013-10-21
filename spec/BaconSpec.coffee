@@ -338,7 +338,7 @@ describe "EventStream.filter", ->
         odd = src.map((x) -> x % 2).toProperty()
         src.filter(odd)
       [1,1,3,7])
-  describe "toString", ->
+  it "toString", ->
     expect(Bacon.never().filter(false).toString()).to.equal("filter(never(),function)")
 
 describe "EventStream.map", ->
