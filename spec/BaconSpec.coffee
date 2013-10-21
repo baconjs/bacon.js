@@ -876,6 +876,12 @@ describe "EventStream.awaiting(other)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).awaiting(series(3, [2]).toProperty())
       [false, true, false, true])
+  describe "supports streams that occur simultaneously", ->
+    expectPropertyEvents(
+      -> 
+        src = series(1, [1])
+        src.awaiting(src)
+      [false,true,false])
 
 describe "EventStream.endOnError", ->
   describe "terminates on error", ->
