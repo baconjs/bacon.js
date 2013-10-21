@@ -1,4 +1,6 @@
-Bacon = {}
+Bacon = {
+  toString: -> "Bacon"
+}
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
@@ -950,8 +952,6 @@ describe = (context, desc, args...) ->
   else if desc instanceof Desc
     desc
   else
-    if context != Bacon
-      args = [context].concat(args)
     findDeps = (x) ->
       if isArray(x)
         _.flatMap findDeps, x
@@ -959,7 +959,7 @@ describe = (context, desc, args...) ->
         [x]
       else
         []
-    new Desc(findDeps(args), -> _.toString(desc) + "(" + _.map(_.toString, args) + ")")
+    new Desc(findDeps(args), -> _.toString(context) + "." + _.toString(desc) + "(" + _.map(_.toString, args) + ")")
 
 
 class Desc
