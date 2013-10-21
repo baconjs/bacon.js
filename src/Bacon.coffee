@@ -267,10 +267,8 @@ withDescription = (desc..., obs) ->
 
 class Observable
   constructor: (desc) ->
-    desc = describe(desc)
     @assign = @onValue
-    @deps = desc.deps
-    @toString = desc.toString
+    withDescription(desc, this)
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
