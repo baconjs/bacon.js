@@ -2077,6 +2077,8 @@ describe "Bacon.when", ->
           [xs, ys], (x, y) -> x + y
         )
       ["xy"])
+  it "toString", ->
+    expect(Bacon.when([Bacon.never()], (->)).toString()).to.equal("Bacon.when([Bacon.never()],function)")
 
 describe "Bacon.update", ->
   describe "works like Bacon.when, but produces a property, and can be defined in terms of a current value", ->

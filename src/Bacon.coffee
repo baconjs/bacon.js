@@ -976,7 +976,7 @@ Bacon.when = (patterns...) ->
       len = len - 1
       patterns = patterns.slice(0, len)
     else
-      desc = describe "when", patterns
+      desc = describe Bacon, "when", patterns...
 
     assert usage, (len % 2 == 0)
     sources = []
