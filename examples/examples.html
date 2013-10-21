@@ -39,6 +39,11 @@
           .toProperty("")
           .map(isEmpty)
           .assign($("#enabling button"), "attr", "disabled")
+
+        $('#echo input')
+          .asEventStream('keyup')
+          .map(function(e) { return $(e.target).val() })
+          .onValue(function(str) { $('#echo .output').text(str) })
       })
     </script>
   </head>
@@ -56,6 +61,11 @@
       <h2>Enable/disable example:</h2>
       <input type="text" placeholder="required field">
       <button>Don't push me</button>
+    </div>
+    <div id="echo">
+      <h2>Echo example:</h2>
+      <input type="text">
+      <span class="output"></span>
     </div>
   </body>
 </html>
