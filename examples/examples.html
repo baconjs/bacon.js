@@ -45,6 +45,32 @@
           .map(function(event) { return $(event.target).val() })
           .toProperty("")
           .assign($("#echo .output"), "text")
+
+        function calculate(expr, entry) {
+          function isOperator (c) {
+            return c === '/' || c === '*' || c === '-' || c === '+'
+          }
+          if (entry === 'C') return '0'
+          if (entry === '=') {
+            try {
+              var evaldExpr = eval(expr)
+            } catch (e) {
+              if (e instanceof SyntaxError) return "ERROR"
+              throw e
+            }
+            if (expr === "ERROR") return "ERROR"
+            return isFinite(evaldExpr) ? String(evaldExpr) : "ERROR"
+          }
+          if (expr === "ERROR") return calculate('0', entry)
+          if (expr === '0' && !isOperator(entry)) return entry
+          return expr.concat(entry)
+        }
+
+        $("#calculator button")
+          .asEventStream("click")
+          .map(function(e) { return $(e.target).text() })
+          .scan('0', calculate)
+          .assign($("#calculator .result"), "text")
       })
     </script>
   </head>
@@ -67,6 +93,39 @@
       <h2>Echo example:</h2>
       <input type="text">
       <span class="output"></span>
+    </div>
+    <div id="calculator">
+      <h2>Calculator example:</h2>
+      <table>
+        <tr>
+          <td class="result" colspan="3"></td>
+          <td><button>C</button></td>
+        </tr>
+        <tr>
+          <td><button>7</button></td>
+          <td><button>8</button></td>
+          <td><button>9</button></td>
+          <td><button>/</button></td>
+        </tr>
+        <tr>
+          <td><button>4</button></td>
+          <td><button>5</button></td>
+          <td><button>6</button></td>
+          <td><button>*</button></td>
+        </tr>
+        <tr>
+          <td><button>1</button></td>
+          <td><button>2</button></td>
+          <td><button>3</button></td>
+          <td><button>-</button></td>
+        </tr>
+        <tr>
+          <td><button>0</button></td>
+          <td><button>.</button></td>
+          <td><button>=</button></td>
+          <td><button>+</button></td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>
