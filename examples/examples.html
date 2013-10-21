@@ -40,10 +40,11 @@
           .map(isEmpty)
           .assign($("#enabling button"), "attr", "disabled")
 
-        $('#echo input')
-          .asEventStream('keyup')
-          .map(function(e) { return $(e.target).val() })
-          .onValue(function(str) { $('#echo .output').text(str) })
+        $("#echo input")
+          .asEventStream("keyup")
+          .map(function(event) { return $(event.target).val() })
+          .toProperty("")
+          .assign($("#echo .output"), "text")
       })
     </script>
   </head>
