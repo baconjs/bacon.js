@@ -672,35 +672,7 @@ class Property extends Observable
       stream = Bacon.when([thisSource, samplerSource], combinator, describe(this, "sampledBy", sampler, combinator))
       if sampler instanceof Property then stream.toProperty() else stream
 
-    @subscribe = (sink) =>
-      # TODO: it's unoptimal to do this bookkeepping per subscriber
-      reply = Bacon.more
-      class LatestEvent
-        set: (event) -> @event = event
-        send: ->
-          event = @event
-          @event = null
-          if event? and reply != Bacon.noMore
-            reply = sink event
-            unsub() if reply == Bacon.noMore
-      value = new LatestEvent()
-      end = new LatestEvent()
-      unsub = nop
-      unsub = @subscribeInternal (event) =>
-        if event.isError()
-          reply = sink event if reply != Bacon.noMore
-        else
-          if event.hasValue()
-            value.set(event)
-          else if event.isEnd()
-            end.set(event)
-          PropertyTransaction.onDone ->
-            value.send()
-            end.send()
-        reply
-      ->
-        reply = Bacon.noMore
-        unsub()
+    @subscribe = @subscribeInternal
     registerObs(this)
 
   sample: (interval) =>
@@ -773,33 +745,34 @@ class Dispatcher
         waiters = null
         w() for w in ws
     @push = (event) =>
-      if not pushing
-        return if event is prevError
-        prevError = event if event.isError()
-        success = false
-        try
-          pushing = true
-          tmp = subscriptions
-          for sub in tmp
-            reply = sub.sink event
-            removeSub sub if reply == Bacon.noMore or event.isEnd()
+      UpdateBarrier.inTransaction this, ->
+        if not pushing
+          return if event is prevError
+          prevError = event if event.isError()
+          success = false
+          try
+            pushing = true
+            tmp = subscriptions
+            for sub in tmp
+              reply = sub.sink event
+              removeSub sub if reply == Bacon.noMore or event.isEnd()
+            success = true
+          finally
+            pushing = false
+            queue = null if not success # ditch queue in case of exception to avoid unexpected behavior
           success = true
-        finally
-          pushing = false
-          queue = null if not success # ditch queue in case of exception to avoid unexpected behavior
-        success = true
-        while queue?.length
-          event = _.head(queue)
-          queue = _.tail(queue)
-          @push event
-        done(event)
-        if @hasSubscribers()
-          Bacon.more
+          while queue?.length
+            event = _.head(queue)
+            queue = _.tail(queue)
+            @push event
+          done(event)
+          if @hasSubscribers()
+            Bacon.more
+          else
+            Bacon.noMore
         else
-          Bacon.noMore
-      else
-        queue = (queue or []).concat([event])
-        Bacon.more
+          queue = (queue or []).concat([event])
+          Bacon.more
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) =>
       if event.isEnd()
@@ -833,8 +806,7 @@ class PropertyDispatcher extends Dispatcher
       if event.hasValue()
         current = new Some(event.value)
         #console.log "push", event.value()
-      PropertyTransaction.inTransaction =>
-        push.apply(this, [event])
+      push.apply(this, [event])
     @subscribe = (sink) =>
       initSent = false
       # init value is "bounced" here because the base Dispatcher class
@@ -852,6 +824,64 @@ class PropertyDispatcher extends Dispatcher
         nop
       else
         subscribe.apply(this, [sink])
+
+Bacon.dependsOn = (a,b) ->
+  if a == b
+    return false
+  deps = a.deps()
+  for dep in deps
+    if dep == b
+      return true
+    if Bacon.dependsOn(dep, b)
+      return true
+  return false
+
+UpdateBarrier = (->
+  tx = false
+  waiters = []
+  independent = (waiter) ->
+    !_.any(waiters, ((other) -> Bacon.dependsOn(waiter.obs, other.obs)))
+  whenDone = (obs, f) -> 
+    if !_.any(waiters, (w) -> w.obs==obs)
+      waiters.push {obs, f}
+  flush = ->
+    if waiters.length
+      console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
+      ok = _.filter independent, waiters
+      console.log "ok to send", ok.length
+
+      # TODO: problem is that what's registered here may be an Observable
+      # that's skipped in the descriptions as an impl.detail, and so the
+      # deps never point to this one.
+
+      if waiters.length == 2
+        console.log("**", Bacon.dependsOn(waiters[0].obs, waiters[1].obs))
+        console.log("**", Bacon.dependsOn(waiters[1].obs, waiters[0].obs))
+      firstIndex = _.indexWhere waiters, independent
+      throw "no independent observable" if firstIndex < 0
+      {f} = waiters.splice(firstIndex, 1)[0]
+      f()
+      flush()
+  inTransaction = (context, f) -> 
+    if tx
+      #console.log "in tx"
+      f.call(context)
+    else
+      #console.log "start tx"
+      tx = true
+      try
+        result = f.call(context)
+        #console.log("done with tx")
+        flush()
+      finally
+        tx = false
+      result
+  { whenDone, inTransaction }
+)()
+
+Bacon.detectSimultaneousEvents = (observables) ->
+  null
+
 
 PropertyTransaction = (->
   txListeners = []
@@ -902,7 +932,7 @@ class Bus extends EventStream
       for subscription in cloneArray(subscriptions)
         subscribeInput(subscription)
       unsubAll
-    super(subscribeAll)
+    super(describe(Bacon, "Bus"), subscribeAll)
     @plug = (input) =>
       return if ended
       sub = { input: input }
@@ -988,7 +1018,7 @@ Bacon.when = (patterns...) ->
        pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
        for s in patSources
          assert isObservable(s), usage
-         index = indexOf(sources, s)
+         index = _.indexOf(sources, s)
          if index < 0
             sources.push(s)
             index = sources.length - 1
@@ -1003,7 +1033,7 @@ Bacon.when = (patterns...) ->
     sources = _.map Source.fromObservable, sources
     observables = _.map ((s) -> s.obs), sources
 
-    new EventStream desc, (sink) ->
+    resultStream = new EventStream desc, (sink) ->
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotSync = (source) ->
@@ -1022,11 +1052,12 @@ Bacon.when = (patterns...) ->
           else
             source.push e.value
             if source.sync
-              for p in pats
-                 if match(p)
-                   val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-                   reply = sink e.apply(val)
-                   break
+              UpdateBarrier.whenDone resultStream, ->
+                for p in pats
+                   if match(p)
+                     val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+                     reply = sink e.apply(val)
+                     break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
@@ -1125,13 +1156,6 @@ end = -> new End()
 # instanceof more performant than x.?isEvent?()
 toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
-indexOf = if Array::indexOf
-  (xs, x) -> xs.indexOf(x)
-else
-  (xs, x) ->
-    for y, i in xs
-      return i if x == y
-    -1
 assert = (message, condition) -> throw message unless condition
 assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
 assertEventStream = (event) -> assert "not an EventStream : " + event, event instanceof EventStream
@@ -1201,6 +1225,17 @@ toOption = (v) ->
     new Some(v)
 
 _ = {
+  indexOf: if Array::indexOf
+    (xs, x) -> xs.indexOf(x)
+  else
+    (xs, x) ->
+      for y, i in xs
+        return i if x == y
+      -1
+  indexWhere: (xs, f) ->
+    for y, i in xs
+      return i if f(y)
+    -1
   head: (xs) -> xs[0]
   always: (x) -> (-> x)
   negate: (f) -> (x) -> not f(x)
@@ -1217,7 +1252,7 @@ _ = {
     for key, value of xs
       f(key, value)
   toArray: (xs) -> if isArray(xs) then xs else [xs]
-  contains: (xs, x) -> indexOf(xs, x) != -1
+  contains: (xs, x) -> _.indexOf(xs, x) != -1
   id: (x) -> x
   last: (xs) -> xs[xs.length-1]
   all: (xs, f = _.id) ->
@@ -1231,7 +1266,7 @@ _ = {
   without: (x, xs) ->
     _.filter(((y) -> y != x), xs)
   remove: (x, xs) ->
-    i = indexOf(xs, x)
+    i = _.indexOf(xs, x)
     if i >= 0
       xs.splice(i, 1)
   fold: (xs, seed, f) ->

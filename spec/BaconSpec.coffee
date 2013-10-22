@@ -1421,7 +1421,7 @@ describe "Property update is atomic", ->
          b = a.map((x) -> x).filter(true)
          a.combine(b, (x, y) -> x + y)
       [2, 4])
-  describe "when root property is based on combine*", ->
+  describe.only "when root property is based on combine*", ->
     expectPropertyEvents(
       ->
          a = series(1, [1, 2]).toProperty().combine(Bacon.constant(0), (x, y) -> x)
@@ -2037,6 +2037,7 @@ describe "Bacon.when", ->
            [Bacon.once(1)], (x) -> x,
            [], ->)
       [1])
+  describe "works with empty patterns (2)", ->
     expectStreamEvents(
       -> Bacon.when(
            [], ->,
