@@ -820,6 +820,7 @@ class PropertyDispatcher extends Dispatcher
         subscribe.apply(this, [sink])
 
 Bacon.dependsOn = (a,b) ->
+  # TODO: the allDeps thing could be pre-calculated and optimized for quick lookup
   if a == b
     return false
   deps = a.allDeps
@@ -836,15 +837,11 @@ UpdateBarrier = (->
   independent = (waiter) ->
     !_.any(waiters, ((other) -> Bacon.dependsOn(waiter.obs, other.obs)))
   whenDone = (obs, f) -> 
-    if !_.any(waiters, (w) -> w.obs==obs)
-      waiters.push {obs, f}
+    waiters.push {obs, f}
   flush = ->
     if waiters.length
       #console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
       ok = _.filter independent, waiters
-
-      # TODO: still something amiss. Doesn't block updates..
-      #
       firstIndex = _.indexWhere waiters, independent
       throw "no independent observable" if firstIndex < 0
       {f} = waiters.splice(firstIndex, 1)[0]
@@ -1041,6 +1038,7 @@ Bacon.when = (patterns...) ->
             source.push e.value
             if source.sync
               UpdateBarrier.whenDone resultStream, ->
+                # TODO this needs re-impl to work correctly
                 for p in pats
                    if match(p)
                      val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
