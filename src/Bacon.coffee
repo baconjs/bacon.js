@@ -822,7 +822,7 @@ class PropertyDispatcher extends Dispatcher
 Bacon.dependsOn = (a,b) ->
   if a == b
     return false
-  deps = a.deps()
+  deps = a.allDeps
   for dep in deps
     if dep == b
       return true
@@ -840,17 +840,11 @@ UpdateBarrier = (->
       waiters.push {obs, f}
   flush = ->
     if waiters.length
-      console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
+      #console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
       ok = _.filter independent, waiters
-      console.log "ok to send", ok.length
 
-      # TODO: problem is that what's registered here may be an Observable
-      # that's skipped in the descriptions as an impl.detail, and so the
-      # deps never point to this one.
-
-      if waiters.length == 2
-        console.log("**", Bacon.dependsOn(waiters[0].obs, waiters[1].obs))
-        console.log("**", Bacon.dependsOn(waiters[1].obs, waiters[0].obs))
+      # TODO: still something amiss. Doesn't block updates..
+      #
       firstIndex = _.indexWhere waiters, independent
       throw "no independent observable" if firstIndex < 0
       {f} = waiters.splice(firstIndex, 1)[0]
@@ -948,6 +942,7 @@ class Source
     invoke = if lazy then _.id else (f) -> f()
     @subscribe = obs.subscribe if not @subscribe?
     @markEnded = -> @ended = true
+    @toString = @obs.toString
     if consume
       @consume = () -> invoke(queue.shift())
       @push  = (x) -> queue.push(x)
@@ -980,10 +975,15 @@ class Desc
         _.flatMap findDeps, x
       else if isObservable(x)
         [x]
+      else if x instanceof Source
+        [x.obs]
       else
         []
     @apply = (obs) ->
-      obs.deps = -> findDeps(args)
+      prevAllDeps = obs.allDeps || []
+      dps = findDeps([context].concat(args))
+      obs.allDeps = dps.concat(prevAllDeps)
+      obs.deps = -> dps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
       obs.desc = -> { context, method, args }
       obs
