@@ -946,11 +946,13 @@ class Source
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
+      @flatten = false
     else
       @consume = () -> invoke(queue[0])
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = -> queue.length
+      @flatten = true
 
 Source.fromObservable = (s) ->
   if s instanceof Source
@@ -1020,6 +1022,7 @@ Bacon.when = (patterns...) ->
     observables = _.map ((s) -> s.obs), sources
 
     resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
+      triggers = []
       match = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotSync = (source) ->
@@ -1039,18 +1042,22 @@ Bacon.when = (patterns...) ->
             source.push e.value
             if source.sync
               console.log "queuing", _.toString(resultStream)
+              triggers.push {source: source, e: e}
               UpdateBarrier.whenDone resultStream, flush
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
       flush = ->
         console.log "flushing", _.toString(resultStream)
-        # TODO this needs re-impl to work correctly
-        for p in pats
-           if match(p)
-             console.log "match", _.toString(p)
-             val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-             reply = sink new Next(val)
-             return #flush()
+        while triggers.length > 0
+          trigger = triggers.pop()
+          for p in pats
+             if match(p)
+               console.log "match", _.toString(p)
+               val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+               reply = sink new Next(val)
+               console.log "triggers now", triggers
+               triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
+               break
         console.log "flushed"
 
       compositeUnsubscribe (part s,i for s,i in sources)...

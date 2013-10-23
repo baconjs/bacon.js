@@ -1398,7 +1398,7 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
-describe.only "Property update is atomic", ->
+describe "Property update is atomic", ->
   describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
       ->
@@ -1572,7 +1572,7 @@ describe "Bacon.mergeAll", ->
       -> Bacon.mergeAll()
       [])
 
-describe "Property.sampledBy(stream)", ->
+describe.only "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
       ->
