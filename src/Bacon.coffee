@@ -837,7 +837,8 @@ UpdateBarrier = (->
   independent = (waiter) ->
     !_.any(waiters, ((other) -> Bacon.dependsOn(waiter.obs, other.obs)))
   whenDone = (obs, f) -> 
-    waiters.push {obs, f}
+    if !_.any(waiters, (w) -> w.obs==obs)
+      waiters.push {obs, f}
   flush = ->
     if waiters.length
       #console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
@@ -1037,15 +1038,20 @@ Bacon.when = (patterns...) ->
           else
             source.push e.value
             if source.sync
-              UpdateBarrier.whenDone resultStream, ->
-                # TODO this needs re-impl to work correctly
-                for p in pats
-                   if match(p)
-                     val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-                     reply = sink e.apply(val)
-                     break
+              console.log "queuing", _.toString(resultStream)
+              UpdateBarrier.whenDone resultStream, flush
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
+      flush = ->
+        console.log "flushing", _.toString(resultStream)
+        # TODO this needs re-impl to work correctly
+        for p in pats
+           if match(p)
+             console.log "match", _.toString(p)
+             val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+             reply = sink new Next(val)
+             return #flush()
+        console.log "flushed"
 
       compositeUnsubscribe (part s,i for s,i in sources)...
 

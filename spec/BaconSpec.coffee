@@ -1398,7 +1398,7 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
-describe "Property update is atomic", ->
+describe.only "Property update is atomic", ->
   describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
       ->
@@ -1421,7 +1421,7 @@ describe "Property update is atomic", ->
          b = a.map((x) -> x).filter(true)
          a.combine(b, (x, y) -> x + y)
       [2, 4])
-  describe.only "when root property is based on combine*", ->
+  describe "when root property is based on combine*", ->
     expectPropertyEvents(
       ->
          a = series(1, [1, 2]).toProperty().combine(Bacon.constant(0), (x, y) -> x)
