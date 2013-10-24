@@ -1529,6 +1529,14 @@ describe "Boolean logic", ->
     expectPropertyEvents(
       -> Bacon.constant(true).not()
       [false])
+  describe "works with Bacon.constant", ->
+    # TODO: Crazy stuff here: these two only fail as a pair
+    expectPropertyEvents(
+      -> Bacon.constant(true).and(Bacon.constant(true))
+      [true])
+    expectPropertyEvents(
+      -> Bacon.constant(true).or(Bacon.constant(false))
+      [true])
   describe.skip "accepts constants instead of properties", ->
     expectPropertyEvents(
       -> Bacon.constant(true).and(false)
