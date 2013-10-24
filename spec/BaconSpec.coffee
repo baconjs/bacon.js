@@ -1572,8 +1572,8 @@ describe "Bacon.mergeAll", ->
       -> Bacon.mergeAll()
       [])
 
-describe "Property.sampledBy(stream)", ->
-  describe.only "samples property at events, resulting to EventStream", ->
+describe.only "Property.sampledBy(stream)", ->
+  describe "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
       ->
         prop = series(2, [1, 2]).toProperty()

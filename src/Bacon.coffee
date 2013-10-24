@@ -1030,39 +1030,43 @@ Bacon.when = (patterns...) ->
       cannotMatch = (p) ->
         _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
       part = (source) -> (unsubAll) ->
+        flushLater = ->
+          UpdateBarrier.whenDone resultStream, flush
+        flush = ->
+          #console.log "flushing", _.toString(resultStream)
+          reply = Bacon.more
+          while triggers.length > 0
+            trigger = triggers.pop()
+            for p in pats
+               if match(p)
+                 #console.log "match", p
+                 val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+                 # TODO support Initial events
+                 reply = sink new Next(val)
+                 #console.log "triggers now", triggers
+                 triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
+                 break
+          if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+            reply = Bacon.noMore
+            sink end()
+          unsubAll() if reply == Bacon.noMore
+          #console.log "flushed"
+          reply
         source.subscribe (e) ->
           if e.isEnd()
             source.markEnded()
-            if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
-              
-              # TODO: delay end too!
-              # Also, do unsub there
-
-              reply = Bacon.noMore
-              sink end()
+            flushLater()
           else if e.isError()
             reply = sink e
           else
             source.push e.value
             if source.sync
-              console.log "queuing", _.toString(resultStream)
+              #console.log "queuing", _.toString(resultStream)
               triggers.push {source: source, e: e}
-              UpdateBarrier.whenDone resultStream, flush
+              # TODO flush immediately if no flattened sources
+              flushLater()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
-      flush = ->
-        console.log "flushing", _.toString(resultStream)
-        while triggers.length > 0
-          trigger = triggers.pop()
-          for p in pats
-             if match(p)
-               console.log "match", p
-               val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-               reply = sink new Next(val)
-               console.log "triggers now", triggers
-               triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
-               break
-        console.log "flushed"
 
       compositeUnsubscribe (part s,i for s,i in sources)...
 
