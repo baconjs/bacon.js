@@ -138,7 +138,7 @@ Bacon.interval = (delay, value) ->
   withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, -> next(value)))
 
 Bacon.constant = (value) ->
-  new Property(describe(Bacon, "constant", value), sendWrapped([value], initial), true)
+  new Property(describe(Bacon, "constant", value), sendWrapped([value], initial))
 
 Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
 
@@ -1033,24 +1033,23 @@ Bacon.when = (patterns...) ->
         flushLater = ->
           UpdateBarrier.whenDone resultStream, flush
         flush = ->
-          #console.log "flushing", _.toString(resultStream)
+          console.log "flushing", _.toString(resultStream)
           reply = Bacon.more
           while triggers.length > 0
             trigger = triggers.pop()
             for p in pats
                if match(p)
-                 #console.log "match", p
+                 console.log "match", p
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-                 # TODO support Initial events
-                 reply = sink new Next(val)
-                 #console.log "triggers now", triggers
+                 reply = sink trigger.e.apply(val)
+                 console.log "triggers now", triggers
                  triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
                  break
           if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
             reply = Bacon.noMore
             sink end()
           unsubAll() if reply == Bacon.noMore
-          #console.log "flushed"
+          console.log "flushed"
           reply
         source.subscribe (e) ->
           if e.isEnd()
@@ -1061,7 +1060,7 @@ Bacon.when = (patterns...) ->
           else
             source.push e.value
             if source.sync
-              #console.log "queuing", _.toString(resultStream)
+              console.log "queuing", _.toString(resultStream)
               triggers.push {source: source, e: e}
               # TODO flush immediately if no flattened sources
               flushLater()
