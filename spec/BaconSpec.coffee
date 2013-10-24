@@ -1330,8 +1330,8 @@ describe "Property.skipDuplicates", ->
     describe "series 3", ->
       expectPropertyEvents((-> s.take(1)), ["foo"])
 
-describe.skip "Property.changes", ->
-  describe.skip "sends property change events", ->
+describe "Property.changes", ->
+  describe "sends property change events", ->
     expectStreamEvents(
       ->
         s = new Bacon.Bus()
@@ -1342,20 +1342,20 @@ describe.skip "Property.changes", ->
           s.end()
         p
       ["b", error()])
- describe.skip "works with synchronous source", ->
+describe.skip "works with synchronous source", ->
    expectStreamEvents(
      -> Bacon.fromArray([1,2,3]).toProperty(0).changes()
      [1,2,3])
 
-describe.skip "Property.combine", ->
-  describe.skip "combines latest values of two properties, with given combinator function, passing through errors", ->
+describe "Property.combine", ->
+  describe "combines latest values of two properties, with given combinator function, passing through errors", ->
     expectPropertyEvents(
       ->
         left = series(2, [1, error(), 2, 3]).toProperty()
         right = series(2, [4, error(), 5, 6]).delay(t(1)).toProperty()
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
-  describe.skip "also accepts a field name instead of combinator function", ->
+  describe "also accepts a field name instead of combinator function", ->
     expectPropertyEvents(
       ->
         left = series(1, [[1]]).toProperty()
@@ -1363,7 +1363,7 @@ describe.skip "Property.combine", ->
         left.combine(right, ".concat")
       [[1, 2]])
 
-  describe.skip "combines with null values", ->
+  describe "combines with null values", ->
     expectPropertyEvents(
       ->
         left = series(1, [null]).toProperty()
@@ -1382,15 +1382,15 @@ describe.skip "Property.combine", ->
 
     bus.push(["fail whale"])
     expect(calls).to.equal 0
-  describe.skip "does not duplicate same error from two streams", ->
+  describe "does not duplicate same error from two streams", ->
     expectPropertyEvents(
       ->
         src = series(1, ["same", error()])
         Bacon.combineAsArray(src, src)
       [["same", "same"], error()])
 
-describe.skip "EventStream.combine", ->
-  describe.skip "converts stream to Property, then combines", ->
+describe "EventStream.combine", ->
+  describe "converts stream to Property, then combines", ->
     expectPropertyEvents(
       ->
         left = series(2, [1, error(), 2, 3])
@@ -1470,20 +1470,20 @@ describe "Bacon.combineAsArray", ->
       ->
         Bacon.combineAsArray([Bacon.constant([]), Bacon.constant([1])])
     ([[[], [1]]]))
-  describe.skip "works with arrays as values, with first array being non-empty (bug fix)", ->
+  describe "works with arrays as values, with first array being non-empty (bug fix)", ->
     expectPropertyEvents(
       ->
         Bacon.combineAsArray([Bacon.constant([1]), Bacon.constant([2])])
     ([[[1], [2]]]))
-  describe.skip "works with empty array", ->
+  describe "works with empty array", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray([])
       [[]])
-  describe.skip "works with empty args list", ->
+  describe "works with empty args list", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray()
       [[]])
-  describe.skip "accepts constant values instead of Observables", ->
+  describe "accepts constant values instead of Observables", ->
     expectPropertyEvents(
       -> Bacon.combineAsArray(Bacon.constant(1), 2, 3)
     [[1,2,3]])
@@ -1495,37 +1495,37 @@ describe "Bacon.combineAsArray", ->
     Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
     expect(calls).to.equal(1)
 
-describe.skip "Bacon.combineWith", ->
-  describe.skip "combines n properties, streams and constants using an n-ary function", ->
+describe "Bacon.combineWith", ->
+  describe "combines n properties, streams and constants using an n-ary function", ->
     expectPropertyEvents(
       ->
         stream = series(1, [1, 2])
         f = (x, y, z) -> x + y + z
         Bacon.combineWith(f, stream, Bacon.constant(10), 100)
       [111, 112])
-  describe.skip "works with single input", ->
+  describe "works with single input", ->
     expectPropertyEvents(
       ->
         stream = series(1, [1, 2])
         f = (x) -> x * 2
         Bacon.combineWith(f, stream)
       [2, 4])
-  describe.skip "works with 0 inputs (results to a constant)", ->
+  describe "works with 0 inputs (results to a constant)", ->
     expectPropertyEvents(
       ->
         Bacon.combineWith(-> 1)
       [1])
 
-describe.skip "Boolean logic", ->
-  describe.skip "combines Properties with and()", ->
+describe "Boolean logic", ->
+  describe "combines Properties with and()", ->
     expectPropertyEvents(
       -> Bacon.constant(true).and(Bacon.constant(false))
       [false])
-  describe.skip "combines Properties with or()", ->
+  describe "combines Properties with or()", ->
     expectPropertyEvents(
       -> Bacon.constant(true).or(Bacon.constant(false))
       [true])
-  describe.skip "inverts property with not()", ->
+  describe "inverts property with not()", ->
     expectPropertyEvents(
       -> Bacon.constant(true).not()
       [false])
@@ -1540,8 +1540,8 @@ describe.skip "Boolean logic", ->
       -> Bacon.constant(true).or(false)
       [true])
 
-describe.skip "Bacon.mergeAll", ->
-  describe.skip ("merges all given streams"), ->
+describe "Bacon.mergeAll", ->
+  describe ("merges all given streams"), ->
     expectStreamEvents(
       ->
         Bacon.mergeAll([
@@ -1549,7 +1549,7 @@ describe.skip "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2))])
       [1, 3, 5, 2, 4, 6], unstable)
-  describe.skip ("supports n-ary syntax"), ->
+  describe ("supports n-ary syntax"), ->
     expectStreamEvents(
       ->
         Bacon.mergeAll(
@@ -1557,14 +1557,14 @@ describe.skip "Bacon.mergeAll", ->
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2)))
       [1, 3, 5, 2, 4, 6], unstable)
-  describe.skip "works with a single stream", ->
+  describe "works with a single stream", ->
     expectStreamEvents(
       -> Bacon.mergeAll([Bacon.once(1)])
       [1])
     expectStreamEvents(
       -> Bacon.mergeAll(Bacon.once(1))
       [1])
-  describe.skip "returns empty stream for zero input", ->
+  describe "returns empty stream for zero input", ->
     expectStreamEvents(
       -> Bacon.mergeAll([])
       [])
@@ -1572,41 +1572,41 @@ describe.skip "Bacon.mergeAll", ->
       -> Bacon.mergeAll()
       [])
 
-describe.skip "Property.sampledBy(stream)", ->
-  describe.skip "samples property at events, resulting to EventStream", ->
+describe "Property.sampledBy(stream)", ->
+  describe "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
       ->
         prop = series(2, [1, 2]).toProperty()
         stream = repeat(3, ["troll"]).take(4)
         prop.sampledBy(stream)
       [1, 2, 2, 2])
-  describe.skip "includes errors from both Property and EventStream", ->
+  describe "includes errors from both Property and EventStream", ->
     expectStreamEvents(
       ->
         prop = series(2, [error(), 2]).toProperty()
         stream = series(3, [error(), "troll"])
         prop.sampledBy(stream)
       [error(), error(), 2])
-  describe.skip "ends when sampling stream ends", ->
+  describe "ends when sampling stream ends", ->
     expectStreamEvents(
       ->
         prop = repeat(2, [1, 2]).toProperty()
         stream = repeat(2, [""]).delay(t(1)).take(4)
         prop.sampledBy(stream)
       [1, 2, 1, 2])
-  describe.skip "accepts optional combinator function f(Vp, Vs)", ->
+  describe "accepts optional combinator function f(Vp, Vs)", ->
     expectStreamEvents(
       ->
         prop = series(2, ["a", "b"]).toProperty()
         stream = series(2, ["1", "2", "1", "2"]).delay(t(1))
         prop.sampledBy(stream, add)
       ["a1", "b2", "b1", "b2"])
-  describe.skip "allows method name instead of function too", ->
+  describe "allows method name instead of function too", ->
     expectStreamEvents(
       ->
         Bacon.constant([1]).sampledBy(Bacon.once([2]), ".concat")
       [[1, 2]])
-  describe.skip "works with same origin", ->
+  describe "works with same origin", ->
     expectStreamEvents(
       ->
         src = series(2, [1, 2])
@@ -1617,7 +1617,7 @@ describe.skip "Property.sampledBy(stream)", ->
         src = series(2, [1, 2])
         src.toProperty().sampledBy(src.map(times, 2))
       [1, 2])
-  describe.skip "uses updated property after combine", ->
+  describe "uses updated property after combine", ->
     latter = (a, b) -> b
     expectPropertyEvents(
       ->
@@ -1625,7 +1625,7 @@ describe.skip "Property.sampledBy(stream)", ->
         combined = Bacon.constant().combine(src, latter)
         src.sampledBy(combined, add)
       ["aa", "bb", "cc"])
-  describe.skip "uses updated property after combine with subscriber", ->
+  describe "uses updated property after combine with subscriber", ->
     latter = (a, b) -> b
     expectPropertyEvents(
       ->
@@ -1634,7 +1634,7 @@ describe.skip "Property.sampledBy(stream)", ->
         combined.onValue(->)
         src.sampledBy(combined, add)
       ["aa", "bb", "cc"])
-  describe.skip "skips samplings that occur before the property gets its first value", ->
+  describe "skips samplings that occur before the property gets its first value", ->
     expectStreamEvents(
       ->
         p = series(5, [1]).toProperty()
@@ -1650,14 +1650,14 @@ describe.skip "Property.sampledBy(stream)", ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]).toProperty())
       [1, 1, 2], unstable)
-  describe.skip "works with stream of functions", ->
+  describe "works with stream of functions", ->
     f = ->
     expectStreamEvents(
       ->
         p = series(1, [f]).toProperty()
         p.sampledBy(series(1, [1, 2, 3]))
       [f, f, f])
-  describe.skip "works with synchronous sampler stream", ->
+  describe "works with synchronous sampler stream", ->
     expectStreamEvents(
       -> Bacon.constant(1).sampledBy(Bacon.fromArray([1,2,3]))
       [1,1,1], unstable)
