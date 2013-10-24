@@ -1249,7 +1249,7 @@ describe "Property.takeUntil", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty().takeUntil(Bacon.later(t(3)))
       [1])
-  describe.skip "works with errors", ->
+  describe "works with errors", ->
     expectPropertyEvents(
       ->
         src = repeat(2, [1, error(), 3])
@@ -1257,77 +1257,77 @@ describe "Property.takeUntil", ->
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
 
-describe.skip "Property.delay", ->
-  describe.skip "delivers initial value and changes", ->
+describe "Property.delay", ->
+  describe "delivers initial value and changes", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).delay(t(1))
       [0,1,2,3])
-  describe.skip "delays changes", ->
+  describe "delays changes", ->
     expectStreamEvents(
       -> series(2, [1,2,3]).toProperty()
         .delay(t(2)).changes().takeUntil(Bacon.later(t(5)))
       [1], unstable)
-  describe.skip "does not delay initial value", ->
+  describe "does not delay initial value", ->
     expectPropertyEvents(
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
       [0])
 
-describe.skip "Property.debounce", ->
-  describe.skip "delivers initial value and changes", ->
+describe "Property.debounce", ->
+  describe "delivers initial value and changes", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty(0).debounce(t(1))
       [0,1,2,3])
-  describe.skip "throttles changes, but not initial value", ->
+  describe "throttles changes, but not initial value", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).debounce(t(4))
       [0,3])
-  describe.skip "works without initial value", ->
+  describe "works without initial value", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).toProperty().debounce(t(4))
       [3])
-  describe.skip "works with Bacon.constant (bug fix)", ->
+  describe "works with Bacon.constant (bug fix)", ->
     expectPropertyEvents(
       -> Bacon.constant(1).debounce(1)
       [1])
-describe.skip "Property.throttle", ->
-  describe.skip "throttles changes, but not initial value", ->
+describe "Property.throttle", ->
+  describe "throttles changes, but not initial value", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).throttle(t(4))
       [0,3])
-  describe.skip "works with Bacon.once (bug fix)", ->
+  describe "works with Bacon.once (bug fix)", ->
     expectPropertyEvents(
       -> Bacon.once(1).toProperty().throttle(1)
       [1])
 
-describe.skip "Property.endOnError", ->
-  describe.skip "terminates on Error", ->
+describe "Property.endOnError", ->
+  describe "terminates on Error", ->
     expectPropertyEvents(
       -> series(2, [1, error(), 2]).toProperty().endOnError()
       [1, error()])
 
-describe.skip "Property.awaiting(other)", ->
-  describe.skip "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
+describe "Property.awaiting(other)", ->
+  describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]))
       [false, true, false, true])
 
-describe.skip "Property.skipDuplicates", ->
-  describe.skip "drops duplicates", ->
+describe "Property.skipDuplicates", ->
+  describe "drops duplicates", ->
     expectPropertyEvents(
       -> series(1, [1, 2, error(), 2, 3, 1]).toProperty(0).skipDuplicates()
     [0, 1, 2, error(), 3, 1])
-  describe.skip "Doesn't skip initial value (bug fix #211)", ->
+  describe "Doesn't skip initial value (bug fix #211)", ->
     b = new Bacon.Bus()
     p = b.toProperty()
     p.onValue -> # force property update
     s = p.skipDuplicates()
     b.push 'foo'
 
-    describe.skip "series 1", ->
+    describe "series 1", ->
       expectPropertyEvents((-> s.take(1)), ["foo"])
-    describe.skip "series 2", ->
+    describe "series 2", ->
       expectPropertyEvents((-> s.take(1)), ["foo"])
-    describe.skip "series 3", ->
+    describe "series 3", ->
       expectPropertyEvents((-> s.take(1)), ["foo"])
 
 describe.skip "Property.changes", ->
