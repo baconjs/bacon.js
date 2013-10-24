@@ -1342,7 +1342,7 @@ describe "Property.changes", ->
           s.end()
         p
       ["b", error()])
-describe.skip "works with synchronous source", ->
+ describe "works with synchronous source", ->
    expectStreamEvents(
      -> Bacon.fromArray([1,2,3]).toProperty(0).changes()
      [1,2,3])
