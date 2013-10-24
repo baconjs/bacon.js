@@ -1529,24 +1529,19 @@ describe "Boolean logic", ->
     expectPropertyEvents(
       -> Bacon.constant(true).not()
       [false])
-  describe "works with Bacon.constant", ->
-    # TODO: Crazy stuff here: these two only fail as a pair
-    expectPropertyEvents(
-      -> Bacon.constant(true).and(Bacon.constant(true))
-      [true])
-    expectPropertyEvents(
-      -> Bacon.constant(true).or(Bacon.constant(false))
-      [true])
-  describe.skip "accepts constants instead of properties", ->
-    expectPropertyEvents(
-      -> Bacon.constant(true).and(false)
-      [false])
-    expectPropertyEvents(
-      -> Bacon.constant(true).and(true)
-      [true])
-    expectPropertyEvents(
-      -> Bacon.constant(true).or(false)
-      [true])
+  describe "accepts constants instead of properties", ->
+    describe "true and false", ->
+      expectPropertyEvents(
+        -> Bacon.constant(true).and(false)
+        [false])
+    describe "true and true", ->
+      expectPropertyEvents(
+        -> Bacon.constant(true).and(true)
+        [true])
+    describe "true or false", ->
+      expectPropertyEvents(
+        -> Bacon.constant(true).or(false)
+        [true])
 
 describe "Bacon.mergeAll", ->
   describe ("merges all given streams"), ->
