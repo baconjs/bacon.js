@@ -1034,6 +1034,10 @@ Bacon.when = (patterns...) ->
           if e.isEnd()
             source.markEnded()
             if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+              
+              # TODO: delay end too!
+              # Also, do unsub there
+
               reply = Bacon.noMore
               sink end()
           else if e.isError()
@@ -1052,7 +1056,7 @@ Bacon.when = (patterns...) ->
           trigger = triggers.pop()
           for p in pats
              if match(p)
-               console.log "match", _.toString(p)
+               console.log "match", p
                val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                reply = sink new Next(val)
                console.log "triggers now", triggers
