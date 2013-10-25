@@ -1342,10 +1342,10 @@ describe "Property.changes", ->
           s.end()
         p
       ["b", error()])
- describe "works with synchronous source", ->
-   expectStreamEvents(
-     -> Bacon.fromArray([1,2,3]).toProperty(0).changes()
-     [1,2,3])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3]).toProperty(0).changes()
+      [1, 2, 3])
 
 describe "Property.combine", ->
   describe "combines latest values of two properties, with given combinator function, passing through errors", ->
@@ -1669,14 +1669,14 @@ describe "Property.sampledBy(stream)", ->
       [])
   describe "laziness", ->
     calls = 0
-    id = (x) ->
-      calls++
-      x
-    sampler = Bacon.later(5).map(id)
-    property = repeat(1, [1]).toProperty().map(id)
-    sampled = property.sampledBy sampler
-    sampled.onValue()
     before (done) ->
+      id = (x) ->
+        calls++
+        x
+      sampler = Bacon.later(5).map(id)
+      property = repeat(1, [1]).toProperty().map(id)
+      sampled = property.sampledBy sampler
+      sampled.onValue()
       sampled.onEnd(done)
     it "preserves laziness", ->
       expect(calls).to.equal(1)
