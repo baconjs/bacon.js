@@ -1007,8 +1007,16 @@ describe "Bacon.once", ->
       -> Bacon.once(new Bacon.Error("oop"))
       [error()])
 
-describe.only "Bacon.fromArray", ->
-  describe "Turns an array into an EventStream", ->
+describe "Bacon.fromArray", ->
+  describe "Turns an empty array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([])
+      [])
+  describe "Turns a single-element array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1])
+      [1])
+  describe "Turns a longer array into an EventStream", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 3])
       [1, 2, 3])
@@ -1059,6 +1067,15 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.once(1).concat(Bacon.fromArray([2, 3]))
       [1, 2, 3], unstable)
+  describe "Works with synchronized left stream and doAction", ->
+    expectStreamEvents(
+      ->
+        bus = new Bacon.Bus()
+        stream = Bacon.fromArray([1,2]).flatMapLatest (x) ->
+          Bacon.once(x).concat(Bacon.later(10, x).doAction((x) -> bus.push(x); bus.end()))
+        stream.onValue ->
+        bus
+      [2])
   it "toString", ->
     expect(Bacon.once(1).concat(Bacon.once(2)).toString()).to.equal("Bacon.once(1).concat(Bacon.once(2))")
 
@@ -1888,6 +1905,12 @@ describe "EventStream.zip", ->
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
 
+describe "Property.zip", ->
+  describe "pairwise combines values from two properties", ->
+    expectStreamEvents(
+      -> series(1, [1, 2, 3]).toProperty().zip(series(1, ['a', 'b', 'c']).toProperty())
+      [[1, 'a'], [2, 'b'], [3, 'c']], { unstable })
+
 describe "Bacon.zipAsArray", ->
   describe "zips an array of streams into a stream of arrays", ->
     expectStreamEvents(
@@ -1901,12 +1924,12 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1))
     [[1 , 2], [2 , 3], [3, 4]])
-  describe "does not synchronize on properties", ->
+  describe "accepts Properties as well as EventStreams", ->
     expectStreamEvents(
       ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1), Bacon.constant(5))
-    [[1 , 2, 5], [2 , 3, 5], [3, 4, 5]])
+    [[1 , 2, 5]])
   describe "works with single stream", ->
     expectStreamEvents(
       ->

@@ -138,7 +138,10 @@ Bacon.interval = (delay, value) ->
   withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, -> next(value)))
 
 Bacon.constant = (value) ->
-  new Property(describe(Bacon, "constant", value), sendWrapped([value], initial))
+  new Property describe(Bacon, "constant", value), (sink) ->
+    sink (initial value)
+    sink (end())
+    nop
 
 Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
 
@@ -146,14 +149,19 @@ Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([v
 
 Bacon.fromArray = (values) ->
   assertArray values
-  new EventStream(describe(Bacon, "fromArray", values), sendWrapped(values, toEvent))
-
-sendWrapped = (values, wrapper) ->
-  (sink) ->
-    for value in values
-      sink (wrapper value)
-    sink (end())
-    nop
+  values = cloneArray(values)
+  new EventStream describe(Bacon, "fromArray", values), (sink) ->
+    unsubd = false
+    send = ->
+      if _.empty values
+        sink(end())
+      else
+        value = values.splice(0,1)[0]
+        reply = sink(toEvent(value))
+        if (reply != Bacon.noMore) && !unsubd
+          send()
+    send()
+    -> unsubd = true
 
 Bacon.mergeAll = (streams...) ->
   if isArray streams[0]
@@ -168,6 +176,7 @@ Bacon.zipAsArray = (streams...) ->
 Bacon.zipWith = (f, streams...) ->
   if !isFunction(f)
     [streams, f] = [f, streams[0]]
+  streams = _.map(((s) -> s.toEventStream()), streams)
   withDescription(Bacon, "zipWith", f, streams, Bacon.when(streams, f))
 
 Bacon.combineAsArray = (streams...) ->
@@ -602,12 +611,13 @@ class EventStream extends Observable
   concat: (right) ->
     left = this
     new EventStream describe(left, "concat", right), (sink) ->
-      unsub = left.subscribe (e) ->
+      unsubRight = nop
+      unsubLeft = left.subscribe (e) ->
         if e.isEnd()
-          unsub = right.subscribe sink
+          unsubRight = right.subscribe sink
         else
           sink(e)
-      -> unsub()
+      -> unsubLeft() ; unsubRight()
 
   takeUntil: (stopper) =>
     self = this
@@ -1095,7 +1105,6 @@ class CompositeUnsubscribe
     @starting.push subscription
     unsubMe = =>
       return if @unsubscribed
-      unsub()
       ended = true
       @remove unsub
       _.remove subscription, @starting
@@ -1103,9 +1112,9 @@ class CompositeUnsubscribe
     @subscriptions.push unsub unless (@unsubscribed or ended)
     _.remove subscription, @starting
     unsub
-  remove: (subscription) ->
+  remove: (unsub) ->
     return if @unsubscribed
-    _.remove subscription, @subscriptions
+    unsub() if (_.remove unsub, @subscriptions) != undefined
   unsubscribe: =>
     return if @unsubscribed
     @unsubscribed = true

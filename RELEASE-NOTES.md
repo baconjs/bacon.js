@@ -1,3 +1,11 @@
+## 0.6.21
+
+- Fix bug in concat with synchronous left stream (#262)
+
+## 0.6.20
+
+- Fix Property.zip (#260)
+
 ## 0.6.19
 
 - Fix AMD support that was partially broken in 0.6.14
