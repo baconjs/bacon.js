@@ -879,30 +879,6 @@ UpdateBarrier = (->
 Bacon.detectSimultaneousEvents = (observables) ->
   null
 
-
-PropertyTransaction = (->
-  txListeners = []
-  tx = false
-  onDone = (f) -> if tx then txListeners.push(f) else f()
-  inTransaction = (f) ->
-    if tx
-      #console.log "in tx"
-      f()
-    else
-      #console.log "start tx"
-      tx = true
-      try
-        result = f()
-      finally
-        tx = false
-      gs = txListeners
-      #console.log "after tx", txListeners.length
-      txListeners = []
-      g() for g in gs
-      result
-  { onDone, inTransaction }
- )()
-
 class Bus extends EventStream
   constructor: ->
     sink = undefined
