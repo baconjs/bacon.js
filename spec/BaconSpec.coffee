@@ -1452,6 +1452,31 @@ describe "Property update is atomic", ->
          c = a.map (x) -> x
          b.combine(c, (x, y) -> x + y)
       [2, 4])
+  describe "when root is not a Property", ->
+    expectPropertyEvents(
+      ->
+         a = series(1, [1, 2])
+         b = a.map (x) -> x
+         c = a.map (x) -> x
+         b.combine(c, (x, y) -> x + y)
+      [2, 4])
+  it "calls combinator function for valid combos only", ->
+    calls = 0
+    results = []
+    combinator = (x,y) ->
+      calls++
+      x+y
+    src = new Bacon.Bus()
+    prop = src.toProperty()
+    out = prop.map((x) -> x)
+      .combine(prop.map((x) -> x * 2), combinator)
+      .doAction(->)
+      .combine(prop, (x,y) -> x)
+    out.onValue((x) -> results.push(x))
+    src.push(1)
+    src.push(2)
+    expect(results).to.deep.equal([3,6])
+    expect(calls).to.equal(2)
   describe "yet respects subscriber return values (bug fix)", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
