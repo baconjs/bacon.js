@@ -831,10 +831,9 @@ class PropertyDispatcher extends Dispatcher
         subscribe.apply(this, [sink])
 
 Bacon.dependsOn = (a,b) ->
-  # TODO: the allDeps thing could be pre-calculated and optimized for quick lookup
   if a == b
     return false
-  deps = a.allDeps
+  deps = a.internalDeps()
   for dep in deps
     if dep == b
       return true
@@ -967,10 +966,9 @@ class Desc
       else
         []
     @apply = (obs) ->
-      prevAllDeps = obs.allDeps || []
-      dps = findDeps([context].concat(args))
-      obs.allDeps = dps.concat(prevAllDeps)
-      obs.deps = -> dps
+      deps = _.cached (-> findDeps([context].concat(args)))
+      obs.internalDeps = obs.internalDeps || deps
+      obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
       obs.desc = -> { context, method, args }
       obs
