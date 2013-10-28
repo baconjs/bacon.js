@@ -501,6 +501,25 @@ class Observable
     withDescription(this, "awaiting", other, 
     this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false))
 
+  groupSimultaneousValues: ->
+    root = this
+    resultStream = new EventStream describe(root, "groupSimultaneousValues"), (sink) ->
+      events = []
+      root.subscribe (event) ->
+        if event.isError()
+          sink event
+        else
+          events.push event
+          UpdateBarrier.whenDone resultStream, ->
+            endEvent = if _.last(events).isEnd()
+              events.splice(events.length - 1, 1)[0]
+            eventsToSend = events
+            events = []
+            if eventsToSend.length
+              sink eventsToSend[0].apply(_.map(((e) -> e.value()), eventsToSend))
+            if endEvent
+              sink endEvent
+
 Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable

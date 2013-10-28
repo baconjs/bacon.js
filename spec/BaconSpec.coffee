@@ -1421,6 +1421,14 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
+describe "EventStream.groupSimultaneousValues", ->
+  describe "groups simultaneous values in to arrays", ->
+    expectStreamEvents(
+      -> 
+        src = series(1, [1,2])
+        src.merge(src.map((x) -> x * 2)).groupSimultaneousValues()
+      [[1, 2], [2,4]])
+
 describe "Property update is atomic", ->
   describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
