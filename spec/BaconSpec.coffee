@@ -1421,13 +1421,33 @@ describe "EventStream.combine", ->
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
 
-describe "EventStream.groupSimultaneousValues", ->
+describe "Bacon.groupSimultaneous", ->
   describe "groups simultaneous values in to arrays", ->
     expectStreamEvents(
       -> 
         src = series(1, [1,2])
-        src.merge(src.map((x) -> x * 2)).groupSimultaneousValues()
-      [[1, 2], [2,4]])
+        stream = src.merge(src.map((x) -> x * 2))
+        Bacon.groupSimultaneous(stream)
+      [[[1, 2]], [[2,4]]])
+  describe "groups simultaneous values from multiple sources in to arrays", ->
+    expectStreamEvents(
+      -> 
+        src = series(1, [1,2])
+        stream = src.merge(src.map((x) -> x * 2))
+        stream2 = src.map (x) -> x * 4
+        Bacon.groupSimultaneous(stream, stream2)
+      [[[1, 2], [4]], [[2,4], [8]]])
+  describe "accepts an array or multiple args", ->
+    expectStreamEvents(
+      -> Bacon.groupSimultaneous([Bacon.later(1, 1), Bacon.later(2, 2)])
+      [[[1],[]], [[], [2]]])
+  describe "returns empty stream for zero sources", ->
+    expectStreamEvents(
+      -> Bacon.groupSimultaneous()
+      [])
+    expectStreamEvents(
+      -> Bacon.groupSimultaneous([])
+      [])
 
 describe "Property update is atomic", ->
   describe "in a diamond-shaped combine() network", ->

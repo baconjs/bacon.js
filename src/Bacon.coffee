@@ -179,6 +179,13 @@ Bacon.zipWith = (f, streams...) ->
   streams = _.map(((s) -> s.toEventStream()), streams)
   withDescription(Bacon, "zipWith", f, streams, Bacon.when(streams, f))
 
+Bacon.groupSimultaneous = (streams...) ->
+  if (streams.length == 1 and isArray(streams[0]))
+    streams = streams[0]
+  sources = for s in streams
+    new BufferingSource(s)
+  withDescription(Bacon, "groupSimultaneous", streams, Bacon.when(sources, ((xs...) -> xs)))
+
 Bacon.combineAsArray = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))
     streams = streams[0]
@@ -500,25 +507,6 @@ class Observable
   awaiting: (other) ->
     withDescription(this, "awaiting", other, 
     this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false))
-
-  groupSimultaneousValues: ->
-    root = this
-    resultStream = new EventStream describe(root, "groupSimultaneousValues"), (sink) ->
-      events = []
-      root.subscribe (event) ->
-        if event.isError()
-          sink event
-        else
-          events.push event
-          UpdateBarrier.whenDone resultStream, ->
-            endEvent = if _.last(events).isEnd()
-              events.splice(events.length - 1, 1)[0]
-            eventsToSend = events
-            events = []
-            if eventsToSend.length
-              sink eventsToSend[0].apply(_.map(((e) -> e.value()), eventsToSend))
-            if endEvent
-              sink endEvent
 
 Observable :: reduce = Observable :: fold
 
@@ -940,8 +928,7 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, consume, @subscribe, lazy = false) ->
-    queue = []
+  constructor: (@obs, @sync, consume, @subscribe, lazy = false, queue = []) ->
     invoke = if lazy then _.id else (f) -> f()
     @subscribe = obs.subscribe if not @subscribe?
     @markEnded = -> @ended = true
@@ -958,6 +945,17 @@ class Source
       @mayHave = -> true
       @hasAtLeast = -> queue.length
       @flatten = true
+
+class BufferingSource extends Source
+  constructor: (@obs) ->
+    queue = []
+    super(@obs, true, false, @obs.subscribe, false, queue)
+    @consume = ->
+      values = queue
+      queue = []
+      values
+    @push = (x) -> queue.push(x())
+    @hasAtLeast = -> true
 
 Source.fromObservable = (s) ->
   if s instanceof Source
