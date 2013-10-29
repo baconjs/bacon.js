@@ -506,7 +506,9 @@ class Observable
 
   awaiting: (other) ->
     withDescription(this, "awaiting", other, 
-    this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false))
+      Bacon.groupSimultaneous(this, other)
+        .map(([myValues, otherValues]) -> otherValues.length == 0)
+        .toProperty(false))
 
 Observable :: reduce = Observable :: fold
 
