@@ -885,9 +885,6 @@ UpdateBarrier = (->
   { whenDone, inTransaction }
 )()
 
-Bacon.detectSimultaneousEvents = (observables) ->
-  null
-
 class Bus extends EventStream
   constructor: ->
     sink = undefined
