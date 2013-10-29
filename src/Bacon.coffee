@@ -757,8 +757,7 @@ class Dispatcher
         ws = waiters
         waiters = null
         w() for w in ws
-    @push = (event) =>
-      UpdateBarrier.inTransaction this, ->
+    pushIt = (event) ->
         if not pushing
           return if event is prevError
           prevError = event if event.isError()
@@ -786,6 +785,8 @@ class Dispatcher
         else
           queue = (queue or []).concat([event])
           Bacon.more
+    @push = (event) =>
+      UpdateBarrier.inTransaction this, pushIt, [event]
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) =>
       if event.isEnd()
@@ -829,8 +830,8 @@ class PropertyDispatcher extends Dispatcher
       shouldBounceInitialValue = => @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map(
         (val) ->
-          UpdateBarrier.inTransaction this, ->
-            sink initial(val()))
+          UpdateBarrier.inTransaction this, (-> sink initial(val())), []
+      )
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
       else if ended
@@ -867,15 +868,15 @@ UpdateBarrier = (->
       {f} = waiters.splice(firstIndex, 1)[0]
       f()
       flush()
-  inTransaction = (context, f) -> 
+  inTransaction = (context, f, args) -> 
     if tx
       #console.log "in tx"
-      f.call(context)
+      f.apply(context, args)
     else
       #console.log "start tx"
       tx = true
       try
-        result = f.call(context)
+        result = f.apply(context, args)
         #console.log("done with tx")
         flush()
       finally
