@@ -946,6 +946,17 @@ describe "EventStream.awaiting(other)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).awaiting(series(3, [2]).toProperty())
       [false, true, false, true])
+  describe "supports simultaneouts events", ->
+    expectPropertyEvents(
+      -> 
+        src = Bacon.later(1, 1)
+        src.awaiting(src.map(->))
+      [false])
+    expectPropertyEvents(
+      -> 
+        src = Bacon.later(1, 1)
+        src.map(->).awaiting(src)
+      [false])
   it "toString", ->
     expect(Bacon.never().awaiting(Bacon.once(1)).toString()).to.equal("Bacon.never().awaiting(Bacon.once(1))")
 

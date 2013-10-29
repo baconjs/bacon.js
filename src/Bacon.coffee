@@ -508,7 +508,7 @@ class Observable
     withDescription(this, "awaiting", other, 
       Bacon.groupSimultaneous(this, other)
         .map(([myValues, otherValues]) -> otherValues.length == 0)
-        .toProperty(false))
+        .toProperty(false).skipDuplicates())
 
 Observable :: reduce = Observable :: fold
 
