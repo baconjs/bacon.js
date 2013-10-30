@@ -890,6 +890,13 @@ describe "EventStream.takeUntil", ->
         stopper = new Bacon.Bus()
         src.takeUntil(stopper)
       [1,2,3])
+  describe "ends properly with a never-ending stopper and synchronous source", ->
+    expectStreamEvents(
+      ->
+        src = Bacon.fromArray([1,2,3]).mapEnd("finito")
+        stopper = new Bacon.Bus()
+        src.takeUntil(stopper)
+      [1,2,3, "finito"])
   describe "unsubscribes its source as soon as possible", ->
      expectStreamEvents(
        ->
@@ -1459,6 +1466,13 @@ describe "Bacon.groupSimultaneous", ->
     expectStreamEvents(
       -> Bacon.groupSimultaneous([])
       [])
+  describe.only "works with synchronous sources", ->
+    expectStreamEvents(
+      -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]))
+      [[[1]], [[2]]])
+    expectStreamEvents(
+      -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
+      [[[1]], [[2]], [[3]]])
 
 describe "Property update is atomic", ->
   describe "in a diamond-shaped combine() network", ->

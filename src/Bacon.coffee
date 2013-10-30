@@ -629,19 +629,10 @@ class EventStream extends Observable
       -> unsubLeft() ; unsubRight()
 
   takeUntil: (stopper) =>
-    self = this
-    new EventStream describe(self, "takeUntil", stopper), (sink) ->
-      stop = (unsubAll) ->
-        stopper.onValue ->
-          sink end()
-          unsubAll()
-          Bacon.noMore
-      produce = (unsubAll) ->
-        self.subscribe (x) ->
-          reply = sink x
-          unsubAll() if x.isEnd() or reply == Bacon.noMore
-          reply
-      compositeUnsubscribe stop, produce
+    endMarker = {}
+    withDescription this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
+        .takeWhile(([data, stopper]) -> (stopper.length == 0) && (data[data.length-1] != endMarker))
+        .flatMap(([data, stopper]) -> Bacon.fromArray(data))
 
   skipUntil: (starter) ->
     started = starter.take(1).map(true).toProperty(false)
