@@ -1467,11 +1467,9 @@ describe "Bacon.groupSimultaneous", ->
       -> Bacon.groupSimultaneous([])
       [])
   describe "works with synchronous sources", ->
-    describe "fromArray", ->
       expectStreamEvents(
         -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]))
         [[[1]], [[2]]])
-    describe "fromArray.mapEnd", ->
       expectStreamEvents(
         -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
         [[[1]], [[2]], [[3]]])
