@@ -629,24 +629,8 @@ class EventStream extends Observable
       -> unsubLeft() ; unsubRight()
 
   takeUntil: (stopper) =>
-    endMarker = {}
-    withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
-      .withHandler((event) ->
-        if !event.hasValue()
-          @push event
-        else
-          [data, stopper] = event.value()
-          if stopper.length
-            @push end()
-          else
-            reply = Bacon.more
-            for value in data
-              if value == endMarker
-                reply = @push end()
-              else
-                reply = @push next(value)
-            reply
-      ))
+    shouldContinue = stopper.toEventStream().skipErrors().map(false).toProperty(true)
+    withDescription(this, "takeUntil", stopper, this.takeWhile(shouldContinue))
 
   skipUntil: (starter) ->
     started = starter.take(1).map(true).toProperty(false)
