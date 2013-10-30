@@ -1466,16 +1466,18 @@ describe "Bacon.groupSimultaneous", ->
     expectStreamEvents(
       -> Bacon.groupSimultaneous([])
       [])
-  describe.only "works with synchronous sources", ->
-    expectStreamEvents(
-      -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]))
-      [[[1]], [[2]]])
-    expectStreamEvents(
-      -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
-      [[[1]], [[2]], [[3]]])
+  describe "works with synchronous sources", ->
+    describe "fromArray", ->
+      expectStreamEvents(
+        -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]))
+        [[[1]], [[2]]])
+    describe "fromArray.mapEnd", ->
+      expectStreamEvents(
+        -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
+        [[[1]], [[2]], [[3]]])
 
-describe "Property update is atomic", ->
-  describe "in a diamond-shaped combine() network", ->
+  describe "Property update is atomic", ->
+    describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
       ->
          a = series(1, [1, 2]).toProperty()
