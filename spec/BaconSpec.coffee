@@ -855,6 +855,15 @@ describe "EventStream.takeUntil", ->
         stopper = src.filter(lessThan(3))
         src.takeUntil(stopper)
       [3])
+  describe "works on self-derived stopper with an evil twist", ->
+    expectStreamEvents(
+      ->
+        src = repeat(3, [3, 2, 1])
+        data = src.map((x) -> x)
+        data.take(3).onValue(->)
+        stopper = src.filter(lessThan(3))
+        data.takeUntil(stopper)
+      [3])
   describe "includes source errors, ignores stopper errors", ->
     expectStreamEvents(
       ->
