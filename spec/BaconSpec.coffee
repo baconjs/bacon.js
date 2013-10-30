@@ -537,6 +537,15 @@ describe "EventStream.skipUntil", ->
         starter = src.filter((x) -> x == 3)
         src.skipUntil(starter)
       [3])
+  describe "works with self-derived starter with an evil twist", ->
+    expectStreamEvents(
+      ->
+        src = series(3, [1,2,3])
+        data = src.map((x) -> x)
+        data.onValue(->)
+        starter = src.filter((x) -> x == 3)
+        data.skipUntil(starter)
+      [3])
   it "toString", ->
     expect(Bacon.never().skipUntil(Bacon.once(1)).toString()).to.equal("Bacon.never().skipUntil(Bacon.once(1))")
 
