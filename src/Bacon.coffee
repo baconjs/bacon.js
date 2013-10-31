@@ -480,6 +480,15 @@ class Observable
   awaiting: (other) ->
     this.toEventStream().map(true).merge(other.toEventStream().map(false)).toProperty(false)
 
+  onDispose: (f) ->
+    f = Bacon._.cached f
+    @withSubscribe (sink) =>
+      unsub = @subscribe (e) ->
+        reply = sink(e)
+        if (e.isEnd() || reply == Bacon.noMore)
+          f();
+        reply
+      -> f(); unsub() 
 
 Observable :: reduce = Observable :: fold
 
