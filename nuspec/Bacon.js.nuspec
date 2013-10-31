@@ -15,6 +15,9 @@
     <language>en-US</language>
     <tags>Bacon Bacon.js Reactive Functional Observable FRP Event</tags>
   </metadata>
+  <dependencies>
+      <dependency id="jQuery" />
+  </dependencies>
   <files>
     <file src="..\dist\Bacon.js" target="content\Scripts\Bacon.js" />
     <file src="..\dist\Bacon.min.js" target="content\Scripts\Bacon.min.js" />
