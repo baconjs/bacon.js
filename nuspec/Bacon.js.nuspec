@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Bacon.js</id>
-    <title>Functional reactive programming library for Javascript</title>
+    <title>Bacon.js - Functional Reactive Programming library for JavaScript</title>
     <version>0.6.21</version>
     <authors>Bacon.js Organization</authors>
     <description>
