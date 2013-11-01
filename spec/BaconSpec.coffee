@@ -280,7 +280,7 @@ describe "Bacon.fromEventTarget", ->
     expect(emitter.listeners("click").length).to.deep.equal(0)
 
   it "toString", ->
-    expect(Bacon.fromEventTarget({}, "click").toString()).to.equal("Bacon.fromEventTarget([object Object],click)")
+    expect(Bacon.fromEventTarget({}, "click").toString()).to.equal("Bacon.fromEventTarget({},click)")
 
 describe "Observable.log", ->
   preservingLog = (f) ->
@@ -2302,6 +2302,8 @@ describe "combineTemplate", ->
     value = {key: ->}
     Bacon.combineTemplate(value).onValue (x) ->
       expect(x).to.deep.equal(value)
+  it "toString", ->
+    expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})")
 
 describe "Property.decode", ->
   describe "switches between source Properties based on property value", ->

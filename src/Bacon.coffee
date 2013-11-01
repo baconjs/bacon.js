@@ -234,7 +234,7 @@ Bacon.combineTemplate = (template) ->
     for f in funcs
        f(ctxStack, values)
     rootContext
-  Bacon.combineAsArray(streams).map(combinator)
+  withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
 
 class Event
   isEvent: -> true
@@ -1302,8 +1302,12 @@ _ = {
       "function"
     else if isArray(obj)
       "[" + _.map(_.toString, obj).toString() + "]"
+    else if obj?.toString? and obj.toString!=Object.prototype.toString
+      obj.toString()
+    else if (typeof obj == "object")
+      "{" + ((key + ":" + value) for key, value of obj) + "}"
     else
-      obj?.toString() || obj
+      obj
 }
 
 Bacon._ = _
