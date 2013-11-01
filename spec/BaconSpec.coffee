@@ -138,6 +138,14 @@ describe "Bacon.sequentially", ->
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
+describe "Bacon.repeatedly", ->
+  describe "repeats given sequence forever", ->
+    expectStreamEvents(
+      -> Bacon.repeatedly(1, [1,2]).take(5)
+      [1,2,1,2,1])
+  it "toString", ->
+    expect(Bacon.repeatedly(1, [1]).toString()).to.equal("Bacon.repeatedly(1,[1])")
+
 describe "Bacon.interval", ->
   describe "repeats single element indefinitely", ->
     expectStreamEvents(
@@ -145,6 +153,14 @@ describe "Bacon.interval", ->
       ["x", "x", "x"])
   it "toString", ->
     expect(Bacon.interval(1, 2).toString()).to.equal("Bacon.interval(1,2)")
+
+describe "Bacon.fromPoll", ->
+  describe "repeatedly polls given function for values", ->
+    expectStreamEvents(
+      -> Bacon.fromPoll(1, (-> "lol")).take(2)
+      ["lol", "lol"])
+  it "toString", ->
+    expect(Bacon.fromPoll(1, (->)).toString()).to.equal("Bacon.fromPoll(1,function)")
 
 testLiftedCallback = (src, liftedCallback) ->
   input = [
@@ -1026,6 +1042,8 @@ describe "Bacon.constant", ->
     f.verify("lol")
     c.onValue(f)
     f.verify("lol")
+  it "toString", ->
+    expect(Bacon.constant(1).toString()).to.equal("Bacon.constant(1)")
 
 describe "Bacon.never", ->
   describe "should send just end", ->
@@ -1447,6 +1465,8 @@ describe "Property.combine", ->
         src = series(1, ["same", error()])
         Bacon.combineAsArray(src, src)
       [["same", "same"], error()])
+  it "toString", ->
+    expect(Bacon.constant(1).combine(Bacon.constant(2), (->)).toString()).to.equal("Bacon.constant(1).combine(Bacon.constant(2),function)")
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->
@@ -1491,9 +1511,11 @@ describe "Bacon.groupSimultaneous", ->
       expectStreamEvents(
         -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
         [[[1]], [[2]], [[3]]])
+  it "toString", ->
+    expect(Bacon.groupSimultaneous(Bacon.never()).toString()).to.equal("Bacon.groupSimultaneous(Bacon.never())")
 
-  describe "Property update is atomic", ->
-    describe "in a diamond-shaped combine() network", ->
+describe "Property update is atomic", ->
+  describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
       ->
          a = series(1, [1, 2]).toProperty()
@@ -1613,6 +1635,8 @@ describe "Bacon.combineAsArray", ->
       x
     Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
     expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.combineAsArray(Bacon.never()).toString()).to.equal("Bacon.combineAsArray(Bacon.never())")
 
 describe "Bacon.combineWith", ->
   describe "combines n properties, streams and constants using an n-ary function", ->
@@ -1634,6 +1658,8 @@ describe "Bacon.combineWith", ->
       ->
         Bacon.combineWith(-> 1)
       [1])
+  it "toString", ->
+    expect(Bacon.combineWith((->), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())")
 
 describe "Boolean logic", ->
   describe "combines Properties with and()", ->
@@ -1661,6 +1687,8 @@ describe "Boolean logic", ->
       expectPropertyEvents(
         -> Bacon.constant(true).or(false)
         [true])
+  it "toString", ->
+    expect(Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3)).toString()).to.equal("Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3))")
 
 describe "Bacon.mergeAll", ->
   describe ("merges all given streams"), ->
@@ -1693,6 +1721,8 @@ describe "Bacon.mergeAll", ->
     expectStreamEvents(
       -> Bacon.mergeAll()
       [])
+  it "toString", ->
+    expect(Bacon.mergeAll(Bacon.never()).toString()).to.equal("Bacon.mergeAll(Bacon.never())")
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
@@ -2044,6 +2074,8 @@ describe "Bacon.zipAsArray", ->
     expectStreamEvents(
       -> Bacon.zipAsArray()
       [])
+  it "toString", ->
+    expect(Bacon.zipAsArray(Bacon.never(), Bacon.never()).toString()).to.equal("Bacon.zipAsArray(Bacon.never(),Bacon.never())")
 
 describe "Bacon.zipWith", ->
   describe "zips an array of streams with given function", ->
@@ -2075,6 +2107,8 @@ describe "Bacon.zipWith", ->
       ->
         Bacon.zipWith(->)
       [])
+  it "toString", ->
+    expect(Bacon.zipWith((->), Bacon.never()).toString()).to.equal("Bacon.zipWith(function,Bacon.never())")
 
 describe "Bacon.when", ->
   describe "synchronizes on join patterns", ->

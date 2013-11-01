@@ -81,7 +81,7 @@ Bacon.sequentially = (delay, values) ->
 
 Bacon.repeatedly = (delay, values) ->
   index = 0
-  Bacon.fromPoll(delay, -> values[index++ % values.length])
+  withDescription(Bacon, "repeatedly", delay, values, Bacon.fromPoll(delay, -> values[index++ % values.length]))
 
 Bacon.spy = (spy) -> spys.push(spy)
 
@@ -127,11 +127,10 @@ Bacon.fromNodeCallback = liftCallback "fromNodeCallback", (f, args...) ->
       [value, end()]
 
 Bacon.fromPoll = (delay, poll) ->
-  Bacon.fromBinder (handler) ->
+  withDescription(Bacon, "fromPoll", delay, poll,
+  (Bacon.fromBinder(((handler) ->
     id = Bacon.scheduler.setInterval(handler, delay)
-    -> Bacon.scheduler.clearInterval(id)
-  , poll
-  , describe(Bacon, "fromPoll", delay, poll)
+    -> Bacon.scheduler.clearInterval(id)), poll)))
 
 Bacon.interval = (delay, value) ->
   value = {} unless value?
@@ -166,25 +165,25 @@ Bacon.fromArray = (values) ->
 Bacon.mergeAll = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
-  _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
+  withDescription Bacon, "mergeAll", streams..., _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
 
 Bacon.zipAsArray = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
-  Bacon.zipWith(streams, (xs...) -> xs)
+  withDescription Bacon, "zipAsArray", streams..., Bacon.zipWith(streams, (xs...) -> xs)
 
 Bacon.zipWith = (f, streams...) ->
   if !isFunction(f)
     [streams, f] = [f, streams[0]]
   streams = _.map(((s) -> s.toEventStream()), streams)
-  withDescription(Bacon, "zipWith", f, streams, Bacon.when(streams, f))
+  withDescription(Bacon, "zipWith", f, streams..., Bacon.when(streams, f))
 
 Bacon.groupSimultaneous = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))
     streams = streams[0]
   sources = for s in streams
     new BufferingSource(s)
-  withDescription(Bacon, "groupSimultaneous", streams, Bacon.when(sources, ((xs...) -> xs)))
+  withDescription(Bacon, "groupSimultaneous", streams..., Bacon.when(sources, ((xs...) -> xs)))
 
 Bacon.combineAsArray = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))
@@ -194,14 +193,14 @@ Bacon.combineAsArray = (streams...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true, false, s.subscribeInternal)
-    withDescription(Bacon, "combineAsArray", streams, Bacon.when(sources, ((xs...) -> xs)).toProperty())
+    withDescription(Bacon, "combineAsArray", streams..., Bacon.when(sources, ((xs...) -> xs)).toProperty())
   else
     Bacon.constant([])
 
 Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
 
 Bacon.combineWith = (f, streams...) ->
-  Bacon.combineAsArray(streams).map (values) -> f(values...)
+  withDescription(Bacon, "combineWith", f, streams..., Bacon.combineAsArray(streams).map (values) -> f(values...))
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -490,7 +489,7 @@ class Observable
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
       f(value).takeUntil(stream))
-  not: -> @map((x) -> !x)
+  not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.toString())
     this
@@ -499,9 +498,10 @@ class Observable
           .filter(((values) -> values.length >= minValues)))
   combine: (other, f) =>
     combinator = toCombinator(f)
-    Bacon.combineAsArray(this, other)
-      .map (values) ->
-        combinator(values[0], values[1])
+    withDescription(this, "combine", other, f, 
+      Bacon.combineAsArray(this, other)
+        .map (values) ->
+          combinator(values[0], values[1]))
   decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
   awaiting: (other) ->
@@ -713,8 +713,8 @@ class Property extends Observable
       @subscribe (event) =>
         event = event.toNext() if event.isInitial()
         sink event
-  and: (other) -> @combine(other, (x, y) -> x && y)
-  or:  (other) -> @combine(other, (x, y) -> x || y)
+  and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
+  or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x || y))
   delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
   debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
