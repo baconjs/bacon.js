@@ -1146,6 +1146,8 @@ describe "EventStream.startWith", ->
         left = Bacon.fromArray([1, 2, 3])
         left.startWith('pow')
       ['pow', 1, 2, 3], unstable)
+  it "toString", ->
+    expect(Bacon.never().startWith(0).toString()).to.equal("Bacon.never().startWith(0)")
 
 describe "Property.startWith", ->
   describe "starts with given value if the Property doesn't have an initial value", ->
@@ -1829,6 +1831,8 @@ describe "Property.sampledBy(stream)", ->
       sampled.onEnd(done)
     it "preserves laziness", ->
       expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never(),function)")
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
@@ -1872,6 +1876,16 @@ describe "Property.sample", ->
         prop = Bacon.constant(1)
         prop.sample(t(3)).take(4)
       [1, 1, 1, 1])
+  it "toString", ->
+    expect(Bacon.constant(0).sample(1).toString()).to.equal("Bacon.constant(0).sample(1)")
+
+describe "EventStream.errors", ->
+  describe "Includes errors only", ->
+    expectStreamEvents(
+      -> series(1, [1, error(), 2]).errors()
+      [error()])
+  it "toString", ->
+    expect(Bacon.never().errors().toString()).to.equal("Bacon.never().errors()")
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->
@@ -1993,6 +2007,8 @@ describe "EventStream.diff", ->
     bus = new Bacon.Bus()
     bus.diff(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).to.deep.equal([])
+  it "toString", ->
+    expect(Bacon.once(1).diff(0, (->)).toString()).to.equal("Bacon.once(1).diff(0,function)")
 
 describe "Property.diff", ->
   describe "with Init value, starts with f(start, init)", ->
@@ -2030,6 +2046,8 @@ describe "EventStream.zip", ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
+  it "toString", ->
+    expect(Bacon.never().zip(Bacon.once(1)).toString()).to.equal("Bacon.never().zip(Bacon.once(1))")
 
 describe "Property.zip", ->
   describe "pairwise combines values from two properties", ->

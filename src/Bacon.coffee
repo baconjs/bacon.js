@@ -294,7 +294,7 @@ class Observable
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f() if event.isEnd()
-  errors: -> @filter(-> false)
+  errors: -> withDescription(this, "errors", @filter(-> false))
   filter: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
       withDescription this, "filter", f, @withHandler (event) ->
@@ -441,14 +441,16 @@ class Observable
     withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
-    Bacon.zipWith([this,other], f)
+    withDescription(this, "zip", other,
+      Bacon.zipWith([this,other], f))
 
   diff: (start, f) ->
     f = toCombinator(f)
-    @scan([start], (prevTuple, next) ->
-      [next, f(prevTuple[0], next)])
-    .filter((tuple) -> tuple.length == 2)
-    .map((tuple) -> tuple[1])
+    withDescription(this, "diff", start, f,
+      @scan([start], (prevTuple, next) ->
+        [next, f(prevTuple[0], next)])
+      .filter((tuple) -> tuple.length == 2)
+      .map((tuple) -> tuple[1]))
 
   flatMap: (f, firstOnly) ->
     f = makeSpawner(f)
@@ -615,7 +617,8 @@ class EventStream extends Observable
   toEventStream: -> this
 
   sampledBy: (sampler, combinator) =>
-    @toProperty().sampledBy(sampler, combinator)
+    withDescription(this, "sampledBy", sampler, combinator,
+      @toProperty().sampledBy(sampler, combinator))
 
   concat: (right) ->
     left = this
@@ -663,7 +666,8 @@ class EventStream extends Observable
           Bacon.more
 
   startWith: (seed) ->
-    Bacon.once(seed).concat(this)
+    withDescription(this, "startWith", seed,
+      Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
     dispatcher = new Dispatcher(@subscribe, handler)
@@ -690,14 +694,16 @@ class Property extends Observable
         combinator = (f) -> f()
       thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
       samplerSource = new Source(sampler, true, false, sampler.subscribe, lazy)
-      stream = withDescription(this, "sampledBy", sampler, combinator, Bacon.when([thisSource, samplerSource], combinator))
-      if sampler instanceof Property then stream.toProperty() else stream
+      stream = Bacon.when([thisSource, samplerSource], combinator)
+      result = if sampler instanceof Property then stream.toProperty() else stream
+      withDescription(this, "sampledBy", sampler, combinator, result)
 
     @subscribe = @subscribeInternal
     registerObs(this)
 
   sample: (interval) =>
-    @sampledBy Bacon.interval(interval, {})
+    withDescription(this, "sample", interval,
+      @sampledBy Bacon.interval(interval, {}))
 
   changes: => new EventStream describe(this, "changes"), (sink) =>
     @subscribe (event) =>
@@ -715,6 +721,7 @@ class Property extends Observable
         sink event
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
   or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x || y))
+  # TODO: toStrings for these combinators
   delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
   debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
