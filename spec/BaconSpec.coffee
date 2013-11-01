@@ -2314,6 +2314,8 @@ describe "Property.decode", ->
         c = Bacon.constant("c")
         series(1, [1,2,3]).toProperty().decode({1: a, 2: b, 3: c})
       ["a", "b", "c"])
+  it "toString", ->
+    expect(Bacon.constant(1).decode({1: "lol"}).toString()).to.equal("Bacon.constant(1).decode({1:lol})")
 
 describe "EventStream.decode", ->
   describe "switches between source Properties based on property value", ->
@@ -2545,7 +2547,8 @@ describe "Bacon.Bus", ->
     otherBus.onValue (v) -> o.push(v)
     bus.push("foo")
     expect(o).to.deep.equal(["foo"])
-
+  it "toString", ->
+    expect(new Bacon.Bus().toString()).to.equal("Bacon.Bus()")
 
 describe "EventStream", ->
   describe "works with functions as values (bug fix)", ->
@@ -2607,6 +2610,8 @@ describe "Bacon.fromBinder", ->
           sink(new Bacon.End())
           (->)
       [1])
+  it "toString", ->
+    expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->

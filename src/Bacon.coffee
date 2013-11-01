@@ -502,7 +502,7 @@ class Observable
     Bacon.combineAsArray(this, other)
       .map (values) ->
         combinator(values[0], values[1])
-  decode: (cases) -> @combine(Bacon.combineTemplate(cases), (key, values) -> values[key])
+  decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
   awaiting: (other) ->
     withDescription(this, "awaiting", other, 
