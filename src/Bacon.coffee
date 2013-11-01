@@ -721,16 +721,19 @@ class Property extends Observable
         sink event
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
   or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x || y))
-  # TODO: toStrings for these combinators
-  delay: (delay) -> @delayChanges((changes) -> changes.delay(delay))
-  debounce: (delay) -> @delayChanges((changes) -> changes.debounce(delay))
-  throttle: (delay) -> @delayChanges((changes) -> changes.throttle(delay))
-  delayChanges: (f) -> addPropertyInitValueToStream(this, f(@changes()))
+  delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
+  debounce: (delay) -> @delayChanges("debounce", delay, (changes) -> changes.debounce(delay))
+  throttle: (delay) -> @delayChanges("throttle", delay, (changes) -> changes.throttle(delay))
+  delayChanges: (desc..., f) -> 
+    withDescription(this, desc...,
+      addPropertyInitValueToStream(this, f(@changes())))
   takeUntil: (stopper) ->
     changes = this.changes().takeUntil(stopper)
-    addPropertyInitValueToStream(this, changes)
+    withDescription(this, "takeUntil", stopper, 
+      addPropertyInitValueToStream(this, changes))
   startWith: (value) ->
-    @scan(value, (prev, next) -> next)
+    withDescription(this, "startWith", value,
+      @scan(value, (prev, next) -> next))
 
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property
@@ -1312,7 +1315,7 @@ _ = {
     else if obj?.toString? and obj.toString!=Object.prototype.toString
       obj.toString()
     else if (typeof obj == "object")
-      "{" + ((key + ":" + value) for key, value of obj) + "}"
+      "{" + ((_.toString(key) + ":" + _.toString(value)) for key, value of obj) + "}"
     else
       obj
 }

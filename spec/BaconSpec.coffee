@@ -1168,6 +1168,8 @@ describe "Property.startWith", ->
         left = series(1, [1, 2, 3]).toProperty(0)
         left.startWith('pow')
       [0, 1, 2, 3], unstable)
+  it "toString", ->
+    expect(Bacon.constant(2).startWith(1).toString()).to.equal("Bacon.constant(2).startWith(1)")
 
 describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
@@ -1335,6 +1337,8 @@ describe "Property.takeUntil", ->
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
+  it "toString", ->
+    expect(Bacon.constant(1).takeUntil(Bacon.never()).toString()).to.equal("Bacon.constant(1).takeUntil(Bacon.never())")
 
 describe "Property.delay", ->
   describe "delivers initial value and changes", ->
@@ -1350,6 +1354,8 @@ describe "Property.delay", ->
     expectPropertyEvents(
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
       [0])
+  it "toString", ->
+    expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)")
 
 describe "Property.debounce", ->
   describe "delivers initial value and changes", ->
@@ -1368,6 +1374,8 @@ describe "Property.debounce", ->
     expectPropertyEvents(
       -> Bacon.constant(1).debounce(1)
       [1])
+  it "toString", ->
+    expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
 describe "Property.throttle", ->
   describe "throttles changes, but not initial value", ->
     expectPropertyEvents(
@@ -1377,6 +1385,8 @@ describe "Property.throttle", ->
     expectPropertyEvents(
       -> Bacon.once(1).toProperty().throttle(1)
       [1])
+  it "toString", ->
+    expect(Bacon.constant(0).throttle(1).toString()).to.equal("Bacon.constant(0).throttle(1)")
 
 describe "Property.endOnError", ->
   describe "terminates on Error", ->
