@@ -1046,6 +1046,7 @@ Bacon.when = (patterns...) ->
           while triggers.length > 0
             trigger = triggers.pop()
             for p in pats
+              # TODO: possible bug: p may refer to wrong object in the closure below
                if match(p)
                  #console.log "match", p
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
