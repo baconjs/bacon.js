@@ -138,6 +138,14 @@ describe "Bacon.sequentially", ->
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
+describe "Bacon.repeatedly", ->
+  describe "repeats given sequence forever", ->
+    expectStreamEvents(
+      -> Bacon.repeatedly(1, [1,2]).take(5)
+      [1,2,1,2,1])
+  it "toString", ->
+    expect(Bacon.repeatedly(1, [1]).toString()).to.equal("Bacon.repeatedly(1,[1])")
+
 describe "Bacon.interval", ->
   describe "repeats single element indefinitely", ->
     expectStreamEvents(
@@ -145,6 +153,14 @@ describe "Bacon.interval", ->
       ["x", "x", "x"])
   it "toString", ->
     expect(Bacon.interval(1, 2).toString()).to.equal("Bacon.interval(1,2)")
+
+describe "Bacon.fromPoll", ->
+  describe "repeatedly polls given function for values", ->
+    expectStreamEvents(
+      -> Bacon.fromPoll(1, (-> "lol")).take(2)
+      ["lol", "lol"])
+  it "toString", ->
+    expect(Bacon.fromPoll(1, (->)).toString()).to.equal("Bacon.fromPoll(1,function)")
 
 testLiftedCallback = (src, liftedCallback) ->
   input = [
@@ -280,7 +296,7 @@ describe "Bacon.fromEventTarget", ->
     expect(emitter.listeners("click").length).to.deep.equal(0)
 
   it "toString", ->
-    expect(Bacon.fromEventTarget({}, "click").toString()).to.equal("Bacon.fromEventTarget([object Object],click)")
+    expect(Bacon.fromEventTarget({}, "click").toString()).to.equal("Bacon.fromEventTarget({},click)")
 
 describe "Observable.log", ->
   preservingLog = (f) ->
@@ -1026,6 +1042,8 @@ describe "Bacon.constant", ->
     f.verify("lol")
     c.onValue(f)
     f.verify("lol")
+  it "toString", ->
+    expect(Bacon.constant(1).toString()).to.equal("Bacon.constant(1)")
 
 describe "Bacon.never", ->
   describe "should send just end", ->
@@ -1128,6 +1146,8 @@ describe "EventStream.startWith", ->
         left = Bacon.fromArray([1, 2, 3])
         left.startWith('pow')
       ['pow', 1, 2, 3], unstable)
+  it "toString", ->
+    expect(Bacon.never().startWith(0).toString()).to.equal("Bacon.never().startWith(0)")
 
 describe "Property.startWith", ->
   describe "starts with given value if the Property doesn't have an initial value", ->
@@ -1148,6 +1168,8 @@ describe "Property.startWith", ->
         left = series(1, [1, 2, 3]).toProperty(0)
         left.startWith('pow')
       [0, 1, 2, 3], unstable)
+  it "toString", ->
+    expect(Bacon.constant(2).startWith(1).toString()).to.equal("Bacon.constant(2).startWith(1)")
 
 describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
@@ -1315,6 +1337,8 @@ describe "Property.takeUntil", ->
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
+  it "toString", ->
+    expect(Bacon.constant(1).takeUntil(Bacon.never()).toString()).to.equal("Bacon.constant(1).takeUntil(Bacon.never())")
 
 describe "Property.delay", ->
   describe "delivers initial value and changes", ->
@@ -1330,6 +1354,8 @@ describe "Property.delay", ->
     expectPropertyEvents(
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(Bacon.later(t(2)))
       [0])
+  it "toString", ->
+    expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)")
 
 describe "Property.debounce", ->
   describe "delivers initial value and changes", ->
@@ -1348,6 +1374,8 @@ describe "Property.debounce", ->
     expectPropertyEvents(
       -> Bacon.constant(1).debounce(1)
       [1])
+  it "toString", ->
+    expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
 describe "Property.throttle", ->
   describe "throttles changes, but not initial value", ->
     expectPropertyEvents(
@@ -1357,6 +1385,8 @@ describe "Property.throttle", ->
     expectPropertyEvents(
       -> Bacon.once(1).toProperty().throttle(1)
       [1])
+  it "toString", ->
+    expect(Bacon.constant(0).throttle(1).toString()).to.equal("Bacon.constant(0).throttle(1)")
 
 describe "Property.endOnError", ->
   describe "terminates on Error", ->
@@ -1447,6 +1477,8 @@ describe "Property.combine", ->
         src = series(1, ["same", error()])
         Bacon.combineAsArray(src, src)
       [["same", "same"], error()])
+  it "toString", ->
+    expect(Bacon.constant(1).combine(Bacon.constant(2), (->)).toString()).to.equal("Bacon.constant(1).combine(Bacon.constant(2),function)")
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->
@@ -1491,9 +1523,11 @@ describe "Bacon.groupSimultaneous", ->
       expectStreamEvents(
         -> Bacon.groupSimultaneous(Bacon.fromArray([1,2]).mapEnd(3))
         [[[1]], [[2]], [[3]]])
+  it "toString", ->
+    expect(Bacon.groupSimultaneous(Bacon.never()).toString()).to.equal("Bacon.groupSimultaneous(Bacon.never())")
 
-  describe "Property update is atomic", ->
-    describe "in a diamond-shaped combine() network", ->
+describe "Property update is atomic", ->
+  describe "in a diamond-shaped combine() network", ->
     expectPropertyEvents(
       ->
          a = series(1, [1, 2]).toProperty()
@@ -1613,6 +1647,8 @@ describe "Bacon.combineAsArray", ->
       x
     Bacon.combineAsArray(Bacon.fromArray([1,2,3,4,5]).map(id)).skip(4).onValue()
     expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.combineAsArray(Bacon.never()).toString()).to.equal("Bacon.combineAsArray(Bacon.never())")
 
 describe "Bacon.combineWith", ->
   describe "combines n properties, streams and constants using an n-ary function", ->
@@ -1634,6 +1670,8 @@ describe "Bacon.combineWith", ->
       ->
         Bacon.combineWith(-> 1)
       [1])
+  it "toString", ->
+    expect(Bacon.combineWith((->), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())")
 
 describe "Boolean logic", ->
   describe "combines Properties with and()", ->
@@ -1661,6 +1699,8 @@ describe "Boolean logic", ->
       expectPropertyEvents(
         -> Bacon.constant(true).or(false)
         [true])
+  it "toString", ->
+    expect(Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3)).toString()).to.equal("Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3))")
 
 describe "Bacon.mergeAll", ->
   describe ("merges all given streams"), ->
@@ -1693,6 +1733,8 @@ describe "Bacon.mergeAll", ->
     expectStreamEvents(
       -> Bacon.mergeAll()
       [])
+  it "toString", ->
+    expect(Bacon.mergeAll(Bacon.never()).toString()).to.equal("Bacon.mergeAll(Bacon.never())")
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
@@ -1799,6 +1841,8 @@ describe "Property.sampledBy(stream)", ->
       sampled.onEnd(done)
     it "preserves laziness", ->
       expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never(),function)")
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
@@ -1842,6 +1886,16 @@ describe "Property.sample", ->
         prop = Bacon.constant(1)
         prop.sample(t(3)).take(4)
       [1, 1, 1, 1])
+  it "toString", ->
+    expect(Bacon.constant(0).sample(1).toString()).to.equal("Bacon.constant(0).sample(1)")
+
+describe "EventStream.errors", ->
+  describe "Includes errors only", ->
+    expectStreamEvents(
+      -> series(1, [1, error(), 2]).errors()
+      [error()])
+  it "toString", ->
+    expect(Bacon.never().errors().toString()).to.equal("Bacon.never().errors()")
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->
@@ -1963,6 +2017,8 @@ describe "EventStream.diff", ->
     bus = new Bacon.Bus()
     bus.diff(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).to.deep.equal([])
+  it "toString", ->
+    expect(Bacon.once(1).diff(0, (->)).toString()).to.equal("Bacon.once(1).diff(0,function)")
 
 describe "Property.diff", ->
   describe "with Init value, starts with f(start, init)", ->
@@ -2000,6 +2056,8 @@ describe "EventStream.zip", ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
+  it "toString", ->
+    expect(Bacon.never().zip(Bacon.once(1)).toString()).to.equal("Bacon.never().zip(Bacon.once(1))")
 
 describe "Property.zip", ->
   describe "pairwise combines values from two properties", ->
@@ -2044,6 +2102,8 @@ describe "Bacon.zipAsArray", ->
     expectStreamEvents(
       -> Bacon.zipAsArray()
       [])
+  it "toString", ->
+    expect(Bacon.zipAsArray(Bacon.never(), Bacon.never()).toString()).to.equal("Bacon.zipAsArray(Bacon.never(),Bacon.never())")
 
 describe "Bacon.zipWith", ->
   describe "zips an array of streams with given function", ->
@@ -2075,6 +2135,8 @@ describe "Bacon.zipWith", ->
       ->
         Bacon.zipWith(->)
       [])
+  it "toString", ->
+    expect(Bacon.zipWith((->), Bacon.never()).toString()).to.equal("Bacon.zipWith(function,Bacon.never())")
 
 describe "Bacon.when", ->
   describe "synchronizes on join patterns", ->
@@ -2231,6 +2293,8 @@ describe "Bacon.update", ->
           0,
           [one, two],  (i, a, b) -> [i,a,b])
       [0, [0,1,2]])
+  it "toString", ->
+    expect(Bacon.update(0, [Bacon.never()], (->)).toString()).to.equal("Bacon.update(0,[Bacon.never()],function)")
 
 describe "combineTemplate", ->
   describe "combines streams according to a template object", ->
@@ -2300,6 +2364,8 @@ describe "combineTemplate", ->
     value = {key: ->}
     Bacon.combineTemplate(value).onValue (x) ->
       expect(x).to.deep.equal(value)
+  it "toString", ->
+    expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})")
 
 describe "Property.decode", ->
   describe "switches between source Properties based on property value", ->
@@ -2310,6 +2376,8 @@ describe "Property.decode", ->
         c = Bacon.constant("c")
         series(1, [1,2,3]).toProperty().decode({1: a, 2: b, 3: c})
       ["a", "b", "c"])
+  it "toString", ->
+    expect(Bacon.constant(1).decode({1: "lol"}).toString()).to.equal("Bacon.constant(1).decode({1:lol})")
 
 describe "EventStream.decode", ->
   describe "switches between source Properties based on property value", ->
@@ -2541,7 +2609,8 @@ describe "Bacon.Bus", ->
     otherBus.onValue (v) -> o.push(v)
     bus.push("foo")
     expect(o).to.deep.equal(["foo"])
-
+  it "toString", ->
+    expect(new Bacon.Bus().toString()).to.equal("Bacon.Bus()")
 
 describe "EventStream", ->
   describe "works with functions as values (bug fix)", ->
@@ -2603,6 +2672,8 @@ describe "Bacon.fromBinder", ->
           sink(new Bacon.End())
           (->)
       [1])
+  it "toString", ->
+    expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
