@@ -1050,20 +1050,26 @@ Bacon.when = (patterns...) ->
       part = (source) -> (unsubAll) ->
         flushLater = ->
           UpdateBarrier.whenDone resultStream, flush
-        flush = ->
-          #console.log "flushing", _.toString(resultStream)
-          reply = Bacon.more
-          while triggers.length > 0
+        flushWhileTriggers = ->
+          if triggers.length > 0
+            reply = Bacon.more
             trigger = triggers.pop()
             for p in pats
-              # TODO: possible bug: p may refer to wrong object in the closure below
                if match(p)
                  #console.log "match", p
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                  reply = sink trigger.e.apply(val)
                  if triggers.length
                    triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
-                 break
+                 if reply == Bacon.noMore
+                   return reply
+                 else
+                   return flushWhileTriggers()
+          else
+            Bacon.more
+        flush = ->
+          #console.log "flushing", _.toString(resultStream)
+          reply = flushWhileTriggers()
           if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
             reply = Bacon.noMore
             sink end()
