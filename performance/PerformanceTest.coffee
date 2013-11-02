@@ -31,10 +31,15 @@ f =
       for i in [1..width]
         template[i] = f.combineTemplate gen, width, depth-1
       Bacon.combineTemplate(template)
+  zip: (gen) ->
+    gen.stream().zip(gen.stream())
 
 suite = new Benchmark.Suite
 
-suite.add 'Bacon.combineTemplate.sample', ->
+suite.add 'zip', ->
+  f.withGenerator (gen) ->
+    f.zip(gen)
+.add 'Bacon.combineTemplate.sample', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 5, 1)
       .sampledBy(f.everyNth(10, gen.stream())) 
