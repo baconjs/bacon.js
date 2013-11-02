@@ -1025,6 +1025,7 @@ Bacon.when = (patterns...) ->
     if !sources.length
       return Bacon.never()
 
+    needsBarrier = _.any sources, (s) -> s.flatten
     sources = _.map Source.fromObservable, sources
     observables = _.map ((s) -> s.obs), sources
 
@@ -1049,7 +1050,8 @@ Bacon.when = (patterns...) ->
                  #console.log "match", p
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                  reply = sink trigger.e.apply(val)
-                 triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
+                 if triggers.length
+                   triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
                  break
           if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
             reply = Bacon.noMore
@@ -1068,8 +1070,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               #console.log "queuing", e.toString(), _.toString(resultStream)
               triggers.push {source: source, e: e}
-              # TODO flush immediately if no flattened sources
-              flushLater()
+              if needsBarrier then flushLater() else flush()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
