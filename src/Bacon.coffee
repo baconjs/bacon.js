@@ -1066,7 +1066,7 @@ Bacon.when = (patterns...) ->
                  #console.log "match", p
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                  reply = sink trigger.e.apply(val)
-                 if triggers.length
+                 if triggers.length and needsBarrier
                    triggers = _.filter nonFlattened, triggers
                  if reply == Bacon.noMore
                    return reply
