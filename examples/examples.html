@@ -5,36 +5,39 @@
     <script src="../lib/underscore.js"></script>
     <script src="../dist/Bacon.js"></script>
     <script>
+      function isEmpty(s) { return s.length == 0 }
+
+      function always(value) { return function() { return value }}
+
+      function keyCodeIs(keyCode) { 
+        return function(event) { return event.keyCode == keyCode }
+      }
+
+      function keyDownEvents(keyCode) { 
+        return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
+      }
+
+      function keyUpEvents(keyCode) { 
+        return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
+      }
+
+      function keyStateProperty(keyCode) { 
+        return keyDownEvents(keyCode).map(always("DOWN"))
+          .merge(keyUpEvents(keyCode).map(always("UP")))
+          .toProperty("UP")
+      }
+
       $(function() {
-        function isEmpty(s) { return s.length == 0 }
-
-        function always(value) { return function() { return value }}
-        
-        function keyCodeIs(keyCode) { 
-          return function(event) { return event.keyCode == keyCode }
-        }
-
-        function keyDownEvents(keyCode) { 
-          return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
-        }
-
-        function keyUpEvents(keyCode) { 
-          return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
-        }
-
-        function keyStateProperty(keyCode) { 
-          return keyDownEvents(keyCode).map(always("DOWN"))
-            .merge(keyUpEvents(keyCode).map(always("UP")))
-            .toProperty("UP")
-        }
-
+        // Simple click example
         $("#clikme")
           .asEventStream("click")
           .subscribe(function(event) { alert("mmmm... bacon!") })
 
+        // Combinators example
         keyStateProperty(32)
           .onValue(function(value) { $("#spacebar-value").text(value) })
 
+        // Enable/disable example
         $("#enabling input")
           .asEventStream("keyup")
           .map(function(event) { return $(event.target).val() })
@@ -42,12 +45,14 @@
           .map(isEmpty)
           .assign($("#enabling button"), "attr", "disabled")
 
+        // Echo example
         $("#echo input")
           .asEventStream("keyup")
           .map(function(event) { return $(event.target).val() })
           .toProperty("")
           .assign($("#echo .output"), "text")
 
+        // Combination lock example
         function selectElementValue(el) {
           function getValue() {
             return el.val()
@@ -64,8 +69,9 @@
          .toProperty()
          .not()
          .assign($("#combo button"), "attr", "disabled")
-       $("#combo button").click(function() { $("#combo .vault-contents").slideDown() })
+        $("#combo button").click(function() { $("#combo .vault-contents").slideDown() })
 
+        // Strikeout (skip/take) example
         function strikeout () {
           $("#batter-up .ump-call").text("Strike three, you're out!") 
         }
