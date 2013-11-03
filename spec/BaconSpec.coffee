@@ -2675,6 +2675,21 @@ describe "Bacon.fromBinder", ->
   it "toString", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
+describe "Bacon.spy", ->
+  testSpy = (expectedCount, f) ->
+    calls = 0
+    spy = (obs) -> calls++
+    Bacon.spy spy
+    f()
+    expect(calls).to.equal(expectedCount)
+  describe "calls spy function for all created Observables", ->
+    it "EventStream", ->
+      testSpy 1, -> Bacon.once(1)
+    it "Property", ->
+      testSpy 1, -> Bacon.constant(1)
+    it "map", ->
+      testSpy 2, -> Bacon.once(1).map(->)
+
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
     expectStreamEvents(
