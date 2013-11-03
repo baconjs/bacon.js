@@ -1041,6 +1041,7 @@ Bacon.when = (patterns...) ->
 
     resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
       triggers = []
+      ends = false
       match = (p) ->
         for i in p.ixs
           if !sources[i.index].hasAtLeast(i.count) 
@@ -1076,14 +1077,17 @@ Bacon.when = (patterns...) ->
         flush = ->
           #console.log "flushing", _.toString(resultStream)
           reply = flushWhileTriggers()
-          if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
-            reply = Bacon.noMore
-            sink end()
+          if ends
+            ends = false
+            if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+              reply = Bacon.noMore
+              sink end()
           unsubAll() if reply == Bacon.noMore
           #console.log "flushed"
           reply
         source.subscribe (e) ->
           if e.isEnd()
+            ends = true
             source.markEnded()
             flushLater()
           else if e.isError()
