@@ -105,6 +105,9 @@ describe "Bacon._", ->
       .to.deep.equal(undefined)
   describe "fold", ->
     expect(_.fold([1,2,3,4,5], 0, (s, n) -> s + n)).to.equal(15)
+  it "toString", ->
+    expect(_.toString({a: "b"})).to.equal("{a:b}")
+
 
 describe "Bacon.later", ->
   describe "should send single event and end", ->
