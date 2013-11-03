@@ -1042,11 +1042,17 @@ Bacon.when = (patterns...) ->
     resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
       triggers = []
       match = (p) ->
-        _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
+        for i in p.ixs
+          if !sources[i.index].hasAtLeast(i.count) 
+            return false
+        return true
       cannotSync = (source) ->
         !source.sync or source.ended
       cannotMatch = (p) ->
-        _.any(p.ixs, (i) -> !sources[i.index].mayHave(i.count))
+        for i in p.ixs
+          if !sources[i.index].mayHave(i.count)
+            return true
+      nonFlattened = (trigger) -> !trigger.source.flatten
       part = (source) -> (unsubAll) ->
         flushLater = ->
           UpdateBarrier.whenDone resultStream, flush
@@ -1060,7 +1066,7 @@ Bacon.when = (patterns...) ->
                  val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
                  reply = sink trigger.e.apply(val)
                  if triggers.length
-                   triggers = _.filter ((trigger) -> !trigger.source.flatten), triggers
+                   triggers = _.filter nonFlattened, triggers
                  if reply == Bacon.noMore
                    return reply
                  else
@@ -1070,7 +1076,7 @@ Bacon.when = (patterns...) ->
         flush = ->
           #console.log "flushing", _.toString(resultStream)
           reply = flushWhileTriggers()
-          if _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+          if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
             reply = Bacon.noMore
             sink end()
           unsubAll() if reply == Bacon.noMore
