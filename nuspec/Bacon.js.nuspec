@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Bacon.js</id>
+    <title>Bacon.js - Functional Reactive Programming library for JavaScript</title>
+    <version>0.6.21</version>
+    <authors>Bacon.js Organization</authors>
+    <description>
+        Functional reactive programming lib for JavaScript. Turns your event spaghetti into clean and declarative feng shui bacon, by switching from imperative to functional.
+    </description>
+    <projectUrl>http://baconjs.github.io</projectUrl>
+    <iconUrl>https://github.com/baconjs/bacon.js/raw/master/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://bit.ly/mit-license</licenseUrl>
+    <language>en-US</language>
+    <tags>Bacon Bacon.js Reactive Functional Observable FRP Event</tags>
+  </metadata>
+  <dependencies>
+      <dependency id="jQuery" />
+  </dependencies>
+  <files>
+    <file src="..\dist\Bacon.js" target="content\Scripts\Bacon.js" />
+    <file src="..\dist\Bacon.min.js" target="content\Scripts\Bacon.min.js" />
+  </files>
+</package>

@@ -122,7 +122,10 @@ Bacon.interval = (delay, value) ->
   Bacon.fromPoll(delay, -> next(value))
 
 Bacon.constant = (value) ->
-  new Property(sendWrapped([value], initial), true)
+  new Property (sink) ->
+    sink (initial value)
+    sink (end())
+    nop
 
 Bacon.never = -> Bacon.fromArray([])
 
@@ -130,14 +133,19 @@ Bacon.once = (value) -> Bacon.fromArray([value])
 
 Bacon.fromArray = (values) ->
   assertArray values
-  new EventStream(sendWrapped(values, toEvent))
-
-sendWrapped = (values, wrapper) ->
-  (sink) ->
-    for value in values
-      sink (wrapper value)
-    sink (end())
-    nop
+  values = cloneArray(values)
+  new EventStream (sink) ->
+    unsubd = false
+    send = ->
+      if _.empty values
+        sink(end())
+      else
+        value = values.splice(0,1)[0]
+        reply = sink(toEvent(value))
+        if (reply != Bacon.noMore) && !unsubd
+          send()
+    send()
+    -> unsubd = true
 
 Bacon.mergeAll = (streams...) ->
   if streams[0] instanceof Array

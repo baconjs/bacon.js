@@ -23,18 +23,32 @@ f =
     gen = f.generator()
     fun(gen).onValue((v) -> )
     gen.ticks(100)
-  combineTemplate: (gen) ->
-    Bacon.combineTemplate({a:gen.stream(), b:gen.stream(), c: gen.stream(), d: gen.stream()})
+  combineTemplate: (gen, width, depth) ->
+    if depth == 0
+      gen.stream()
+    else
+      template = {}
+      for i in [1..width]
+        template[i] = f.combineTemplate gen, width, depth-1
+      Bacon.combineTemplate(template)
+  zip: (gen) ->
+    gen.stream().zip(gen.stream())
 
 suite = new Benchmark.Suite
 
-suite.add 'Bacon.combineTemplate.sample', ->
+suite.add 'zip', ->
   f.withGenerator (gen) ->
-    f.combineTemplate(gen)
+    f.zip(gen)
+.add 'Bacon.combineTemplate.sample', ->
+  f.withGenerator (gen) ->
+    f.combineTemplate(gen, 5, 1)
       .sampledBy(f.everyNth(10, gen.stream())) 
+.add 'Bacon.combineTemplate (deep)', ->
+  f.withGenerator (gen) ->
+    f.combineTemplate(gen, 3, 3)
 .add 'Bacon.combineTemplate', ->
   f.withGenerator (gen) ->
-    f.combineTemplate(gen)
+    f.combineTemplate(gen, 5, 1)
 .add 'EventStream.map', ->
   f.withGenerator (gen) ->
     gen.stream().map((x) -> x * 2)

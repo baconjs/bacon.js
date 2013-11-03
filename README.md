@@ -1126,9 +1126,12 @@ event in these spawns an 'atom' of that type into a mixture.
 We can state reactions
 
 ```js
+make_water              = function(oxygen, hydrogen, hydrogen)  { /* ... consume oxygen and hydrogen ... */ }
+make_carbon_monoxide    = function(oxygen, carbon)              { /* ... consume oxygen and carbon ... */ }
+
 Bacon.when(
-  [oxygen, hydrogen, hydrogen], make_water(),
-  [oxygen, carbon],             make_carbon_monoxide(),
+  [oxygen, hydrogen, hydrogen], make_water,
+  [oxygen, carbon],             make_carbon_monoxide,
 )
 ```
 

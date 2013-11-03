@@ -933,6 +933,20 @@ describe "Bacon.once", ->
       -> Bacon.once(new Bacon.Error("oop"))
       [error()])
 
+describe "Bacon.fromArray", ->
+  describe "Turns an empty array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([])
+      [])
+  describe "Turns a single-element array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1])
+      [1])
+  describe "Turns a longer array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3])
+      [1, 2, 3])
+
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
     expectStreamEvents(

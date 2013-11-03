@@ -4,6 +4,8 @@ npm-debug.log
 .DS_Store
 .idea/
 *.iml
+*.exe
+*.nupkg
 browsertest/bundle.js
 src/Testing*
 testing

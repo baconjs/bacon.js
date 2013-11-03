@@ -1,3 +1,7 @@
+## unreleased
+
+- Stabilize fromArray in case of subscribe unsubscribing in the middle of the array
+
 ## 0.6.21
 
 - Fix bug in concat with synchronous left stream (#262)
