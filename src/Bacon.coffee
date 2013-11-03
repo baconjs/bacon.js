@@ -1101,7 +1101,7 @@ Bacon.when = (patterns...) ->
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
-      compositeUnsubscribe (part s,i for s,i in sources)...
+      compositeUnsubscribe (part s for s in sources)...
 
 Bacon.update = (initial, patterns...) ->
   lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
