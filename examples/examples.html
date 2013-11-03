@@ -2,38 +2,42 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="../lib/jquery.js"></script>
+    <script src="../lib/underscore.js"></script>
     <script src="../dist/Bacon.js"></script>
     <script>
+      function isEmpty(s) { return s.length == 0 }
+
+      function always(value) { return function() { return value }}
+
+      function keyCodeIs(keyCode) { 
+        return function(event) { return event.keyCode == keyCode }
+      }
+
+      function keyDownEvents(keyCode) { 
+        return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
+      }
+
+      function keyUpEvents(keyCode) { 
+        return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
+      }
+
+      function keyStateProperty(keyCode) { 
+        return keyDownEvents(keyCode).map(always("DOWN"))
+          .merge(keyUpEvents(keyCode).map(always("UP")))
+          .toProperty("UP")
+      }
+
       $(function() {
-        function isEmpty(s) { return s.length == 0 }
-
-        function always(value) { return function() { return value }}
-        
-        function keyCodeIs(keyCode) { 
-          return function(event) { return event.keyCode == keyCode }
-        }
-
-        function keyDownEvents(keyCode) { 
-          return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
-        }
-
-        function keyUpEvents(keyCode) { 
-          return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
-        }
-
-        function keyStateProperty(keyCode) { 
-          return keyDownEvents(keyCode).map(always("DOWN"))
-            .merge(keyUpEvents(keyCode).map(always("UP")))
-            .toProperty("UP")
-        }
-
+        // Simple click example
         $("#clikme")
           .asEventStream("click")
           .subscribe(function(event) { alert("mmmm... bacon!") })
 
+        // Combinators example
         keyStateProperty(32)
           .onValue(function(value) { $("#spacebar-value").text(value) })
 
+        // Enable/disable example
         $("#enabling input")
           .asEventStream("keyup")
           .map(function(event) { return $(event.target).val() })
@@ -41,12 +45,33 @@
           .map(isEmpty)
           .assign($("#enabling button"), "attr", "disabled")
 
+        // Echo example
         $("#echo input")
           .asEventStream("keyup")
           .map(function(event) { return $(event.target).val() })
           .toProperty("")
           .assign($("#echo .output"), "text")
 
+        // Combination lock example
+        function selectElementValue(el) {
+          function getValue() {
+            return el.val()
+          }
+          return el.asEventStream("change")
+            .map(getValue)
+            .toProperty(getValue())
+        }
+        Bacon.combineAsArray(
+          $("#combo select").map(function() {
+            return selectElementValue($(this)).map(parseInt)
+          }).get()
+        ).map(_.isEqual, [1,8,0])
+         .toProperty()
+         .not()
+         .assign($("#combo button"), "attr", "disabled")
+        $("#combo button").click(function() { $("#combo .vault-contents").slideDown() })
+
+        // Strikeout (skip/take) example
         function strikeout () {
           $("#batter-up .ump-call").text("Strike three, you're out!") 
         }
@@ -76,6 +101,51 @@
       <h2>Echo example:</h2>
       <input type="text">
       <span class="output"></span>
+    </div>
+    <div id="combo">
+      <h2>Combination lock:</h2>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <button>Open vault</button>
+      <small>Hint: Try combo <b>180</b></small>
+      <div class="vault-contents" style="display:none">
+        <p style="font-style:italic">“Your bacon, sir.” <span style="font-weight:bold; color:red">≈</span></p>
+        <p><small>Fun fact: It takes approximately 180 seconds to microwave two slices of bacon</small></p>
+      </div>
     </div>
     <div id="batter-up">
       <h2>Batter up! (take/skip example):</h2>
