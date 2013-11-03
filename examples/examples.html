@@ -2,6 +2,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="../lib/jquery.js"></script>
+    <script src="../lib/underscore.js"></script>
     <script src="../dist/Bacon.js"></script>
     <script>
       $(function() {
@@ -47,6 +48,18 @@
           .toProperty("")
           .assign($("#echo .output"), "text")
 
+        Bacon.combineAsArray.apply(null, 
+          $("#combo select").map(function() {
+            return $(this).asEventStream("change")
+              .map(function(e) { return parseInt($(e.target).val()) })
+              .toProperty(parseInt($(this).val()))
+          }).get()
+        ).map(_.partial(_.isEqual, [1,8,0]))
+         .toProperty()
+         .not()
+         .assign($("#combo button"), "attr", "disabled")
+       $("#combo button").click(function() { $("#combo .vault-contents").slideDown() })
+
         function strikeout () {
           $("#batter-up .ump-call").text("Strike three, you're out!") 
         }
@@ -76,6 +89,51 @@
       <h2>Echo example:</h2>
       <input type="text">
       <span class="output"></span>
+    </div>
+    <div id="combo">
+      <h2>Combination lock:</h2>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <select>
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option selected="selected">9</option>
+      </select>
+      <button>Open vault</button>
+      <small>Hint: Try combo <b>180</b></small>
+      <div class="vault-contents" style="display:none">
+        <p style="font-style:italic">“Your bacon, sir.” <span style="font-weight:bold; color:red">≈</span></p>
+        <p><small>Fun fact: It takes approximately 180 seconds to microwave two slices of bacon</small></p>
+      </div>
     </div>
     <div id="batter-up">
       <h2>Batter up! (take/skip example):</h2>
