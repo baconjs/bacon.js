@@ -2689,6 +2689,8 @@ describe "Bacon.spy", ->
       testSpy 1, -> Bacon.constant(1)
     it "map", ->
       testSpy 2, -> Bacon.once(1).map(->)
+    it "combineTemplate (also called for the intermediate combineAsArray property)", ->
+      testSpy 4, -> Bacon.combineTemplate(Bacon.once(1), Bacon.constant(2))
 
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
