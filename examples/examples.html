@@ -48,13 +48,19 @@
           .toProperty("")
           .assign($("#echo .output"), "text")
 
-        Bacon.combineAsArray.apply(null, 
+        function selectElementValue(el) {
+          function getValue() {
+            return el.val()
+          }
+          return el.asEventStream("change")
+            .map(getValue)
+            .toProperty(getValue())
+        }
+        Bacon.combineAsArray(
           $("#combo select").map(function() {
-            return $(this).asEventStream("change")
-              .map(function(e) { return parseInt($(e.target).val()) })
-              .toProperty(parseInt($(this).val()))
+            return selectElementValue($(this)).map(parseInt)
           }).get()
-        ).map(_.partial(_.isEqual, [1,8,0]))
+        ).map(_.isEqual, [1,8,0])
          .toProperty()
          .not()
          .assign($("#combo button"), "attr", "disabled")
