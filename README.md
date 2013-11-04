@@ -850,7 +850,7 @@ object. For instance, assuming you've got streams or properties named
 
 ```js
 var password, username, firstname, lastname; // <- properties or streams
-var loginInfo = Bacon.combineTemplate{
+var loginInfo = Bacon.combineTemplate({
     magicNumber: 3,
     userid: username,
     passwd: password,
