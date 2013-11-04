@@ -746,16 +746,18 @@ convertArgsToFunction = (obs, f, args, method) ->
     method.apply(obs, [f])
 
 addPropertyInitValueToStream = (property, stream) ->
-  # TODO doesn't work with delayed updates. No longer possible
-  # to get the initial value like this
-  getInitValue = (property) ->
-    value = None
-    property.subscribe (event) ->
+  justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->
+    value = null
+    unsub = property.subscribe (event) ->
       if event.hasValue()
-        value = new Some(event.value())
+        value = event
       Bacon.noMore
-    value
-  stream.toProperty(getInitValue(property))
+    UpdateBarrier.whenDone justInitValue, ->
+      if value?
+        sink value
+      sink end()
+    unsub
+  justInitValue.concat(stream).toProperty()
 
 class Dispatcher
   constructor: (subscribe, handleEvent) ->
