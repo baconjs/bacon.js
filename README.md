@@ -1,4 +1,4 @@
-Bacon.js
+﻿Bacon.js
 ========
 
 <img src="/logo.png" align="right" width="300px" />
@@ -7,8 +7,8 @@ A small functional reactive programming lib for JavaScript.
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
-concepts like `map` and `filter`. Stop working on individual events and work with event streams instead.
-Transform your data with `map` and `filter`. Combine your data with [`merge`](#merge) and [`combine`](#combine).
+concepts like [`map`](#map) and [`filter`](#filter). Stop working on individual events and work with event streams instead.
+Combine your data with [`merge`](#merge) and [`combine`](#combine).
 Then switch to the heavier weapons and wield [`flatMap`](#flatMap) and [`combineTemplate`](#combineTemplate) like a boss.
 
 It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
@@ -531,7 +531,7 @@ Example 2:
 
 You can use zip to combine observables that are pairwise synchronized
 from e.g. projections or sampling by the same property, while avoiding
-the double-processing that would happen recombining with `combine`.
+the double-processing that would happen recombining with [`combine`](#combine).
 
 ```js
 var x = obs.map('.x')
