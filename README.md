@@ -1190,7 +1190,7 @@ and `total` such that
 **Join patterns and Bacon.bus**
 
 The result functions of join patterns are allowed to push values onto
-a Bus that may in turn be in one of its patterns. For instance, an
+a [`Bus`](#Bus) that may in turn be in one of its patterns. For instance, an
 implementation of the dining philosphers problem can be written as
 follows.  (http://en.wikipedia.org/wiki/Dining_philosophers_problem)
       
