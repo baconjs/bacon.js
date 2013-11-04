@@ -962,6 +962,15 @@ describe "EventStream.takeUntil", ->
          Bacon.later(1,'x').takeUntil(Bacon.later(20).onUnsub(->
            expect(sc.now()).to.equal(startTick + 1)))
        ['x'])
+  ### TODO does not pass
+  describe "works with synchronous self-derived sources", ->
+    expectStreamEvents(
+      ->
+        a = Bacon.fromArray [1,2]
+        b = a.filter((x) -> x >= 2)
+        a.takeUntil b
+      [1])
+  ###
   it "toString", ->
     expect(Bacon.later(1, "a").takeUntil(Bacon.later(2, "b")).toString()).to.equal("Bacon.later(1,a).takeUntil(Bacon.later(2,b))")
 
@@ -1611,9 +1620,49 @@ describe "Property update is atomic", ->
       result = null
       Bacon.once(1).onValue ->
         a = Bacon.constant("lolbal")
-        result = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
-        result.onValue((x) -> result = x)
+        s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
+        s.onValue((x) -> result = x)
       expect(result).to.equal("right")
+    it "stream.startWith", ->
+      result = null
+      Bacon.once(1).onValue ->
+        s = Bacon.later(1).startWith(0)
+        s.onValue((x) -> result = x)
+      expect(result).to.equal(0)
+    it "combineAsArray.changes.startWith", ->
+      result = null
+      Bacon.once(1).onValue ->
+        a = Bacon.constant("lolbal")
+        s = Bacon.combineAsArray([a, a]).changes().startWith("right")
+        s.onValue((x) -> result = x)
+      expect(result).to.equal("right")
+    it "flatMap", ->
+      result = null
+      Bacon.once(1).onValue ->
+        a = Bacon.constant("lolbal")
+        s = a.flatMap((x) -> Bacon.once(x))
+        s.onValue((x) -> result = x)
+      expect(result).to.equal("lolbal")
+    it "awaiting", ->
+      result = null
+      Bacon.once(1).onValue ->
+        a = Bacon.constant(1)
+        s = a.awaiting(a.map(->))
+        s.onValue((x) -> result = x)
+      expect(result).to.equal(false)
+    it "concat", ->
+      result = []
+      Bacon.once(1).onValue ->
+        s = Bacon.once(1).concat(Bacon.once(2))
+        s.onValue((x) -> result.push(x))
+      expect(result).to.deep.equal([1,2])
+    it "Property.delay", ->
+      result = []
+      Bacon.once(1).onValue ->
+        c = Bacon.constant(1)
+        s = Bacon.combineAsArray([c, c]).delay(1).map(".0")
+        s.onValue((x) -> result.push(x))
+      expect(result).to.deep.equal([1])
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
