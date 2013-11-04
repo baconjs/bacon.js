@@ -1611,7 +1611,7 @@ describe "Property update is atomic", ->
       result = null
       Bacon.once(1).onValue ->
         a = Bacon.constant("lolbal")
-        result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong");
+        result = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
         result.onValue((x) -> result = x)
       expect(result).to.equal("right")
 

@@ -406,6 +406,7 @@ class Observable
     f_ = toCombinator(f)
     f = if lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
+    root = this
     subscribe = (sink) =>
       initSent = false
       unsub = nop
@@ -433,9 +434,9 @@ class Observable
           if event.isEnd()
             reply = sendInit()
           sink event unless reply == Bacon.noMore
-      sendInit()
+      UpdateBarrier.whenDone resultProperty, sendInit
       unsub
-    new Property describe(this, "scan", seed, f), subscribe
+    resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
   fold: (seed, f) =>
     withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
@@ -872,8 +873,11 @@ UpdateBarrier = (->
   independent = (waiter) ->
     !_.any(waiters, ((other) -> Bacon.dependsOn(waiter.obs, other.obs)))
   whenDone = (obs, f) -> 
-    if !_.any(waiters, (w) -> w.obs==obs)
-      waiters.push {obs, f}
+    if tx
+      if !_.any(waiters, (w) -> w.obs==obs)
+        waiters.push {obs, f}
+    else
+      f()
   flush = ->
     if waiters.length
       #console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
