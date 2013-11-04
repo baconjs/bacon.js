@@ -1196,15 +1196,14 @@ end = -> new End()
 toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
 assert = (message, condition) -> throw message unless condition
-# TODO: assertX should not eval the string eagerly, because toString may be expensive
-assertEventStream = (event) -> assert "not an EventStream : " + event, event instanceof EventStream
+assertEventStream = (event) -> throw "not an EventStream : " + event unless event instanceof EventStream
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 isArray = (xs) -> xs instanceof Array
 isObservable = (x) -> x instanceof Observable
-assertArray = (xs) -> assert "not an array : " + xs, isArray(xs)
+assertArray = (xs) -> throw "not an array : " + xs unless isArray(xs)
 assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
-assertString = (x) -> assert "not a string : " + x, typeof x == "string"
+assertString = (x) -> throw "not a string : " + x unless typeof x == "string"
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
 makeSpawner = (f) ->
