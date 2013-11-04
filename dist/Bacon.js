@@ -1441,19 +1441,25 @@
   };
 
   addPropertyInitValueToStream = function(property, stream) {
-    var getInitValue;
-    getInitValue = function(property) {
-      var value;
-      value = None;
-      property.subscribe(function(event) {
+    var justInitValue;
+    justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
+      var unsub, value;
+      value = null;
+      unsub = property.subscribe(function(event) {
         if (event.hasValue()) {
-          value = new Some(event.value());
+          value = event;
         }
         return Bacon.noMore;
       });
-      return value;
-    };
-    return stream.toProperty(getInitValue(property));
+      UpdateBarrier.whenDone(justInitValue, function() {
+        if (value != null) {
+          sink(value);
+        }
+        return sink(end());
+      });
+      return unsub;
+    });
+    return justInitValue.concat(stream).toProperty();
   };
 
   Dispatcher = (function() {
