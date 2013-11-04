@@ -340,6 +340,7 @@ produce a Next event with `undefined` value.
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used. You can omit the argument to
 produce a Next event with `undefined` value.
+
 <a name="filter"></a>
 `observable.filter(f)` filters values using given predicate function.
 Instead of a function, you can use a constant value (true/false) or a
@@ -681,7 +682,8 @@ events from `stream2`. This means too that events from `stream2`,
 occurring before the end of `stream1` will not be included in the result
 stream.
 
-<a name="merge"></a>`stream.merge(stream2)` merges two streams into one stream that delivers
+<a name="merge"></a>
+`stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
 `stream.startWith(value)` adds a starting value to the stream, i.e. concats a 
@@ -840,7 +842,8 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 
-<a name="combineTemplate"></a>`Bacon.combineTemplate(template)` combines Properties, EventStreams and
+<a name="combineTemplate"></a>
+`Bacon.combineTemplate(template)` combines Properties, EventStreams and
 constant values using a template
 object. For instance, assuming you've got streams or properties named
 `password`, `username`, `firstname` and `lastname`, you can do
