@@ -1196,7 +1196,7 @@ end = -> new End()
 toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
 assert = (message, condition) -> throw message unless condition
-assertEvent = (event) -> assert "not an event : " + event, event instanceof Event and event.isEvent()
+# TODO: assertX should not eval the string eagerly, because toString may be expensive
 assertEventStream = (event) -> assert "not an EventStream : " + event, event instanceof EventStream
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
@@ -1324,19 +1324,27 @@ _ = {
         f = null
       value
   toString: (obj) -> 
-    if !obj?
-      "undefined"
-    else if isFunction(obj)
-      "function"
-    else if isArray(obj)
-      "[" + _.map(_.toString, obj).toString() + "]"
-    else if obj?.toString? and obj.toString!=Object.prototype.toString
-      obj.toString()
-    else if (typeof obj == "object")
-      "{" + ((_.toString(key) + ":" + _.toString(value)) for key, value of obj) + "}"
-    else
-      obj
+    try
+      recursionDepth++
+      if !obj?
+        "undefined"
+      else if isFunction(obj)
+        "function"
+      else if isArray(obj)
+        return "{..}" if recursionDepth > 5
+        "[" + _.map(_.toString, obj).toString() + "]"
+      else if obj?.toString? and obj.toString!=Object.prototype.toString
+        obj.toString()
+      else if (typeof obj == "object")
+        return "{..}" if recursionDepth > 5
+        "{" + ((_.toString(key) + ":" + _.toString(value)) for key, value of obj) + "}"
+      else
+        obj
+    finally
+      recursionDepth--
 }
+
+recursionDepth = 0
 
 Bacon._ = _
 

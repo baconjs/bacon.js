@@ -105,8 +105,13 @@ describe "Bacon._", ->
       .to.deep.equal(undefined)
   describe "fold", ->
     expect(_.fold([1,2,3,4,5], 0, (s, n) -> s + n)).to.equal(15)
-  it "toString", ->
-    expect(_.toString({a: "b"})).to.equal("{a:b}")
+  describe "toString", ->
+    it "for objects", ->
+      expect(_.toString({a: "b"})).to.equal("{a:b}")
+    it "for circular refs", ->
+      obj = { name : "nasty" }
+      obj.self = obj
+      expect(_.toString(obj).length).to.be.below(100)
 
 
 describe "Bacon.later", ->
