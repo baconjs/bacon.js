@@ -1594,6 +1594,13 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
+  it "works with independent observables created within the dispatch loop", ->
+    calls = 0
+    Bacon.once(1).onValue ->
+      Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
+        calls++
+    expect(calls).to.equal(1)
+
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
