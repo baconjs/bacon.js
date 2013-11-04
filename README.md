@@ -877,6 +877,7 @@ If you need the result as an EventStream you might want to use property.changes(
 ```js
 Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 ```
+
 <a name="mergeAll"></a>
 `Bacon.mergeAll(streams)` merges given array of EventStreams.
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
