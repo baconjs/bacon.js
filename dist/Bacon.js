@@ -839,8 +839,8 @@
         reply = Bacon.more;
         sendInit = function() {
           if (!initSent) {
-            initSent = true;
             return acc.forEach(function(valueF) {
+              initSent = true;
               reply = sink(new Initial(valueF));
               if (reply === Bacon.noMore) {
                 unsub();
@@ -2347,7 +2347,9 @@
   };
 
   assertEventStream = function(event) {
-    return assert("not an EventStream : " + event, event instanceof EventStream);
+    if (!(event instanceof EventStream)) {
+      throw "not an EventStream : " + event;
+    }
   };
 
   assertFunction = function(f) {
@@ -2367,7 +2369,9 @@
   };
 
   assertArray = function(xs) {
-    return assert("not an array : " + xs, isArray(xs));
+    if (!isArray(xs)) {
+      throw "not an array : " + xs;
+    }
   };
 
   assertNoArguments = function(args) {
@@ -2375,7 +2379,9 @@
   };
 
   assertString = function(x) {
-    return assert("not a string : " + x, typeof x === "string");
+    if (typeof x !== "string") {
+      throw "not a string : " + x;
+    }
   };
 
   partiallyApplied = function(f, applied) {
