@@ -1176,6 +1176,12 @@ describe "Property.startWith", ->
         left = series(1, [1, 2, 3]).toProperty(0)
         left.startWith('pow')
       [0, 1, 2, 3], unstable)
+  describe "works with combineAsArray", ->
+    result = null
+    a = Bacon.constant("lolbal")
+    result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong")
+    result.onValue((x) -> result = x)
+    expect(result).to.equal("right")
   it "toString", ->
     expect(Bacon.constant(2).startWith(1).toString()).to.equal("Bacon.constant(2).startWith(1)")
 
@@ -1594,13 +1600,20 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
-  it "works with independent observables created within the dispatch loop", ->
-    calls = 0
-    Bacon.once(1).onValue ->
-      Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
-        calls++
-    expect(calls).to.equal(1)
-
+  describe "works with independent observables created within the dispatch loop", ->
+    it "combineAsArray", ->
+      calls = 0
+      Bacon.once(1).onValue ->
+        Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
+          calls++
+      expect(calls).to.equal(1)
+    it "combineAsArray.startWith", ->
+      result = null
+      Bacon.once(1).onValue ->
+        a = Bacon.constant("lolbal")
+        result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong");
+        result.onValue((x) -> result = x)
+      expect(result).to.equal("right")
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
