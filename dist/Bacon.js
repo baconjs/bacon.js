@@ -823,7 +823,7 @@
     };
 
     Observable.prototype.scan = function(seed, f, lazyF) {
-      var acc, f_, subscribe,
+      var acc, f_, resultProperty, root, subscribe,
         _this = this;
       f_ = toCombinator(f);
       f = lazyF ? f_ : function(x, y) {
@@ -832,6 +832,7 @@
       acc = toOption(seed).map(function(x) {
         return _.always(x);
       });
+      root = this;
       subscribe = function(sink) {
         var initSent, reply, sendInit, unsub;
         initSent = false;
@@ -877,10 +878,10 @@
             }
           }
         });
-        sendInit();
+        UpdateBarrier.whenDone(resultProperty, sendInit);
         return unsub;
       };
-      return new Property(describe(this, "scan", seed, f), subscribe);
+      return resultProperty = new Property(describe(this, "scan", seed, f), subscribe);
     };
 
     Observable.prototype.fold = function(seed, f) {
@@ -1651,13 +1652,17 @@
       }));
     };
     whenDone = function(obs, f) {
-      if (!_.any(waiters, function(w) {
-        return w.obs === obs;
-      })) {
-        return waiters.push({
-          obs: obs,
-          f: f
-        });
+      if (tx) {
+        if (!_.any(waiters, function(w) {
+          return w.obs === obs;
+        })) {
+          return waiters.push({
+            obs: obs,
+            f: f
+          });
+        }
+      } else {
+        return f();
       }
     };
     flush = function() {
