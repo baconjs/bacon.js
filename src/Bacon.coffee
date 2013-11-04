@@ -1035,9 +1035,8 @@ Bacon.when = (patterns...) ->
     if !sources.length
       return Bacon.never()
 
-    needsBarrier = _.any sources, (s) -> s.flatten
     sources = _.map Source.fromObservable, sources
-    observables = _.map ((s) -> s.obs), sources
+    needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
 
     resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
       triggers = []
@@ -1102,6 +1101,21 @@ Bacon.when = (patterns...) ->
           reply or Bacon.more
 
       compositeUnsubscribe (part s for s in sources)...
+
+containsDuplicateDeps = (observables, state = []) ->
+  checkObservable = (obs) ->
+    if Bacon._.contains(state, obs)
+      true
+    else
+      deps = obs.internalDeps()
+      if deps.length
+        state.push(obs)
+        Bacon._.any(deps, checkObservable)
+      else
+        state.push(obs)
+        false
+
+  Bacon._.any observables, checkObservable
 
 Bacon.update = (initial, patterns...) ->
   lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
