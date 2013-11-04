@@ -18,6 +18,7 @@ npm test
 
 echo "Updating files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
+sed -i "" 's/<version>/'$version'/' dist/*.js
 
 echo "Commit and tag"
 git add .
