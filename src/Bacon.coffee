@@ -412,8 +412,8 @@ class Observable
       reply = Bacon.more
       sendInit = ->
         if !initSent
-          initSent = true
           acc.forEach (valueF) ->
+            initSent = true
             reply = sink(new Initial(valueF))
             if (reply == Bacon.noMore)
               unsub()
