@@ -746,6 +746,8 @@ convertArgsToFunction = (obs, f, args, method) ->
     method.apply(obs, [f])
 
 addPropertyInitValueToStream = (property, stream) ->
+  # TODO doesn't work with delayed updates. No longer possible
+  # to get the initial value like this
   getInitValue = (property) ->
     value = None
     property.subscribe (event) ->
