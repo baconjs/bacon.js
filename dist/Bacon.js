@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, describe, end, former, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, describe, end, former, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2346,10 +2346,6 @@
     }
   };
 
-  assertEvent = function(event) {
-    return assert("not an event : " + event, event instanceof Event && event.isEvent());
-  };
-
   assertEventStream = function(event) {
     return assert("not an EventStream : " + event, event instanceof EventStream);
   };
@@ -2638,29 +2634,42 @@
     },
     toString: function(obj) {
       var key, value;
-      if (obj == null) {
-        return "undefined";
-      } else if (isFunction(obj)) {
-        return "function";
-      } else if (isArray(obj)) {
-        return "[" + _.map(_.toString, obj).toString() + "]";
-      } else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
-        return obj.toString();
-      } else if (typeof obj === "object") {
-        return "{" + ((function() {
-          var _results;
-          _results = [];
-          for (key in obj) {
-            value = obj[key];
-            _results.push(_.toString(key) + ":" + _.toString(value));
+      try {
+        recursionDepth++;
+        if (obj == null) {
+          return "undefined";
+        } else if (isFunction(obj)) {
+          return "function";
+        } else if (isArray(obj)) {
+          if (recursionDepth > 5) {
+            return "{..}";
           }
-          return _results;
-        })()) + "}";
-      } else {
-        return obj;
+          return "[" + _.map(_.toString, obj).toString() + "]";
+        } else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
+          return obj.toString();
+        } else if (typeof obj === "object") {
+          if (recursionDepth > 5) {
+            return "{..}";
+          }
+          return "{" + ((function() {
+            var _results;
+            _results = [];
+            for (key in obj) {
+              value = obj[key];
+              _results.push(_.toString(key) + ":" + _.toString(value));
+            }
+            return _results;
+          })()) + "}";
+        } else {
+          return obj;
+        }
+      } finally {
+        recursionDepth--;
       }
     }
   };
+
+  recursionDepth = 0;
 
   Bacon._ = _;
 
