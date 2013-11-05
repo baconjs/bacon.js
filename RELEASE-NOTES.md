@@ -1,5 +1,7 @@
-## unreleased
+## 0.6.22
 
+- Include Bacon.version="0.6.22" in dist/Bacon.js (generated in release
+  script)
 - Stabilize fromArray in case of subscribe unsubscribing in the middle of the array
 
 ## 0.6.21
