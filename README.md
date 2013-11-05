@@ -42,6 +42,9 @@ Version 0.6.19 can also be found from cdnjs hosting:
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.6.19/Bacon.js
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.6.19/Bacon.min.js
 
+Visual Studio users can obtain version 0.6.22 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.6.22
+
 If you're targeting to [node.js](http://nodejs.org/), you can
 
     npm install baconjs
