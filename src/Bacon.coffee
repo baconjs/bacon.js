@@ -1,5 +1,7 @@
 Bacon = {}
 
+Bacon.version = '<version>'
+
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream (sink) ->
