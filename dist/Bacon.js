@@ -1,11 +1,13 @@
 (function() {
-  var Bacon, Bus, CompositeUnsubscribe, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, Source, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, end, former, indexOf, initial, isFieldKey, isFunction, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, sendWrapped, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withMethodCallSupport, _, _ref, _ref1, _ref2,
+  var Bacon, Bus, CompositeUnsubscribe, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, PropertyTransaction, Some, Source, addPropertyInitValueToStream, assert, assertArray, assertEvent, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, convertArgsToFunction, end, former, indexOf, initial, isFieldKey, isFunction, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Bacon = {};
+
+  Bacon.version = '0.6.22';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -193,7 +195,11 @@
   };
 
   Bacon.constant = function(value) {
-    return new Property(sendWrapped([value], initial), true);
+    return new Property(function(sink) {
+      sink(initial(value));
+      sink(end());
+      return nop;
+    });
   };
 
   Bacon.never = function() {
@@ -206,19 +212,27 @@
 
   Bacon.fromArray = function(values) {
     assertArray(values);
-    return new EventStream(sendWrapped(values, toEvent));
-  };
-
-  sendWrapped = function(values, wrapper) {
-    return function(sink) {
-      var value, _i, _len;
-      for (_i = 0, _len = values.length; _i < _len; _i++) {
-        value = values[_i];
-        sink(wrapper(value));
-      }
-      sink(end());
-      return nop;
-    };
+    values = cloneArray(values);
+    return new EventStream(function(sink) {
+      var send, unsubd;
+      unsubd = false;
+      send = function() {
+        var reply, value;
+        if (_.empty(values)) {
+          return sink(end());
+        } else {
+          value = values.splice(0, 1)[0];
+          reply = sink(toEvent(value));
+          if ((reply !== Bacon.noMore) && !unsubd) {
+            return send();
+          }
+        }
+      };
+      send();
+      return function() {
+        return unsubd = true;
+      };
+    });
   };
 
   Bacon.mergeAll = function() {
