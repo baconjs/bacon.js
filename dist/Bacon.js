@@ -56,8 +56,28 @@
     }
   };
 
+  Bacon.socketio = {
+    asEventStream: function(eventName, selector, eventTransformer) {
+      var _ref,
+        _this = this;
+      if (isFunction(selector)) {
+        _ref = [selector, null], eventTransformer = _ref[0], selector = _ref[1];
+      }
+      return Bacon.fromBinder(function(handler) {
+        _this.on(eventName, handler);
+        return function() {
+          return _this.off(eventName, handler);
+        };
+      }, eventTransformer);
+    }
+  };
+
+
   if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : null) != null) {
     _ref.fn.asEventStream = Bacon.$.asEventStream;
+  }
+  if ((_ref = typeof io !== "undefined" && io !== null ? io : null) !== null) {
+    _ref.SocketNamespace.prototype.asEventStream = Bacon.socketio.asEventStream;
   }
 
   Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
