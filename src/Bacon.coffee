@@ -276,8 +276,11 @@ class Error extends Event
   apply: -> this
   toString: -> "<error> #{@error}"
 
+idCounter = 0
+
 class Observable
   constructor: (desc) ->
+    @id = ++idCounter
     @assign = @onValue
     withDescription(desc, this)
   onValue: ->
@@ -860,22 +863,11 @@ class PropertyDispatcher extends Dispatcher
       else
         subscribe.apply(this, [sink])
 
-Bacon.dependsOn = (a,b) ->
-  if a == b
-    return false
-  deps = a.internalDeps()
-  for dep in deps
-    if dep == b
-      return true
-    if Bacon.dependsOn(dep, b)
-      return true
-  return false
-
 UpdateBarrier = (->
   tx = false
   waiters = []
   independent = (waiter) ->
-    !_.any(waiters, ((other) -> Bacon.dependsOn(waiter.obs, other.obs)))
+    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
   whenDone = (obs, f) -> 
     if tx
       if !_.any(waiters, (w) -> w.obs==obs)
@@ -1005,9 +997,29 @@ class Desc
         [x.obs]
       else
         []
+    depCache = {}
+    dependsOnCached = (b) ->
+      cached = depCache[b.id]
+      if (!cached?)
+        cached = dependsOn.call(this, b)
+        depCache[b.id] = cached
+      cached
+
+    dependsOn = (b) ->
+      if this == b
+        return false
+      deps = this.internalDeps()
+      for dep in deps
+        if dep == b
+          return true
+        if dep.dependsOn(dep)
+          return true
+      return false
+
     @apply = (obs) ->
       deps = _.cached (-> findDeps([context].concat(args)))
       obs.internalDeps = obs.internalDeps || deps
+      obs.dependsOn = dependsOnCached
       obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
       obs.desc = -> { context, method, args }
