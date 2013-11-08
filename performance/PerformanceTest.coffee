@@ -19,10 +19,10 @@ f =
     }
   everyNth: (n, stream) ->
     stream.filter (x) -> x % n == 0
-  withGenerator: (fun) ->
+  withGenerator: (fun, rounds=100) ->
     gen = f.generator()
     fun(gen).onValue((v) -> )
-    gen.ticks(100)
+    gen.ticks(rounds)
   combineTemplate: (gen, width, depth) ->
     if depth == 0
       gen.stream()
@@ -36,29 +36,35 @@ f =
 
 suite = new Benchmark.Suite
 
+suite.add 'combo', ->
+  f.withGenerator(((gen) ->
+    s = f.combineTemplate(gen, 2, 2)
+    s.onValue ->
+      f.combineTemplate(gen, 2, 4).onValue(->)
+    s), 1)
 suite.add 'zip', ->
   f.withGenerator (gen) ->
     f.zip(gen)
-.add 'Bacon.combineTemplate.sample', ->
+suite.add 'Bacon.combineTemplate.sample', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 5, 1)
       .sampledBy(f.everyNth(10, gen.stream())) 
-.add 'Bacon.combineTemplate (deep)', ->
+suite.add 'Bacon.combineTemplate (deep)', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 3, 3)
-.add 'Bacon.combineTemplate', ->
+suite.add 'Bacon.combineTemplate', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 5, 1)
-.add 'EventStream.map', ->
+suite.add 'EventStream.map', ->
   f.withGenerator (gen) ->
     gen.stream().map((x) -> x * 2)
-.add 'EventStream.scan', ->
+suite.add 'EventStream.scan', ->
   f.withGenerator (gen) ->
     gen.stream().scan(0, (x,y) -> x+y)
-.add 'EventStream.toProperty', ->
+suite.add 'EventStream.toProperty', ->
   f.withGenerator (gen) ->
     gen.stream().toProperty()
-.on 'cycle', (event) ->
+suite.on 'cycle', (event) ->
   console.log(String(event.target))
 .on "error", (error) ->
   console.log(error)
