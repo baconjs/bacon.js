@@ -219,11 +219,14 @@ when there are subscribers to the stream. Polling ends permanently when
 
 `Bacon.once(value)` creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
-after this value. 
+after this value. You can also send send an `Error` event instead of a
+value: `Bacon.once(new Bacon.Error("fail"))`.
 
 `Bacon.fromArray(values)` creates an EventStream that delivers the given
-series of values to the first subscriber. The stream ends after these
-values have been delivered.
+series of values (given as array) to the first subscriber. The stream ends after these
+values have been delivered. You can also send `Error` events, or
+any combination of pure values and error events like this:
+`Bacon.fromArray([1, new Bacon.Error()])
 
 `Bacon.interval(interval, value)` repeats the single element
 indefinitely with the given interval (in milliseconds)

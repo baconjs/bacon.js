@@ -932,6 +932,10 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once(new Bacon.Error("oop"))
       [error()])
+  describe "Allows wrapped events, for instance, Bacon.Error", ->
+    expectStreamEvents(
+      -> Bacon.once(error())
+      [error()])
 
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
@@ -946,6 +950,10 @@ describe "Bacon.fromArray", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 3])
       [1, 2, 3])
+  describe "Allows wrapped events, for instance, Bacon.Error", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([error(), 1])
+      [error(), 1])
 
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
@@ -2410,7 +2418,7 @@ describe "Bacon.fromBinder", ->
           sink([new Bacon.Next(1), new Bacon.End()])
           (->)
       [1])
-  describe "Allows sending unwrapped values", ->
+  describe "Allows sending unwrapped values as well as events", ->
     expectStreamEvents(
       ->
         Bacon.fromBinder (sink) ->
