@@ -625,6 +625,10 @@ currently awaiting an AJAX response:
 var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
 ```
 
+`observable.onDispose(f)` runs a function whenever an Observable is
+disposed or ended. You can use this function to clean up any resources
+that you've allocated in the process of creating an observable.
+
 `observable.endOnError` ends the Observable on first Error event. The
 error is included in the output of the returned Observable.
 
