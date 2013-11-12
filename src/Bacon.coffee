@@ -874,14 +874,14 @@ UpdateBarrier = (->
         waiters.push {obs, f}
     else
       f()
+  findIndependent = ->
+    while (!independent(waiters[0]))
+      waiters.push(waiters.splice(0, 1)[0])
+    return waiters.splice(0, 1)[0]
+
   flush = ->
     if waiters.length
-      #console.log "flushing, waiters", (_.map _.toString, (_.map ((x) -> x.obs), waiters))
-      ok = _.filter independent, waiters
-      firstIndex = _.indexWhere waiters, independent
-      throw "no independent observable" if firstIndex < 0
-      {f} = waiters.splice(firstIndex, 1)[0]
-      f()
+      findIndependent().f()
       flush()
   inTransaction = (context, f, args) -> 
     if tx
