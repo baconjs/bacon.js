@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, former, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -590,12 +590,15 @@
 
   })(Event);
 
+  idCounter = 0;
+
   Observable = (function() {
     function Observable(desc) {
       this.combine = __bind(this.combine, this);
       this.flatMapLatest = __bind(this.flatMapLatest, this);
       this.fold = __bind(this.fold, this);
       this.scan = __bind(this.scan, this);
+      this.id = ++idCounter;
       this.assign = this.onValue;
       withDescription(desc, this);
     }
@@ -1630,31 +1633,13 @@
 
   })(Dispatcher);
 
-  Bacon.dependsOn = function(a, b) {
-    var dep, deps, _i, _len;
-    if (a === b) {
-      return false;
-    }
-    deps = a.internalDeps();
-    for (_i = 0, _len = deps.length; _i < _len; _i++) {
-      dep = deps[_i];
-      if (dep === b) {
-        return true;
-      }
-      if (Bacon.dependsOn(dep, b)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   UpdateBarrier = (function() {
-    var flush, inTransaction, independent, tx, waiters, whenDone;
+    var findIndependent, flush, inTransaction, independent, tx, waiters, whenDone;
     tx = false;
     waiters = [];
     independent = function(waiter) {
       return !_.any(waiters, (function(other) {
-        return Bacon.dependsOn(waiter.obs, other.obs);
+        return waiter.obs.dependsOn(other.obs);
       }));
     };
     whenDone = function(obs, f) {
@@ -1671,16 +1656,15 @@
         return f();
       }
     };
+    findIndependent = function() {
+      while (!independent(waiters[0])) {
+        waiters.push(waiters.splice(0, 1)[0]);
+      }
+      return waiters.splice(0, 1)[0];
+    };
     flush = function() {
-      var f, firstIndex, ok;
       if (waiters.length) {
-        ok = _.filter(independent, waiters);
-        firstIndex = _.indexWhere(waiters, independent);
-        if (firstIndex < 0) {
-          throw "no independent observable";
-        }
-        f = waiters.splice(firstIndex, 1)[0].f;
-        f();
+        findIndependent().f();
         return flush();
       }
     };
@@ -1898,7 +1882,7 @@
 
   Desc = (function() {
     function Desc(context, method, args) {
-      var findDeps;
+      var collectDeps, dependsOn, findDeps, flatDeps;
       findDeps = function(x) {
         if (isArray(x)) {
           return _.flatMap(findDeps, x);
@@ -1910,12 +1894,29 @@
           return [];
         }
       };
+      flatDeps = null;
+      collectDeps = function(o) {
+        var deps;
+        deps = o.internalDeps();
+        return _.each(deps, function(i, dep) {
+          flatDeps[dep.id] = true;
+          return collectDeps(dep);
+        });
+      };
+      dependsOn = function(b) {
+        if (flatDeps == null) {
+          flatDeps = {};
+          collectDeps(this);
+        }
+        return flatDeps[b.id];
+      };
       this.apply = function(obs) {
         var deps;
         deps = _.cached((function() {
           return findDeps([context].concat(args));
         }));
         obs.internalDeps = obs.internalDeps || deps;
+        obs.dependsOn = dependsOn;
         obs.deps = deps;
         obs.toString = function() {
           return _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")";
