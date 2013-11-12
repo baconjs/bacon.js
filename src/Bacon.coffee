@@ -997,29 +997,24 @@ class Desc
         [x.obs]
       else
         []
-    depCache = {}
-    dependsOnCached = (b) ->
-      cached = depCache[b.id]
-      if (!cached?)
-        cached = dependsOn.call(this, b)
-        depCache[b.id] = cached
-      cached
+    flatDeps = null
+
+    collectDeps = (o) ->
+      deps = o.internalDeps()
+      _.each deps, (i, dep) ->
+        flatDeps[dep.id] = true
+        collectDeps(dep)
 
     dependsOn = (b) ->
-      if this == b
-        return false
-      deps = this.internalDeps()
-      for dep in deps
-        if dep == b
-          return true
-        if dep.dependsOn(dep)
-          return true
-      return false
+      if !flatDeps?
+        flatDeps = {}
+        collectDeps this
+      return flatDeps[b.id]
 
     @apply = (obs) ->
       deps = _.cached (-> findDeps([context].concat(args)))
       obs.internalDeps = obs.internalDeps || deps
-      obs.dependsOn = dependsOnCached
+      obs.dependsOn = dependsOn
       obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
       obs.desc = -> { context, method, args }
