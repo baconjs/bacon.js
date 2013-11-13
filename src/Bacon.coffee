@@ -1359,7 +1359,7 @@ _ = {
       else if isFunction(obj)
         "function"
       else if isArray(obj)
-        return "{..}" if recursionDepth > 5
+        return "[..]" if recursionDepth > 5
         "[" + _.map(_.toString, obj).toString() + "]"
       else if obj?.toString? and obj.toString!=Object.prototype.toString
         obj.toString()
