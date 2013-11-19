@@ -1609,60 +1609,73 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
-  describe "works with independent observables created within the dispatch loop", ->
-    it "combineAsArray", ->
-      calls = 0
-      Bacon.once(1).onValue ->
-        Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
-          calls++
-      expect(calls).to.equal(1)
-    it "combineAsArray.startWith", ->
-      result = null
-      Bacon.once(1).onValue ->
-        a = Bacon.constant("lolbal")
-        s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
-        s.onValue((x) -> result = x)
-      expect(result).to.equal("right")
-    it "stream.startWith", ->
-      result = null
-      Bacon.once(1).onValue ->
-        s = Bacon.later(1).startWith(0)
-        s.onValue((x) -> result = x)
-      expect(result).to.equal(0)
-    it "combineAsArray.changes.startWith", ->
-      result = null
-      Bacon.once(1).onValue ->
-        a = Bacon.constant("lolbal")
-        s = Bacon.combineAsArray([a, a]).changes().startWith("right")
-        s.onValue((x) -> result = x)
-      expect(result).to.equal("right")
-    it "flatMap", ->
-      result = null
-      Bacon.once(1).onValue ->
-        a = Bacon.constant("lolbal")
-        s = a.flatMap((x) -> Bacon.once(x))
-        s.onValue((x) -> result = x)
-      expect(result).to.equal("lolbal")
-    it "awaiting", ->
-      result = null
-      Bacon.once(1).onValue ->
-        a = Bacon.constant(1)
-        s = a.awaiting(a.map(->))
-        s.onValue((x) -> result = x)
-      expect(result).to.equal(false)
-    it "concat", ->
-      result = []
-      Bacon.once(1).onValue ->
-        s = Bacon.once(1).concat(Bacon.once(2))
-        s.onValue((x) -> result.push(x))
-      expect(result).to.deep.equal([1,2])
-    it "Property.delay", ->
-      result = []
-      Bacon.once(1).onValue ->
-        c = Bacon.constant(1)
-        s = Bacon.combineAsArray([c, c]).delay(1).map(".0")
-        s.onValue((x) -> result.push(x))
-      expect(result).to.deep.equal([1])
+describe "independent observables created within the dispatch loop", ->
+  it "combineAsArray", ->
+    calls = 0
+    Bacon.once(1).onValue ->
+      Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
+        calls++
+    expect(calls).to.equal(1)
+  it "combineAsArray.startWith", ->
+    result = null
+    Bacon.once(1).onValue ->
+      a = Bacon.constant("lolbal")
+      s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
+      s.onValue((x) -> result = x)
+    expect(result).to.equal("right")
+  it "stream.startWith", ->
+    result = null
+    Bacon.once(1).onValue ->
+      s = Bacon.later(1).startWith(0)
+      s.onValue((x) -> result = x)
+    expect(result).to.equal(0)
+  it "combineAsArray.changes.startWith", ->
+    result = null
+    Bacon.once(1).onValue ->
+      a = Bacon.constant("lolbal")
+      s = Bacon.combineAsArray([a, a]).changes().startWith("right")
+      s.onValue((x) -> result = x)
+    expect(result).to.equal("right")
+  it "flatMap", ->
+    result = null
+    Bacon.once(1).onValue ->
+      a = Bacon.constant("lolbal")
+      s = a.flatMap((x) -> Bacon.once(x))
+      s.onValue((x) -> result = x)
+    expect(result).to.equal("lolbal")
+  it "awaiting", ->
+    result = null
+    Bacon.once(1).onValue ->
+      a = Bacon.constant(1)
+      s = a.awaiting(a.map(->))
+      s.onValue((x) -> result = x)
+    expect(result).to.equal(false)
+  it "concat", ->
+    result = []
+    Bacon.once(1).onValue ->
+      s = Bacon.once(1).concat(Bacon.once(2))
+      s.onValue((x) -> result.push(x))
+    expect(result).to.deep.equal([1,2])
+  it "Property.delay", ->
+    result = []
+    Bacon.once(1).onValue ->
+      c = Bacon.constant(1)
+      s = Bacon.combineAsArray([c, c]).delay(1).map(".0")
+      s.onValue((x) -> result.push(x))
+    expect(result).to.deep.equal([1])
+
+describe "when subscribing within the dispatch loop", ->
+  describe "up-to-date values are used", ->
+    expectStreamEvents(
+      ->
+        src = series(1, [1,2])
+        trigger = src.map((x) -> x)
+        trigger.onValue ->
+        value = src.toProperty()
+        value.onValue ->
+        trigger.flatMap ->
+          value.take(1)
+      [1,2])
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->

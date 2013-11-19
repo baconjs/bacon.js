@@ -815,7 +815,7 @@ class Dispatcher
       if event.isEnd()
         ended = true
       handleEvent.apply(this, [event])
-    @subscribe = (sink) =>
+    @subscribe = UpdateBarrier.guardedSubscribe (sink) =>
       if ended
         sink end()
         nop
@@ -844,7 +844,7 @@ class PropertyDispatcher extends Dispatcher
         current = new Some(event.value)
         #console.log "push", event.value()
       push.apply(this, [event])
-    @subscribe = (sink) =>
+    @subscribe = UpdateBarrier.guardedSubscribe (sink) =>
       initSent = false
       # init value is "bounced" here because the base Dispatcher class
       # won't add more than one subscription to the underlying observable.
@@ -866,6 +866,7 @@ class PropertyDispatcher extends Dispatcher
 UpdateBarrier = (->
   tx = false
   waiters = []
+  afters = []
   independent = (waiter) ->
     !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
   whenDone = (obs, f) -> 
@@ -896,8 +897,28 @@ UpdateBarrier = (->
         flush()
       finally
         tx = false
+        toProcess = afters
+        afters = []
+        for f in toProcess
+          f()
       result
-  { whenDone, inTransaction }
+  subscribeDelayed = (f) ->
+    (sink) ->
+      unsubd = false
+      unsub = nop
+      afters.push ->
+        if not unsubd
+          unsub = f(sink)
+      theUnsub = -> 
+         unsubd = true
+         unsub()
+      theUnsub
+  guardedSubscribe = (f) ->
+    if not tx
+      f
+    else
+      subscribeDelayed(f)
+  { whenDone, inTransaction, guardedSubscribe }
 )()
 
 class Bus extends EventStream
