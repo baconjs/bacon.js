@@ -625,14 +625,16 @@ describe "EventStream.flatMap", ->
         Bacon.later(t(1), value)
       [error(), 1])
   describe "should work with a spawned stream responding synchronously", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value))
-      [1, 2], unstable)
-    expectStreamEvents(
-      -> series(1, [1,2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value)).concat(Bacon.once("lol"))
-      [1, "lol", 2, "lol"], unstable)
+    describe "case 1", ->
+      expectStreamEvents(
+        -> series(1, [1, 2]).flatMap (value) ->
+           Bacon.never().concat(Bacon.once(value))
+        [1, 2], unstable)
+    describe "case 2", ->
+      expectStreamEvents(
+        -> series(1, [1,2]).flatMap (value) ->
+           Bacon.never().concat(Bacon.once(value)).concat(Bacon.once("lol"))
+        [1, "lol", 2, "lol"], unstable)
   describe "should work with a source stream responding synchronously", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2]).flatMap (value) ->
