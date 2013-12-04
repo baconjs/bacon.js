@@ -259,41 +259,52 @@ Pro tip: you can also put Errors into streams created with the
 constructors above, by using an [`Bacon.Error`](#bacon_error) object instead of a plain
 value.
 
-The EventStream constructor for custom streams
-----------------------------------------------
+Bacon.fromBinder for custom streams
+-----------------------------------
 
-If none of the factory methods above apply, you may of course roll your own EventStream by using the constructor:
+If none of the factory methods above apply, you may of course roll your own EventStream by using `Bacon.fromBinder`.
 
 ```js
-new EventStream(subscribe)
+Bacon.fromBinder(subscribe)
 ```
 
-The parameter `subscribe` is a function that accepts an subscriber which is a function that will receive Events.
+The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subcribe` funtion can "push" events to.
 
 For example:
 
 ```js
-new Bacon.EventStream(function(subscriber) {
-  subscriber(new Bacon.Next("a value here"))
-  subscriber(new Bacon.Next(function() {
+var stream = Bacon.fromBinder(function(sink) {
+  sink("first value")
+  sink([new Bacon.Next("2nd"), new Bacon.Next("3rd")])
+  sink(new Bacon.Next(function() {
     return "This one will be evaluated lazily"
   }))
-  subscriber(new Bacon.Error("oops, an error"))
-  subscriber(new Bacon.End())
-  return function() { /* unsub functionality here, this one's a no-op */ }
+  sink(new Bacon.Error("oops, an error"))
+  sink(new Bacon.End())
+  return function() { 
+     // unsub functionality here, this one's a no-op
+  }
 })
+stream.log()
 ```
+
+As shown in the example, you can push 
+
+- A plain value, like `"first value"`
+- An `Event` object including `Bacon.Error` (wraps an error) and `Bacon.End` (indicates
+stream end).
+- An array of event objects at once
 
 The subscribe function must return a function. Let's call that function
 `unsubscribe`. The returned function can be used by the subscriber to
 unsubscribe and it should release all resources that the subscribe function reserved.
 
-The subscriber function may return Bacon.more or Bacon.noMore. It may also
+The `sink` function may return Bacon.more or Bacon.noMore. It may also
 return undefined or anything else. Iff it returns Bacon.noMore, the subscriber
-must be cleaned up just like in case of calling the unsubscribe function.
+must be cleaned up just like in case of calling the `unsubscribe` function.
 
-The EventStream constructor will wrap your subscribe function so that it will
-only be called when the first stream listener is added, and the unsubscibe
+The EventStream will wrap your `subscribe` function so that it will
+only be called when the first stream listener is added, and the `unsubscibe`
 function is called only after the last listener has been removed.
 The subscribe-unsubscribe cycle may of course be repeated indefinitely,
 so prepare for multiple calls to the subscribe function.
