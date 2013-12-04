@@ -295,6 +295,8 @@ As shown in the example, you can push
 stream end).
 - An array of event objects at once
 
+See another [example](http://jsfiddle.net/PG4c4/).
+
 The subscribe function must return a function. Let's call that function
 `unsubscribe`. The returned function can be used by the subscriber to
 unsubscribe and it should release all resources that the subscribe function reserved.
