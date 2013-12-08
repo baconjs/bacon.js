@@ -693,7 +693,7 @@ class Property extends Observable
     if handler is true
       @subscribeInternal = subscribe
     else
-      @subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe
+      @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
 
     @sampledBy = (sampler, combinator) =>
       if combinator?
@@ -836,7 +836,7 @@ class Dispatcher
           unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
-  constructor: (subscribe, handleEvent) ->
+  constructor: (p, subscribe, handleEvent) ->
     super(subscribe, handleEvent)
     current = None
     currentValueRootId = undefined
@@ -861,10 +861,14 @@ class PropertyDispatcher extends Dispatcher
       reply = current.filter(shouldBounceInitialValue).map(
         (event) ->
           dispatchingId = UpdateBarrier.currentEventId()
-          if currentValueRootId && dispatchingId && dispatchingId != currentValueRootId
-            console.log "bouncing stale value", event.value(), "root at", currentValueRootId, "vs", dispatchingId
-          val = event.value
-          UpdateBarrier.inTransaction undefined, this, (-> sink initial(val())), []
+          valId = currentValueRootId
+          if valId && dispatchingId && dispatchingId != valId
+            #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
+            UpdateBarrier.whenDone p, ->
+              if currentValueRootId == valId
+                console.log "ok, should have bounced TODO"
+          else
+            UpdateBarrier.inTransaction undefined, this, (-> sink initial(event.value())), []
       )
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
