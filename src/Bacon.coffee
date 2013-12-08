@@ -235,7 +235,11 @@ Bacon.combineTemplate = (template) ->
     rootContext
   withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
 
+eventIdCounter = 0
+
 class Event
+  constructor: ->
+    @id = (++eventIdCounter)
   isEvent: -> true
   isEnd: -> false
   isInitial: -> false
@@ -246,6 +250,7 @@ class Event
 
 class Next extends Event
   constructor: (valueF) ->
+    super()
     if isFunction(valueF)
       @value = _.cached(valueF)
     else
@@ -809,7 +814,7 @@ class Dispatcher
           queue = (queue or []).concat([event])
           Bacon.more
     @push = (event) =>
-      UpdateBarrier.inTransaction this, pushIt, [event]
+      UpdateBarrier.inTransaction event, this, pushIt, [event]
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) =>
       if event.isEnd()
@@ -834,6 +839,7 @@ class PropertyDispatcher extends Dispatcher
   constructor: (subscribe, handleEvent) ->
     super(subscribe, handleEvent)
     current = None
+    currentValueRootId = undefined
     push = @push
     subscribe = @subscribe
     ended = false
@@ -841,7 +847,8 @@ class PropertyDispatcher extends Dispatcher
       if event.isEnd()
         ended = true
       if event.hasValue()
-        current = new Some(event.value)
+        current = new Some(event)
+        currentValueRootId = UpdateBarrier.currentEventId()
         #console.log "push", event.value()
       push.apply(this, [event])
     @subscribe = (sink) =>
@@ -852,8 +859,12 @@ class PropertyDispatcher extends Dispatcher
       # after the first one
       shouldBounceInitialValue = => @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map(
-        (val) ->
-          UpdateBarrier.inTransaction this, (-> sink initial(val())), []
+        (event) ->
+          dispatchingId = UpdateBarrier.currentEventId()
+          if currentValueRootId && dispatchingId && dispatchingId != currentValueRootId
+            console.log "bouncing stale value", event.value(), "root at", currentValueRootId, "vs", dispatchingId
+          val = event.value
+          UpdateBarrier.inTransaction undefined, this, (-> sink initial(val())), []
       )
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
@@ -863,42 +874,6 @@ class PropertyDispatcher extends Dispatcher
       else
         subscribe.apply(this, [sink])
 
-UpdateBarrier = (->
-  tx = false
-  waiters = []
-  independent = (waiter) ->
-    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
-  whenDone = (obs, f) -> 
-    if tx
-      if !_.any(waiters, (w) -> w.obs==obs)
-        waiters.push {obs, f}
-    else
-      f()
-  findIndependent = ->
-    while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
-
-  flush = ->
-    if waiters.length
-      findIndependent().f()
-      flush()
-  inTransaction = (context, f, args) -> 
-    if tx
-      #console.log "in tx"
-      f.apply(context, args)
-    else
-      #console.log "start tx"
-      tx = true
-      try
-        result = f.apply(context, args)
-        #console.log("done with tx")
-        flush()
-      finally
-        tx = false
-      result
-  { whenDone, inTransaction }
-)()
 
 class Bus extends EventStream
   constructor: ->
@@ -1197,6 +1172,7 @@ class Some
     f @value
   isDefined: true
   toArray: -> [@value]
+  inspect: -> "Some(" + @value + ")"
 
 None =
   getOrElse: (value) -> value
@@ -1205,6 +1181,48 @@ None =
   forEach: ->
   isDefined: false
   toArray: -> []
+  inspect: -> "None"
+
+UpdateBarrier = (->
+  rootEvent = undefined
+  waiters = []
+  independent = (waiter) ->
+    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
+  whenDone = (obs, f) -> 
+    if rootEvent
+      if !_.any(waiters, (w) -> w.obs==obs)
+        waiters.push {obs, f}
+    else
+      f()
+  findIndependent = ->
+    while (!independent(waiters[0]))
+      waiters.push(waiters.splice(0, 1)[0])
+    return waiters.splice(0, 1)[0]
+
+  flush = ->
+    if waiters.length
+      findIndependent().f()
+      flush()
+
+  inTransaction = (event, context, f, args) ->
+    if rootEvent
+      #console.log "in tx"
+      f.apply(context, args)
+    else
+      #console.log "start tx"
+      rootEvent = event
+      try
+        result = f.apply(context, args)
+        #console.log("done with tx")
+        flush()
+      finally
+        rootEvent = undefined
+      result
+
+  currentEventId = -> if rootEvent then rootEvent.id else undefined
+
+  { whenDone, inTransaction, currentEventId }
+)()
 
 Bacon.EventStream = EventStream
 Bacon.Property = Property
