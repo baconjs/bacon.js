@@ -1664,7 +1664,7 @@ describe "independent observables created within the dispatch loop", ->
       s.onValue((x) -> result.push(x))
     expect(result).to.deep.equal([1])
 
-describe.only "when subscribing within the dispatch loop", ->
+describe "when subscribing within the dispatch loop", ->
   describe "up-to-date values are used", ->
     expectStreamEvents(
       ->

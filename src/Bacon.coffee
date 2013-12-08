@@ -866,7 +866,7 @@ class PropertyDispatcher extends Dispatcher
             #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
             UpdateBarrier.whenDone p, ->
               if currentValueRootId == valId
-                console.log "ok, should have bounced TODO"
+                sink initial(event.value())
           else
             UpdateBarrier.inTransaction undefined, this, (-> sink initial(event.value())), []
       )
