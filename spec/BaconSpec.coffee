@@ -1664,7 +1664,7 @@ describe "independent observables created within the dispatch loop", ->
       s.onValue((x) -> result.push(x))
     expect(result).to.deep.equal([1])
 
-describe "when subscribing within the dispatch loop", ->
+describe.only "when subscribing within the dispatch loop", ->
   describe "up-to-date values are used", ->
     expectStreamEvents(
       ->
@@ -1676,6 +1676,15 @@ describe "when subscribing within the dispatch loop", ->
         trigger.flatMap ->
           value.take(1)
       [1,2])
+    expectStreamEvents(
+      ->
+        src = series(1, [1,1])
+        trigger = src.map((x) -> x)
+        value = src.toProperty().skipDuplicates()
+        value.onValue ->
+        trigger.flatMap ->
+          value.take(1)
+      [1,1])
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
