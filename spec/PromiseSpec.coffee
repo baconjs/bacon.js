@@ -24,7 +24,7 @@ describe "Bacon.fromPromise", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
     fail("a")
-    expect(events).to.deep.equal([new Bacon.Error("a"), new Bacon.End()])
+    expect(events.map((e) -> e.toString())).to.deep.equal(["<error> a", "<end>"])
 
   it "should respect unsubscription", ->
     events = []
