@@ -1833,6 +1833,12 @@ describe "EventStream.zip", ->
         obs = series(1, ['a', 'b', 'c'])
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
+  describe "can zip a synchronous observable with itself", ->
+    expectStreamEvents(
+      ->
+        obs = Bacon.fromArray(['a', 'b', 'c'])
+        obs.zip(obs.skip(1))
+      [['a', 'b'], ['b', 'c']])
 
 describe "Property.zip", ->
   describe "pairwise combines values from two properties", ->
