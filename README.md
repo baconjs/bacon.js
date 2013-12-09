@@ -669,24 +669,24 @@ EventStream
 
 `Bacon.EventStream` a stream of events. See methods below.
 
-`stream.onValue(f)` subscribes a given handler function to event
-stream. Function will be called for each new value in the stream. This
-is the simplest way to assign a side-effect to a stream. The difference
-to the `subscribe` method is that the actual stream values are
-received, instead of Event objects. Function Construction rules below
-apply here.
-
-`stream.onValues(f)` like onValue, but splits the value (assuming its an
-array) as function arguments to `f`
-
-`stream.onEnd(f)` subscribes a callback to stream end. The function will
-be called when the stream ends.
-
 `stream.subscribe(f)` subscribes given handler function to
 event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
 `Bacon.noMore` from the handler function as a reply to an Event.
+
+`stream.onValue(f)` subscribes a given handler function to event
+stream. Function will be called for each new value in the stream. This
+is the simplest way to assign a side-effect to a stream. The difference
+to the `subscribe` method is that the actual stream values are
+received, instead of Event objects. Function Construction rules below
+apply here. Just like `subscribe`, thie method returns a function for unsubscribing.
+
+`stream.onValues(f)` like onValue, but splits the value (assuming its an
+array) as function arguments to `f`
+
+`stream.onEnd(f)` subscribes a callback to stream end. The function will
+be called when the stream ends. Just like `subscribe`, thie method returns a function for unsubscribing.
 
 `stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
@@ -762,17 +762,18 @@ have an initial value.
 `property.subscribe(f)` subscribes a handler function to property. If there's
 a current value, an `Initial` event will be pushed immediately. `Next`
 event will be pushed on updates and an `End` event in case the source
-EventStream ends.
+EventStream ends. Returns a function that you call to unsubscribe.
 
 `property.onValue(f)` similar to eventStream.onValue, except that also
 pushes the initial value of the property, in case there is one.
 See Function Construction rules below for different forms of calling this method.
+Just like `subscribe`, thie method returns a function for unsubscribing.
 
 `property.onValues(f)` like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
 
 `property.onEnd(f)` subscribes a callback to stream end. The function will
-be called when the source stream of the property ends.
+be called when the source stream of the property ends. Just like `subscribe`, thie method returns a function for unsubscribing.
 
 `property.assign(obj, method, [param...])` calls the method of the given
 object with each value of this Property. You can optionally supply
