@@ -1703,6 +1703,14 @@ describe "when subscribing within the dispatch loop", ->
         trigger.flatMapLatest ->
           value.take(1)
       [1,2])
+    it "dispatches synchronously when possible", ->
+      values = []
+      src = Bacon.once(1).toProperty()
+      src.onValue ->
+        src.map(->).combine(src, ->).onValue ->
+          values.push 1
+        values.push 2
+      expect(values).to.deep.equal [1,2]
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
