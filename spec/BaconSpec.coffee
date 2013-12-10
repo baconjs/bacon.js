@@ -1673,18 +1673,36 @@ describe "when subscribing within the dispatch loop", ->
         trigger.onValue ->
         value = src.toProperty()
         value.onValue ->
-        trigger.flatMap ->
+        trigger.flatMapLatest ->
           value.take(1)
       [1,2])
     expectStreamEvents(
       ->
-        src = series(1, [1,1])
+        src = series(1, [1,2])
         trigger = src.map((x) -> x)
         value = src.toProperty().skipDuplicates()
         value.onValue ->
-        trigger.flatMap ->
+        trigger.flatMapLatest ->
           value.take(1)
-      [1,1])
+      [1,2])
+    expectStreamEvents(
+      ->
+        src = series(1, [1,2])
+        trigger = src.map((x) -> x)
+        value = src.toProperty().skipDuplicates()
+        trigger.flatMapLatest ->
+          value.take(1)
+      [2]) # <- the first value is missed because "src" is done with dispatching before subcribing to the "value" property
+    expectStreamEvents(
+      ->
+        src = series(1, [1,2])
+        trigger = src.map((x) -> x)
+        trigger.onValue ->
+        value = src.combine(Bacon.constant(), (x,y)->x)
+        value.onValue ->
+        trigger.flatMapLatest ->
+          value.take(1)
+      [1,2])
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
