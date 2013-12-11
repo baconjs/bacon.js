@@ -577,6 +577,10 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap((x) -> x)
       [1,2], unstable)
+  describe "Works also when f returns an Error instead of an EventStream", ->
+    expectStreamEvents(
+      -> series(1, [1,2]).flatMap((x) -> new Bacon.Error(x))
+      [new Bacon.Error(1), new Bacon.Error(2)], unstable)
   describe "Accepts a constant EventStream/Property as an alternative to a function", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.constant("bacon"))
