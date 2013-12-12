@@ -5,8 +5,8 @@ Bacon.version = '<version>'
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream (sink) ->
-    unbinder = binder (args...) ->
-      value = eventTransformer(args...)
+    unbinder = binder (...args) ->
+      value = eventTransformer(...args)
       unless value instanceof Array and _.last(value) instanceof Event
         value = [value]
 
@@ -22,9 +22,9 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
-  Bacon.fromBinder (handler) =>
+  Bacon.fromBinder (handler) ~>
     @on(eventName, selector, handler)
-    => @off(eventName, selector, handler)
+    ~> @off(eventName, selector, handler)
   , eventTransformer
 
 (jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
@@ -40,10 +40,10 @@ Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
 # Examples
 #
 #   Bacon.fromEventTarget(document.body, "click")
-#   # => EventStream
+#   # ~> EventStream
 #
 #   Bacon.fromEventTarget (new EventEmitter(), "data")
-#   # => EventStream
+#   # ~> EventStream
 #
 # Returns EventStream
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
@@ -84,28 +84,28 @@ Bacon.repeatedly = (delay, values) ->
   Bacon.fromPoll(delay, -> values[index++ % values.length])
 
 withMethodCallSupport = (wrapped) ->
-  (f, args...) ->
+  (f, ...args) ->
     if typeof f == "object" and args.length
       context = f
       methodName = args[0]
       f = ->
-        context[methodName](arguments...)
+        context[methodName](...arguments)
       args = args.slice(1)
-    wrapped(f, args...)
+    wrapped(f, ...args)
 
 liftCallback = (wrapped) ->
-  withMethodCallSupport (f, args...) ->
+  withMethodCallSupport (f, ...args) ->
     stream = partiallyApplied(wrapped, [(values, callback) ->
-      f(values..., callback)])
+      f(...values, callback)])
     Bacon.combineAsArray(args).flatMap(stream)
 
-Bacon.fromCallback = liftCallback (f, args...) ->
+Bacon.fromCallback = liftCallback (f, ...args) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
   , (value) -> [value, end()]
 
-Bacon.fromNodeCallback = liftCallback (f, args...) ->
+Bacon.fromNodeCallback = liftCallback (f, ...args) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
@@ -149,22 +149,22 @@ Bacon.fromArray = (values) ->
     send()
     -> unsubd = true
 
-Bacon.mergeAll = (streams...) ->
+Bacon.mergeAll = (...streams) ->
   if streams[0] instanceof Array
     streams = streams[0]
   _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
 
-Bacon.zipAsArray = (streams...) ->
+Bacon.zipAsArray = (...streams) ->
   if streams[0] instanceof Array
     streams = streams[0]
-  Bacon.zipWith(streams, (xs...) -> xs)
+  Bacon.zipWith(streams, (...xs) -> xs)
 
-Bacon.zipWith = (f, streams...) ->
+Bacon.zipWith = (f, ...streams) ->
   if !isFunction(f)
     [streams, f] = [f, streams[0]]
   Bacon.when _.map(((s) -> s.toEventStream()), streams), f
 
-Bacon.combineAsArray = (streams...) ->
+Bacon.combineAsArray = (...streams) ->
   if (streams.length == 1 and streams[0] instanceof Array)
     streams = streams[0]
   for stream, index in streams
@@ -172,14 +172,14 @@ Bacon.combineAsArray = (streams...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true, false, s.subscribeInternal)
-    Bacon.when(sources, ((xs...) -> xs)).toProperty()
+    Bacon.when(sources, ((...xs) -> xs)).toProperty()
   else
     Bacon.constant([])
 
-Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
+Bacon.onValues = (...streams, f) -> Bacon.combineAsArray(streams).onValues(f)
 
-Bacon.combineWith = (f, streams...) ->
-  Bacon.combineAsArray(streams).map (values) -> f(values...)
+Bacon.combineWith = (f, ...streams) ->
+  Bacon.combineAsArray(streams).map (values) -> f(...values)
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -224,14 +224,14 @@ class Event
   filter: -> true
 
 class Next extends Event
-  constructor: (valueF) ->
+  (valueF) ->
     if isFunction(valueF)
       @value = _.cached(valueF)
     else
       @value = _.always(valueF)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(=> f(@value()))
+  fmap: (f) -> @apply(~> f(@value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   describe: -> @value()
@@ -249,21 +249,21 @@ class End extends Event
   describe: -> "<end>"
 
 class Error extends Event
-  constructor: (@error) ->
+  (@error) ->
   isError: -> true
   fmap: -> this
   apply: -> this
   describe: -> "<error> #{@error}"
 
 class Observable
-  constructor: ->
+  ->
     @assign = @onValue
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.value() if event.hasValue()
   onValues: (f) ->
-    @onValue (args) -> f(args...)
+    @onValue (args) -> f(...args)
   onError: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
@@ -273,14 +273,14 @@ class Observable
     @subscribe (event) ->
       f() if event.isEnd()
   errors: -> @filter(-> false)
-  filter: (f, args...) ->
+  filter: (f, ...args) ->
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if event.filter(f)
           @push event
         else
           Bacon.more
-  takeWhile: (f, args...) ->
+  takeWhile: (f, ...args) ->
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
         if event.filter(f)
@@ -288,7 +288,7 @@ class Observable
         else
           @push end()
           Bacon.noMore
-  endOnError: (f, args...) ->
+  endOnError: (f, ...args) ->
     f = true if !f?
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
@@ -311,7 +311,7 @@ class Observable
           @push end()
           Bacon.noMore
 
-  map: (p, args...) ->
+  map: (p, ...args) ->
     if (p instanceof Property)
       p.sampledBy(this, former)
     else
@@ -378,11 +378,11 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  scan: (seed, f, lazyF) =>
+  scan: (seed, f, lazyF) ~>
     f_ = toCombinator(f)
     f = if lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
-    subscribe = (sink) =>
+    subscribe = (sink) ~>
       initSent = false
       unsub = nop
       reply = Bacon.more
@@ -394,7 +394,7 @@ class Observable
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
-      unsub = @subscribe (event) =>
+      unsub = @subscribe (event) ~>
         if (event.hasValue())
           if (initSent && event.isInitial())
             Bacon.more # init already sent, skip this one
@@ -413,7 +413,7 @@ class Observable
       unsub
     new Property(subscribe)
 
-  fold: (seed, f) =>
+  fold: (seed, f) ~>
     @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty())
 
   zip: (other, f = Array) ->
@@ -460,19 +460,19 @@ class Observable
 
   flatMapFirst: (f) -> @flatMap(f, true)
 
-  flatMapLatest: (f) =>
+  flatMapLatest: (f) ~>
     f = makeSpawner(f)
     stream = @toEventStream()
-    stream.flatMap (value) =>
+    stream.flatMap (value) ~>
       f(value).takeUntil(stream)
   not: -> @map((x) -> !x)
-  log: (args...) ->
-    @subscribe (event) -> console?.log?(args..., event.describe())
+  log: (...args) ->
+    @subscribe (event) -> console?.log?(...args, event.describe())
     this
   slidingWindow: (n, minValues = 0) ->
     this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
         .filter(((values) -> values.length >= minValues))
-  combine: (other, f) =>
+  combine: (other, f) ~>
     combinator = toCombinator(f)
     Bacon.combineAsArray(this, other)
       .map (values) ->
@@ -486,7 +486,7 @@ class Observable
 Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable
-  constructor: (subscribe) ->
+  (subscribe) ->
     super()
     assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
@@ -538,7 +538,7 @@ class EventStream extends Observable
       schedule: ->
         if not @scheduled
           @scheduled = true
-          delay(=> @flush())
+          delay(~> @flush())
     }
     reply = Bacon.more
     if not isFunction(delay)
@@ -581,7 +581,7 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  sampledBy: (sampler, combinator) =>
+  sampledBy: (sampler, combinator) ~>
     @toProperty().sampledBy(sampler, combinator)
 
   concat: (right) ->
@@ -595,7 +595,7 @@ class EventStream extends Observable
           sink(e)
       -> unsubLeft() ; unsubRight()
 
-  takeUntil: (stopper) =>
+  takeUntil: (stopper) ~>
     self = this
     new EventStream (sink) ->
       stop = (unsubAll) ->
@@ -614,7 +614,7 @@ class EventStream extends Observable
     started = starter.take(1).map(true).toProperty(false)
     this.filter(started)
 
-  skipWhile: (f, args...) ->
+  skipWhile: (f, ...args) ->
     ok = false
     convertArgsToFunction this, f, args, (f) ->
       @withHandler (event) ->
@@ -633,14 +633,14 @@ class EventStream extends Observable
   withSubscribe: (subscribe) -> new EventStream(subscribe)
 
 class Property extends Observable
-  constructor: (subscribe, handler) ->
+  (subscribe, handler) ->
     super()
     if handler is true
       @subscribeInternal = subscribe
     else
       @subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe
 
-    @sampledBy = (sampler, combinator) =>
+    @sampledBy = (sampler, combinator) ~>
       if combinator?
         combinator = toCombinator combinator
       else
@@ -651,7 +651,7 @@ class Property extends Observable
       stream = Bacon.when([thisSource, samplerSource], combinator)
       if sampler instanceof Property then stream.toProperty() else stream
 
-    @subscribe = (sink) =>
+    @subscribe = (sink) ~>
       # TODO: it's unoptimal to do this bookkeepping per subscriber
       reply = Bacon.more
       class LatestEvent
@@ -665,7 +665,7 @@ class Property extends Observable
       value = new LatestEvent()
       end = new LatestEvent()
       unsub = nop
-      unsub = @subscribeInternal (event) =>
+      unsub = @subscribeInternal (event) ~>
         if event.isError()
           reply = sink event if reply != Bacon.noMore
         else
@@ -681,22 +681,22 @@ class Property extends Observable
         reply = Bacon.noMore
         unsub()
 
-  sample: (interval) =>
+  sample: (interval) ~>
     @sampledBy Bacon.interval(interval, {})
 
-  changes: => new EventStream (sink) =>
-    @subscribe (event) =>
+  changes: ~> new EventStream (sink) ~>
+    @subscribe (event) ~>
       #console.log "CHANGES", event.describe()
       sink event unless event.isInitial()
   withHandler: (handler) ->
     new Property(@subscribeInternal, handler)
   withSubscribe: (subscribe) -> new Property(subscribe)
-  toProperty: =>
+  toProperty: ~>
     assertNoArguments(arguments)
     this
-  toEventStream: =>
-    new EventStream (sink) =>
-      @subscribe (event) =>
+  toEventStream: ~>
+    new EventStream (sink) ~>
+      @subscribe (event) ~>
         event = event.toNext() if event.isInitial()
         sink event
   and: (other) -> @combine(other, (x, y) -> x && y)
@@ -731,7 +731,7 @@ addPropertyInitValueToStream = (property, stream) ->
   stream.toProperty(getInitValue(property))
 
 class Dispatcher
-  constructor: (subscribe, handleEvent) ->
+  (subscribe, handleEvent) ->
     subscribe ?= -> nop
     subscriptions = []
     queue = null
@@ -747,8 +747,8 @@ class Dispatcher
       if waiters?
         ws = waiters
         waiters = null
-        w() for w in ws
-    @push = (event) =>
+        [w() for w in ws]
+    @push = (event) ~>
       if not pushing
         return if event is prevError
         prevError = event if event.isError()
@@ -777,11 +777,11 @@ class Dispatcher
         queue = (queue or []).concat([event])
         Bacon.more
     handleEvent ?= (event) -> @push event
-    @handleEvent = (event) =>
+    @handleEvent = (event) ~>
       if event.isEnd()
         ended = true
       handleEvent.apply(this, [event])
-    @subscribe = (sink) =>
+    @subscribe = (sink) ~>
       if ended
         sink end()
         nop
@@ -792,32 +792,32 @@ class Dispatcher
         if subscriptions.length == 1
           unsubscribeFromSource = subscribe @handleEvent
         assertFunction unsubscribeFromSource
-        =>
+        ~>
           removeSub subscription
           unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
-  constructor: (subscribe, handleEvent) ->
+  (subscribe, handleEvent) ->
     super(subscribe, handleEvent)
     current = None
     push = @push
     subscribe = @subscribe
     ended = false
-    @push = (event) =>
+    @push = (event) ~>
       if event.isEnd()
         ended = true
       if event.hasValue()
         current = new Some(event.value)
         #console.log "push", event.value()
-      PropertyTransaction.inTransaction =>
+      PropertyTransaction.inTransaction ~>
         push.apply(this, [event])
-    @subscribe = (sink) =>
+    @subscribe = (sink) ~>
       initSent = false
       # init value is "bounced" here because the base Dispatcher class
       # won't add more than one subscription to the underlying observable.
       # without bouncing, the init value would be missing from all new subscribers
       # after the first one
-      shouldBounceInitialValue = => @hasSubscribers() or ended
+      shouldBounceInitialValue = ~> @hasSubscribers() or ended
       reply = current.filter(shouldBounceInitialValue).map(
         (val) ->
           sink initial(val()))
@@ -829,7 +829,7 @@ class PropertyDispatcher extends Dispatcher
       else
         subscribe.apply(this, [sink])
 
-PropertyTransaction = (->
+PropertyTransaction = do ->
   txListeners = []
   tx = false
   onDone = (f) -> if tx then txListeners.push(f) else f()
@@ -847,24 +847,24 @@ PropertyTransaction = (->
       gs = txListeners
       #console.log "after tx", txListeners.length
       txListeners = []
-      g() for g in gs
+      [g() for g in gs]
       result
   { onDone, inTransaction }
- )()
+ 
 
 class Bus extends EventStream
-  constructor: ->
+  ->
     sink = undefined
     subscriptions = []
     ended = false
-    guardedSink = (input) => (event) =>
+    guardedSink = (input) ~> (event) ~>
       if (event.isEnd())
         unsubscribeInput(input)
         Bacon.noMore
       else
         sink event
     unsubAll = ->
-      sub.unsub?() for sub in subscriptions
+      [sub.unsub?() for sub in subscriptions]
     subscribeInput = (subscription) ->
       subscription.unsub = (subscription.input.subscribe(guardedSink(subscription.input)))
     unsubscribeInput = (input) ->
@@ -873,40 +873,40 @@ class Bus extends EventStream
           sub.unsub?()
           subscriptions.splice(i, 1)
           return
-    subscribeAll = (newSink) =>
+    subscribeAll = (newSink) ~>
       sink = newSink
       for subscription in cloneArray(subscriptions)
         subscribeInput(subscription)
       unsubAll
     super(subscribeAll)
-    @plug = (input) =>
+    @plug = (input) ~>
       return if ended
       sub = { input: input }
       subscriptions.push(sub)
       subscribeInput(sub) if (sink?)
       -> unsubscribeInput(input)
-    @push = (value) =>
+    @push = (value) ~>
       sink? next(value)
-    @error = (error) =>
+    @error = (error) ~>
       sink? new Error(error)
-    @end = =>
+    @end = ~>
       ended = true
       unsubAll()
       sink? end()
 
 class Source
-  constructor: (s, @sync, consume, @subscribe, lazy = false) ->
+  (s, @sync, consume, @subscribe, lazy = false) ->
     queue = []
     invoke = if lazy then _.id else (f) -> f()
     @subscribe = s.subscribe if not @subscribe?
     @markEnded = -> @ended = true
     if consume
-      @consume = () -> invoke(queue.shift())
+      @consume = -> invoke(queue.shift())
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
     else
-      @consume = () -> invoke(queue[0])
+      @consume = -> invoke(queue[0])
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = -> queue.length
@@ -919,7 +919,7 @@ Source.fromObservable = (s) ->
   else
     new Source(s, true, true)
 
-Bacon.when = (patterns...) ->
+Bacon.when = (...patterns) ->
     return Bacon.never() if patterns.length == 0
     len = patterns.length
     usage = "when: expecting arguments in the form (Observable+,function)+"
@@ -937,7 +937,7 @@ Bacon.when = (patterns...) ->
          if index < 0
             sources.push(s)
             index = sources.length - 1
-         (ix.count++ if ix.index == index) for ix in pat.ixs
+         [(ix.count++ if ix.index == index) for ix in pat.ixs]
          pat.ixs.push {index: index, count: 1}
        pats.push pat if patSources.length > 0
        i = i + 2
@@ -948,7 +948,7 @@ Bacon.when = (patterns...) ->
     sources = _.map Source.fromObservable, sources
 
     new EventStream (sink) ->
-      match = (p) ->
+      fMatch = (p) ->
         _.all(p.ixs, (i) -> sources[i.index].hasAtLeast(i.count))
       cannotSync = (source) ->
         !source.sync or source.ended
@@ -967,40 +967,40 @@ Bacon.when = (patterns...) ->
             source.push e.value
             if source.sync
               for p in pats
-                 if match(p)
-                   val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
+                 if fMatch(p)
+                   val = -> p.f(... [sources[i.index].consume() for i in p.ixs])
                    reply = sink e.apply(val)
                    break
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
-      compositeUnsubscribe (part s,i for s,i in sources)...
+      compositeUnsubscribe ... [part s,i for s,i in sources]
 
-Bacon.update = (initial, patterns...) ->
-  lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
+Bacon.update = (initial, ...patterns) ->
+  lateBindFirst = (f) -> (...args) -> (i) -> f(...[i].concat(args))
   i = patterns.length - 1
   while (i > 0)
     unless patterns[i] instanceof Function
       patterns[i] = do(x=patterns[i])->(->x)
     patterns[i] = lateBindFirst patterns[i]
     i = i - 2
-  Bacon.when(patterns...).scan initial, ((x,f) -> f x)
+  Bacon.when(...patterns).scan initial, ((x,f) -> f x)
 
-compositeUnsubscribe = (ss...) ->
+compositeUnsubscribe = (...ss) ->
   new CompositeUnsubscribe(ss).unsubscribe
 
 class CompositeUnsubscribe
-  constructor: (ss = []) ->
+  (ss = []) ->
     @unsubscribed = false
     @subscriptions = []
     @starting = []
-    @add s for s in ss
-  add: (subscription) =>
+    [@add s for s in ss]
+  add: (subscription) ~>
     return if @unsubscribed
     ended = false
     unsub = nop
     @starting.push subscription
-    unsubMe = =>
+    unsubMe = ~>
       return if @unsubscribed
       ended = true
       @remove unsub
@@ -1012,22 +1012,22 @@ class CompositeUnsubscribe
   remove: (unsub) ->
     return if @unsubscribed
     unsub() if (_.remove unsub, @subscriptions) != undefined
-  unsubscribe: =>
+  unsubscribe: ~>
     return if @unsubscribed
     @unsubscribed = true
-    s() for s in @subscriptions
+    [s() for s in @subscriptions]
     @subscriptions = []
     @starting = []
-  count: =>
+  count: ~>
     return 0 if @unsubscribed
     @subscriptions.length + @starting.length
-  empty: =>
+  empty: ~>
     @count() == 0
 
 Bacon.CompositeUnsubscribe = CompositeUnsubscribe
 
 class Some
-  constructor: (@value) ->
+  (@value) ->
   getOrElse: -> @value
   get: -> @value
   filter: (f) ->
@@ -1084,15 +1084,15 @@ assertArray = (xs) -> assert "not an array : " + xs, xs instanceof Array
 assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> assert "not a string : " + x, typeof x == "string"
 partiallyApplied = (f, applied) ->
-  (args...) -> f((applied.concat(args))...)
+  (...args) -> f(...(applied.concat(args)))
 makeSpawner = (f) ->
     f = _.always(f) if f instanceof Observable
     assertFunction(f)
     f
 makeFunctionArgs = (args) ->
   args = Array.prototype.slice.call(args)
-  makeFunction_ args...
-makeFunction_ = withMethodCallSupport (f, args...) ->
+  makeFunction_ ...args
+makeFunction_ = withMethodCallSupport (f, ...args) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f
   else if isFieldKey(f)
@@ -1101,7 +1101,7 @@ makeFunction_ = withMethodCallSupport (f, args...) ->
     _.always f
 
 makeFunction = (f, args) ->
-  makeFunction_(f, args...)
+  makeFunction_(f, ...args)
 
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
@@ -1146,14 +1146,14 @@ _ = {
   always: (x) -> (-> x)
   negate: (f) -> (x) -> not f(x)
   empty: (xs) -> xs.length == 0
-  tail: (xs) -> xs[1...xs.length]
+  tail: (xs) -> xs[1 til xs.length]
   filter: (f, xs) ->
     filtered = []
     for x in xs
       filtered.push(x) if f(x)
     filtered
   map: (f, xs) ->
-    f(x) for x in xs
+    [f(x) for x in xs]
   each: (xs, f) ->
     for key, value of xs
       f(key, value)

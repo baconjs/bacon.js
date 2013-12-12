@@ -3,8 +3,8 @@
   "version": "0.6.22",
   "author": {
     "name": "Juha Paananen",
-     "email": "juha.paananen@gmail.com", 
-     "url": "https://twitter.com/raimohanska"
+    "email": "juha.paananen@gmail.com",
+    "url": "https://twitter.com/raimohanska"
   },
   "contributors": [
     {
@@ -20,7 +20,7 @@
   "devDependencies": {
     "jasmine-node": "~1.4.0",
     "coffee-script": "~1.6.3",
-    "grunt": "0.4",
+    "grunt": "~0.4.2",
     "grunt-cli": "0.1.6",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-contrib-clean": "~0.4.1",
@@ -30,7 +30,9 @@
     "sinon": "~1.6.0",
     "grunt-contrib-uglify": "~0.2.2",
     "chai": "1.6.0",
-    "mocha": "1.10.0"
+    "mocha": "1.10.0",
+    "LiveScript": "~1.2.0",
+    "grunt-livescript": "~0.5.1"
   },
   "repository": {
     "type": "git",
@@ -39,13 +41,34 @@
   "homepage": "https://github.com/baconjs/bacon.js",
   "testling": {
     "browsers": {
-      "ie": [ 6, 7, 8, 9, 10 ],
-      "ff": [ 12, 17, 22 ],
-      "chrome": [ 22 ],
-      "opera": [ 12 ],
-      "safari": [ 5.1, 6 ],
-      "iphone": [ 6 ],
-      "ipad": [ 6 ]
+      "ie": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "ff": [
+        12,
+        17,
+        22
+      ],
+      "chrome": [
+        22
+      ],
+      "opera": [
+        12
+      ],
+      "safari": [
+        5.1,
+        6
+      ],
+      "iphone": [
+        6
+      ],
+      "ipad": [
+        6
+      ]
     },
     "harness": "mocha",
     "files": "spec/CompatibilityTest.coffee"
