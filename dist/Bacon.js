@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -430,8 +430,12 @@
     return withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator));
   };
 
+  eventIdCounter = 0;
+
   Event = (function() {
-    function Event() {}
+    function Event() {
+      this.id = ++eventIdCounter;
+    }
 
     Event.prototype.isEvent = function() {
       return true;
@@ -469,6 +473,7 @@
     __extends(Next, _super);
 
     function Next(valueF) {
+      Next.__super__.constructor.call(this);
       if (isFunction(valueF)) {
         this.value = _.cached(valueF);
       } else {
@@ -1310,7 +1315,7 @@
       if (handler === true) {
         this.subscribeInternal = subscribe;
       } else {
-        this.subscribeInternal = new PropertyDispatcher(subscribe, handler).subscribe;
+        this.subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe;
       }
       this.sampledBy = function(sampler, combinator) {
         var lazy, result, samplerSource, stream, thisSource;
@@ -1545,7 +1550,7 @@
         }
       };
       this.push = function(event) {
-        return UpdateBarrier.inTransaction(_this, pushIt, [event]);
+        return UpdateBarrier.inTransaction(event, _this, pushIt, [event]);
       };
       if (handleEvent == null) {
         handleEvent = function(event) {
@@ -1590,11 +1595,12 @@
   PropertyDispatcher = (function(_super) {
     __extends(PropertyDispatcher, _super);
 
-    function PropertyDispatcher(subscribe, handleEvent) {
-      var current, ended, push,
+    function PropertyDispatcher(p, subscribe, handleEvent) {
+      var current, currentValueRootId, ended, push,
         _this = this;
       PropertyDispatcher.__super__.constructor.call(this, subscribe, handleEvent);
       current = None;
+      currentValueRootId = void 0;
       push = this.push;
       subscribe = this.subscribe;
       ended = false;
@@ -1603,7 +1609,8 @@
           ended = true;
         }
         if (event.hasValue()) {
-          current = new Some(event.value);
+          current = new Some(event);
+          currentValueRootId = UpdateBarrier.currentEventId();
         }
         return push.apply(_this, [event]);
       };
@@ -1613,10 +1620,21 @@
         shouldBounceInitialValue = function() {
           return _this.hasSubscribers() || ended;
         };
-        reply = current.filter(shouldBounceInitialValue).map(function(val) {
-          return UpdateBarrier.inTransaction(this, (function() {
-            return sink(initial(val()));
-          }), []);
+        reply = current.filter(shouldBounceInitialValue).map(function(event) {
+          var dispatchingId, valId;
+          dispatchingId = UpdateBarrier.currentEventId();
+          valId = currentValueRootId;
+          if (valId && dispatchingId && dispatchingId !== valId) {
+            return UpdateBarrier.whenDone(p, function() {
+              if (currentValueRootId === valId) {
+                return sink(initial(event.value()));
+              }
+            });
+          } else {
+            return UpdateBarrier.inTransaction(void 0, this, (function() {
+              return sink(initial(event.value()));
+            }), []);
+          }
         });
         if (reply.getOrElse(Bacon.more) === Bacon.noMore) {
           return nop;
@@ -1632,62 +1650,6 @@
     return PropertyDispatcher;
 
   })(Dispatcher);
-
-  UpdateBarrier = (function() {
-    var findIndependent, flush, inTransaction, independent, tx, waiters, whenDone;
-    tx = false;
-    waiters = [];
-    independent = function(waiter) {
-      return !_.any(waiters, (function(other) {
-        return waiter.obs.dependsOn(other.obs);
-      }));
-    };
-    whenDone = function(obs, f) {
-      if (tx) {
-        if (!_.any(waiters, function(w) {
-          return w.obs === obs;
-        })) {
-          return waiters.push({
-            obs: obs,
-            f: f
-          });
-        }
-      } else {
-        return f();
-      }
-    };
-    findIndependent = function() {
-      while (!independent(waiters[0])) {
-        waiters.push(waiters.splice(0, 1)[0]);
-      }
-      return waiters.splice(0, 1)[0];
-    };
-    flush = function() {
-      if (waiters.length) {
-        findIndependent().f();
-        return flush();
-      }
-    };
-    inTransaction = function(context, f, args) {
-      var result;
-      if (tx) {
-        return f.apply(context, args);
-      } else {
-        tx = true;
-        try {
-          result = f.apply(context, args);
-          flush();
-        } finally {
-          tx = false;
-        }
-        return result;
-      }
-    };
-    return {
-      whenDone: whenDone,
-      inTransaction: inTransaction
-    };
-  })();
 
   Bus = (function(_super) {
     __extends(Bus, _super);
@@ -2303,6 +2265,10 @@
       return [this.value];
     };
 
+    Some.prototype.inspect = function() {
+      return "Some(" + this.value + ")";
+    };
+
     return Some;
 
   })();
@@ -2321,8 +2287,75 @@
     isDefined: false,
     toArray: function() {
       return [];
+    },
+    inspect: function() {
+      return "None";
     }
   };
+
+  UpdateBarrier = (function() {
+    var currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDone;
+    rootEvent = void 0;
+    waiters = [];
+    independent = function(waiter) {
+      return !_.any(waiters, (function(other) {
+        return waiter.obs.dependsOn(other.obs);
+      }));
+    };
+    whenDone = function(obs, f) {
+      if (rootEvent) {
+        if (!_.any(waiters, function(w) {
+          return w.obs === obs;
+        })) {
+          return waiters.push({
+            obs: obs,
+            f: f
+          });
+        }
+      } else {
+        return f();
+      }
+    };
+    findIndependent = function() {
+      while (!independent(waiters[0])) {
+        waiters.push(waiters.splice(0, 1)[0]);
+      }
+      return waiters.splice(0, 1)[0];
+    };
+    flush = function() {
+      if (waiters.length) {
+        findIndependent().f();
+        return flush();
+      }
+    };
+    inTransaction = function(event, context, f, args) {
+      var result;
+      if (rootEvent) {
+        return f.apply(context, args);
+      } else {
+        rootEvent = event;
+        try {
+          result = f.apply(context, args);
+          flush();
+        } finally {
+          rootEvent = void 0;
+        }
+        return result;
+      }
+    };
+    currentEventId = function() {
+      if (rootEvent) {
+        return rootEvent.id;
+      } else {
+        return void 0;
+      }
+    };
+    return {
+      whenDone: whenDone,
+      inTransaction: inTransaction,
+      currentEventId: currentEventId
+    };
+  })();
 
   Bacon.EventStream = EventStream;
 
@@ -2682,7 +2715,7 @@
           return "function";
         } else if (isArray(obj)) {
           if (recursionDepth > 5) {
-            return "{..}";
+            return "[..]";
           }
           return "[" + _.map(_.toString, obj).toString() + "]";
         } else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
