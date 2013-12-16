@@ -1194,8 +1194,7 @@ UpdateBarrier = (->
     !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
   whenDone = (obs, f) -> 
     if rootEvent
-      if !_.any(waiters, (w) -> w.obs==obs)
-        waiters.push {obs, f}
+      waiters.push {obs, f}
     else
       f()
   findIndependent = ->
