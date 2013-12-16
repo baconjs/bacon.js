@@ -1665,26 +1665,54 @@ describe "independent observables created within the dispatch loop", ->
     expect(result).to.deep.equal([1])
 
 describe "when subscribing within the dispatch loop", ->
-  describe "up-to-date values are used", ->
-    expectStreamEvents(
-      ->
-        src = series(1, [1,2])
-        trigger = src.map((x) -> x)
-        trigger.onValue ->
-        value = src.toProperty()
-        value.onValue ->
-        trigger.flatMap ->
-          value.take(1)
-      [1,2])
-    expectStreamEvents(
-      ->
-        src = series(1, [1,1])
-        trigger = src.map((x) -> x)
-        value = src.toProperty().skipDuplicates()
-        value.onValue ->
-        trigger.flatMap ->
-          value.take(1)
-      [1,1])
+  describe "single subscriber", ->
+    describe "up-to-date values are used (skipped bounce)", ->
+      expectStreamEvents(
+        ->
+          src = series(1, [1,2])
+          trigger = src.map((x) -> x)
+          trigger.onValue ->
+          value = src.toProperty()
+          value.onValue ->
+          trigger.flatMap ->
+            value.take(1)
+        [1,2])
+    describe "delayed bounce (TODO: how to name better)", ->
+      expectStreamEvents(
+        ->
+          src = series(1, [1,2])
+          trigger = src.map((x) -> x)
+          trigger.onValue ->
+          value = src.filter((x) -> x == 1).toProperty(0)
+          value.onValue ->
+          trigger.flatMap ->
+            value.take(1)
+        [0, 1])
+  describe "multiple subscribers", ->
+    describe "up-to-date values are used (skipped bounce)", ->
+      expectStreamEvents(
+        ->
+          src = series(1, [1,2])
+          trigger = src.map((x) -> x)
+          trigger.onValue ->
+          value = src.toProperty()
+          value.onValue ->
+          trigger.flatMap ->
+            value.onValue(->)
+            value.take(1)
+        [1,2])
+    describe "delayed bounce (TODO: how to name better)", ->
+      expectStreamEvents(
+        ->
+          src = series(1, [1,2])
+          trigger = src.map((x) -> x)
+          trigger.onValue ->
+          value = src.filter((x) -> x == 1).toProperty(0)
+          value.onValue ->
+          trigger.flatMap ->
+            value.onValue(->)
+            value.take(1)
+        [0, 1])
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
