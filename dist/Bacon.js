@@ -2304,14 +2304,10 @@
     };
     whenDone = function(obs, f) {
       if (rootEvent) {
-        if (!_.any(waiters, function(w) {
-          return w.obs === obs;
-        })) {
-          return waiters.push({
-            obs: obs,
-            f: f
-          });
-        }
+        return waiters.push({
+          obs: obs,
+          f: f
+        });
       } else {
         return f();
       }
