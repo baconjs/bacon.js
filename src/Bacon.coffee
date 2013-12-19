@@ -857,28 +857,36 @@ class PropertyDispatcher extends Dispatcher
       # won't add more than one subscription to the underlying observable.
       # without bouncing, the init value would be missing from all new subscribers
       # after the first one
-      shouldBounceInitialValue = => @hasSubscribers() or ended
-      reply = current.filter(shouldBounceInitialValue).map(
-        (event) ->
-          dispatchingId = UpdateBarrier.currentEventId()
-          valId = currentValueRootId
-          if valId && dispatchingId && dispatchingId != valId
-            #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
-            UpdateBarrier.whenDone p, ->
-              if currentValueRootId == valId
-                sink initial(event.value())
-          else
-            UpdateBarrier.inTransaction undefined, this, (-> sink initial(event.value())), []
-      )
-      # TODO: in case of delayed bounce, should defer the whole subscription thing below
-      if reply.getOrElse(Bacon.more) == Bacon.noMore
-        nop
-      else if ended
-        sink end()
-        nop
-      else
-        subscribe.apply(this, [sink])
+      reply = Bacon.more
 
+      maybeSubSource = ->
+        if reply == Bacon.noMore
+          nop
+        else if ended
+          sink end()
+          nop
+        else
+          subscribe.apply(this, [sink])
+
+      if current.isDefined and (@hasSubscribers() or ended)
+        # should bounce init value
+        dispatchingId = UpdateBarrier.currentEventId()
+        valId = currentValueRootId
+        if !ended && valId && dispatchingId && dispatchingId != valId
+          #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
+          UpdateBarrier.whenDone p, ->
+            if currentValueRootId == valId
+              sink initial(current.get().value())
+          # the subscribing thing should be defered
+          maybeSubSource()
+        else
+          #console.log "bouncing value"
+          UpdateBarrier.inTransaction undefined, this, (-> 
+            reply = sink initial(current.get().value())
+          ), []
+          maybeSubSource()
+      else
+        maybeSubSource()
 
 class Bus extends EventStream
   constructor: ->
