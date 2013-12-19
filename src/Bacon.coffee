@@ -870,7 +870,7 @@ class PropertyDispatcher extends Dispatcher
           else
             UpdateBarrier.inTransaction undefined, this, (-> sink initial(event.value())), []
       )
-      # TODO: in case of delayed bounce 1) don't push end, 2) should respect unsub
+      # TODO: in case of delayed bounce, should defer the whole subscription thing below
       if reply.getOrElse(Bacon.more) == Bacon.noMore
         nop
       else if ended
