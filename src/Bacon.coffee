@@ -247,6 +247,7 @@ class Event
   isError: -> false
   hasValue: -> false
   filter: -> true
+  inspect: -> @toString()
 
 class Next extends Event
   constructor: (valueF) ->
@@ -1005,6 +1006,7 @@ class Desc
       obs.dependsOn = dependsOn
       obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
+      obs.inspect = obs.toString
       obs.desc = -> { context, method, args }
       obs
 

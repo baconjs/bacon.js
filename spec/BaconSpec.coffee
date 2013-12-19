@@ -125,6 +125,8 @@ describe "Bacon.later", ->
       [error()])
   it "toString", ->
     expect(Bacon.later(1, "wat").toString()).to.equal("Bacon.later(1,wat)")
+  it "inspect", ->
+    expect(Bacon.later(1, "wat").inspect()).to.equal("Bacon.later(1,wat)")
 
 describe "Bacon.sequentially", ->
   describe "should send given events and end", ->
