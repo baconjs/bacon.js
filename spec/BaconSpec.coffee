@@ -1734,7 +1734,7 @@ describe "when subscribing within the dispatch loop", ->
         root = Bacon.sequentially(1, [1,2]).toProperty()
         root.subscribe (event) ->
         outdatedChild = root.filter((x) -> x == 1).map((x) -> x)
-        outdatedChild.onValue((x) -> console.log "set", x) # sets value but will be outdated at value 2
+        outdatedChild.onValue(->) # sets value but will be outdated at value 2
 
         Bacon.later(3).onValue ->
           outdatedChild.subscribe (event) ->
