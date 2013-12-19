@@ -335,6 +335,12 @@ Common methods in EventStreams and Properties
 Both EventStream and Property share the Observable interface, and hence
 share a lot of methods. Common methods are listed below.
 
+`stream.onError(f)` subscribes a callback to error events. The function
+will be called for each error in the stream.
+
+`stream.onEnd(f)` subscribes a callback to stream end. The function will
+be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
+
 <a name="map"></a>
 `observable.map(f)` maps values using given function, returning a new
 EventStream. Instead of a function, you can also provide a constant
@@ -354,6 +360,11 @@ specifically, feeds the "error" field of the error event to the function
 and produces a "Next" event based on the return value. Function
 Construction rules apply. You can omit the argument to
 produce a Next event with `undefined` value.
+
+`observable.errors()` returns a stream containing Error events only.
+Same as filtering with a function that always returns false.
+
+`observable.skipErrors()` skips all errors.
 
 `observable.mapEnd(f)` Adds an extra Next event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
@@ -680,13 +691,10 @@ stream. Function will be called for each new value in the stream. This
 is the simplest way to assign a side-effect to a stream. The difference
 to the `subscribe` method is that the actual stream values are
 received, instead of Event objects. Function Construction rules below
-apply here. Just like `subscribe`, thie method returns a function for unsubscribing.
+apply here. Just like `subscribe`, this method returns a function for unsubscribing.
 
 `stream.onValues(f)` like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
-
-`stream.onEnd(f)` subscribes a callback to stream end. The function will
-be called when the stream ends. Just like `subscribe`, thie method returns a function for unsubscribing.
 
 `stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
 from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
@@ -767,13 +775,10 @@ EventStream ends. Returns a function that you call to unsubscribe.
 `property.onValue(f)` similar to eventStream.onValue, except that also
 pushes the initial value of the property, in case there is one.
 See Function Construction rules below for different forms of calling this method.
-Just like `subscribe`, thie method returns a function for unsubscribing.
+Just like `subscribe`, this method returns a function for unsubscribing.
 
 `property.onValues(f)` like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
-
-`property.onEnd(f)` subscribes a callback to stream end. The function will
-be called when the source stream of the property ends. Just like `subscribe`, thie method returns a function for unsubscribing.
 
 `property.assign(obj, method, [param...])` calls the method of the given
 object with each value of this Property. You can optionally supply
@@ -1090,10 +1095,7 @@ as well as all the spawned stream.
 You can take action on errors by using the `observable.onError(f)`
 callback.
 
-`observable.errors()` returns a stream containing Error events only.
-Same as filtering with a function that always returns false.
-
-See also the `mapError()` function above.
+See documentation on `onError`, `mapError`, `skipErrors` above.
 
 An Error does not terminate the stream. The method `observable.endOnError()`
 returns a stream/property that ends immediately after first error.
