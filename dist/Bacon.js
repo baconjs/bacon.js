@@ -465,6 +465,10 @@
       return true;
     };
 
+    Event.prototype.inspect = function() {
+      return this.toString();
+    };
+
     return Event;
 
   })();
@@ -505,7 +509,7 @@
     };
 
     Next.prototype.toString = function() {
-      return this.value();
+      return _.toString(this.value());
     };
 
     return Next;
@@ -588,7 +592,7 @@
     };
 
     Error.prototype.toString = function() {
-      return "<error> " + this.error;
+      return "<error> " + _.toString(this.error);
     };
 
     return Error;
@@ -1029,6 +1033,13 @@
         myValues = _arg[0], otherValues = _arg[1];
         return otherValues.length === 0;
       }).toProperty(false).skipDuplicates());
+    };
+
+    Observable.prototype.name = function(name) {
+      this.toString = function() {
+        return name;
+      };
+      return this;
     };
 
     return Observable;
@@ -1886,6 +1897,9 @@
         obs.toString = function() {
           return _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")";
         };
+        obs.inspect = function() {
+          return obs.toString();
+        };
         obs.desc = function() {
           return {
             context: context,
@@ -2272,6 +2286,10 @@
       return "Some(" + this.value + ")";
     };
 
+    Some.prototype.toString = function() {
+      return this.inspect();
+    };
+
     return Some;
 
   })();
@@ -2293,6 +2311,9 @@
     },
     inspect: function() {
       return "None";
+    },
+    toString: function() {
+      return this.inspect();
     }
   };
 
