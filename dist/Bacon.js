@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.0-rc9';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
