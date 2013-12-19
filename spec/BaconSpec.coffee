@@ -2853,6 +2853,17 @@ describe "String presentations", ->
     it "is the same as toString", ->
       expect(new Bacon.Initial(1).inspect()).to.equal("1")
 
+describe "Observable.name", ->
+  it "sets return value of toString and inspect", ->
+    expect(Bacon.once(1).name("one").toString()).to.equal("one")
+    expect(Bacon.once(1).name("one").inspect()).to.equal("one")
+  it "modifies the stream in place", ->
+    obs = Bacon.once(1)
+    obs.name("one")
+    expect(obs.toString()).to.equal("one")
+  it "supports composition", ->
+    expect(Bacon.once("raimohanska").name("raimo").take(1).inspect()).to.equal("raimo.take(1)")
+
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0

@@ -523,6 +523,10 @@ class Observable
         .map(([myValues, otherValues]) -> otherValues.length == 0)
         .toProperty(false).skipDuplicates())
 
+  name: (name) -> 
+    @toString = -> name
+    this
+
 Observable :: reduce = Observable :: fold
 
 class EventStream extends Observable
@@ -1007,7 +1011,7 @@ class Desc
       obs.dependsOn = dependsOn
       obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
-      obs.inspect = obs.toString
+      obs.inspect = -> obs.toString()
       obs.desc = -> { context, method, args }
       obs
 
