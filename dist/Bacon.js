@@ -1615,34 +1615,37 @@
         return push.apply(_this, [event]);
       };
       this.subscribe = function(sink) {
-        var initSent, reply, shouldBounceInitialValue;
+        var dispatchingId, initSent, maybeSubSource, reply, valId;
         initSent = false;
-        shouldBounceInitialValue = function() {
-          return _this.hasSubscribers() || ended;
+        reply = Bacon.more;
+        maybeSubSource = function() {
+          if (reply === Bacon.noMore) {
+            return nop;
+          } else if (ended) {
+            sink(end());
+            return nop;
+          } else {
+            return subscribe.apply(this, [sink]);
+          }
         };
-        reply = current.filter(shouldBounceInitialValue).map(function(event) {
-          var dispatchingId, valId;
+        if (current.isDefined && (_this.hasSubscribers() || ended)) {
           dispatchingId = UpdateBarrier.currentEventId();
           valId = currentValueRootId;
-          if (valId && dispatchingId && dispatchingId !== valId) {
-            return UpdateBarrier.whenDone(p, function() {
+          if (!ended && valId && dispatchingId && dispatchingId !== valId) {
+            UpdateBarrier.whenDone(p, function() {
               if (currentValueRootId === valId) {
-                return sink(initial(event.value()));
+                return sink(initial(current.get().value()));
               }
             });
+            return maybeSubSource();
           } else {
-            return UpdateBarrier.inTransaction(void 0, this, (function() {
-              return sink(initial(event.value()));
+            UpdateBarrier.inTransaction(void 0, _this, (function() {
+              return reply = sink(initial(current.get().value()));
             }), []);
+            return maybeSubSource();
           }
-        });
-        if (reply.getOrElse(Bacon.more) === Bacon.noMore) {
-          return nop;
-        } else if (ended) {
-          sink(end());
-          return nop;
         } else {
-          return subscribe.apply(_this, [sink]);
+          return maybeSubSource();
         }
       };
     }
