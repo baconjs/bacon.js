@@ -1720,11 +1720,31 @@ describe "when subscribing within the dispatch loop", ->
         root = Bacon.once(0).toProperty()
         root.onValue ->
         Bacon.later(1).onValue ->
-          root.map(->).onValue ->
-            bus.push(1)
-            bus.end()
+          root.map(-> 1).subscribe (event) ->
+            if event.isEnd()
+              bus.end()
+            else
+              bus.push(event.value())
         bus
       [1])
+  describe "poking for errors 2", ->
+    expectStreamEvents(
+      ->
+        bus = new Bacon.Bus()
+        root = Bacon.sequentially(1, [1,2]).toProperty()
+        root.subscribe (event) ->
+        outdatedChild = root.filter((x) -> x == 1).map((x) -> x)
+        outdatedChild.onValue((x) -> console.log "set", x) # sets value but will be outdated at value 2
+
+        Bacon.later(3).onValue ->
+          outdatedChild.subscribe (event) ->
+            if event.isEnd()
+              bus.end()
+            else
+              bus.push(event.value())
+        bus
+      [1]
+    )
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
