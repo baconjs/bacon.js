@@ -51,7 +51,7 @@ if grep
   verifySwitching src, expectedEvents unless browser
   verifySwitchingWithUnsub src, expectedEvents unless browser
   if not unstable
-    verifySwitching2 src, expectedEvents
+    verifySwitchingAggressively src, expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents) ->
   expect(expectedEvents.length > 0).to.deep.equal(true)
@@ -156,30 +156,31 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
        verifyExhausted src
     it "cleans up observers", verifyCleanup
 
-verifySwitching2 = (srcF, expectedEvents, done) ->
-  src = null
-  events = []
-  before -> 
-    src = srcF()
-    expect(src instanceof Bacon.EventStream).to.equal(true)
-  before (done) ->
-    unsub = null
-    newSink = -> 
-      (event) ->
-        if event.isEnd()
-          done()
-        else
-          expect(event instanceof Bacon.Initial).to.deep.equal(false)
-          events.push(toValue(event))
-          unsub() if unsub?
-          unsub = src.subscribe(newSink())
-          Bacon.noMore
-    unsub = src.subscribe(newSink())
-  it "outputs expected value in order (switching aggressively)", ->
-    expect(events).to.deep.equal(toValues(expectedEvents))
-  it "the stream is exhausted", ->
-     verifyExhausted src
-  it "cleans up observers", verifyCleanup
+verifySwitchingAggressively = (srcF, expectedEvents, done) ->
+  describe "(switching aggressively)", ->
+    src = null
+    events = []
+    before -> 
+      src = srcF()
+      expect(src instanceof Bacon.EventStream).to.equal(true)
+    before (done) ->
+      newSink = -> 
+        unsub = null
+        (event) ->
+          if event.isEnd()
+            done()
+          else
+            expect(event instanceof Bacon.Initial).to.deep.equal(false)
+            events.push(toValue(event))
+            unsub() if unsub?
+            unsub = src.subscribe(newSink())
+            Bacon.noMore
+      unsub = src.subscribe(newSink())
+    it "outputs expected value in order", ->
+      expect(events).to.deep.equal(toValues(expectedEvents))
+    it "the stream is exhausted", ->
+       verifyExhausted src
+    it "cleans up observers", verifyCleanup
 
 verifyExhausted = (src) ->
   events = []

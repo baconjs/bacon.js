@@ -2,6 +2,8 @@
 
 npm install --silent
 
+coffee src/*.coffee
+
 export grep=$1
 
 ./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/*Spec.coffee

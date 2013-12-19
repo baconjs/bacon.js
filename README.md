@@ -675,6 +675,9 @@ Note that it's important to return the value from `this.push` so that
 the connection to the underlying stream will be closed when no more
 events are needed.
 
+`observable.name(newName)` sets the name of the observable. Overrides the default
+implementation of `toString` and `inspect`.
+
 EventStream
 -----------
 

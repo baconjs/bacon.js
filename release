@@ -9,7 +9,7 @@ files="component.json package.json bower.json"
 echo "Releasing with version $version"
 
 echo "Pulling from origin"
-git pull --rebase origin master
+git pull --rebase
 
 echo "Building"
 npm install
@@ -26,8 +26,8 @@ git commit -m "release $version"
 git tag $version
 
 echo "Push to origin/master"
-git push origin master
-git push --tags origin master
+git push
+git push --tags origin
 
 echo "Publish to npm"
 npm publish
