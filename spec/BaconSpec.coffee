@@ -1713,6 +1713,20 @@ describe "when subscribing within the dispatch loop", ->
             value.onValue(->)
             value.take(1)
         [0, 1])
+  describe "case X", ->
+    expectStreamEvents(
+      -> 
+        bus = new Bacon.Bus()
+        root = Bacon.later(1).toProperty()
+        root.onValue ->
+
+        Bacon.later(1).onValue ->
+          root.map(->).onValue ->
+            bus.push(1)
+            bus.end()
+        bus
+      [1])
+
 
 describe "Bacon.combineAsArray", ->
   describe "initial value", ->
