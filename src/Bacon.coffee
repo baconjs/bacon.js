@@ -261,7 +261,7 @@ class Next extends Event
   fmap: (f) -> @apply(=> f(@value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
-  toString: -> @value()
+  toString: -> _.toString(@value())
 
 class Initial extends Next
   isInitial: -> true
@@ -280,7 +280,8 @@ class Error extends Event
   isError: -> true
   fmap: -> this
   apply: -> this
-  toString: -> "<error> #{@error}"
+  toString: -> 
+    "<error> " + _.toString(@error)
 
 idCounter = 0
 
@@ -1188,6 +1189,7 @@ class Some
   isDefined: true
   toArray: -> [@value]
   inspect: -> "Some(" + @value + ")"
+  toString: -> @inspect()
 
 None =
   getOrElse: (value) -> value
@@ -1197,6 +1199,7 @@ None =
   isDefined: false
   toArray: -> []
   inspect: -> "None"
+  toString: -> @inspect()
 
 UpdateBarrier = (->
   rootEvent = undefined
