@@ -1490,5 +1490,4 @@ behaviour (like hot/cold observables). I feel much more comfortable with EventSt
 Contribute
 ==========
 
-Use GitHub issues and Pull Requests.
-
+Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
