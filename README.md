@@ -1154,7 +1154,7 @@ Bacon.update(
   [x,y],   function(i,x,y) { ... })
 ```
 
-**Join patterns as a "chemical machine"**
+### Join patterns as a "chemical machine"
 
 A quick way to get some intuition for join patterns is to understand
 them through an analogy in terms of atoms and molecules. A join
@@ -1182,7 +1182,7 @@ and output is produced via `make_water`.
 The same semantics apply for the second rule to create carbon
 monoxide. The rules are tried at each point from top to bottom. 
 
-**Join patterns and properties**
+### Join patterns and properties
 
 Properties are not part of the synchronization pattern, but are
 instead just sampled. The following example take three input streams
@@ -1212,7 +1212,7 @@ and `total` such that
    
 ```
 
-**Join patterns and Bacon.bus**
+### Join patterns and Bacon.bus
 
 The result functions of join patterns are allowed to push values onto
 a [`Bus`](#bus) that may in turn be in one of its patterns. For instance, an
