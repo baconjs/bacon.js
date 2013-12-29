@@ -88,7 +88,7 @@ If you're targeting to [node.js](http://nodejs.org/), you can
 For [bower](https://github.com/twitter/bower) users:
 
     bower install bacon
-    
+
 Intro
 =====
 
@@ -190,7 +190,7 @@ $("#my-div").asEventStream("click", ".more-specific-selector", function(event, a
 $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 ```
 
-`Bacon.fromPromise(promise [, abort])` creates an EventStream from a Promise object such as JQuery Ajax. 
+`Bacon.fromPromise(promise [, abort])` creates an EventStream from a Promise object such as JQuery Ajax.
 This stream will contain a single value or an error, followed immediately by stream end.  You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 
@@ -317,14 +317,14 @@ var stream = Bacon.fromBinder(function(sink) {
   }))
   sink(new Bacon.Error("oops, an error"))
   sink(new Bacon.End())
-  return function() { 
+  return function() {
      // unsub functionality here, this one's a no-op
   }
 })
 stream.log()
 ```
 
-As shown in the example, you can push 
+As shown in the example, you can push
 
 - A plain value, like `"first value"`
 - An `Event` object including `Bacon.Error` (wraps an error) and `Bacon.End` (indicates
@@ -498,7 +498,7 @@ values
 stream using the function `f`. Collect events from each of the spawned
 streams into the result `EventStream`. This is very similar to selectMany in
 RxJs. Note that instead of a function, you can provide a
-stream/property too. Also, the return value of function `f` can be either an 
+stream/property too. Also, the return value of function `f` can be either an
 Observable (stream/property) or a constant value. The result of
 `flatMap` is always an `EventStream`.
 
@@ -641,7 +641,7 @@ properties with array value. The result is a Property.
 
 `observable.withStateMachine(initState, f)` lets you run a state machine
 on an observable. Give it an initial state object and a state
-transformation function that processes each incoming event and 
+transformation function that processes each incoming event and
 returns and array containing the next state and an array of output
 events. Here's an an example, where we calculate the total sum of all
 numbers in the stream and output the value on stream end:
@@ -689,7 +689,7 @@ var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
 error is included in the output of the returned Observable.
 
 `observable.endOnError(f)` ends the Observable on first error for which
-the given predicate function returns true. The error is included in the 
+the given predicate function returns true. The error is included in the
 output of the returned Observable. Function construction rules apply, so
 you can do for example `.endOnError(".serious")`.
 
@@ -752,10 +752,10 @@ stream.
 `stream.merge(stream2)` merges two streams into one stream that delivers
 events from both
 
-`stream.startWith(value)` adds a starting value to the stream, i.e. concats a 
+`stream.startWith(value)` adds a starting value to the stream, i.e. concats a
 single-element stream contains `value` with this stream.
 
-`stream.skipWhile(f)` skips elements while given predicate function holds true. Function construction rules apply. 
+`stream.skipWhile(f)` skips elements while given predicate function holds true. Function construction rules apply.
 
 `stream.skipWhile(property)` skips elements while the value of the given
 Property is `true`.
@@ -1216,7 +1216,7 @@ atoms, and a hydrogen atom, the corresponding atoms are *consumed*,
 and output is produced via `make_water`.
 
 The same semantics apply for the second rule to create carbon
-monoxide. The rules are tried at each point from top to bottom. 
+monoxide. The rules are tried at each point from top to bottom.
 
 ### Join patterns and properties
 
@@ -1225,27 +1225,27 @@ instead just sampled. The following example take three input streams
 `$price`, `$quantity` and `$total`, e.g. coming from input fields, and
 defines mutally recursive behaviours in properties `price`, `quantity`
 and `total` such that
-  
+
   - updating price sets total to price * quantity
   - updating quantity sets total to price * quantity
   - updating total sets price to total / quantity
 
 ```js
   var $price, $total, $quantity = ...
-  
+
   var quantity = $quantity.toProperty(1)
-  
+
   var price = Bacon.when(
     [$price], id,
     [$total, quantity], function(x,y) { return x/y })
-   .toProperty(0)  
-  
+   .toProperty(0)
+
   var total = Bacon.when(
     [$total], id,
     [$price, quantity], function(x,y) { return x*y },
     [price, $quantity], function(x,y) { return x*y })
    .toProperty(0)
-   
+
 ```
 
 ### Join patterns and Bacon.bus
@@ -1254,8 +1254,8 @@ The result functions of join patterns are allowed to push values onto
 a [`Bus`](#bus) that may in turn be in one of its patterns. For instance, an
 implementation of the dining philosphers problem can be written as
 follows.  (http://en.wikipedia.org/wiki/Dining_philosophers_problem)
-      
-Example: 
+
+Example:
 
 ```js
 // availability of chopsticks are implemented using Bus
@@ -1274,16 +1274,16 @@ var eat = function(i) {
       chopsticks[(i+1) % 3].push({})
     }, 1000);
     return 'philosopher ' + i + ' eating'
-  } 
+  }
 }
 
 // we use Bacon.when to make sure a hungry philosopher can eat only
-// when both his chopsticks are available. 
+// when both his chopsticks are available.
 var dining = Bacon.when(
   [hungry[0], chopsticks[0], chopsticks[1]],  eat(0),
   [hungry[1], chopsticks[1], chopsticks[2]],  eat(1),
   [hungry[2], chopsticks[2], chopsticks[0]],  eat(2))
-  
+
 dining.log()
 
 // make all chopsticks initially available
@@ -1292,7 +1292,7 @@ chopsticks[0].push({}); chopsticks[1].push({}); chopsticks[2].push({})
 // make philosophers hungry in some way, in this case we just push to their bus
 for (var i = 0; i < 3; i++) {
   hungry[0].push({}); hungry[1].push({}); hungry[2].push({})
-} 
+}
 ```
 
 Cleaning up
