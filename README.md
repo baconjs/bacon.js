@@ -32,6 +32,42 @@ Please contribute!
 
 [![Build Status](https://travis-ci.org/baconjs/bacon.js.png)](https://travis-ci.org/baconjs/bacon.js)
 
+- [Bacon.js](#baconjs)
+- [Install](#install)
+- [Intro](#intro)
+- [API](#api)
+    - [Creating streams](#creating-streams)
+    - [Bacon.fromBinder for custom streams](#baconfrombinder-for-custom-streams)
+    - [Common methods in EventStreams and Properties](#common-methods-in-eventstreams-and-properties)
+    - [EventStream](#eventstream)
+    - [Property](#property)
+    - [Combining multiple streams and properties](#combining-multiple-streams-and-properties)
+    - [Function Construction rules](#function-construction-rules)
+    - [Latest value of Property or EventStream](#latest-value-of-property-or-eventstream)
+    - [Bus](#bus)
+    - [Event](#event)
+    - [Errors](#errors)
+    - [Join Patterns](#join-patterns)
+        - [Join patterns as a "chemical machine"](#join-patterns-as-a-chemical-machine)
+        - [Join patterns and properties](#join-patterns-and-properties)
+        - [Join patterns and Bacon.bus](#join-patterns-and-baconbus)
+    - [Cleaning up](#cleaning-up)
+    - [EventStream and Property semantics](#eventstream-and-property-semantics)
+    - [Atomic updates](#atomic-updates)
+    - [For RxJs Users](#for-rxjs-users)
+- [Examples](#examples)
+- [Install](#install)
+- [Build](#build)
+- [Test](#test)
+- [Dependencies](#dependencies)
+- [Compatibility with other libs](#compatibility-with-other-libs)
+- [Compatibility with browsers](#compatibility-with-browsers)
+- [Node.js](#nodejs)
+- [AMD](#amd)
+- [Why Bacon?](#why-bacon)
+- [Contribute](#contribute)
+
+
 Install
 =======
 
