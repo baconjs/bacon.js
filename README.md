@@ -1,4 +1,4 @@
-﻿Bacon.js
+Bacon.js
 ========
 
 <img src="/logo.png" align="right" width="300px" />
