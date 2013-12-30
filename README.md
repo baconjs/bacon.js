@@ -507,7 +507,7 @@ This would result to following elements in the result stream:
     1 + 2 = 3
     3 + 3 = 6
 
-When applied to a Property as in `r = p.scan(f,seed)`, there's a (hopefully insignificant) catch:
+When applied to a Property as in `r = p.scan(seed, f)`, there's a (hopefully insignificant) catch:
 The starting value for `r` depends on whether `p` has an
 initial value when scan is applied. If there's no initial value, this works
 identically to EventStream.scan: the `seed` will be the initial value of
