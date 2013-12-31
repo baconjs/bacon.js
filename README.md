@@ -32,7 +32,11 @@ Please contribute!
 
 [![Build Status](https://travis-ci.org/baconjs/bacon.js.png)](https://travis-ci.org/baconjs/bacon.js)
 
+Table of contents
+=================
+
 - [Bacon.js](#baconjs)
+- [Table of contents](#table-of-contents)
 - [Install](#install)
 - [Intro](#intro)
 - [API](#api)
