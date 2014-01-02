@@ -7,11 +7,11 @@ A small functional reactive programming lib for JavaScript.
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
-concepts like [`map`](#map) and [`filter`](#filter). Stop working on individual events and work with event streams instead.
-Combine your data with [`merge`](#merge) and [`combine`](#combine).
-Then switch to the heavier weapons and wield [`flatMap`](#flatMap) and [`combineTemplate`](#combineTemplate) like a boss.
+concepts like [`map`](#observable-map) and [`filter`](#observable-filter). Stop working on individual events and work with event streams instead.
+Combine your data with [`merge`](#stream-merge) and [`combine`](#observable-combine).
+Then switch to the heavier weapons and wield [`flatMap`](#observable-flatmap) and [`combineTemplate`](#bacon-combinetemplate) like a boss.
 
-It's the `_` of Events. Too bad the symbol `~` is not allowed in Javascript.
+It's the `_` of Events. Too bad the symbol `~` is not allowed in JavaScript.
 
 Here's the stuff.
 
@@ -30,7 +30,7 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/baconjs/bacon.js.png)](https://travis-ci.org/baconjs/bacon.js)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.png?branch=master)](https://travis-ci.org/baconjs/bacon.js)
 
 Table of contents
 =================
@@ -60,7 +60,7 @@ Table of contents
     - [Atomic updates](#atomic-updates)
     - [For RxJs Users](#for-rxjs-users)
 - [Examples](#examples)
-- [Install](#install)
+- [Install by npm](#install-by-npm)
 - [Build](#build)
 - [Test](#test)
 - [Dependencies](#dependencies)
@@ -109,7 +109,7 @@ var cliks = $("h1").asEventStream("click")
 ```
 
 Each EventStream represents a stream of events. It is an Observable object, meaning
-that you can listen to events in the stream using, for instance, the [`onValue`](#onvalue) method
+that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
 with a callback. Like this:
 
 ```js
@@ -117,8 +117,8 @@ cliks.onValue(function() { alert("you clicked the h1 element") })
 ```
 
 But you can do neater stuff too. The Bacon of bacon.js is in that you can transform,
-filter and combine these streams in a multitude of ways (see API below). The methods [`map`](#map),
-[`filter`](#filter), for example, are similar to same functions in functional list programming
+filter and combine these streams in a multitude of ways (see API below). The methods [`map`](#observable-map),
+[`filter`](#observable-filter), for example, are similar to same functions in functional list programming
 (like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
 
 ```js
@@ -140,7 +140,7 @@ In addition to EventStreams, bacon.js has a thing called [`Property`](#property)
 EventStream, but has a "current value". So things that change and have a current state are
 Properties, while things that consist of discrete events are EventStreams. You could think
 mouse clicks as an EventStream and mouse position as a Property. You can create Properties from
-an EventStream with [`scan`](#scan) or [`toProperty`](#toproperty) methods. So, let's say
+an EventStream with [`scan`](#observable-scan) or [`toProperty`](#stream-toproperty) methods. So, let's say
 
 ```js
 function add(x, y) { return x + y }
@@ -149,7 +149,7 @@ counter.onValue(function(sum) { $("#sum").text(sum) })
 ```
 
 The `counter` property will contain the sum of the values in the `both` stream, so it's practically
-a counter that can be increased and decreased using the plus and minus buttons. The [`scan`](#scan) method
+a counter that can be increased and decreased using the plus and minus buttons. The [`scan`](#observable-scan) method
 was used here to calculate the "current sum" of events in the `both` stream, by giving a "seed value"
 `0` and an "accumulator function" `add`. The scan method creates a property that starts with the given
 seed value and on each event in the source stream applies the accumulator function to the current
@@ -183,6 +183,7 @@ API
 Creating streams
 ----------------
 
+<a name="$-aseventstream"></a>
 `$.asEventStream("click")` creates an EventStream from events on a
 jQuery or Zepto.js object. You can pass optional arguments to add a
 jQuery live selector and/or a function that processes the jQuery
@@ -194,10 +195,12 @@ $("#my-div").asEventStream("click", ".more-specific-selector", function(event, a
 $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 ```
 
+<a name="bacon-frompromise"></a>
 `Bacon.fromPromise(promise [, abort])` creates an EventStream from a Promise object such as JQuery Ajax.
 This stream will contain a single value or an error, followed immediately by stream end.  You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 
+<a name="bacon-fromeventtarget"></a>
 `Bacon.fromEventTarget(target, eventName [, eventTransformer])` creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that transforms the emitted
 events' parameters.
@@ -206,7 +209,7 @@ events' parameters.
 Bacon.fromEventTarget(document.body, "click").onValue(function() { alert("Bacon!") })
 ```
 
-<a name="fromcallback"></a>
+<a name="bacon-fromcallback"></a>
 `Bacon.fromCallback(f [, args...])` creates an Event stream from a function that
 accepts a callback. The function is supposed to call its callback just
 once. For example:
@@ -223,7 +226,7 @@ This would create a stream that outputs a single value "Bacon!" and ends
 after that. The use of setTimeout causes the value to be delayed by 1
 second.
 
-You can also give any number of arguments to [`fromCallback`](#fromcallback), which will be
+You can also give any number of arguments to [`fromCallback`](#bacon-fromcallback), which will be
 passed to the function. These arguments can be simple variables, Bacon
 EventStreams or Properties. For example the following will output "Bacon rules":
 
@@ -234,10 +237,11 @@ Bacon.fromCallback(function(a, b, callback) {
 }, bacon, 'rules').log();
 ```
 
-`Bacon.fromCallback(object, methodName [, args...])` a variant of
-fromCallback which calls the named method of a given object.
+<a name="bacon-fromcallback"></a>
+`Bacon.fromCallback(object, methodName [, args...])` a variant of fromCallback which calls the named method of a given object.
 
-`Bacon.fromNodeCallback(f [, args...])` behaves the same way as [`Bacon.fromCallback`](#fromcallback),
+<a name="bacon-fromnodecallback"></a>
+`Bacon.fromNodeCallback(f [, args...])` behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
 
@@ -249,66 +253,71 @@ read.onError(function(error) { console.log("Reading failed: " + error); });
 read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 
-`Bacon.fromNodeCallback(object, methodName [, args...])` a variant of
-fromNodeCallback which calls the named method of a given object.
+<a name="bacon-fromnodecallback"></a>
+`Bacon.fromNodeCallback(object, methodName [, args...])` a variant of fromNodeCallback which calls the named method of a given object.
 
+<a name="bacon-frompoll"></a>
 `Bacon.fromPoll(interval, f)` polls given function with given interval.
-Function should return Events: either [Bacon.Next](#bacon_next) or [Bacon.End](#bacon_end). Polling occurs only
+Function should return Events: either [Bacon.Next](#bacon-next) or [Bacon.End](#bacon-end). Polling occurs only
 when there are subscribers to the stream. Polling ends permanently when
 `f` returns [Bacon.End](#bacon_end)
 
+<a name="bacon-once"></a>
 `Bacon.once(value)` creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
-after this value. You can also send send an `Error` event instead of a
+after this value. You can also send send an [`Bacon.Error`](#bacon-error) event instead of a
 value: `Bacon.once(new Bacon.Error("fail"))`.
 
+<a name="bacon-fromarray"></a>
 `Bacon.fromArray(values)` creates an EventStream that delivers the given
 series of values (given as array) to the first subscriber. The stream ends after these
-values have been delivered. You can also send `Error` events, or
+values have been delivered. You can also send [`Bacon.Error`](#bacon-error) events, or
 any combination of pure values and error events like this:
 `Bacon.fromArray([1, new Bacon.Error()])
 
+<a name="bacon-interval"></a>
 `Bacon.interval(interval, value)` repeats the single element
 indefinitely with the given interval (in milliseconds)
 
+<a name="bacon-sequentially"></a>
 `Bacon.sequentially(interval, values)` creates a stream containing given
 values (given as array). Delivered with given interval in milliseconds.
 
+<a name="bacon-repeatedly"></a>
 `Bacon.repeatedly(interval, values)` repeats given elements indefinitely
 with given interval in milliseconds. For example, repeatedly(10, [1,2,3])
 would lead to 1,2,3,1,2,3... to be repeated indefinitely.
 
+<a name="bacon-never"></a>
 `Bacon.never()` creates an EventStream that immediately ends.
 
+<a name="bacon-later"></a>
 `Bacon.later(delay, value)` creates a single-element stream that
 produces given value after given delay (milliseconds).
 
-`new Bacon.EventStream(subscribe)` creates an event stream with the given
-subscribe function. (See below)
+<a name="new-bacon-eventstream"></a>
+`new Bacon.EventStream(subscribe)` creates an [`EventStream`](#eventstream) with the given subscribe function.
 
-`property.changes()` creates a stream of changes to the Property (see Property API below). The stream *does not* include
+[`property.changes()`](#property-changes) creates a stream of changes to the [`Property`](#property). The stream *does not* include
 an event for the current value of the Property at the time this method was called.
 
+<a name="property-toeventstream"></a>
 `property.toEventStream()` creates an EventStream based on this Property. The stream contains also an event for the current
 value of this Property at the time this method was called.
 
-`new Bacon.Bus()` creates a pushable/pluggable stream (see [Bus](#bus) section
-below)
+[`new Bacon.Bus()`](#new-bacon-bus) creates a pushable/pluggable stream (see [Bus](#bus) section below)
 
 Pro tip: you can also put Errors into streams created with the
-constructors above, by using an [`Bacon.Error`](#bacon_error) object instead of a plain
+constructors above, by using an [`Bacon.Error`](#bacon-error) object instead of a plain
 value.
 
 Bacon.fromBinder for custom streams
 -----------------------------------
 
-If none of the factory methods above apply, you may of course roll your own EventStream by using `Bacon.fromBinder`.
+If none of the factory methods above apply, you may of course roll your own EventStream by using [`Bacon.fromBinder`](#bacon-frombinder).
 
-```js
-Bacon.fromBinder(subscribe)
-```
-
-The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subcribe` funtion can "push" events to.
+<a name="bacon-frombinder"></a>
+`Bacon.fromBinder(subscribe)` The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subcribe` funtion can "push" events to.
 
 For example:
 
@@ -331,7 +340,7 @@ stream.log()
 As shown in the example, you can push
 
 - A plain value, like `"first value"`
-- An `Event` object including `Bacon.Error` (wraps an error) and `Bacon.End` (indicates
+- An [`Event`](#event) object including [`Bacon.Error`](#bacon-error) (wraps an error) and [`Bacon.End`](#bacon-end) (indicates
 stream end).
 - An array of event objects at once
 
@@ -341,8 +350,8 @@ The subscribe function must return a function. Let's call that function
 `unsubscribe`. The returned function can be used by the subscriber to
 unsubscribe and it should release all resources that the subscribe function reserved.
 
-The `sink` function may return Bacon.more or Bacon.noMore. It may also
-return undefined or anything else. Iff it returns Bacon.noMore, the subscriber
+The `sink` function may return [`Bacon.more`](#bacon-more) or [`Bacon.noMore`](#bacon-nomore). It may also
+return undefined or anything else. Iff it returns [`Bacon.noMore`](#bacon-nomore), the subscriber
 must be cleaned up just like in case of calling the `unsubscribe` function.
 
 The EventStream will wrap your `subscribe` function so that it will
@@ -367,7 +376,13 @@ the stream is not a function.
 
 The idea in using a function instead of a plain value is that the internals on Bacon.js take
 advantage of lazy evaluation by deferring the evaluations of values
-created by [`map`](#map), [`combine`](#combine).
+created by [`map`](#observable-map), [`combine`](#combining-multiple-streams-and-properties).
+
+<a name="bacon-nomore"></a>
+`Bacon.noMore` The opaque value `sink` function may return. See [`Bacon.fromBinder`](#bacon-frombinder).
+
+<a name="bacon-more"></a>
+`Bacon.more` The opaque value `sink` function may return. See [`Bacon.fromBinder`](#bacon-frombinder).
 
 Common methods in EventStreams and Properties
 ---------------------------------------------
@@ -375,13 +390,23 @@ Common methods in EventStreams and Properties
 Both EventStream and Property share the Observable interface, and hence
 share a lot of methods. Common methods are listed below.
 
-`stream.onError(f)` subscribes a callback to error events. The function
+<a name="observable-onvalue"></a>
+`observable.onValue(f)` subscribes a given handler function to the observable. Function will be called for each new value.
+This is the simplest way to assign a side-effect to an observable. The difference
+to the `subscribe` method is that the actual stream values are
+received, instead of [`Event`](#event) objects.
+[`stream.onValue`](#stream-onvalue) and [`property.onValue`](#property-onvalue) behave similarly, except that the latter also
+pushes the initial value of the property, in case there is one.
+
+<a name="observable-onerror"></a>
+`observable.onError(f)` subscribes a callback to error events. The function
 will be called for each error in the stream.
 
-`stream.onEnd(f)` subscribes a callback to stream end. The function will
+<a name="observable-onend"></a>
+`observable.onEnd(f)` subscribes a callback to stream end. The function will
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 
-<a name="map"></a>
+<a name="observable-map"></a>
 `observable.map(f)` maps values using given function, returning a new
 EventStream. Instead of a function, you can also provide a constant
 value. Further, you can use a property extractor string like
@@ -389,54 +414,66 @@ value. Further, you can use a property extractor string like
 dot, the elements will be mapped to the corresponding field/function in the event
 value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
-contain the values returned by the function. The Function Construction
-rules below apply here.
+contain the values returned by the function.
+The [Function Construction rules](#function-construction-rules) below apply here.
 
+<a name="stream-map"></a>
 `stream.map(property)` maps the stream events to the current value of
-the given property. This is equivalent to `property.sampledBy(stream)`.
+the given property. This is equivalent to [`property.sampledBy(stream)`](#property-sampledby).
 
+<a name="observable-maperror"></a>
 `observable.mapError(f)` maps errors using given function. More
 specifically, feeds the "error" field of the error event to the function
-and produces a "Next" event based on the return value. Function
-Construction rules apply. You can omit the argument to
-produce a Next event with `undefined` value.
+and produces a [`Next`](#bacon-next) event based on the return value.
+The [Function Construction rules](#function-construction-rules) below apply here.
+You can omit the argument to produce a [`Next`](#bacon-next) event with `undefined` value.
 
-`observable.errors()` returns a stream containing Error events only.
+<a name="observable-errors"></a>
+`observable.errors()` returns a stream containing [`Error`](#bacon-error) events only.
 Same as filtering with a function that always returns false.
 
+<a name="observable-skiperrors"></a>
 `observable.skipErrors()` skips all errors.
 
-`observable.mapEnd(f)` Adds an extra Next event just before End. The value is created
+<a name="observable-mapend"></a>
+`observable.mapEnd(f)` Adds an extra [`Next`](#bacon-next) event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used. You can omit the argument to
 produce a Next event with `undefined` value.
 
-<a name="filter"></a>
+<a name="observable-filter"></a>
 `observable.filter(f)` filters values using given predicate function.
 Instead of a function, you can use a constant value (true/false) or a
 property extractor string (like ".isValuable") instead. Just like with
-`map`, indeed.
+[`map`](#observable-map), indeed.
 
+<a name="observable-filter"></a>
 `observable.filter(property)` filters values based on the value of a
 property. Event will be included in output iff the property holds `true`
 at the time of the event.
 
+<a name="observable-takewhile"></a>
 `observable.takeWhile(f)` takes while given predicate function holds
-true. Function Construction rules apply.
+true. [Function Construction rules](#function-construction-rules) apply.
 
+<a name="observable-takewhile"></a>
 `observable.takeWhile(property)` takes values while the value of a
 property holds `true`.
 
-`observable.take(n)` takes at most n elements from the stream. Equals to
-Bacon.never() if n <= 0.
+<a name="observable-take"></a>
+`observable.take(n)` [`observable.take(n)`](#observable-take) takes at most n elements from the stream. Equals to
+[`Bacon.never()`](#bacon-never) if `n <= 0`.
 
-`observable.takeUntil(stream2)` takes elements from source until a Next event
+<a name="observable-takeuntil"></a>
+`observable.takeUntil(stream)` takes elements from source until a Next event
 appears in the other stream. If other stream ends without value, it is
 ignored
 
+<a name="observable-skip"></a>
 `observable.skip(n)` skips the first n elements from the stream
 
-`observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a Property.
+<a name="observable-delay"></a>
+`observable.delay(delay)` delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](#property).
 
 ```js
 var delayed = source.delay(2)
@@ -447,10 +484,11 @@ source:    asdf----asdf----
 delayed:   --asdf----asdf--
 ```
 
+<a name="observable-throttle"></a>
 `observable.throttle(delay)` throttles stream/property by given amount
 of milliseconds. Events are emitted with the minimum interval of
-`delay`. The implementation is based on stream.bufferWithTime.
-Does not affect emitting the initial value of a Property.
+[`delay`](#observable-delay). The implementation is based on [`stream.bufferWithTime`](#stream-bufferwithtime).
+Does not affect emitting the initial value of a [`Property`](#property).
 
 Example:
 
@@ -463,10 +501,11 @@ source:    asdf----asdf----
 throttled: --s--f----s--f--
 ```
 
+<a name="observable-debounce"></a>
 `observable.debounce(delay)` throttles stream/property by given amount
 of milliseconds, but so that event is only emitted after the given
 "quiet period". Does not affect emitting the initial value of a Property.
-The difference of `throttle` and `debounce` is the same as it is in the
+The difference of [`throttle`](#observable-throttle) and [`debounce`](#observable-debounce) is the same as it is in the
 same methods in jQuery.
 
 Example:
@@ -476,6 +515,7 @@ source:             asdf----asdf----
 source.debounce(2): -----f-------f--
 ```
 
+<a name="observable-debounceimmediate"></a>
 `observable.debounceImmediate(delay)` passes the first event in the
 stream through, but after that, only passes events after a given number
 of milliseconds have passed since previous output.
@@ -487,26 +527,27 @@ source:                      asdf----asdf----
 source.debounceImmediate(2): a-d-----a-d-----
 ```
 
+<a name="observable-doaction"></a>
 `observable.doAction(f)` returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
 useful for debugging, but also for stuff like calling the
-preventDefault() method for events. In fact, you can
+`preventDefault()` method for events. In fact, you can
 also use a property-extractor string instead of a function, as in
-".preventDefault".
+`".preventDefault"`.
 
-`observable.not()` returns a stream/property that inverts boolean
-values
+<a name="observable-not"></a>
+`observable.not()` returns a stream/property that inverts boolean values
 
-<a name="flatmap"></a>
+<a name="observable-flatmap"></a>
 `observable.flatMap(f)` for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
-streams into the result `EventStream`. This is very similar to selectMany in
+streams into the result [`EventStream`](#eventstream). This is very similar to selectMany in
 RxJs. Note that instead of a function, you can provide a
 stream/property too. Also, the return value of function `f` can be either an
-Observable (stream/property) or a constant value. The result of
-`flatMap` is always an `EventStream`.
+`Observable` (stream/property) or a constant value. The result of
+[`flatMap`](#observable-flatmap) is always an [`EventStream`](#eventstream).
 
-stream.flatMap() can be used conveniently with `Bacon.once()` and `Bacon.never()` for converting and filtering at the same time, including only some of the results.
+`stream.flatMap()` can be used conveniently with [`Bacon.once()`](#bacon-once) and [`Bacon.never()`](#bacon-never) for converting and filtering at the same time, including only some of the results.
 
 Example - converting strings to integers, skipping empty values:
 
@@ -516,16 +557,18 @@ stream.flatMap(function(text) {
 })
 ```
 
+<a name="observable-flatmaplatest"></a>
 `observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream. The old name for
 this method is `switch`. Note that instead of a function, you can
 provide a stream/property too.
 
+<a name="observable-flatmapfirst"></a>
 `observable.flatMapFirst(f)` like flatMap, but doesn't spawns a new
 stream only if the previously spawned stream has ended.
 
-<a name="scan"></a>
+<a name="observable-scan"></a>
 `observable.scan(seed, f)` scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
 use zero as seed and a "plus" function as the accumulator to create
@@ -555,12 +598,15 @@ identically to EventStream.scan: the `seed` will be the initial value of
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
 
-`observable.fold(seed, f)` is like `scan` but only emits the final
+<a name="observable-fold"></a>
+`observable.fold(seed, f)` is like [`scan`](#observable-scan) but only emits the final
 value, i.e. the value just before the observable ends. Returns a
-Property.
+[`Property`](#property).
 
-`observable.reduce(seed,f)` synonym for `fold`.
+<a name="observable-reduce"></a>
+`observable.reduce(seed,f)` synonym for [`fold`](#observable-fold).
 
+<a name="observable-diff"></a>
 `observable.diff(start, f)` returns a Property that represents the result of a comparison
 between the previous and current value of the Observable. For the initial value of the Observable,
 the previous value will be the given start.
@@ -578,6 +624,7 @@ This would result to following elements in the result stream:
     2 - 1 = 1
     3 - 2 = 1
 
+<a name="observable-zip"></a>
 `observable.zip(other, f)` return an EventStream with elements
 pair-wise lined up with events from this and the other stream.
 A zipped stream will publish only when it has a value from each
@@ -601,7 +648,7 @@ Example 2:
 
 You can use zip to combine observables that are pairwise synchronized
 from e.g. projections or sampling by the same property, while avoiding
-the double-processing that would happen recombining with [`combine`](#combine).
+the double-processing that would happen recombining with [`combine`](#observable-combine).
 
 ```js
 var x = obs.map('.x')
@@ -609,6 +656,7 @@ var y = obs.map('.y')
 x.zip(y, makeComplex)
 ```
 
+<a name="observable-slidingwindow"></a>
 `observable.slidingWindow(max[, min])` returns a Property that represents a
 "sliding window" into the history of the values of the Observable. The
 result Property will have a value that is an array containing the last `n`
@@ -621,6 +669,7 @@ respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
 [2,3] - [3,4] - [4,5]. The values of `s.slidingWindow(2,2)`would be
 [1,2] - [2,3] - [3,4] - [4,5].
 
+<a name="observable-log"></a>
 `observable.log()` logs each value of the Observable to the console.
 It optionally takes arguments to pass to console.log() alongside each
 value. To assist with chaining, it returns the original Observable. Note
@@ -638,11 +687,13 @@ or just
 myStream.log()
 ```
 
+<a name="observable-combine"></a>
 `observable.combine(property2, f)` combines the latest values of the two
-streams or properties using a two-arg function. Similarly to `scan`, you can use a
+streams or properties using a two-arg function. Similarly to [`scan`](#observable-scan), you can use a
 method name instead, so you could do `a.combine(b, ".concat")` for two
 properties with array value. The result is a Property.
 
+<a name="observable-withstatemachine"></a>
 `observable.withStateMachine(initState, f)` lets you run a state machine
 on an observable. Give it an initial state object and a state
 transformation function that processes each incoming event and
@@ -662,6 +713,7 @@ Bacon.fromArray([1,2,3])
   })
 ```
 
+<a name="observable-decode"></a>
 `observable.decode(mapping)` decodes input using the given mapping. Is a
 bit like a switch-case or the decode function in Oracle SQL. For
 example, the following would map the value 1 into the the string "mike"
@@ -671,32 +723,36 @@ and the value 2 into the value of the `who` property.
 property.decode({1 : "mike", 2 : who})
 ```
 
-This is actually based on [`combineTemplate`](#combineTemplate) so you can compose static
+This is actually based on [`combineTemplate`](#bacon-combinetemplate) so you can compose static
 and dynamic data quite freely, as in
 
 ```js
 property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
 ```
 
-The return value of `decode` is always a `Property`.
+The return value of [`decode`](#observable-decode) is always a [`Property`](#property).
 
-`observable1.awaiting(observable2)` creates a Property that indicates whether
-observable1 is awaiting observable2, i.e. has produced a value after the latest
-value from observable2. This is handy for keeping track whether we are
+<a name="observable-awaiting"></a>
+`observable.awaiting(otherObservable)` creates a Property that indicates whether
+`observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
+value from `otherObservable`. This is handy for keeping track whether we are
 currently awaiting an AJAX response:
 
 ```js
 var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
 ```
 
-`observable.endOnError` ends the Observable on first Error event. The
-error is included in the output of the returned Observable.
+<a name="observable-endonerror"></a>
+`observable.endOnError()` ends the `Observable` on first [`Error`](#bacon-error) event. The
+error is included in the output of the returned `Observable`.
 
-`observable.endOnError(f)` ends the Observable on first error for which
+<a name="observable-endonerror"></a>
+`observable.endOnError(f)` ends the `Observable` on first [`Error`](#bacon-error) event for which
 the given predicate function returns true. The error is included in the
-output of the returned Observable. Function construction rules apply, so
+output of the returned `Observable`. The [Function Construction rules](#function-construction-rules) apply, so
 you can do for example `.endOnError(".serious")`.
 
+<a name="observable-withhandler"></a>
 `observable.withHandler(f)` lets you do more custom event handling: you
 get all events to your function and you can output any number of events
 and end the stream if you choose. For example, to send an error and end
@@ -715,64 +771,78 @@ Note that it's important to return the value from `this.push` so that
 the connection to the underlying stream will be closed when no more
 events are needed.
 
+<a name="observable-name"></a>
 `observable.name(newName)` sets the name of the observable. Overrides the default
 implementation of `toString` and `inspect`.
+Returns itself.
 
 EventStream
 -----------
 
+<a name="bacon-eventstream"></a>
 `Bacon.EventStream` a stream of events. See methods below.
 
+<a name="stream-subscribe"></a>
 `stream.subscribe(f)` subscribes given handler function to
 event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can
 call to unsubscribe. You can also unsubscribe by returning
-`Bacon.noMore` from the handler function as a reply to an Event.
+[`Bacon.noMore`](#bacon-nomore) from the handler function as a reply to an Event.
 
+<a name="stream-onvalue"></a>
 `stream.onValue(f)` subscribes a given handler function to event
 stream. Function will be called for each new value in the stream. This
 is the simplest way to assign a side-effect to a stream. The difference
 to the `subscribe` method is that the actual stream values are
-received, instead of Event objects. Function Construction rules below
-apply here. Just like `subscribe`, this method returns a function for unsubscribing.
+received, instead of [`Event`](#event) objects.
+The [Function Construction rules](#function-construction-rules) below apply here.
+Just like `subscribe`, this method returns a function for unsubscribing.
 
-`stream.onValues(f)` like onValue, but splits the value (assuming its an
-array) as function arguments to `f`
+<a name="stream-onvalues"></a>
+`stream.onValues(f)` like [`onValue`](#stream-onvalue), but splits the value (assuming its an
+array) as function arguments to `f`.
 
+<a name="stream-skipduplicates"></a>
 `stream.skipDuplicates([isEqual])` drops consecutive equal elements. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
+from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
 checking by default. If the isEqual argument is supplied, checks by calling
 isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
 use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
 
-`stream1.concat(stream2)` concatenates two streams into one stream so that
-it will deliver events from `stream1` until it ends and then deliver
-events from `stream2`. This means too that events from `stream2`,
-occurring before the end of `stream1` will not be included in the result
+<a name="stream-concat"></a>
+`stream.concat(otherStream)` concatenates two streams into one stream so that
+it will deliver events from `stream` until it ends and then deliver
+events from `otherStream`. This means too that events from `stream2`,
+occurring before the end of `stream` will not be included in the result
 stream.
 
-<a name="merge"></a>
-`stream.merge(stream2)` merges two streams into one stream that delivers
-events from both
+<a name="stream-merge"></a>
+`stream.merge(otherStream)` merges two streams into one stream that delivers events from both
 
+<a name="stream-startwith"></a>
 `stream.startWith(value)` adds a starting value to the stream, i.e. concats a
-single-element stream contains `value` with this stream.
+single-element stream contains [`value`](#event-value) with this stream.
 
-`stream.skipWhile(f)` skips elements while given predicate function holds true. Function construction rules apply.
+<a name="stream-skipwhile"></a>
+`stream.skipWhile(f)` skips elements while given predicate function holds true.
+The [Function Construction rules](#function-construction-rules) below apply here.
 
-`stream.skipWhile(property)` skips elements while the value of the given
-Property is `true`.
+<a name="stream-skipwhile"></a>
+`stream.skipWhile(property)` skips elements while the value of the given Property is `true`.
 
+<a name="stream-skipuntil"></a>
 `stream.skipUntil(stream2)` skips elements from `stream` until a Next event
 appears in `stream2`. In other words, starts delivering values
 from `stream` after first event appears in `stream2`.
 
+<a name="stream-bufferwithtime"></a>
 `stream.bufferWithTime(delay)` buffers stream events with given delay.
 The buffer is flushed at most once in the given delay. So, if your input
 contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
 and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
 
+<a name="stream-bufferwithtime"></a>
 `stream.bufferWithTime(f)` works with a given "defer-function" instead
 of a delay. Here's a simple example, which is equivalent to
 stream.bufferWithTime(10):
@@ -781,21 +851,24 @@ stream.bufferWithTime(10):
 stream.bufferWithTime(function(f) { setTimeout(f, 10) })
 ```
 
+<a name="stream-bufferwithcount"></a>
 `stream.bufferWithCount(count)` buffers stream events with given count.
 The buffer is flushed when it contains the given number of elements. So, if
-you buffer a stream of [1, 2, 3, 4, 5] with count 2, you'll get output
-events with values [1, 2], [3, 4] and [5].
+you buffer a stream of `[1, 2, 3, 4, 5]` with count `2`, you'll get output
+events with values `[1, 2]`, `[3, 4]` and `[5]`.
 
+<a name="stream-bufferwithtimeorcount"></a>
 `stream.bufferWithTimeOrCount(delay, count)` buffers stream events and
 flushes when either the buffer contains the given number elements or the
 given amount of milliseconds has passed since last buffered event.
 
-<a name="toproperty"></a>
+<a name="stream-toproperty"></a>
 `stream.toProperty()` creates a Property based on the
 EventStream. Without arguments, you'll get a Property without an initial value.
 The Property will get its first actual value from the stream, and after that it'll
 always have a current value.
 
+<a name="stream-toproperty"></a>
 `stream.toProperty(initialValue)` creates a Property based on the
 EventStream with the given initial value that will be used as the current value until
 the first value comes from the stream.
@@ -803,26 +876,32 @@ the first value comes from the stream.
 Property
 --------
 
+<a name="bacon-property"></a>
 `Bacon.Property` a reactive property. Has the concept of "current value".
 You can create a Property from an EventStream by using either toProperty
 or scan method. Note depending on how a Property is created, it may or may not
 have an initial value.
 
+<a name="bacon-constant"></a>
 `Bacon.constant(x)` creates a constant property with value x.
 
+<a name="property-subscribe"></a>
 `property.subscribe(f)` subscribes a handler function to property. If there's
-a current value, an `Initial` event will be pushed immediately. `Next`
-event will be pushed on updates and an `End` event in case the source
+a current value, an [`Initial`](#bacon-initial) event will be pushed immediately. [`Next`](#bacon-next)
+event will be pushed on updates and an [`Bacon.End`](#bacon-end) event in case the source
 EventStream ends. Returns a function that you call to unsubscribe.
 
-`property.onValue(f)` similar to eventStream.onValue, except that also
+<a name="property-onvalue"></a>
+`property.onValue(f)` similar to [`stream.onValue`](#stream-onvalue), except that also
 pushes the initial value of the property, in case there is one.
-See Function Construction rules below for different forms of calling this method.
+See [Function Construction rules](#function-construction-rules) below for different forms of calling this method.
 Just like `subscribe`, this method returns a function for unsubscribing.
 
+<a name="property-onvalues"></a>
 `property.onValues(f)` like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
 
+<a name="property-assign"></a>
 `property.assign(obj, method, [param...])` calls the method of the given
 object with each value of this Property. You can optionally supply
 arguments which will be used as the first arguments of the method call.
@@ -840,41 +919,50 @@ on a Property:
 myProperty.assign($("#my-button"), "toggle")
 ```
 
-Note that the `assign` method is actually just a synonym for `onValue` and
-the function construction rules below apply to both.
+Note that the [`assign`](#property-assign) method is actually just a synonym for [`onValue`](#property-onvalue) and
+the [function construction rules](#function-construction-rules) below apply to both.
 
+<a name="property-sample"></a>
 `property.sample(interval)` creates an EventStream by sampling the
 property value at given interval (in milliseconds)
 
+<a name="property-sampledby"></a>
 `property.sampledBy(stream)` creates an EventStream by sampling the
 property value at each event from the given stream. The result
 EventStream will contain the property value at each event in the source
 stream.
 
+<a name="property-sampledby"></a>
 `property.sampledBy(property)` creates a Property by sampling the
 property value at each event from the given property. The result
 Property will contain the property value at each event in the source
 property.
 
+<a name="property-sampledby"></a>
 `property.sampledBy(streamOrProperty, f)` samples the property on stream
 events. The result values will be formed using the given function
 `f(propertyValue, samplerValue)`. You can use a method name (such as
 ".concat") instead of a function too.
 
+<a name="property-skipduplicates"></a>
 `property.skipDuplicates([isEqual])` drops consecutive equal elements. So,
-from [1, 2, 2, 1] you'd get [1, 2, 1]. Uses the === operator for equality
-checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). The old name for this method was
-"distinctUntilChanged".
+from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
+checking by default. If the `isEqual` argument is supplied, checks by calling
+`isEqual(oldValue, newValue)`. The old name for this method was
+`distinctUntilChanged`.
 
-`property.changes()` returns an EventStream of property value changes.
+<a name="property-changes"></a>
+`property.changes()` returns an [`EventStream`](#eventstream) of property value changes.
 Returns exactly the same events as the property itself, except any Initial
-events. Note that property.changes() does NOT skip duplicate values, use .skipDuplicates() for that.
+events. Note that [`property.changes()`](#property-changes) does NOT skip duplicate values, use .skipDuplicates() for that.
 
+<a name="property-and"></a>
 `property.and(other)` combines properties with the `&&` operator.
 
+<a name="property-or"></a>
 `property.or(other)` combines properties with the `||` operator.
 
+<a name="property-startwith"></a>
 `property.startWith(value)` adds an initial "default" value for the
 Property. If the Property doesn't have an initial value of it's own, the
 given value will be used as the initial value. If the property has an
@@ -883,13 +971,14 @@ initial value of its own, the given value will be ignored.
 Combining multiple streams and properties
 -----------------------------------------
 
-<a name="combine"></a>
+<a name="bacon-combineasarray"></a>
 `Bacon.combineAsArray(streams)` combines Properties, EventStreams and
 constant values so that the result Property will have an array of all
 property values as its value. The input array may contain both Properties
 and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
 
+<a name="bacon-combineasarray"></a>
 `Bacon.combineAsArray(s1, s2, ...)` just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
@@ -901,6 +990,7 @@ Bacon.combineAsArray(property, stream, constant)
 # produces the value [1,2,3]
 ```
 
+<a name="bacon-combinewith"></a>
 `Bacon.combineWith(f, stream1, stream2 ...)` combines given *n* Properties,
 EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`.
 To calculate the current sum of three numeric Properties, you can do
@@ -910,7 +1000,7 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 
-<a name="combineTemplate"></a>
+<a name="bacon-combinetemplate"></a>
 `Bacon.combineTemplate(template)` combines Properties, EventStreams and
 constant values using a template
 object. For instance, assuming you've got streams or properties named
@@ -940,16 +1030,17 @@ In addition to combining data from streams, you can include constant
 values in your templates.
 
 Note that all Bacon.combine* methods produce a Property instead of an EventStream.
-If you need the result as an EventStream you might want to use property.changes()
+If you need the result as an [`EventStream`](#eventstream) you might want to use [`property.changes()`](#property-changes)
 
 ```js
 Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 ```
 
-<a name="mergeAll"></a>
+<a name="bacon-mergeall"></a>
 `Bacon.mergeAll(streams)` merges given array of EventStreams.
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 
+<a name="bacon-zipasarray"></a>
 `Bacon.zipAsArray(streams)` zips the array of stream in to a new
 EventStream that will have an array of values from each source stream as
 its value. Zipping means that events from each stream are combine
@@ -972,16 +1063,19 @@ Bacon.zipAsArray(x, y, z)
 # produces values 111, 222, 333
 ```
 
+<a name="bacon-zipasarray"></a>
 `Bacon.zipAsArray(stream1, stream2, ..)` just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
-`Bacon.zipWith(streams, f)` like `zipAsArray` but uses the given n-ary
+<a name="bacon-zipwith"></a>
+`Bacon.zipWith(streams, f)` like [`zipAsArray`](#bacon-zipasarray) but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
 
+<a name="bacon-zipwith"></a>
 `Bacon.zipWith(f, stream1, stream1 ...)` just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
-<a name="onvalue"></a>
+<a name="bacon-onvalues"></a>
 `Bacon.onValues(a, b [, c...], f)` is a shorthand for combining multiple
 sources (streams, properties, constants) as array and assigning the
 side-effect function f for the values. The following example would log
@@ -1002,7 +1096,7 @@ constructing the function.
 Here are the different forms you can use, with examples. The basic form
 would be
 
-`stream.map(f)` maps values using the function f(x)
+[`stream.map(f)`](#stream-map) maps values using the function f(x)
 
 As an extension to the basic form, you can use partial application:
 
@@ -1054,7 +1148,7 @@ instance:
 object `{ isMouseClick: true }`
 
 Methods that support function construction include
-at least `onValue`, `onError`, `onEnd`, `map`, `filter`, `assign`, `takeWhile`, `mapError` and `doAction`.
+at least [`onValue`](#observable-onvalue), [`onError`](#observable-onerror), [`onEnd`](#observable-onend), [`map`](#observable-map), [`filter`](#observable-filter), [`assign`](#property-assign), [`takeWhile`](#observable-takewhile), [`mapError`](#observable-maperror) and [`doAction`](#observable-doaction).
 
 Latest value of Property or EventStream
 ---------------------------------------
@@ -1069,21 +1163,26 @@ combine methods.
 Bus
 ---
 
-Bus is an EventStream that allows you to `push` values into the stream.
+[`Bus`](#bus) is an [`EventStream`](#eventstream) that allows you to [`push`](#bus-push) values into the stream.
 It also allows pluggin other streams into the Bus. The Bus practically
-merges all plugged-in streams and the values pushed using the `push`
+merges all plugged-in streams and the values pushed using the [`push`](#bus-push)
 method.
 
+<a name="new-bacon-bus"></a>
 `new Bacon.Bus()` returns a new Bus.
 
+<a name="bus-push"></a>
 `bus.push(x)` pushes the given value to the stream.
 
+<a name="bus-end"></a>
 `bus.end()` ends the stream. Sends an End event to all subscribers.
 After this call, there'll be no more events to the subscribers.
-Also, the Bus `push` and `plug` methods have no effect.
+Also, the [`bus.push`](#bus-push) and [`bus.plug`](#bus-plug) methods have no effect.
 
+<a name="bus-error"></a>
 `bus.error(e)` sends an Error with given message to all subscribers
 
+<a name="bus-plug"></a>
 `bus.plug(stream)` plugs the given stream to the Bus. All events from
 the given stream will be delivered to the subscribers of the Bus.
 Returns a function that can be used to unplug the same stream.
@@ -1096,51 +1195,58 @@ mechanism in the
 Event
 -----
 
-`Bacon.Event` has subclasses `Next`, `End`, `Error` and `Initial`
+<a name="bacon-event"></a>
+`Bacon.Event` has subclasses [`Bacon.Next`](#bacon-next), [`Bacon.End`](#bacon-end), [`Bacon.Error`](#bacon-error) and [`Bacon.Initial`](#bacon-initial)
 
-<a name="bacon_next"></a>
+<a name="bacon-next"></a>
 `Bacon.Next` next value in an EventStream or a Property. Call isNext() to
 distinguish a Next event from other events.
 
-<a name="bacon_end"></a>
+<a name="bacon-end"></a>
 `Bacon.End` an end-of-stream event of EventStream or Property. Call isEnd() to
 distinguish an End from other events.
 
-<a name="bacon_error"></a>
+<a name="bacon-error"></a>
 `Bacon.Error` an error event. Call isError() to distinguish these events
-in your subscriber, or use `onError` to react to error events only.
+in your subscriber, or use [`onError`](#observable-onerror) to react to error events only.
 `errorEvent.error` returns the associated error object (usually string).
 
+<a name="bacon-initial"></a>
 `Bacon.Initial` the initial (current) value of a Property. Call isInitial() to
 distinguish from other events. Only sent immediately after subscription
 to a Property.
 
-Event properties and methods:
+### Event properties and methods
 
+<a name="event-value"></a>
 `event.value()` returns the value associated with a Next or Initial event
 
+<a name="event-hasvalue"></a>
 `event.hasValue()` returns true for events of type Initial and Next
 
+<a name="event-isnext"></a>
 `event.isNext()` true for Next events
 
+<a name="event-isinitial"></a>
 `event.isInitial()` true for Initial events
 
+<a name="event-isend"></a>
 `event.isEnd()` true for End events
 
 Errors
 ------
 
-`Error` events are always passed through all stream combinators. So, even
+[`Bacon.Error`](#bacon-error) events are always passed through all stream combinators. So, even
 if you filter all values out, the error events will pass though. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.
 
-You can take action on errors by using the `observable.onError(f)`
+You can take action on errors by using the [`observable.onError(f)`](#observable-onerror)
 callback.
 
-See documentation on `onError`, `mapError`, `skipErrors` above.
+See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`skipErrors`](#observable-skiperrors) above.
 
-An Error does not terminate the stream. The method `observable.endOnError()`
+An Error does not terminate the stream. The method [`observable.endOnError()`](#observable-endonerror)
 returns a stream/property that ends immediately after first error.
 
 Bacon.js doesn't currently generate any Error events itself (except when
@@ -1151,15 +1257,14 @@ such as AJAX calls.
 Join Patterns
 -------------
 
-Join patterns are a generalization of the `zip` function. While zip
+Join patterns are a generalization of the [`zip`](#observable-zip) function. While zip
 synchronizes events from multiple streams pairwse, join patterns allow
 for implementation of more advanced synchronization patterns. Bacon.js
-uses the `Bacon.when` function to convert a list of synchronization
-patterns into a resulting event-stream.
+uses the [`Bacon.when`](#bacon-when) function to convert a list of synchronization
+patterns into a resulting eventstream.
 
-`Bacon.when`
-
-Consider implementing a game with discrete time ticks. We want to
+<a name="bacon-when"></a>
+`Bacon.when` Consider implementing a game with discrete time ticks. We want to
 handle key-events synchronized on tick-events, with at most one key
 event handled per tick. If there are no key events, we want to just
 process a tick.
@@ -1182,9 +1287,8 @@ Bacon.zipWith(a,b,c, combine)
 Bacon.when([a,b,c], combine)
 ```
 
-`Bacon.update`
-
-The property version of `Bacon.when`. It requires an initial value and
+<a name="bacon-update"></a>
+`Bacon.update` The property version of [`Bacon.when`](#bacon-when). It requires an initial value and
 functions take an extra parameter representing the "current" value.
 
 ```js
@@ -1305,7 +1409,7 @@ Cleaning up
 As described above, a subscriber can signal the loss of interest in new events
 in any of these two ways:
 
-1. Return `Bacon.noMore` from the handler function
+1. Return [`Bacon.noMore`](#bacon-nomore) from the handler function
 2. Call the `dispose()` function that was returned by the `subscribe()`
    call.
 
@@ -1337,18 +1441,18 @@ different perspectives. The contract between an EventStream and its
 subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
-   value is wrapped into a `Next` event.
-2. The subscriber function returns a result which is either `Bacon.noMore` or
-`Bacon.more`. The `undefined` value is handled like `Bacon.more`.
-3. In case of `Bacon.noMore` the source must never call the subscriber again.
+   value is wrapped into a [`Next`](#bacon-next) event.
+2. The subscriber function returns a result which is either [`Bacon.noMore`](#bacon-nomore) or
+[`Bacon.more`](#bacon-more). The `undefined` value is handled like [`Bacon.more`](#bacon-more).
+3. In case of [`Bacon.noMore`](#bacon-nomore) the source must never call the subscriber again.
 4. When the stream ends, the subscriber function will be called with
-   and `End` event. The return value of the subscribe function is
+   and [`Bacon.End`](#bacon-end) event. The return value of the subscribe function is
    ignored in this case.
 
-A `Property` behaves similarly to an `EventStream` except that
+A [`Property`](#property) behaves similarly to an [`EventStream`](#eventstream) except that
 
 1. On a call to `subscribe`, it will deliver its current value
-(if any) to the provided subscriber function wrapped into an `Initial`
+(if any) to the provided subscriber function wrapped into an [`Initial`](#bacon-initial)
 event.
 2. This means that if the Property has previously emitted the value `x`
 to its subscribers and that is the latest value emitted, it will deliver
@@ -1396,7 +1500,7 @@ Error handling is also a bit different: the Error event does not
 terminate a stream. So, a stream may contain multiple errors. To me,
 this makes more sense than always terminating the stream on error; this
 way the application developer has more direct control over error
-handling. You can always use `stream.endOnError()` to get a stream
+handling. You can always use [`stream.endOnError()`](#observable-endonerror) to get a stream
 that ends on error!
 
 Examples
@@ -1408,8 +1512,8 @@ See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffe
 
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 
-Install
-=======
+Install by npm
+==============
 
 Bacon uses npm to install the dependencies needed for compiling the coffeescript source and run the test. So first run:
 
