@@ -466,39 +466,10 @@ class Observable
       .map((tuple) -> tuple[1]))
 
   flatMap: ->
-    @flatMap_(makeSpawner(arguments))
-  flatMap_: (f, firstOnly) ->
-    root = this
-    new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
-      composite = new CompositeUnsubscribe()
-      checkEnd = (unsub) ->
-        unsub()
-        sink end() if composite.empty()
-      composite.add (__, unsubRoot) -> root.subscribe (event) ->
-        if event.isEnd()
-          checkEnd(unsubRoot)
-        else if event.isError()
-          sink event
-        else if firstOnly and composite.count() > 1
-          Bacon.more
-        else
-          return Bacon.noMore if composite.unsubscribed
-          child = makeObservable(f event.value())
-          composite.add (unsubAll, unsubMe) -> child.subscribe (event) ->
-            if event.isEnd()
-              checkEnd(unsubMe)
-              Bacon.noMore
-            else
-              if event instanceof Initial
-                # To support Property as the spawned stream
-                event = event.toNext()
-              reply = sink event
-              unsubAll() if reply == Bacon.noMore
-              reply
-      composite.unsubscribe
+    flatMap_(this, makeSpawner(arguments))
 
   flatMapFirst: ->
-    @flatMap_(makeSpawner(arguments), true)
+    flatMap_(this, makeSpawner(arguments), true)
 
   flatMapLatest: =>
     f = makeSpawner(arguments)
@@ -531,6 +502,36 @@ class Observable
     this
 
 Observable :: reduce = Observable :: fold
+
+flatMap_ = (root, f, firstOnly) ->
+  new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
+    composite = new CompositeUnsubscribe()
+    checkEnd = (unsub) ->
+      unsub()
+      sink end() if composite.empty()
+    composite.add (__, unsubRoot) -> root.subscribe (event) ->
+      if event.isEnd()
+        checkEnd(unsubRoot)
+      else if event.isError()
+        sink event
+      else if firstOnly and composite.count() > 1
+        Bacon.more
+      else
+        return Bacon.noMore if composite.unsubscribed
+        child = makeObservable(f event.value())
+        composite.add (unsubAll, unsubMe) -> child.subscribe (event) ->
+          if event.isEnd()
+            checkEnd(unsubMe)
+            Bacon.noMore
+          else
+            if event instanceof Initial
+              # To support Property as the spawned stream
+              event = event.toNext()
+            reply = sink event
+            unsubAll() if reply == Bacon.noMore
+            reply
+    composite.unsubscribe
+
 
 class EventStream extends Observable
   constructor: (desc, subscribe) ->
