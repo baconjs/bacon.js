@@ -547,6 +547,8 @@ stream/property too. Also, the return value of function `f` can be either an
 `Observable` (stream/property) or a constant value. The result of
 [`flatMap`](#observable-flatmap) is always an [`EventStream`](#eventstream).
 
+The [Function Construction rules](#function-construction-rules) below apply here.
+
 `stream.flatMap()` can be used conveniently with [`Bacon.once()`](#bacon-once) and [`Bacon.never()`](#bacon-never) for converting and filtering at the same time, including only some of the results.
 
 Example - converting strings to integers, skipping empty values:
@@ -560,9 +562,10 @@ stream.flatMap(function(text) {
 <a name="observable-flatmaplatest"></a>
 `observable.flatMapLatest(f)` like flatMap, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
-You can think this as switching from stream to stream. The old name for
-this method is `switch`. Note that instead of a function, you can
-provide a stream/property too.
+You can think this as switching from stream to stream.
+Note that instead of a function, you can provide a stream/property too.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="observable-flatmapfirst"></a>
 `observable.flatMapFirst(f)` like flatMap, but doesn't spawns a new
