@@ -465,8 +465,9 @@ class Observable
       .filter((tuple) -> tuple.length == 2)
       .map((tuple) -> tuple[1]))
 
-  flatMap: (f, firstOnly) ->
-    f = makeSpawner(f)
+  flatMap: ->
+    @flatMap_(makeSpawner(arguments))
+  flatMap_: (f, firstOnly) ->
     root = this
     new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
       composite = new CompositeUnsubscribe()
@@ -482,8 +483,7 @@ class Observable
           Bacon.more
         else
           return Bacon.noMore if composite.unsubscribed
-          child = f event.value()
-          child = Bacon.once(child) if not (isObservable(child))
+          child = makeObservable(f event.value())
           composite.add (unsubAll, unsubMe) -> child.subscribe (event) ->
             if event.isEnd()
               checkEnd(unsubMe)
@@ -497,10 +497,11 @@ class Observable
               reply
       composite.unsubscribe
 
-  flatMapFirst: (f) -> @flatMap(f, true)
+  flatMapFirst: ->
+    @flatMap_(makeSpawner(arguments), true)
 
-  flatMapLatest: (f) =>
-    f = makeSpawner(f)
+  flatMapLatest: =>
+    f = makeSpawner(arguments)
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
       f(value).takeUntil(stream))
@@ -1276,10 +1277,11 @@ assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> throw "not a string : " + x unless typeof x == "string"
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
-makeSpawner = (f) ->
-    f = _.always(f) if isObservable(f)
-    assertFunction(f)
-    f
+makeSpawner = (args) ->
+    if args.length == 1 and isObservable(args[0])
+      _.always(args[0])
+    else
+      makeFunctionArgs args
 makeFunctionArgs = (args) ->
   args = Array.prototype.slice.call(args)
   makeFunction_ args...
@@ -1294,6 +1296,11 @@ makeFunction_ = withMethodCallSupport (f, args...) ->
 makeFunction = (f, args) ->
   makeFunction_(f, args...)
 
+makeObservable = (x) ->
+  if (isObservable(x))
+    x
+  else
+    Bacon.once(x) 
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
 Bacon.isFieldKey = isFieldKey
