@@ -465,10 +465,10 @@ class Observable
       .filter((tuple) -> tuple.length == 2)
       .map((tuple) -> tuple[1]))
 
-  flatMap: (f, firstOnly) ->
-    f = makeSpawner(f)
+  flatMap: ->
+    f = makeFunctionArgs(arguments)
     root = this
-    new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
+    new EventStream describe(root, "flatMap", f), (sink) ->
       composite = new CompositeUnsubscribe()
       checkEnd = (unsub) ->
         unsub()
@@ -478,7 +478,37 @@ class Observable
           checkEnd(unsubRoot)
         else if event.isError()
           sink event
-        else if firstOnly and composite.count() > 1
+        else
+          return Bacon.noMore if composite.unsubscribed
+          child = f event.value()
+          child = Bacon.once(child) if not (isObservable(child))
+          composite.add (unsubAll, unsubMe) -> child.subscribe (event) ->
+            if event.isEnd()
+              checkEnd(unsubMe)
+              Bacon.noMore
+            else
+              if event instanceof Initial
+                # To support Property as the spawned stream
+                event = event.toNext()
+              reply = sink event
+              unsubAll() if reply == Bacon.noMore
+              reply
+      composite.unsubscribe
+
+  flatMapFirst: ->
+    f = makeFunctionArgs(arguments)
+    root = this
+    new EventStream describe(root, "flatMapFirst", f), (sink) ->
+      composite = new CompositeUnsubscribe()
+      checkEnd = (unsub) ->
+        unsub()
+        sink end() if composite.empty()
+      composite.add (__, unsubRoot) -> root.subscribe (event) ->
+        if event.isEnd()
+          checkEnd(unsubRoot)
+        else if event.isError()
+          sink event
+        else if composite.count() > 1
           Bacon.more
         else
           return Bacon.noMore if composite.unsubscribed
@@ -497,10 +527,9 @@ class Observable
               reply
       composite.unsubscribe
 
-  flatMapFirst: (f) -> @flatMap(f, true)
 
-  flatMapLatest: (f) =>
-    f = makeSpawner(f)
+  flatMapLatest: =>
+    f = makeFunctionArgs(arguments)
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
       f(value).takeUntil(stream))
@@ -1276,10 +1305,6 @@ assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> throw "not a string : " + x unless typeof x == "string"
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
-makeSpawner = (f) ->
-    f = _.always(f) if isObservable(f)
-    assertFunction(f)
-    f
 makeFunctionArgs = (args) ->
   args = Array.prototype.slice.call(args)
   makeFunction_ args...

@@ -665,8 +665,17 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.once("bacon"))
       ["bacon"])
+  describe "extracts field values", ->
+    expectStreamEvents(
+      -> Bacon.once({value: Bacon.once("bacon")}).flatMap(".value")
+      ["bacon"], unstable)
+  describe "in case of a function property, calls the function with no args", ->
+    expectStreamEvents(
+      -> Bacon.once({value: () -> Bacon.once("bacon")}).flatMap(".value")
+      ["bacon"], unstable)
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
+
 
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->
@@ -701,6 +710,14 @@ describe "EventStream.flatMapLatest", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"], unstable)
+  describe "extracts field values", ->
+    expectStreamEvents(
+      -> series(3, [{value: Bacon.once("lol")}, {value: Bacon.once("wut")}]).flatMapLatest(".value")
+      ["lol", "wut"], unstable)
+  describe "in case of a function property, calls the function with no args", ->
+    expectStreamEvents(
+      -> series(3, [{value: () -> Bacon.once(1)}, {value: () -> Bacon.once(2)}]).flatMapLatest(".value")
+      [1,2], unstable)
   it "toString", ->
     expect(Bacon.never().flatMapLatest(->).toString()).to.equal("Bacon.never().flatMapLatest(function)")
 
