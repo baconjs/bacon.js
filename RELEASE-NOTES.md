@@ -1,3 +1,11 @@
+## Next
+
+- Support function construction rules in flatMap(Latest|First) (#306)
+## 0.7.0
+
+- Glitch-free updates (#272)
+- toString/inspect implementation (#265)
+
 ## 0.6.22
 
 - Include Bacon.version="0.6.22" in dist/Bacon.js (generated in release
