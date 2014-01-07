@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, _ref1, _ref2,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.0';
+  Bacon.version = '<version>';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -920,11 +920,11 @@
       }));
     };
 
-    Observable.prototype.flatMap = function(f, firstOnly) {
-      var root;
-      f = makeSpawner(f);
+    Observable.prototype.flatMap = function() {
+      var f, root;
+      f = makeFunctionArgs(arguments);
       root = this;
-      return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
+      return new EventStream(describe(root, "flatMap", f), function(sink) {
         var checkEnd, composite;
         composite = new CompositeUnsubscribe();
         checkEnd = function(unsub) {
@@ -940,7 +940,60 @@
               return checkEnd(unsubRoot);
             } else if (event.isError()) {
               return sink(event);
-            } else if (firstOnly && composite.count() > 1) {
+            } else {
+              if (composite.unsubscribed) {
+                return Bacon.noMore;
+              }
+              child = f(event.value());
+              if (!(isObservable(child))) {
+                child = Bacon.once(child);
+              }
+              return composite.add(function(unsubAll, unsubMe) {
+                return child.subscribe(function(event) {
+                  var reply;
+                  if (event.isEnd()) {
+                    checkEnd(unsubMe);
+                    return Bacon.noMore;
+                  } else {
+                    if (event instanceof Initial) {
+                      event = event.toNext();
+                    }
+                    reply = sink(event);
+                    if (reply === Bacon.noMore) {
+                      unsubAll();
+                    }
+                    return reply;
+                  }
+                });
+              });
+            }
+          });
+        });
+        return composite.unsubscribe;
+      });
+    };
+
+    Observable.prototype.flatMapFirst = function() {
+      var f, root;
+      f = makeFunctionArgs(arguments);
+      root = this;
+      return new EventStream(describe(root, "flatMapFirst", f), function(sink) {
+        var checkEnd, composite;
+        composite = new CompositeUnsubscribe();
+        checkEnd = function(unsub) {
+          unsub();
+          if (composite.empty()) {
+            return sink(end());
+          }
+        };
+        composite.add(function(__, unsubRoot) {
+          return root.subscribe(function(event) {
+            var child;
+            if (event.isEnd()) {
+              return checkEnd(unsubRoot);
+            } else if (event.isError()) {
+              return sink(event);
+            } else if (composite.count() > 1) {
               return Bacon.more;
             } else {
               if (composite.unsubscribed) {
@@ -975,14 +1028,10 @@
       });
     };
 
-    Observable.prototype.flatMapFirst = function(f) {
-      return this.flatMap(f, true);
-    };
-
-    Observable.prototype.flatMapLatest = function(f) {
-      var stream,
+    Observable.prototype.flatMapLatest = function() {
+      var f, stream,
         _this = this;
-      f = makeSpawner(f);
+      f = makeFunctionArgs(arguments);
       stream = this.toEventStream();
       return withDescription(this, "flatMapLatest", f, stream.flatMap(function(value) {
         return f(value).takeUntil(stream);
@@ -2479,14 +2528,6 @@
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       return f.apply(null, applied.concat(args));
     };
-  };
-
-  makeSpawner = function(f) {
-    if (isObservable(f)) {
-      f = _.always(f);
-    }
-    assertFunction(f);
-    return f;
   };
 
   makeFunctionArgs = function(args) {
