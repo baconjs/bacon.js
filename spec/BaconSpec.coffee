@@ -717,6 +717,9 @@ describe "EventStream.flatMapLatest", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapLatest(".bacon")
       ["sir francis"])
+    expectStreamEvents(
+      -> Bacon.once({ bacon: "sir francis"}).flatMapLatest(".bacon")
+      ["sir francis"])
   it "toString", ->
     expect(Bacon.never().flatMapLatest(->).toString()).to.equal("Bacon.never().flatMapLatest(function)")
 

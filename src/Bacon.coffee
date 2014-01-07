@@ -504,7 +504,7 @@ class Observable
     f = makeSpawner(arguments)
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
-      f(value).takeUntil(stream))
+      makeObservable(f(value)).takeUntil(stream))
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.toString())
