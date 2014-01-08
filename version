@@ -1,1 +1,3 @@
+#!/usr/bin/env bash -e
+
 cat package.json|grep version|sed 's/.*:.*"\(.*\)".*/\1/'
