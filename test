@@ -1,6 +1,8 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 npm install --silent
+
+PATH=node_modules/coffee-script/bin:$PATH
 
 coffee src/*.coffee
 
