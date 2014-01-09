@@ -1266,6 +1266,12 @@ Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
 
+Bacon.error = (err) ->
+  new Bacon.EventStream (subscriber) ->
+    subscriber(new Bacon.Error(err))
+    subscriber(new Bacon.End())
+    ->
+
 nop = ->
 latterF = (_, x) -> x()
 former = (x, _) -> x

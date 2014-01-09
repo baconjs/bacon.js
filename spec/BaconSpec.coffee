@@ -1139,6 +1139,12 @@ describe "Bacon.once", ->
       -> Bacon.once(error())
       [error()])
 
+describe "Bacon.error", ->
+  describe "sends a single error and ends", ->
+    expectStreamEvents(
+      -> Bacon.error("oh noes")
+      [error()])
+
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
     expectStreamEvents(
