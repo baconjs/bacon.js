@@ -476,6 +476,14 @@ class Observable
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
       makeObservable(f(value)).takeUntil(stream))
+
+  flatMapError: (fn) =>
+    withDescription this, "flatMapError", fn, @mapError((err) -> new Bacon.Error(err)).flatMap (x) ->
+      if x instanceof Bacon.Error
+        fn(x.error)
+      else
+        Bacon.once(x)
+
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.toString())

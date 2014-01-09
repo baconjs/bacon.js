@@ -752,6 +752,31 @@ describe "EventStream.flatMapFirst", ->
   it "toString", ->
     expect(Bacon.never().flatMapFirst(->).toString()).to.equal("Bacon.never().flatMapFirst(function)")
 
+describe "EventStream.flatMapError", ->
+  describe "allows spawning a new stream from an error", ->
+    expectStreamEvents(
+      ->
+        source = Bacon.fromArray [
+          error()
+          error(value: true, data: 1)
+          error()
+          error(value: true, data: 2)
+        ]
+        source.flatMapError (err) ->
+          if err?.value
+            Bacon.once(err.data)
+          else
+            error()
+
+      [error(), 1, error(), 2]
+    )
+  describe "has no effect on values", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2]).flatMapError(-> Bacon.once("omg"))
+      [1, 2])
+  it "toString", ->
+    expect(Bacon.once(1).flatMapError(->).toString()).to.equal("Bacon.once(1).flatMapError(function)")
+
 describe "EventStream.merge", ->
   describe "merges two streams and ends when both are exhausted", ->
     expectStreamEvents(
