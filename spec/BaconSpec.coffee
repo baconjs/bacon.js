@@ -2598,6 +2598,15 @@ describe "combineTemplate", ->
     expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})")
 
 describe "Bacon.retry", ->
+  describe "does not retry after value", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          Bacon.once({calls})
+        Bacon.retry({source, retries: 2})
+      [calls: 1])
   describe "retries to run the source stream given number of times until it yields a value", ->
     expectStreamEvents(
       ->
@@ -2608,25 +2617,12 @@ describe "Bacon.retry", ->
             Bacon.error()
           else
             Bacon.once({calls})
-        Bacon.retry
-          source: source
-          retries: 2
+        Bacon.retry({source, retries: 5})
       [calls: 3])
   describe "does not change source stream characteristics", ->
     expectStreamEvents(
       -> Bacon.retry(source: -> Bacon.fromArray([3, 1, 2, 1, 3]).skipDuplicates().take(2))
       [3, 1])
-  describe "retries after invalid value", ->
-    expectStreamEvents(
-      ->
-        calls = 0
-        source = ->
-          calls += 1
-          Bacon.once({calls})
-        isValidValue = ({calls}) ->
-          calls > 3
-        Bacon.retry {source, isValidValue, retries: 999}
-      [calls: 4])
   describe "retries after retryable error", ->
     expectStreamEvents(
       ->
@@ -2636,7 +2632,7 @@ describe "Bacon.retry", ->
           Bacon.error({calls})
         isRetryable = ({calls}) ->
           calls < 2
-        Bacon.retry {source, isRetryable, retries: 999}
+        Bacon.retry({source, isRetryable, retries: 5})
       [error(calls: 2)]) # TODO: assert error content
   describe "yields error when no retries left", ->
     expectStreamEvents(
@@ -2647,40 +2643,21 @@ describe "Bacon.retry", ->
           Bacon.error({calls})
         Bacon.retry {source, retries: 2}
       [error(calls: 3)]) # TODO: assert error content
-  describe "yields error when all values are invalid", ->
-    expectStreamEvents(
-      ->
-        calls = 0
-        source = ->
-          calls += 1
-          Bacon.once({calls})
-        isValidValue = -> false
-        Bacon.retry {source, isValidValue, retries: 2}
-      [error(calls: 3)]) # TODO: assert error content
-  describe "survives undefined error", ->
-    expectStreamEvents(
-      -> Bacon.retry(source: -> Bacon.error())
-      [error()])
-  it "allows interval by context", (done) ->
+  it "allows specifying interval by context for each retry", (done) ->
     calls = 0
     contexts = []
     source = ->
       calls += 1
-      if calls < 2
-        Bacon.error({calls})
-      else
-        Bacon.once({calls})
+      Bacon.error({calls})
     interval = (context) ->
       contexts.push(context)
       1
-    isValidValue = ({calls}) ->
-      calls > 2
-    Bacon.retry({source, interval, isValidValue, retries: 3}).onValue (value) ->
+    Bacon.retry({source, interval, retries: 2}).onError (err) ->
       expect(contexts).to.deep.equal [
         {error: {calls: 1}, retriesDone: 0}
-        {value: {calls: 2}, retriesDone: 1}
+        {error: {calls: 2}, retriesDone: 1}
       ]
-      expect(value).to.deep.equal {calls: 3}
+      expect(err).to.deep.equal {calls: 3}
       done()
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"

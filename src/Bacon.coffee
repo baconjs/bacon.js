@@ -244,31 +244,17 @@ Bacon.retry = (options) ->
   retries = options.retries || 0
   maxRetries = options.maxRetries || retries
   interval = options.interval || -> 0
-  isValidValue = options.isValidValue || -> true
   isRetryable = options.isRetryable || -> true
 
   retry = (context) ->
-    context.retriesDone = maxRetries - retries
-    nextAttemptOptions = {source, retries: retries - 1, maxRetries, interval, isValidValue, isRetryable}
+    nextAttemptOptions = {source, retries: retries - 1, maxRetries, interval, isRetryable}
     Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions))
 
-  fromValue = (v) ->
-    if isValidValue(v)
-      Bacon.once(v)
-    else if retries > 0
-      retry(value: v)
-    else
-      Bacon.error({noRetriesLeft: true, value: v})
-
-  fromError = (e) ->
-    if e?.noRetriesLeft
-      Bacon.error(e)
-    else if isRetryable(e) && retries > 0
-      retry(error: e)
+  source().flatMapError (e) ->
+    if isRetryable(e) && retries > 0
+      retry(error: e, retriesDone: maxRetries - retries)
     else
       Bacon.error(e)
-
-  source().flatMap(fromValue).flatMapError(fromError)
 
 
 eventIdCounter = 0
