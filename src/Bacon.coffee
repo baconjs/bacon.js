@@ -237,6 +237,38 @@ Bacon.combineTemplate = (template) ->
     rootContext
   withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
 
+
+Bacon.retry = (options) ->
+  throw "'source' option has to be a function" unless isFunction(options.source)
+  source = options.source
+  retries = options.retries || 0
+  interval = options.interval || 0
+  isValidValue = options.isValidValue || -> true
+  isRetryable = options.isRetryable || -> true
+
+  retry = ->
+    nextAttemptOptions = {source, retries: retries - 1, interval, isValidValue, isRetryable}
+    Bacon.later(interval).filter(false).concat(Bacon.retry(nextAttemptOptions))
+
+  fromValue = (v) ->
+    if isValidValue(v)
+      Bacon.once(v)
+    else if retries > 0
+      retry()
+    else
+      Bacon.error({noRetriesLeft: true, value: v})
+
+  fromError = (e) ->
+    if e?.noRetriesLeft
+      Bacon.error(e)
+    else if isRetryable(e) && retries > 0
+      retry()
+    else
+      Bacon.error(e)
+
+  source().flatMap(fromValue).flatMapError(fromError)
+
+
 eventIdCounter = 0
 
 class Event

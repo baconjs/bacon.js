@@ -2597,6 +2597,73 @@ describe "combineTemplate", ->
   it "toString", ->
     expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})")
 
+describe "Bacon.retry", ->
+  describe "retries to run the source stream given number of times until it yields a value", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          if calls < 3
+            Bacon.error()
+          else
+            Bacon.once({calls})
+        Bacon.retry
+          source: source
+          retries: 2
+      [calls: 3])
+  describe "does not change source stream characteristics", ->
+    expectStreamEvents(
+      -> Bacon.retry(source: -> Bacon.fromArray([3, 1, 2, 1, 3]).skipDuplicates().take(2))
+      [3, 1])
+  describe "retries after invalid value", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          Bacon.once({calls})
+        isValidValue = ({calls}) ->
+          calls > 3
+        Bacon.retry {source, isValidValue, retries: 999}
+      [calls: 4])
+  describe "retries after retryable error", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          Bacon.error({calls})
+        isRetryable = ({calls}) ->
+          calls < 2
+        Bacon.retry {source, isRetryable, retries: 999}
+      [error(calls: 2)]) # TODO: assert error content
+  describe "yields error when no retries left", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          Bacon.error({calls})
+        Bacon.retry {source, retries: 2}
+      [error(calls: 3)]) # TODO: assert error content
+  describe "yields error when all values are invalid", ->
+    expectStreamEvents(
+      ->
+        calls = 0
+        source = ->
+          calls += 1
+          Bacon.once({calls})
+        isValidValue = -> false
+        Bacon.retry {source, isValidValue, retries: 2}
+      [error(calls: 3)]) # TODO: assert error content
+  describe "survives undefined error", ->
+    expectStreamEvents(
+      -> Bacon.retry(source: -> Bacon.error())
+      [error()])
+  it "throws exception if 'source' option is not a function", ->
+    expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
+
 describe "Property.decode", ->
   describe "switches between source Properties based on property value", ->
     expectPropertyEvents(
