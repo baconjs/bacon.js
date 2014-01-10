@@ -242,19 +242,21 @@ Bacon.retry = (options) ->
   throw "'source' option has to be a function" unless isFunction(options.source)
   source = options.source
   retries = options.retries || 0
-  interval = options.interval || 0
+  maxRetries = options.maxRetries || retries
+  interval = options.interval || -> 0
   isValidValue = options.isValidValue || -> true
   isRetryable = options.isRetryable || -> true
 
-  retry = ->
-    nextAttemptOptions = {source, retries: retries - 1, interval, isValidValue, isRetryable}
-    Bacon.later(interval).filter(false).concat(Bacon.retry(nextAttemptOptions))
+  retry = (context) ->
+    context.retriesDone = maxRetries - retries
+    nextAttemptOptions = {source, retries: retries - 1, maxRetries, interval, isValidValue, isRetryable}
+    Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions))
 
   fromValue = (v) ->
     if isValidValue(v)
       Bacon.once(v)
     else if retries > 0
-      retry()
+      retry(value: v)
     else
       Bacon.error({noRetriesLeft: true, value: v})
 
@@ -262,7 +264,7 @@ Bacon.retry = (options) ->
     if e?.noRetriesLeft
       Bacon.error(e)
     else if isRetryable(e) && retries > 0
-      retry()
+      retry(error: e)
     else
       Bacon.error(e)
 

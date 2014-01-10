@@ -2661,6 +2661,27 @@ describe "Bacon.retry", ->
     expectStreamEvents(
       -> Bacon.retry(source: -> Bacon.error())
       [error()])
+  it "allows interval by context", (done) ->
+    calls = 0
+    contexts = []
+    source = ->
+      calls += 1
+      if calls < 2
+        Bacon.error({calls})
+      else
+        Bacon.once({calls})
+    interval = (context) ->
+      contexts.push(context)
+      1
+    isValidValue = ({calls}) ->
+      calls > 2
+    Bacon.retry({source, interval, isValidValue, retries: 3}).onValue (value) ->
+      expect(contexts).to.deep.equal [
+        {error: {calls: 1}, retriesDone: 0}
+        {value: {calls: 2}, retriesDone: 1}
+      ]
+      expect(value).to.deep.equal {calls: 3}
+      done()
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
 
