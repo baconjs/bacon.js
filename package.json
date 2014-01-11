@@ -1,7 +1,10 @@
 {
   "name": "baconjs",
   "version": "0.7.0",
-  "keywords": ["bacon.js", "bacon", "frp", "stream", "streams", "EventStream", "Rx", "RxJs", "Observable"],
+  "keywords": [
+    "bacon.js", "bacon", "frp", "functional", "reactive", "programming",
+    "stream", "streams", "EventStream", "Rx", "RxJs", "Observable"
+  ],
   "author": {
     "name": "Juha Paananen",
      "email": "juha.paananen@gmail.com", 
