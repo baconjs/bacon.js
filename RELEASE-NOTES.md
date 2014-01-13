@@ -1,10 +1,12 @@
-## Next
+## 0.7.1
 
 - Support function construction rules in flatMap(Latest|First) (#306)
+
 ## 0.7.0
 
 - Glitch-free updates (#272)
 - toString/inspect implementation (#265)
+- Published Bacon._ API including helpers like Bacon._.indexOf
 
 ## 0.6.22
 
