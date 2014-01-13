@@ -23,7 +23,10 @@ Here's the stuff.
 - [Wiki](https://github.com/baconjs/bacon.js/wiki/) with more docs, related projects and more
 - [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
 - [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
+- [Bacon.js Blog](http://baconjs.blogspot.com)
+- [Bacon.js Google Group](https://groups.google.com/forum/#!forum/baconjs) for discussion and questions
 - [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
+- [Stack Overflow](http://stackoverflow.com/questions/tagged/bacon.js) for well-formed questions. Use the "bacon.js" tag.
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
