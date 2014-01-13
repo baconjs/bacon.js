@@ -71,6 +71,10 @@ describe "Bacon._", ->
     it "should, when given an array, return it back (not a copy)", ->
       arr = []
       expect(_.toArray(arr)).to.equal(arr)
+  describe "indexOf", ->
+    expect(_.indexOf([1,2], 1)).to.equal(0)
+    expect(_.indexOf([1,2], 2)).to.equal(1)
+    expect(_.indexOf([1,2], 3)).to.equal(-1)
   describe "contains", ->
     expect(_.contains("abc", "c")).to.be.true
     expect(_.contains("abc", "x")).to.be.false
