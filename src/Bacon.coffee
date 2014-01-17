@@ -157,7 +157,7 @@ Bacon.fromArray = (values) ->
       if _.empty values
         sink(end())
       else
-        value = values.splice(0,1)[0]
+        value = _.popHead(values)
         reply = sink(toEvent(value))
         if (reply != Bacon.noMore) && !unsubd
           send()
@@ -473,6 +473,9 @@ class Observable
   flatMapFirst: ->
     flatMap_(this, makeSpawner(arguments), true)
 
+  flatMapWithConcurrencyLimit: (limit, args...) ->
+    flatMap_(this, makeSpawner(args), false, limit)
+
   flatMapLatest: ->
     f = makeSpawner(arguments)
     stream = @toEventStream()
@@ -509,16 +512,14 @@ class Observable
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
 
-flatMap_ = (root, f, firstOnly) ->
+flatMap_ = (root, f, firstOnly, limit) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     queue = []
-    checkQueue = ->
-      child = queue.pop()
-      subscribeChild child
     subscribeChild = (child) ->
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
+          checkQueue()
           checkEnd(unsubMe)
           Bacon.noMore
         else
@@ -528,6 +529,10 @@ flatMap_ = (root, f, firstOnly) ->
           reply = sink event
           unsubAll() if reply == Bacon.noMore
           reply
+    checkQueue = ->
+      child = _.popHead(queue)
+      if child
+        subscribeChild child
     checkEnd = (unsub) ->
       unsub()
       sink end() if composite.empty()
@@ -541,8 +546,10 @@ flatMap_ = (root, f, firstOnly) ->
       else
         return Bacon.noMore if composite.unsubscribed
         child = makeObservable(f event.value())
-        queue.push(child)
-        checkQueue()
+        if limit and composite.count() > limit
+          queue.push(child)
+        else
+          subscribeChild child
     composite.unsubscribe
 
 
@@ -1260,8 +1267,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
+      waiters.push(_.popHead(waiters))
+    return _.popHead(waiters)
 
   flush = ->
     while waiters.length
@@ -1441,6 +1448,8 @@ _ = {
     i = _.indexOf(xs, x)
     if i >= 0
       xs.splice(i, 1)
+  popHead: (xs) ->
+    xs.splice(0,1)[0]
   fold: (xs, seed, f) ->
     for x in xs
       seed = f(seed, x)
