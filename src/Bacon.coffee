@@ -512,6 +512,22 @@ Observable :: assign = Observable :: onValue
 flatMap_ = (root, f, firstOnly) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
+    queue = []
+    checkQueue = ->
+      child = queue.pop()
+      subscribeChild child
+    subscribeChild = (child) ->
+      composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
+        if event.isEnd()
+          checkEnd(unsubMe)
+          Bacon.noMore
+        else
+          if event instanceof Initial
+            # To support Property as the spawned stream
+            event = event.toNext()
+          reply = sink event
+          unsubAll() if reply == Bacon.noMore
+          reply
     checkEnd = (unsub) ->
       unsub()
       sink end() if composite.empty()
@@ -525,17 +541,8 @@ flatMap_ = (root, f, firstOnly) ->
       else
         return Bacon.noMore if composite.unsubscribed
         child = makeObservable(f event.value())
-        composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
-          if event.isEnd()
-            checkEnd(unsubMe)
-            Bacon.noMore
-          else
-            if event instanceof Initial
-              # To support Property as the spawned stream
-              event = event.toNext()
-            reply = sink event
-            unsubAll() if reply == Bacon.noMore
-            reply
+        queue.push(child)
+        checkQueue()
     composite.unsubscribe
 
 
