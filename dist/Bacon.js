@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.11';
+  Bacon.version = '<version>';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -251,7 +251,7 @@
         if (_.empty(values)) {
           return sink(end());
         } else {
-          value = values.splice(0, 1)[0];
+          value = _.popHead(values);
           reply = sink(toEvent(value));
           if ((reply !== Bacon.noMore) && !unsubd) {
             return send();
@@ -935,6 +935,12 @@
       return flatMap_(this, makeSpawner(arguments), true);
     };
 
+    Observable.prototype.flatMapWithConcurrencyLimit = function() {
+      var args, limit;
+      limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      return flatMap_(this, makeSpawner(args), false, limit);
+    };
+
     Observable.prototype.flatMapLatest = function() {
       var f, stream;
       f = makeSpawner(arguments);
@@ -1011,10 +1017,39 @@
 
   Observable.prototype.assign = Observable.prototype.onValue;
 
-  flatMap_ = function(root, f, firstOnly) {
+  flatMap_ = function(root, f, firstOnly, limit) {
     return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
-      var checkEnd, composite;
+      var checkEnd, checkQueue, composite, queue, subscribeChild;
       composite = new CompositeUnsubscribe();
+      queue = [];
+      subscribeChild = function(child) {
+        return composite.add(function(unsubAll, unsubMe) {
+          return child.subscribeInternal(function(event) {
+            var reply;
+            if (event.isEnd()) {
+              checkQueue();
+              checkEnd(unsubMe);
+              return Bacon.noMore;
+            } else {
+              if (event instanceof Initial) {
+                event = event.toNext();
+              }
+              reply = sink(event);
+              if (reply === Bacon.noMore) {
+                unsubAll();
+              }
+              return reply;
+            }
+          });
+        });
+      };
+      checkQueue = function() {
+        var child;
+        child = _.popHead(queue);
+        if (child) {
+          return subscribeChild(child);
+        }
+      };
       checkEnd = function(unsub) {
         unsub();
         if (composite.empty()) {
@@ -1035,24 +1070,11 @@
               return Bacon.noMore;
             }
             child = makeObservable(f(event.value()));
-            return composite.add(function(unsubAll, unsubMe) {
-              return child.subscribeInternal(function(event) {
-                var reply;
-                if (event.isEnd()) {
-                  checkEnd(unsubMe);
-                  return Bacon.noMore;
-                } else {
-                  if (event instanceof Initial) {
-                    event = event.toNext();
-                  }
-                  reply = sink(event);
-                  if (reply === Bacon.noMore) {
-                    unsubAll();
-                  }
-                  return reply;
-                }
-              });
-            });
+            if (limit && composite.count() > limit) {
+              return queue.push(child);
+            } else {
+              return subscribeChild(child);
+            }
           }
         });
       });
@@ -1886,6 +1908,14 @@
 
   })(Source);
 
+  Source.isTrigger = function(s) {
+    if (s instanceof Source) {
+      return s.sync;
+    } else {
+      return s instanceof EventStream;
+    }
+  };
+
   Source.fromObservable = function(s) {
     if (s instanceof Source) {
       return s;
@@ -1975,7 +2005,7 @@
   };
 
   Bacon.when = function() {
-    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, usage, _i, _j, _len, _len1, _ref1;
+    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref1;
     patterns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     if (patterns.length === 0) {
       return Bacon.never();
@@ -1995,10 +2025,13 @@
         })),
         ixs: []
       };
+      triggerFound = false;
       for (_i = 0, _len = patSources.length; _i < _len; _i++) {
         s = patSources[_i];
-        assert(isObservable(s), usage);
         index = _.indexOf(sources, s);
+        if (!triggerFound) {
+          triggerFound = Source.isTrigger(s);
+        }
         if (index < 0) {
           sources.push(s);
           index = sources.length - 1;
@@ -2015,6 +2048,7 @@
           count: 1
         });
       }
+      assert("At least one EventStream required", triggerFound ||  (!patSources.length));
       if (patSources.length > 0) {
         pats.push(pat);
       }
@@ -2407,9 +2441,9 @@
     };
     findIndependent = function() {
       while (!independent(waiters[0])) {
-        waiters.push(waiters.splice(0, 1)[0]);
+        waiters.push(_.popHead(waiters));
       }
-      return waiters.splice(0, 1)[0];
+      return _.popHead(waiters);
     };
     flush = function() {
       var _results;
@@ -2809,6 +2843,9 @@
       if (i >= 0) {
         return xs.splice(i, 1);
       }
+    },
+    popHead: function(xs) {
+      return xs.splice(0, 1)[0];
     },
     fold: function(xs, seed, f) {
       var x, _i, _len;
