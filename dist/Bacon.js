@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.1';
+  Bacon.version = '<version>';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -132,13 +132,17 @@
   spys = [];
 
   registerObs = function(obs) {
+    var spy, _i, _len, _results;
     if (spys.length) {
       if (!registerObs.running) {
         try {
           registerObs.running = true;
-          return _.each(spys, function(_, spy) {
-            return spy(obs);
-          });
+          _results = [];
+          for (_i = 0, _len = spys.length; _i < _len; _i++) {
+            spy = spys[_i];
+            _results.push(spy(obs));
+          }
+          return _results;
         } finally {
           delete registerObs.running;
         }
@@ -1872,12 +1876,15 @@
       };
       flatDeps = null;
       collectDeps = function(o) {
-        var deps;
+        var dep, deps, _i, _len, _results;
         deps = o.internalDeps();
-        return _.each(deps, function(i, dep) {
+        _results = [];
+        for (_i = 0, _len = deps.length; _i < _len; _i++) {
+          dep = deps[_i];
           flatDeps[dep.id] = true;
-          return collectDeps(dep);
-        });
+          _results.push(collectDeps(dep));
+        }
+        return _results;
       };
       dependsOn = function(b) {
         if (flatDeps == null) {
