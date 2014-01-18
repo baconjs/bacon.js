@@ -954,6 +954,9 @@ describe "EventStream.holdWhen", ->
         valve = series(2, [true, false, true, false]).delay(1).toProperty()
         src.holdWhen(valve)
       [[2, 1], [5, 2], [6, 3], [9, 4]])
+  it "toString", ->
+    expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
+      "Bacon.once(1).holdWhen(Bacon.constant(true))")
 
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->

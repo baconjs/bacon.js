@@ -718,7 +718,8 @@ class EventStream extends Observable
     changes = valve.changes().skipDuplicates()
     blocker = changes.filter(_.id).map ->
       changes.take(1).errors()
-    this.map(Bacon.once).merge(blocker).flatMapConcat _.id
+    withDescription this, "holdWhen", valve,
+      this.map(Bacon.once).merge(blocker).flatMapConcat _.id
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
