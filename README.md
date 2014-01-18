@@ -1252,7 +1252,7 @@ You can take action on errors by using the [`observable.onError(f)`](#observable
 callback.
 
 See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror),
-['errors'](#observable-errors), [`skipErrors`](#observable-skiperrors) above.
+[`errors`](#observable-errors), [`skipErrors`](#observable-skiperrors) above.
 
 In case you want to convert (some) value events into `Error` events, you may use [`flatMap`](#observable-flatmap) like this:
 
