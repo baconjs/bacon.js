@@ -481,6 +481,14 @@ class Observable
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
       makeObservable(f(value)).takeUntil(stream))
+
+  flatMapConcat: ->
+    @flatMapWithConcurrencyLimit(1, arguments...)
+
+  rateLimit:  (ms) ->
+    @flatMapConcat (x) ->
+      Bacon.once(x).concat(Bacon.later(ms).filter(false))
+
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.log())
@@ -773,6 +781,8 @@ class Property extends Observable
   startWith: (value) ->
     withDescription(this, "startWith", value,
       @scan(value, (prev, next) -> next))
+  rateLimit: ->
+    super.rateLimit(arguments...).toProperty()
 
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property

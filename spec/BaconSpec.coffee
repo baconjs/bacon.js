@@ -915,6 +915,18 @@ describe "EventStream.throttle(delay)", ->
   it "toString", ->
     expect(Bacon.never().throttle(1).toString()).to.equal("Bacon.never().throttle(1)")
 
+describe "EventStream.rateLimit(delay)", ->
+  describe "limits throughput but includes all events", ->
+    th.expectStreamTimings(
+      -> series(1, [1,2,3]).rateLimit(t(3))
+      [[1,1], [4,2], [7,3]])
+
+describe "Property.rateLimit(delay)", ->
+  describe "limits throughput but includes all events", ->
+    th.expectStreamTimings(
+      -> series(1, [1,2,3]).toProperty().rateLimit(t(3)).changes()
+      [[1,1], [4,2], [7,3]])
+
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
     expectStreamEvents(
