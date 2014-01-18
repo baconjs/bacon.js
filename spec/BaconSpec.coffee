@@ -1546,6 +1546,18 @@ describe "Property.combine", ->
       [["same", "same"], error()])
   it "toString", ->
     expect(Bacon.constant(1).combine(Bacon.constant(2), (->)).toString()).to.equal("Bacon.constant(1).combine(Bacon.constant(2),function)")
+  describe "with random methods on Array.prototype", ->
+    it "doesn't throw exceptions", ->
+      try
+        Array.prototype.foo = "bar"
+        events = []
+        Bacon.once("a").combine(Bacon.once("b"), (a,b) -> [a,b]).onValue (v) ->
+          events.push(v)
+        expect(events).to.deep.equal([["a", "b"]])
+      finally
+        delete Array.prototype.foo
+
+
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->

@@ -999,7 +999,7 @@ class Desc
 
     collectDeps = (o) ->
       deps = o.internalDeps()
-      _.each deps, (i, dep) ->
+      deps.forEach (dep) ->
         flatDeps[dep.id] = true
         collectDeps(dep)
 
