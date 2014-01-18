@@ -950,6 +950,16 @@
       }));
     };
 
+    Observable.prototype.flatMapConcat = function() {
+      return this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)));
+    };
+
+    Observable.prototype.rateLimit = function(ms) {
+      return this.flatMapConcat(function(x) {
+        return Bacon.once(x).concat(Bacon.later(ms).filter(false));
+      });
+    };
+
     Observable.prototype.not = function() {
       return withDescription(this, "not", this.map(function(x) {
         return !x;
@@ -1461,6 +1471,11 @@
       return withDescription(this, "startWith", value, this.scan(value, function(prev, next) {
         return next;
       }));
+    };
+
+    Property.prototype.rateLimit = function() {
+      var _ref1;
+      return (_ref1 = Property.__super__.rateLimit.apply(this, arguments)).rateLimit.apply(_ref1, arguments).toProperty();
     };
 
     return Property;
