@@ -468,13 +468,14 @@ class Observable
       .map((tuple) -> tuple[1]))
 
   flatMap: ->
-    flatMap_(this, makeSpawner(arguments))
+    flatMap_ this, makeSpawner(arguments)
 
   flatMapFirst: ->
-    flatMap_(this, makeSpawner(arguments), true)
+    flatMap_ this, makeSpawner(arguments), true
 
   flatMapWithConcurrencyLimit: (limit, args...) ->
-    flatMap_(this, makeSpawner(args), false, limit)
+    withDescription this, "flatMapWithConcurrencyLimit", limit, args...,
+      flatMap_ this, makeSpawner(args), false, limit
 
   flatMapLatest: ->
     f = makeSpawner(arguments)
@@ -483,11 +484,13 @@ class Observable
       makeObservable(f(value)).takeUntil(stream))
 
   flatMapConcat: ->
-    @flatMapWithConcurrencyLimit(1, arguments...)
+    withDescription this, "flatMapConcat", arguments...,
+      @flatMapWithConcurrencyLimit 1, arguments...
 
   rateLimit:  (ms) ->
-    @flatMapConcat (x) ->
-      Bacon.once(x).concat(Bacon.later(ms).filter(false))
+    withDescription this, "rateLimit", ms,
+      @flatMapConcat (x) ->
+        Bacon.once(x).concat(Bacon.later(ms).filter(false))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->

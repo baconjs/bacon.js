@@ -739,6 +739,9 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
       ["sir francis"])
+  it "toString", ->
+    expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
+      .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
 
 describe "EventStream.flatMapConcat", ->
   describe "is like flatMapWithConcurrencyLimit(1)", ->
@@ -750,6 +753,8 @@ describe "EventStream.flatMapConcat", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")
       ["sir francis"])
+  it "toString", ->
+    expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")
 
 
 describe "Property.flatMap", ->
@@ -932,6 +937,8 @@ describe "EventStream.rateLimit(delay)", ->
     th.expectStreamTimings(
       -> series(1, [1,2,3]).rateLimit(t(3))
       [[1,1], [4,2], [7,3]])
+  it "toString", ->
+    expect(Bacon.once(1).rateLimit(2).toString()).to.equal("Bacon.once(1).rateLimit(2)")
 
 describe "Property.rateLimit(delay)", ->
   describe "limits throughput but includes all events", ->
