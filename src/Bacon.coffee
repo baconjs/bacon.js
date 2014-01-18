@@ -524,7 +524,8 @@ flatMap_ = (root, f, firstOnly, limit) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     queue = []
-    subscribeChild = (child) ->
+    spawn = (event) ->
+      child = makeObservable(f event.value())
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
           checkQueue()
@@ -538,9 +539,8 @@ flatMap_ = (root, f, firstOnly, limit) ->
           unsubAll() if reply == Bacon.noMore
           reply
     checkQueue = ->
-      child = _.popHead(queue)
-      if child
-        subscribeChild child
+      event = _.popHead(queue)
+      spawn event if event
     checkEnd = (unsub) ->
       unsub()
       sink end() if composite.empty()
@@ -553,11 +553,10 @@ flatMap_ = (root, f, firstOnly, limit) ->
         Bacon.more
       else
         return Bacon.noMore if composite.unsubscribed
-        child = makeObservable(f event.value())
         if limit and composite.count() > limit
-          queue.push(child)
+          queue.push(event)
         else
-          subscribeChild child
+          spawn event
     composite.unsubscribe
 
 
