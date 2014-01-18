@@ -740,6 +740,18 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
       ["sir francis"])
 
+describe "EventStream.flatMapConcat", ->
+  describe "is like flatMapWithConcurrencyLimit(1)", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).flatMapConcat((value) ->
+        Bacon.sequentially(t(2), [value, error(), value]))
+      [1, error(), 1, 2, error(), 2], unstable)
+  describe "Respects function construction rules", ->
+    expectStreamEvents(
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")
+      ["sir francis"])
+
+
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->
     expectStreamEvents(
