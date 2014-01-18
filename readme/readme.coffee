@@ -68,7 +68,7 @@ renderElement = (element) ->
       '### ' + element.name
     when "fn"
       anchor = '<a name="' + element.anchorName + '"></a>'
-      anchor + "\n`" + renderSignature(element.parsedSignature) + "` " + element.content
+      anchor + "\n[`" + renderSignature(element.parsedSignature) + '`](#' + element.anchorName + ' "' +  element.signature + '") ' + element.content
     when "logo"
       """<img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />"""
     else
