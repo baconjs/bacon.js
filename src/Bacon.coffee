@@ -93,7 +93,7 @@ registerObs = (obs) ->
     if not registerObs.running
       try
         registerObs.running = true
-        _.each spys, (_, spy) -> 
+        for spy in spys
           spy(obs)
       finally
         delete registerObs.running
@@ -999,7 +999,7 @@ class Desc
 
     collectDeps = (o) ->
       deps = o.internalDeps()
-      deps.forEach (dep) ->
+      for dep in deps
         flatDeps[dep.id] = true
         collectDeps(dep)
 
