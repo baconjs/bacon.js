@@ -946,6 +946,15 @@ describe "Property.rateLimit(delay)", ->
       -> series(1, [1,2,3]).toProperty().rateLimit(t(3)).changes()
       [[1,1], [4,2], [7,3]])
 
+describe "EventStream.holdWhen", ->
+  describe "Keeps events on hold when a property is true", ->
+    th.expectStreamTimings(
+      ->
+        src = series(2, [1,2,3,4])
+        valve = series(2, [true, false, true, false]).delay(1).toProperty()
+        src.holdWhen(valve)
+      [[2, 1], [5, 2], [6, 3], [9, 4]])
+
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
     expectStreamEvents(
