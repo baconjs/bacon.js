@@ -938,7 +938,7 @@
     Observable.prototype.flatMapWithConcurrencyLimit = function() {
       var args, limit;
       limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      return flatMap_(this, makeSpawner(args), false, limit);
+      return withDescription.apply(null, [this, "flatMapWithConcurrencyLimit", limit].concat(__slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
     };
 
     Observable.prototype.flatMapLatest = function() {
@@ -951,13 +951,13 @@
     };
 
     Observable.prototype.flatMapConcat = function() {
-      return this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)));
+      return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
     };
 
     Observable.prototype.rateLimit = function(ms) {
-      return this.flatMapConcat(function(x) {
+      return withDescription(this, "rateLimit", ms, this.flatMapConcat(function(x) {
         return Bacon.once(x).concat(Bacon.later(ms).filter(false));
-      });
+      }));
     };
 
     Observable.prototype.not = function() {
@@ -1029,10 +1029,12 @@
 
   flatMap_ = function(root, f, firstOnly, limit) {
     return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
-      var checkEnd, checkQueue, composite, queue, subscribeChild;
+      var checkEnd, checkQueue, composite, queue, spawn;
       composite = new CompositeUnsubscribe();
       queue = [];
-      subscribeChild = function(child) {
+      spawn = function(event) {
+        var child;
+        child = makeObservable(f(event.value()));
         return composite.add(function(unsubAll, unsubMe) {
           return child.subscribeInternal(function(event) {
             var reply;
@@ -1054,10 +1056,10 @@
         });
       };
       checkQueue = function() {
-        var child;
-        child = _.popHead(queue);
-        if (child) {
-          return subscribeChild(child);
+        var event;
+        event = _.popHead(queue);
+        if (event) {
+          return spawn(event);
         }
       };
       checkEnd = function(unsub) {
@@ -1068,7 +1070,6 @@
       };
       composite.add(function(__, unsubRoot) {
         return root.subscribeInternal(function(event) {
-          var child;
           if (event.isEnd()) {
             return checkEnd(unsubRoot);
           } else if (event.isError()) {
@@ -1079,11 +1080,10 @@
             if (composite.unsubscribed) {
               return Bacon.noMore;
             }
-            child = makeObservable(f(event.value()));
             if (limit && composite.count() > limit) {
-              return queue.push(child);
+              return queue.push(event);
             } else {
-              return subscribeChild(child);
+              return spawn(event);
             }
           }
         });
