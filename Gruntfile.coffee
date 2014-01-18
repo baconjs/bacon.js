@@ -3,7 +3,7 @@ module.exports = (grunt) ->
     clean:
       dist: ['dist/']
       coffee: ['dist/*.coffee']
-    
+
     coffee:
       compile:
         expand: true
@@ -14,17 +14,17 @@ module.exports = (grunt) ->
 
     uglify:
       dist:
-        files: 
+        files:
           'dist/Bacon.min.js': 'dist/Bacon.min.js'
 
-    copy: 
-      dist: 
+    copy:
+      dist:
         expand:true
         files:[
           'dist/Bacon.coffee': 'src/Bacon.coffee'
         ]
-        
-    
+
+
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-copy'
