@@ -38,3 +38,9 @@ module.exports = (grunt) ->
     file = fs.readFileSync('dist/Bacon.coffee', 'utf8')
     replacedData = file.replace(/assert.*/g, '')
     fs.writeFileSync('dist/Bacon.noAssert.coffee', replacedData);
+
+  grunt.registerTask 'readme', 'Generate README.md', ->
+    fs = require 'fs'
+    readmedoc = require './readme.coffee'
+    readmegen = require './readme/readme.coffee'
+    fs.writeFileSync('README.md', readmegen readmedoc)
