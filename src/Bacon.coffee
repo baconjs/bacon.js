@@ -1414,7 +1414,13 @@ _ = {
         obj.toString()
       else if (typeof obj == "object")
         return "{..}" if recursionDepth > 5
-        "{" + ((_.toString(key) + ":" + _.toString(value)) for key, value of obj) + "}"
+        internals = for own key of obj
+          value = try
+            obj[key]
+          catch ex
+            ex
+          _.toString(key) + ":" + _.toString(value)
+        "{" + internals + "}"
       else
         obj
     finally

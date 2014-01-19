@@ -110,12 +110,37 @@ describe "Bacon._", ->
   describe "fold", ->
     expect(_.fold([1,2,3,4,5], 0, (s, n) -> s + n)).to.equal(15)
   describe "toString", ->
+    it "for booleans", ->
+      expect(_.toString(true)).to.equal("true")
+    it "for numbers", ->
+      expect(_.toString(1)).to.equal("1")
+      expect(_.toString(1.1)).to.equal("1.1")
+    it "for undefined and null", ->
+      expect(_.toString(undefined)).to.equal("undefined")
+      expect(_.toString(null)).to.equal("undefined")
+    it "for strings", ->
+      expect(_.toString("lol")).to.equal("lol")
+    it "for dates", ->
+      expect(_.toString(new Date(0))).to.contain("1970")
+    it "for arrays", ->
+      expect(_.toString([1,2,3])).to.equal("[1,2,3]")
     it "for objects", ->
       expect(_.toString({a: "b"})).to.equal("{a:b}")
+      expect(_.toString({a: "b", c: "d"})).to.equal("{a:b,c:d}")
     it "for circular refs", ->
       obj = { name : "nasty" }
       obj.self = obj
       expect(_.toString(obj).length).to.be.below(100)
+    it "works even when enumerable properties throw errors on access", ->
+      obj = { "name": "madcow" }
+
+      Object.defineProperty obj, "prop",
+        enumerable: true
+        get: ->
+          throw new Error "an error"
+
+      expect(_.toString(obj)).to.equal("{name:madcow,prop:Error: an error}")
+
 
 
 describe "Bacon.later", ->
