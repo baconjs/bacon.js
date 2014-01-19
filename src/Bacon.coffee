@@ -487,10 +487,10 @@ class Observable
     withDescription this, "flatMapConcat", arguments...,
       @flatMapWithConcurrencyLimit 1, arguments...
 
-  rateLimit:  (ms) ->
-    withDescription this, "rateLimit", ms,
+  rateLimit:  (minimumInterval) ->
+    withDescription this, "rateLimit", minimumInterval,
       @flatMapConcat (x) ->
-        Bacon.once(x).concat(Bacon.later(ms).filter(false))
+        Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
