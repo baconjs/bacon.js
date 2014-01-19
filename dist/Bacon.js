@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.2';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -2741,7 +2741,7 @@
       };
     },
     toString: function(obj) {
-      var key, value;
+      var ex, internals, key, value;
       try {
         recursionDepth++;
         if (obj == null) {
@@ -2759,15 +2759,24 @@
           if (recursionDepth > 5) {
             return "{..}";
           }
-          return "{" + ((function() {
+          internals = (function() {
             var _results;
             _results = [];
             for (key in obj) {
-              value = obj[key];
+              if (!__hasProp.call(obj, key)) continue;
+              value = (function() {
+                try {
+                  return obj[key];
+                } catch (_error) {
+                  ex = _error;
+                  return ex;
+                }
+              })();
               _results.push(_.toString(key) + ":" + _.toString(value));
             }
             return _results;
-          })()) + "}";
+          })();
+          return "{" + internals + "}";
         } else {
           return obj;
         }

@@ -1,6 +1,6 @@
 {
   "name": "baconjs",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "keywords": [
     "bacon.js", "bacon", "frp", "functional", "reactive", "programming",
     "stream", "streams", "EventStream", "Rx", "RxJs", "Observable"
