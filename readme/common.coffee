@@ -10,14 +10,13 @@ anchorName = (str) ->
     else
       c
 
-functionAnchorName = (signature) ->
-  m = signature.match(/^(new )?([\$\w]+)\.(\w+)/)
-  if m?
-    (if m[1]? then "new-" else "") + (m[2] + "-" +m[3]).toLowerCase()
+functionAnchorName = (parsedSignature) ->
+  if parsedSignature
+    n = if parsedSignature.n then "new-" else ""
+    o = parsedSignature.namespace
+    m = parsedSignature.method
 
-functionAnchor = (signature) ->
-  anchorName = functionAnchorName (signature)
-  '<a name="' + anchorName.toLowerCase() + '"></a>'
+    (n + o + "-" + m).toLowerCase()
 
 checkDuplicateAnchors = (anchors) ->
   _.each anchors, (anchor) ->
@@ -41,7 +40,9 @@ strEndsWith = (name, suffix) ->
   name[-suffix.length..] == suffix
 
 findFunctionAnchor = (text, anchors) ->
-  fnAnchor = functionAnchorName(text)
+  m = text.toLowerCase().match /^(\w+)\.(\w+)/
+  if m?
+    fnAnchor = m[1] + "-" + m[2]
   if fnAnchor? && _.contains anchors, fnAnchor
     fnAnchor
 
@@ -98,5 +99,4 @@ module.exports  =
   repeatString: repeatString
   anchorName: anchorName
   functionAnchorName: functionAnchorName
-  functionAnchor: functionAnchor
   preprocess: preprocess

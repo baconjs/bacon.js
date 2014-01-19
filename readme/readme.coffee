@@ -27,12 +27,34 @@ renderToc = (elements) ->
       else
         [element]
 
-renderSignature = (signature) ->
-  signature
-    .replace(/@\s*:.*?,\s*/, "")
-    .replace(/@\s*:.*?\)/, ")")
-    .replace(/\s*:.*?([,\)])/, (_, c) -> c ? "")
-    .replace(/\s*:.*$/, "")
+renderSignature = (parsedSignature) ->
+  n = if parsedSignature.n then "new " else ""
+  o = parsedSignature.namespace
+  m = parsedSignature.method
+
+  name = (n + o + "." + m)
+
+  params = parsedSignature.params?.filter (p) ->
+    p.name != "@"
+  params = params?.map (p, i) ->
+    r = p.name
+    if i != 0
+      r = ", " + r
+
+    if p.splat
+      r = r + "..."
+
+    if p.optional
+      r = "[" + r + "]"
+      if i != 0
+        r = " " + r
+
+    r
+
+  if params
+    name + "(" + params.join("") + ")"
+  else
+    name
 
 renderElement = (element) ->
   switch element.type
@@ -45,7 +67,8 @@ renderElement = (element) ->
     when "subsubsection"
       '### ' + element.name
     when "fn"
-      common.functionAnchor(element.signature) + "\n`" + renderSignature(element.signature) + "` " + element.content
+      anchor = '<a name="' + element.anchorName + '"></a>'
+      anchor + "\n`" + renderSignature(element.parsedSignature) + "` " + element.content
     when "logo"
       """<img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />"""
     else
