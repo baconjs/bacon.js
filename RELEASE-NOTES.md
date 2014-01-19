@@ -1,3 +1,8 @@
+## 0.7.2
+
+- Fix #315: _.toString for objects that contain enumerable but innaccessible properties (like the HTML hidden field)
+- Fix #320, #321: errors thrown when Array.prototype contains extra junk
+
 ## 0.7.1
 
 - Support function construction rules in flatMap(Latest|First) (#306)
