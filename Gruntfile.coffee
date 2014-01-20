@@ -23,21 +23,24 @@ module.exports = (grunt) ->
         files:[
           'dist/Bacon.coffee': 'src/Bacon.coffee'
         ]
+    replace:
+      asserts:
+        dest: 'dist/Bacon.noAssert.coffee'
+        src: ['dist/Bacon.coffee']
+        replacements: [
+          from: /assert.*/g
+          to: ''
+        ]
 
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-copy'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-text-replace'
 
-  grunt.registerTask 'build', ['clean:dist', 'copy', 'removeAsserts', 'coffee', 'uglify', 'clean:coffee']
+  grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build']
-
-  grunt.registerTask 'removeAsserts', ->
-    fs = require 'fs'
-    file = fs.readFileSync('dist/Bacon.coffee', 'utf8')
-    replacedData = file.replace(/assert.*/g, '')
-    fs.writeFileSync('dist/Bacon.noAssert.coffee', replacedData);
 
   grunt.registerTask 'readme', 'Generate README.md', ->
     fs = require 'fs'
