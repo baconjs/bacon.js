@@ -1,9 +1,17 @@
 _ = require "lodash"
 assert = require "assert"
 common = require "./common.coffee"
+signature = require "./signature.js"
+
+signatureParse = (s) ->
+  try
+    signature.parse s
+  catch e
+    console.error "Can't parse type signature:", s, e.message
+    undefined
 
 # Sections and sub(sub) sections are virtually the same
-SECTION_SPEC = 
+SECTION_SPEC =
   params: ["name"]
   process: (element) ->
     element.anchorName = common.anchorName element.name
@@ -27,14 +35,16 @@ DOC_SPEC =
   fn:
     params: ["signature", "content"]
     process: (element) ->
-      element.anchorName = common.functionAnchorName element.signature
+      element.parsedSignature = signatureParse element.signature
+      element.anchorName = common.functionAnchorName element.parsedSignature
       element
 
   fnOverload:
-    params: ["signature", "anchor", "content"]
+    params: ["signature", "anchorSuffix", "content"]
     process: (element) ->
       element.type = "fn"
-      element.anchorName = common.functionAnchorName(element.signature) + "-" + element.anchor
+      element.parsedSignature = signatureParse element.signature
+      element.anchorName = common.functionAnchorName(element.parsedSignature) + "-" + element.anchorSuffix
       element
 
 # DSL helper class

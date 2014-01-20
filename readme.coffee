@@ -148,7 +148,7 @@ doc.section "API"
 
 doc.subsection "Creating streams"
 
-doc.fn "$.asEventStream(\"click\")", """
+doc.fn "$.asEventStream(eventName : String)", """
 creates an EventStream from events on a
 jQuery or Zepto.js object. You can pass optional arguments to add a
 jQuery live selector and/or a function that processes the jQuery
@@ -161,13 +161,13 @@ $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 ```
 """
 
-doc.fn "Bacon.fromPromise(promise [, abort])", """
+doc.fn "Bacon.fromPromise(promise : Promise[A] [, abort : boolean]) : EventStream[A]", """
 creates an EventStream from a Promise object such as JQuery Ajax.
 This stream will contain a single value or an error, followed immediately by stream end.  You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 """
 
-doc.fn "Bacon.fromEventTarget(target, eventName [, eventTransformer])", """
+doc.fn "Bacon.fromEventTarget(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream", """
 creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that transforms the emitted
 events' parameters.
@@ -177,8 +177,8 @@ Bacon.fromEventTarget(document.body, "click").onValue(function() { alert("Bacon!
 ```
 """
 
-doc.fn "Bacon.fromCallback(f [, args...])", """
-creates an Event stream from a function that
+doc.fn "Bacon.fromCallback(f : (A -> void) -> void [, args...]) : EventStream[A]", """
+creates an EventStream from a function that
 accepts a callback. The function is supposed to call its callback just
 once. For example:
 
@@ -206,11 +206,11 @@ Bacon.fromCallback(function(a, b, callback) {
 ```
 """
 
-doc.fnOverload "Bacon.fromCallback(object, methodName [, args...])", "object", """
+doc.fnOverload "Bacon.fromCallback(object, methodName [, args...]) : EventStream[A]", "object", """
 a variant of fromCallback which calls the named method of a given object.
 """
 
-doc.fn "Bacon.fromNodeCallback(f [, args...])", """
+doc.fn "Bacon.fromNodeCallback(f : (E -> A -> void) -> void [, args...]) : EventStream[A]", """
 behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
 except that it expects the callback to be called in the Node.js convention:
 `callback(error, data)`, where error is null if everything is fine. For example:
@@ -228,20 +228,20 @@ doc.fnOverload "Bacon.fromNodeCallback(object, methodName [, args...])", "object
 a variant of fromNodeCallback which calls the named method of a given object.
 """
 
-doc.fn "Bacon.fromPoll(interval, f)", """polls given function with given interval.
-Function should return Events: either [Bacon.Next](#bacon-next) or [Bacon.End](#bacon-end). Polling occurs only
+doc.fn "Bacon.fromPoll(interval : Number, f : -> Event[A]) : EventStream[A]", """polls given function with given interval.
+Function should return Events: either `Bacon.Next` or `Bacon.End`. Polling occurs only
 when there are subscribers to the stream. Polling ends permanently when
-`f` returns [Bacon.End](#bacon_end)
+`f` returns `Bacon.End`.
 """
 
-doc.fn "Bacon.once(value)", """
+doc.fn "Bacon.once(value : Event[A] | A) : EventStream[A]", """
 creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
 after this value. You can also send send an `Bacon.Error` event instead of a
 value: `Bacon.once(new Bacon.Error("fail"))`.
 """
 
-doc.fn "Bacon.fromArray(values)", """
+doc.fn "Bacon.fromArray(values : Array[Event[A] | A]) : EventStream[A]", """
 creates an EventStream that delivers the given
 series of values (given as array) to the first subscriber. The stream ends after these
 values have been delivered. You can also send `Bacon.Error` events, or
@@ -249,27 +249,27 @@ any combination of pure values and error events like this:
 `Bacon.fromArray([1, new Bacon.Error()])
 """
 
-doc.fn "Bacon.interval(interval, value)", """
+doc.fn "Bacon.interval(interval : Number, value : A) : EventStream[A]", """
 repeats the single element
 indefinitely with the given interval (in milliseconds)
 """
 
-doc.fn "Bacon.sequentially(interval, values)", """
+doc.fn "Bacon.sequentially(interval : Number, values : Array[A]) : EventStream[A]", """
 creates a stream containing given
 values (given as array). Delivered with given interval in milliseconds.
 """
 
-doc.fn "Bacon.repeatedly(interval, values)", """
+doc.fn "Bacon.repeatedly(interval : Number, values : Array[A]) : EventStream[A]", """
 repeats given elements indefinitely
-with given interval in milliseconds. For example, repeatedly(10, [1,2,3])
-would lead to 1,2,3,1,2,3... to be repeated indefinitely.
+with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
+would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
 """
 
-doc.fn "Bacon.never()", """
+doc.fn "Bacon.never() : EventStream", """
 creates an EventStream that immediately ends.
 """
 
-doc.fn "Bacon.later(delay, value)", """
+doc.fn "Bacon.later(delay : Number, value : A) : EventStream[A]", """
 creates a single-element stream that
 produces given value after given delay (milliseconds).
 """
@@ -279,11 +279,11 @@ creates an `EventStream` with the given subscribe function.
 """
 
 doc.text """
-[`property.changes()`](#property-changes) creates a stream of changes to the `Property`. The stream *does not* include
+`property.changes` creates a stream of changes to the `Property`. The stream *does not* include
 an event for the current value of the Property at the time this method was called.
 """
 
-doc.fn "property.toEventStream()", """creates an EventStream based on this Property. The stream contains also an event for the current
+doc.fn "property.toEventStream(@ : Property[A]) : EventStream[A]", """creates an EventStream based on this Property. The stream contains also an event for the current
 value of this Property at the time this method was called.
 """
 
@@ -386,7 +386,7 @@ subscribes a callback to error events. The function
 will be called for each error in the stream.
 """
 
-doc.fn "observable.onEnd(f)", """
+doc.fn "observable.onEnd(f : -> void) : Unsubscriber", """
 subscribes a callback to stream end. The function will
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 """
@@ -941,7 +941,7 @@ like onValue, but splits the value (assuming its an
 array) as function arguments to `f`
 """
 
-doc.fn "property.assign(obj, method, [param...])", """
+doc.fn "property.assign(obj, method [, param...])", """
 calls the method of the given
 object with each value of this Property. You can optionally supply
 arguments which will be used as the first arguments of the method call.
@@ -1028,7 +1028,7 @@ and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
 """
 
-doc.fnOverload "Bacon.combineAsArray(s1, s2, ...)", "multiple-streams", """
+doc.fnOverload "Bacon.combineAsArray(s1, s2...)", "multiple-streams", """
 just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
@@ -1118,7 +1118,7 @@ Bacon.zipAsArray(x, y, z)
 ```
 """
 
-doc.fnOverload "Bacon.zipAsArray(stream1, stream2, ..)", "stream1", """
+doc.fnOverload "Bacon.zipAsArray(stream1, stream2...)", "multiple-streams", """
 just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 """
