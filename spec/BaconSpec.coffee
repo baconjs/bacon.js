@@ -2807,10 +2807,12 @@ describe "Bacon.Bus", ->
         s.push "pullMe"
         soon ->
           s.push "pushMe"
+          # test that it works regardless of "this"
+          s.push.call(null, "pushSomeMore")
           s.error()
           s.end()
         s
-      ["pushMe", error()])
+      ["pushMe", "pushSomeMore", error()])
 
   it "does not deliver pushed events after end() call", ->
     called = false
