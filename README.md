@@ -1323,7 +1323,6 @@ Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an upda
 Here's a simple gaming example:
 
 ```js
-
 var scoreMultiplier = Bacon.constant(1)
 var hitUfo = new Bacon.Bus()
 var hitMotherShip = new Bacon.Bus()
@@ -1332,6 +1331,7 @@ var score = Bacon.update(
   [hitUfo, scoreMultiplier], function(score, _, multiplier) { return score + 100 * multiplier },
   [hitMotherShip], function(score, _) { return score + 2000 }
 )
+```
 
 In the example, the `score` property is updated when either `hitUfo` or `hitMotherShip` occur. The `scoreMultiplier` Property is sampled to take multiplier into account when `hitUfo` occurs.
 
