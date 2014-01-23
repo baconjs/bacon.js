@@ -1307,15 +1307,33 @@ Bacon.when([a,b,c], combine)
 ```
 
 <a name="bacon-update"></a>
-[`Bacon.update`](#bacon-update "Bacon.update") The property version of [`Bacon.when`](#bacon-when). It requires an initial value and
-functions take an extra parameter representing the "current" value.
+[`Bacon.update`](#bacon-update "Bacon.update") creates a Property from an initial value and updates the value based on multiple inputs. The inputs are defined similarly to [`Bacon.when`](#bacon-when), like this:
 
 ```js
 Bacon.update(
   initial,
-  [x,y,z], function(i,x,y,z) { ... },
-  [x,y],   function(i,x,y) { ... })
+  [x,y,z], function(previous,x,y,z) { ... },
+  [x,y],   function(previous,x,y) { ... })
 ```
+
+As input, each function above will get the previous value of the result Property, along with values from the listed Observables. The value returned by the function will be the next value of the result Property.
+
+Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled. So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
+
+Here's a simple gaming example:
+
+```js
+
+var scoreMultiplier = Bacon.constant(1)
+var hitUfo = new Bacon.Bus()
+var hitMotherShip = new Bacon.Bus()
+var score = Bacon.update(
+  0,
+  [hitUfo, scoreMultiplier], function(score, _, multiplier) { return score + 100 * multiplier },
+  [hitMotherShip], function(score, _) { return score + 2000 }
+)
+
+In the example, the `score` property is updated when either `hitUfo` or `hitMotherShip` occur. The `scoreMultiplier` Property is sampled to take multiplier into account when `hitUfo` occurs.
 
 ### Join patterns as a "chemical machine"
 
