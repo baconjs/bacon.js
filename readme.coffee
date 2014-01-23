@@ -1359,19 +1359,21 @@ Bacon.when([a,b,c], combine)
 """
 
 doc.fn "Bacon.update", """
-creates a Property from an initial value and updates the value based on multiple inputs. 
+creates a Property from an initial value and updates the value based on multiple inputs.
 The inputs are defined similarly to [`Bacon.when`](#bacon-when), like this:
 
 ```js
-Bacon.update(
+var result = Bacon.update(
   initial,
   [x,y,z], function(previous,x,y,z) { ... },
   [x,y],   function(previous,x,y) { ... })
 ```
 
-As input, each function above will get the previous value of the result Property, along with values from the listed Observables. The value returned by the function will be the next value of the result Property.
+As input, each function above will get the previous value of the `result` Property, along with values from the listed Observables.
+The value returned by the function will be used as the next value of `result`.
 
-Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled. So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
+Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled. 
+So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
 
 Here's a simple gaming example:
 
