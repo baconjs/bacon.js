@@ -1315,6 +1315,20 @@ stream = Bacon.fromArray([1,2,3,4]).flatMap(function(x) {
 })
 ```
 
+Note also that Bacon.js combinators do not catch errors that are thrown.
+Especially [`map`](#observable-map) doesn't do so. If you want to map things
+and wrap caught errors into Error events, you can do the following:
+
+```js
+var source, dangerousFunction // <- your stuff
+wrapped = source.flatMap(function(x) {
+  try
+    return dangerousFunction(x)
+  catch (e)
+    return new Bacon.Error(e)
+})
+```
+
 An Error does not terminate the stream. The method `observable.endOnError()`
 returns a stream/property that ends immediately after first error.
 
