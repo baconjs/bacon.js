@@ -14,9 +14,9 @@ fi
 
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $dir/package.json
 
-git checkout $version
+git checkout -q $version
 
 cp dist/Bacon.js $dir/$version/bacon.js
 cp dist/Bacon.min.js $dir/$version/bacon.min.js
 
-git checkout master
+git checkout -q master
