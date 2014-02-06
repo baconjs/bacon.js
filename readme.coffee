@@ -1746,4 +1746,9 @@ doc.text """
 Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
 """
 
+doc.section "Sponsors"
+doc.text """
+Thanks to [BrowserStack](http://www.browserstack.com) for kindly providing me with free of charge automatic testing time.
+"""
+
 module.exports = doc

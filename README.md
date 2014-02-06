@@ -75,6 +75,7 @@ Table of contents
 - [AMD](#amd)
 - [Why Bacon?](#why-bacon)
 - [Contribute](#contribute)
+- [Sponsors](#sponsors)
 
 
 Install
@@ -1689,3 +1690,8 @@ Contribute
 ==========
 
 Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
+
+Sponsors
+========
+
+Thanks to [BrowserStack](http://www.browserstack.com) for kindly providing me with free of charge automatic testing time.
