@@ -518,8 +518,9 @@ describe "EventStream.takeWhile", ->
       [1, error("wat"), 2])
   describe "extracts field values", ->
     expectStreamEvents(
-      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-           .takeWhile(".good").map(".value")
+      ->
+        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+          .takeWhile(".good").map(".value")
       ["yes"])
   describe "can filter by Property value", ->
     expectStreamEvents(
@@ -558,8 +559,9 @@ describe "EventStream.skipWhile", ->
       [error(), error(), 3, 2])
   describe "extracts field values", ->
     expectStreamEvents(
-      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-           .skipWhile(".good").map(".value")
+      ->
+        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+          .skipWhile(".good").map(".value")
       ["no"])
   describe "can filter by Property value", ->
     expectStreamEvents(
@@ -1393,15 +1395,15 @@ describe "Bacon.once().take(1)", ->
 describe "Property.takeWhile", ->
   describe "takes while predicate is true", ->
     expectPropertyEvents(
-      -> series(1, [1, error("wat"), 2, 3])
-        .toProperty()
-        .takeWhile(lessThan(3))
+      ->
+        series(1, [1, error("wat"), 2, 3])
+          .toProperty().takeWhile(lessThan(3))
       [1, error("wat"), 2])
   describe "extracts field values", ->
     expectPropertyEvents(
-      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-           .toProperty()
-           .takeWhile(".good").map(".value")
+      ->
+        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+          .toProperty().takeWhile(".good").map(".value")
       ["yes"])
   describe "can filter by Property value", ->
     expectPropertyEvents(
@@ -1412,9 +1414,9 @@ describe "Property.takeWhile", ->
       [1,1])
   describe "works with never-ending Property", ->
     expectPropertyEvents(
-      -> repeat(1, [1, error("wat"), 2, 3])
-        .toProperty()
-        .takeWhile(lessThan(3))
+      ->
+        repeat(1, [1, error("wat"), 2, 3])
+          .toProperty().takeWhile(lessThan(3))
       [1, error("wat"), 2])
 
 describe "Property.takeUntil", ->
@@ -1439,8 +1441,10 @@ describe "Property.delay", ->
       [0,1,2,3])
   describe "delays changes", ->
     expectStreamEvents(
-      -> series(2, [1,2,3]).toProperty()
-        .delay(t(2)).changes().takeUntil(Bacon.later(t(5)))
+      ->
+        series(2, [1,2,3])
+          .toProperty()
+          .delay(t(2)).changes().takeUntil(Bacon.later(t(5)))
       [1], unstable)
   describe "does not delay initial value", ->
     expectPropertyEvents(
