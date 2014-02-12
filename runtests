@@ -1,1 +1,1 @@
-./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register spec/*Spec.coffee
+./node_modules/.bin/mocha --compilers coffee:coffee-script/register spec/*Spec.coffee

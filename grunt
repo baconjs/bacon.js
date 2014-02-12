@@ -6,4 +6,4 @@
 
 set -eu
 
-node_modules/grunt-cli/bin/grunt $@
+node_modules/.bin/grunt $@
