@@ -57,7 +57,7 @@
     "files": "spec/CompatibilityTest.coffee"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register spec/*Spec.coffee",
+    "test": "./runtests",
     "pre-publish": "grunt"
   },
   "main": "dist/Bacon.js"
