@@ -1,3 +1,7 @@
+## 0.7.3
+
+- Fix #331: combineTemplate when Date or RegEx objects are involved
+
 ## 0.7.2
 
 - Fix #315: _.toString for objects that contain enumerable but innaccessible properties (like the HTML hidden field)
