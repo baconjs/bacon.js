@@ -2,10 +2,10 @@
 
 npm install --silent
 
-PATH=node_modules/coffee-script/bin:$PATH
+PATH=node_modules/.bin:$PATH
 
-coffee src/*.coffee
+./node_modules/.bin/coffee src/*.coffee
 
 export grep=$1
 
-./node_modules/mocha/bin/mocha --compilers coffee:coffee-script spec/*Spec.coffee
+./runtests

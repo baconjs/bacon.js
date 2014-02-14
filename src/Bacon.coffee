@@ -216,7 +216,7 @@ Bacon.combineTemplate = (template) ->
     if (isObservable(value))
       streams.push(value)
       funcs.push(applyStreamValue(key, streams.length - 1))
-    else if (value == Object(value) and typeof value != "function")
+    else if (value == Object(value) and typeof value != "function" && !(value instanceof RegExp) && !(value instanceof Date))
       pushContext = (key) -> (ctxStack) ->
         newContext = mkContext(value)
         setValue(ctxStack, key, newContext)
