@@ -501,6 +501,9 @@ class Observable
     @toString = -> name
     this
 
+  withDescription: ->
+    describe(arguments...).apply(this)
+
 Observable :: reduce = Observable :: fold
 
 flatMap_ = (root, f, firstOnly) ->

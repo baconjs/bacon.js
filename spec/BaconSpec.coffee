@@ -2949,6 +2949,16 @@ describe "Observable.name", ->
   it "supports composition", ->
     expect(Bacon.once("raimohanska").name("raimo").take(1).inspect()).to.equal("raimo.take(1)")
 
+describe "Observable.withDescription", ->
+  it "affects toString and inspect", ->
+    expect(Bacon.once(1).withDescription(Bacon, "una", "mas").inspect()).to.equal("Bacon.una(mas)")
+  it "affects desc", ->
+    expect(Bacon.once(1).withDescription(Bacon, "una", "mas").desc()).to.deep.equal({
+      context: Bacon,
+      method: "una",
+      args: ["mas"]
+    })
+
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
