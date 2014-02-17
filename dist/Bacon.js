@@ -954,9 +954,9 @@
       return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
     };
 
-    Observable.prototype.rateLimit = function(ms) {
-      return withDescription(this, "rateLimit", ms, this.flatMapConcat(function(x) {
-        return Bacon.once(x).concat(Bacon.later(ms).filter(false));
+    Observable.prototype.rateLimit = function(minimumInterval) {
+      return withDescription(this, "rateLimit", minimumInterval, this.flatMapConcat(function(x) {
+        return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
       }));
     };
 
@@ -1334,6 +1334,15 @@
           }
         }));
       });
+    };
+
+    EventStream.prototype.holdWhen = function(valve) {
+      var blocker, changes;
+      changes = valve.changes().skipDuplicates();
+      blocker = changes.filter(_.id).map(function() {
+        return changes.take(1).errors();
+      });
+      return withDescription(this, "holdWhen", valve, this.map(Bacon.once).merge(blocker).flatMapConcat(_.id));
     };
 
     EventStream.prototype.startWith = function(seed) {
