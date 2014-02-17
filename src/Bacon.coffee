@@ -715,7 +715,7 @@ class EventStream extends Observable
           Bacon.more
 
   holdWhen: (valve) ->
-    changes = valve.changes().skipDuplicates()
+    changes = valve.toEventStream().skipDuplicates()
     blocker = changes.filter(_.id).map ->
       changes.take(1).errors()
     blockedForever = valve.errors().mapEnd().filter(valve)
