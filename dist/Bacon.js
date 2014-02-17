@@ -1337,12 +1337,13 @@
     };
 
     EventStream.prototype.holdWhen = function(valve) {
-      var blocker, changes;
-      changes = valve.changes().skipDuplicates();
+      var blockedForever, blocker, changes;
+      changes = valve.toEventStream().skipDuplicates();
       blocker = changes.filter(_.id).map(function() {
         return changes.take(1).errors();
       });
-      return withDescription(this, "holdWhen", valve, this.map(Bacon.once).merge(blocker).flatMapConcat(_.id));
+      blockedForever = valve.errors().mapEnd().filter(valve);
+      return withDescription(this, "holdWhen", valve, this.map(Bacon.once).merge(blocker).flatMapConcat(_.id).takeUntil(blockedForever));
     };
 
     EventStream.prototype.startWith = function(seed) {
