@@ -954,6 +954,13 @@ describe "EventStream.holdWhen", ->
         valve = series(2, [true, false, true, false]).delay(1).toProperty()
         src.holdWhen(valve)
       [[2, 1], [5, 2], [6, 3], [9, 4]])
+  describe "Holds forever when the property ends with truthy value", ->
+    th.expectStreamTimings(
+      ->
+        src = series(2, [1,2,3,4])
+        valve = series(2, [true, false, true]).delay(1).toProperty()
+        src.holdWhen(valve)
+      [[2, 1], [5, 2], [6, 3]])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
