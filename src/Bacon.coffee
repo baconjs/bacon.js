@@ -1228,9 +1228,8 @@ UpdateBarrier = (->
     return waiters.splice(0, 1)[0]
 
   flush = ->
-    if waiters.length
+    while waiters.length
       findIndependent().f()
-      flush()
 
   inTransaction = (event, context, f, args) ->
     if rootEvent
