@@ -118,7 +118,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
         usedUnsub = false
         (event) ->
           if noMoreExpected
-            console.log "got unexp", event.describe(), "usedUnsub", usedUnsub
+            console.log "got unexp", event.toString(), "usedUnsub", usedUnsub
           if event.isEnd()
             if ended
               console.log("one stream, two ends")

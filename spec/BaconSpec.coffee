@@ -1256,7 +1256,7 @@ describe "Property.startWith", ->
         left = series(1, [1, 2, 3]).toProperty(0)
         left.startWith('pow')
       [0, 1, 2, 3], unstable)
-  describe "works with combineAsArray", ->
+  it "works with combineAsArray", ->
     result = null
     a = Bacon.constant("lolbal")
     result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong")
@@ -2772,8 +2772,8 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     input = new Bacon.Bus()
     # override subscribe to increase the subscribed-count
-    inputSubscribe = input.subscribe
-    input.subscribe = (sink) ->
+    inputSubscribe = input.subscribeInternal
+    input.subscribeInternal = (sink) ->
       subscribed++
       inputSubscribe(sink)
     bus.plug(input)
