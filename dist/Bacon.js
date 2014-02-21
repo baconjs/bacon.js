@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.3';
+  Bacon.version = '0.7.4';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -896,7 +896,7 @@
               }
             }
           });
-          UpdateBarrier.whenDone(resultProperty, sendInit);
+          UpdateBarrier.whenDoneWith(resultProperty, sendInit);
           return unsub;
         };
       })(this);
@@ -997,6 +997,10 @@
         return name;
       };
       return this;
+    };
+
+    Observable.prototype.withDescription = function() {
+      return describe.apply(null, arguments).apply(this);
     };
 
     return Observable;
@@ -1480,7 +1484,7 @@
         }
         return Bacon.noMore;
       });
-      UpdateBarrier.whenDone(justInitValue, function() {
+      UpdateBarrier.whenDoneWith(justInitValue, function() {
         if (value != null) {
           sink(value);
         }
@@ -1660,7 +1664,7 @@
             dispatchingId = UpdateBarrier.currentEventId();
             valId = currentValueRootId;
             if (!ended && valId && dispatchingId && dispatchingId !== valId) {
-              UpdateBarrier.whenDone(p, function() {
+              UpdateBarrier.whenDoneWith(p, function() {
                 if (currentValueRootId === valId) {
                   return sink(initial(current.get().value()));
                 }
@@ -2043,7 +2047,7 @@
         return function(unsubAll) {
           var flush, flushLater, flushWhileTriggers;
           flushLater = function() {
-            return UpdateBarrier.whenDone(resultStream, flush);
+            return UpdateBarrier.whenDoneWith(resultStream, flush);
           };
           flushWhileTriggers = function() {
             var p, reply, trigger, val, _k, _len2;
@@ -2351,15 +2355,28 @@
   };
 
   UpdateBarrier = (function() {
-    var currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDone;
+    var afterTransaction, afters, currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDoneWith;
     rootEvent = void 0;
     waiters = [];
+    afters = null;
+    afterTransaction = function(f) {
+      if (rootEvent) {
+        if (!afters) {
+          afters = [];
+        }
+        return afters.push({
+          f: f
+        });
+      } else {
+        return f();
+      }
+    };
     independent = function(waiter) {
-      return !_.any(waiters, (function(other) {
-        return waiter.obs.dependsOn(other.obs);
+      return !waiter.obs || !_.any(waiters, (function(other) {
+        return other.obs && waiter.obs.dependsOn(other.obs);
       }));
     };
-    whenDone = function(obs, f) {
+    whenDoneWith = function(obs, f) {
       if (rootEvent) {
         return waiters.push({
           obs: obs,
@@ -2376,8 +2393,12 @@
       return waiters.splice(0, 1)[0];
     };
     flush = function() {
-      if (waiters.length) {
+      while (waiters.length) {
         findIndependent().f();
+      }
+      if (afters) {
+        waiters = afters;
+        afters = null;
         return flush();
       }
     };
@@ -2404,7 +2425,8 @@
       }
     };
     return {
-      whenDone: whenDone,
+      afterTransaction: afterTransaction,
+      whenDoneWith: whenDoneWith,
       inTransaction: inTransaction,
       currentEventId: currentEventId
     };
@@ -2830,6 +2852,8 @@
       return new Date().getTime();
     }
   };
+
+  Bacon.afterTransaction = UpdateBarrier.afterTransaction;
 
   if (typeof module !== "undefined" && module !== null) {
     module.exports = Bacon;
