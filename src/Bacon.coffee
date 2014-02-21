@@ -446,7 +446,7 @@ class Observable
           if event.isEnd()
             reply = sendInit()
           sink event unless reply == Bacon.noMore
-      UpdateBarrier.whenDone resultProperty, sendInit
+      UpdateBarrier.whenDoneWith resultProperty, sendInit
       unsub
     resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
@@ -773,7 +773,7 @@ addPropertyInitValueToStream = (property, stream) ->
       if event.hasValue()
         value = event
       Bacon.noMore
-    UpdateBarrier.whenDone justInitValue, ->
+    UpdateBarrier.whenDoneWith justInitValue, ->
       if value?
         sink value
       sink end()
@@ -887,7 +887,7 @@ class PropertyDispatcher extends Dispatcher
         valId = currentValueRootId
         if !ended && valId && dispatchingId && dispatchingId != valId
           #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
-          UpdateBarrier.whenDone p, ->
+          UpdateBarrier.whenDoneWith p, ->
             if currentValueRootId == valId
               sink initial(current.get().value())
           # the subscribing thing should be defered
@@ -1072,7 +1072,7 @@ Bacon.when = (patterns...) ->
       nonFlattened = (trigger) -> !trigger.source.flatten
       part = (source) -> (unsubAll) ->
         flushLater = ->
-          UpdateBarrier.whenDone resultStream, flush
+          UpdateBarrier.whenDoneWith resultStream, flush
         flushWhileTriggers = ->
           if triggers.length > 0
             reply = Bacon.more
@@ -1215,9 +1215,18 @@ None =
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
+  afters = null
+  afterTransaction = (f) ->
+    if rootEvent
+      if !afters
+        afters = []
+      afters.push({f})
+    else
+      f()
   independent = (waiter) ->
-    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
-  whenDone = (obs, f) -> 
+    !waiter.obs || !_.any(waiters, ((other) -> other.obs && waiter.obs.dependsOn(other.obs)))
+
+  whenDoneWith = (obs, f) -> 
     if rootEvent
       waiters.push {obs, f}
     else
@@ -1230,6 +1239,10 @@ UpdateBarrier = (->
   flush = ->
     while waiters.length
       findIndependent().f()
+    if afters
+      waiters = afters
+      afters = null
+      flush()
 
   inTransaction = (event, context, f, args) ->
     if rootEvent
@@ -1248,7 +1261,7 @@ UpdateBarrier = (->
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
 
-  { whenDone, inTransaction, currentEventId }
+  { afterTransaction, whenDoneWith, inTransaction, currentEventId }
 )()
 
 Bacon.EventStream = EventStream
@@ -1438,6 +1451,8 @@ Bacon.scheduler =
   setInterval: (f, i) -> setInterval(f, i)
   clearInterval: (id) -> clearInterval(id)
   now: -> new Date().getTime()
+
+Bacon.afterTransaction = UpdateBarrier.afterTransaction
 
 if module?
   module.exports = Bacon # for Bacon = require 'baconjs'

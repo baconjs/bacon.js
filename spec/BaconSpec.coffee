@@ -2976,6 +2976,18 @@ describe "Bacon.spy", ->
     it "combineTemplate (also called for the intermediate combineAsArray property)", ->
       testSpy 4, -> Bacon.combineTemplate(Bacon.once(1), Bacon.constant(2))
 
+describe "Bacon.afterTransaction", ->
+  it "Executes function after everything has been dispatched", ->
+    values = []
+    b = new Bacon.Bus()
+    b.onValue ->
+      Bacon.afterTransaction ->
+        values.push(1)
+    b.onValue ->
+      values.push(2)
+    b.push()
+    expect(values).to.deep.equal([2,1])
+
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
     expectStreamEvents(
