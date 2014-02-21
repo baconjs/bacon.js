@@ -1,3 +1,7 @@
+## 0.7.4
+
+- Add Bacon.afterTransaction for coordinating timings, in e.g. Bacon.Model
+
 ## 0.7.3
 
 - Fix #331: combineTemplate when Date or RegEx objects are involved
