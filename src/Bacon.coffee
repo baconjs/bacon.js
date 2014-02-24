@@ -1266,7 +1266,7 @@ UpdateBarrier = (->
     unsubd = false
     doUnsub = ->
     unsub = ->
-      unsubsd = true
+      unsubd = true
       doUnsub()
     if !unsubd
       doUnsub = obs.subscribeInternal (event) ->
