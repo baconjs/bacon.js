@@ -1300,7 +1300,7 @@ describe "EventStream.toProperty", ->
       [1,2,3])
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).toProperty(0)
-      [0,1,2,3])
+      [0,1,2,3], unstable)
   it "preserves laziness", ->
     calls = 0
     id = (x) ->
@@ -2162,7 +2162,7 @@ describe "EventStream.scan", ->
   describe "works with synchronous streams", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
-      [0,1,3,6])
+      [0,1,3,6], unstable)
   describe "calls accumulator function once per value", ->
     count = 0
     expectPropertyEvents(
@@ -2206,11 +2206,11 @@ describe "Property.scan", ->
     describe "with Init value, starts with f(seed, init)", ->
       expectPropertyEvents(
         -> Bacon.fromArray([2,3]).toProperty(1).scan(0, add)
-        [1, 3, 6])
+        [1, 3, 6], unstable)
     describe "without Init value, starts with seed", ->
       expectPropertyEvents(
         -> Bacon.fromArray([2,3]).toProperty().scan(0, add)
-        [0, 2, 5])
+        [0, 2, 5], unstable)
     describe "works with synchronously responding empty source", ->
       expectPropertyEvents(
         -> Bacon.never().toProperty(1).scan(0, add)
@@ -2536,7 +2536,7 @@ describe "Bacon.update", ->
         Bacon.update(
           0,
           [one, two],  (i, a, b) -> [i,a,b])
-      [0, [0,1,2]])
+      [0, [0,1,2]], unstable)
   it "toString", ->
     expect(Bacon.update(0, [Bacon.never()], (->)).toString()).to.equal("Bacon.update(0,[Bacon.never()],function)")
 
