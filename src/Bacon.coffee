@@ -1255,7 +1255,6 @@ UpdateBarrier = (->
           afters = []
           for f in aftersToHandle
             f()
-        afters = []
       finally
         rootEvent = undefined
       result
