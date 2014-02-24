@@ -501,7 +501,7 @@ describe "EventStream.take", ->
       ->
         s = Bacon.repeatedly(t(1), ["lol", "wut"]).take(2)
         s.onValue (value) ->
-          throw "testing"
+          throw "testing" if value == "lol"
         s
       ["lol", "wut"])
   describe "works with synchronous source", ->
@@ -1048,7 +1048,7 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push "a"
     bus.push "b"
-    expect(values).to.deep.equal(["a", "A", "B", "A", "B", "b"])
+    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
@@ -1695,53 +1695,53 @@ describe "Property update is atomic", ->
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
 describe "independent observables created within the dispatch loop", ->
-  it "combineAsArray", ->
+  it "with combineAsArray", ->
     calls = 0
     Bacon.once(1).onValue ->
       Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
         calls++
     expect(calls).to.equal(1)
-  it "combineAsArray.startWith", ->
+  it "with combineAsArray.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
       s.onValue((x) -> result = x)
     expect(result).to.equal("right")
-  it "stream.startWith", ->
+  it "with stream.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       s = Bacon.later(1).startWith(0)
       s.onValue((x) -> result = x)
     expect(result).to.equal(0)
-  it "combineAsArray.changes.startWith", ->
+  it "with combineAsArray.changes.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = Bacon.combineAsArray([a, a]).changes().startWith("right")
       s.onValue((x) -> result = x)
     expect(result).to.equal("right")
-  it "flatMap", ->
+  it "with flatMap", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = a.flatMap((x) -> Bacon.once(x))
       s.onValue((x) -> result = x)
     expect(result).to.equal("lolbal")
-  it "awaiting", ->
+  it "with awaiting", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant(1)
       s = a.awaiting(a.map(->))
       s.onValue((x) -> result = x)
-    expect(result).to.equal(false)
-  it "concat", ->
+    expect(result).to.equal(true)
+  it "with concat", ->
     result = []
     Bacon.once(1).onValue ->
       s = Bacon.once(1).concat(Bacon.once(2))
       s.onValue((x) -> result.push(x))
     expect(result).to.deep.equal([1,2])
-  it "Property.delay", ->
+  it "with Property.delay", ->
     result = []
     Bacon.once(1).onValue ->
       c = Bacon.constant(1)
