@@ -1237,8 +1237,6 @@ UpdateBarrier = (->
     while waiters.length
       findIndependent().f()
 
-  hasAfters = -> afters.length
-
   inTransaction = (event, context, f, args) ->
     if rootEvent
       #console.log "in tx"
@@ -1250,11 +1248,11 @@ UpdateBarrier = (->
         result = f.apply(context, args)
         #console.log("done with tx")
         flush()
-        while (hasAfters())
-          f = afters.splice(0, 1)[0]
-          f()
       finally
         rootEvent = undefined
+        while (afters.length)
+          f = afters.splice(0, 1)[0]
+          f()
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
