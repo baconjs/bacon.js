@@ -173,7 +173,7 @@ describe "Bacon.sequentially", ->
         s.onValue (value) ->
           throw "testing"
         s
-      ["lol", "wut"])
+      ["lol", "wut"], unstable)
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
@@ -503,7 +503,7 @@ describe "EventStream.take", ->
         s.onValue (value) ->
           throw "testing" if value == "lol"
         s
-      ["lol", "wut"])
+      ["lol", "wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3,4]).take(2)
@@ -668,15 +668,15 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2]).flatMap (value) ->
          Bacon.once(value)
-      [1, 2])
+      [1, 2], unstable)
     expectStreamEvents(
       -> Bacon.fromArray([1, 2]).flatMap (value) ->
          Bacon.fromArray([value, value*10])
-      [1, 10, 2, 20])
+      [1, 10, 2, 20], unstable)
     expectStreamEvents(
       -> Bacon.once(1).flatMap (value) ->
          Bacon.later(0, value)
-      [1])
+      [1], unstable)
   describe "Works also when f returns a Property instead of an EventStream", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
@@ -699,15 +699,15 @@ describe "EventStream.flatMap", ->
   describe "Respects function construction rules", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap(".bacon")
-      ["sir francis"])
+      ["sir francis"], unstable)
     expectStreamEvents(
       -> Bacon.once({ bacon: "sir francis"}).flatMap(".bacon")
-      ["sir francis"])
+      ["sir francis"], unstable)
     expectStreamEvents(
       ->
         glorify = (x, y) -> Bacon.fromArray([x, y])
         Bacon.once("francis").flatMap(glorify, "sir")
-      ["sir", "francis"])
+      ["sir", "francis"], unstable)
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
 
@@ -805,7 +805,7 @@ describe "EventStream.merge", ->
         left = src.map((x) -> x)
         right = src.map((x) -> x * 2)
         left.merge(right)
-      [1, 2, error(), 2, 4, error(), 3, 6])
+      [1, 2, error(), 2, 4, error(), 3, 6], unstable)
   describe "works with synchronous sources", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2]).merge(Bacon.fromArray([3,4]))
@@ -2760,7 +2760,7 @@ describe "Bacon.Bus", ->
         bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
         Bacon.later(t(4)).onValue(=> bus.end())
         bus
-      ["lol", "wut"])
+      ["lol", "wut"], unstable)
   it "dispose works with looped streams", ->
     bus = new Bacon.Bus()
     bus.plug(Bacon.later(t(2), "lol"))
@@ -2990,10 +2990,10 @@ describe "Infinite synchronous sequences", ->
   describe "With flatMap", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
-      [1,1])
+      [1,1], unstable)
     expectStreamEvents(
       -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
-      [1,1])
+      [1,1], unstable)
 
 endlessly = (values...) ->
   index = 0

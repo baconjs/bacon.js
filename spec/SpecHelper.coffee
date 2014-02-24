@@ -48,7 +48,7 @@ if grep
 
 @expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
-  if false # not unstable
+  if not unstable
     verifySwitching src, expectedEvents unless browser
     verifySwitchingWithUnsub src, expectedEvents unless browser
     verifySwitchingAggressively src, expectedEvents
