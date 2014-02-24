@@ -1251,10 +1251,8 @@ UpdateBarrier = (->
         #console.log("done with tx")
         flush()
         while (hasAfters())
-          aftersToHandle = afters
-          afters = []
-          for f in aftersToHandle
-            f()
+          f = afters.splice(0, 1)[0]
+          f()
       finally
         rootEvent = undefined
       result
