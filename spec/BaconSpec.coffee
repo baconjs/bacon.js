@@ -731,6 +731,13 @@ describe "Property.flatMap", ->
         once = (x) -> Bacon.once(x)
         Bacon.fromArray([1, 2]).toProperty(0).flatMap(once)
       [0, 1, 2], unstable)
+  describe "works in a complex scenario #338", ->
+    expectStreamEvents(
+      -> 
+        a = series(2, [0, 0]).toProperty()
+        b = series(2, [1, 2]).delay(1).toProperty()
+        a.flatMap(-> b)
+      [1, 1, 2], unstable)
   it "toString", ->
     expect(Bacon.constant(1).flatMap(->).toString()).to.equal("Bacon.constant(1).flatMap(function)")
 
