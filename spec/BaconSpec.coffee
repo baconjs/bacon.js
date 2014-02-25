@@ -173,7 +173,7 @@ describe "Bacon.sequentially", ->
         s.onValue (value) ->
           throw "testing"
         s
-      [])
+      ["lol", "wut"], unstable)
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
@@ -501,9 +501,9 @@ describe "EventStream.take", ->
       ->
         s = Bacon.repeatedly(t(1), ["lol", "wut"]).take(2)
         s.onValue (value) ->
-          throw "testing"
+          throw "testing" if value == "lol"
         s
-      [])
+      ["lol", "wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3,4]).take(2)
@@ -668,15 +668,15 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2]).flatMap (value) ->
          Bacon.once(value)
-      [1, 2])
+      [1, 2], unstable)
     expectStreamEvents(
       -> Bacon.fromArray([1, 2]).flatMap (value) ->
          Bacon.fromArray([value, value*10])
-      [1, 10, 2, 20])
+      [1, 10, 2, 20], unstable)
     expectStreamEvents(
       -> Bacon.once(1).flatMap (value) ->
          Bacon.later(0, value)
-      [1])
+      [1], unstable)
   describe "Works also when f returns a Property instead of an EventStream", ->
     expectStreamEvents(
       -> series(1, [1,2]).flatMap(Bacon.constant)
@@ -699,15 +699,15 @@ describe "EventStream.flatMap", ->
   describe "Respects function construction rules", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap(".bacon")
-      ["sir francis"])
+      ["sir francis"], unstable)
     expectStreamEvents(
       -> Bacon.once({ bacon: "sir francis"}).flatMap(".bacon")
-      ["sir francis"])
+      ["sir francis"], unstable)
     expectStreamEvents(
       ->
         glorify = (x, y) -> Bacon.fromArray([x, y])
         Bacon.once("francis").flatMap(glorify, "sir")
-      ["sir", "francis"])
+      ["sir", "francis"], unstable)
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
 
@@ -805,7 +805,7 @@ describe "EventStream.merge", ->
         left = src.map((x) -> x)
         right = src.map((x) -> x * 2)
         left.merge(right)
-      [1, 2, error(), 2, 4, error(), 3, 6])
+      [1, 2, error(), 2, 4, error(), 3, 6], unstable)
   describe "works with synchronous sources", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2]).merge(Bacon.fromArray([3,4]))
@@ -1048,7 +1048,7 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push "a"
     bus.push "b"
-    expect(values).to.deep.equal(["a", "A", "B", "A", "B", "b"])
+    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
@@ -1300,7 +1300,7 @@ describe "EventStream.toProperty", ->
       [1,2,3])
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).toProperty(0)
-      [0,1,2,3])
+      [0,1,2,3], unstable)
   it "preserves laziness", ->
     calls = 0
     id = (x) ->
@@ -1695,53 +1695,53 @@ describe "Property update is atomic", ->
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
 describe "independent observables created within the dispatch loop", ->
-  it "combineAsArray", ->
+  it "with combineAsArray", ->
     calls = 0
     Bacon.once(1).onValue ->
       Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
         calls++
     expect(calls).to.equal(1)
-  it "combineAsArray.startWith", ->
+  it "with combineAsArray.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
       s.onValue((x) -> result = x)
     expect(result).to.equal("right")
-  it "stream.startWith", ->
+  it "with stream.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       s = Bacon.later(1).startWith(0)
       s.onValue((x) -> result = x)
     expect(result).to.equal(0)
-  it "combineAsArray.changes.startWith", ->
+  it "with combineAsArray.changes.startWith", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = Bacon.combineAsArray([a, a]).changes().startWith("right")
       s.onValue((x) -> result = x)
     expect(result).to.equal("right")
-  it "flatMap", ->
+  it "with flatMap", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant("lolbal")
       s = a.flatMap((x) -> Bacon.once(x))
       s.onValue((x) -> result = x)
     expect(result).to.equal("lolbal")
-  it "awaiting", ->
+  it "with awaiting", ->
     result = null
     Bacon.once(1).onValue ->
       a = Bacon.constant(1)
       s = a.awaiting(a.map(->))
       s.onValue((x) -> result = x)
-    expect(result).to.equal(false)
-  it "concat", ->
+    expect(result).to.equal(true)
+  it "with concat", ->
     result = []
     Bacon.once(1).onValue ->
       s = Bacon.once(1).concat(Bacon.once(2))
       s.onValue((x) -> result.push(x))
     expect(result).to.deep.equal([1,2])
-  it "Property.delay", ->
+  it "with Property.delay", ->
     result = []
     Bacon.once(1).onValue ->
       c = Bacon.constant(1)
@@ -2162,7 +2162,7 @@ describe "EventStream.scan", ->
   describe "works with synchronous streams", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
-      [0,1,3,6])
+      [0,1,3,6], unstable)
   describe "calls accumulator function once per value", ->
     count = 0
     expectPropertyEvents(
@@ -2206,11 +2206,11 @@ describe "Property.scan", ->
     describe "with Init value, starts with f(seed, init)", ->
       expectPropertyEvents(
         -> Bacon.fromArray([2,3]).toProperty(1).scan(0, add)
-        [1, 3, 6])
+        [1, 3, 6], unstable)
     describe "without Init value, starts with seed", ->
       expectPropertyEvents(
         -> Bacon.fromArray([2,3]).toProperty().scan(0, add)
-        [0, 2, 5])
+        [0, 2, 5], unstable)
     describe "works with synchronously responding empty source", ->
       expectPropertyEvents(
         -> Bacon.never().toProperty(1).scan(0, add)
@@ -2536,7 +2536,7 @@ describe "Bacon.update", ->
         Bacon.update(
           0,
           [one, two],  (i, a, b) -> [i,a,b])
-      [0, [0,1,2]])
+      [0, [0,1,2]], unstable)
   it "toString", ->
     expect(Bacon.update(0, [Bacon.never()], (->)).toString()).to.equal("Bacon.update(0,[Bacon.never()],function)")
 
@@ -2760,7 +2760,7 @@ describe "Bacon.Bus", ->
         bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
         Bacon.later(t(4)).onValue(=> bus.end())
         bus
-      ["lol", "wut"])
+      ["lol", "wut"], unstable)
   it "dispose works with looped streams", ->
     bus = new Bacon.Bus()
     bus.plug(Bacon.later(t(2), "lol"))
@@ -2772,8 +2772,8 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     input = new Bacon.Bus()
     # override subscribe to increase the subscribed-count
-    inputSubscribe = input.subscribe
-    input.subscribe = (sink) ->
+    inputSubscribe = input.subscribeInternal
+    input.subscribeInternal = (sink) ->
       subscribed++
       inputSubscribe(sink)
     bus.plug(input)
@@ -2976,18 +2976,6 @@ describe "Bacon.spy", ->
     it "combineTemplate (also called for the intermediate combineAsArray property)", ->
       testSpy 4, -> Bacon.combineTemplate(Bacon.once(1), Bacon.constant(2))
 
-describe "Bacon.afterTransaction", ->
-  it "Executes function after everything has been dispatched", ->
-    values = []
-    b = new Bacon.Bus()
-    b.onValue ->
-      Bacon.afterTransaction ->
-        values.push(1)
-    b.onValue ->
-      values.push(2)
-    b.push()
-    expect(values).to.deep.equal([2,1])
-
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
     expectStreamEvents(
@@ -3002,10 +2990,10 @@ describe "Infinite synchronous sequences", ->
   describe "With flatMap", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
-      [1,1])
+      [1,1], unstable)
     expectStreamEvents(
       -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
-      [1,1])
+      [1,1], unstable)
 
 endlessly = (values...) ->
   index = 0
