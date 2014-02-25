@@ -1,3 +1,7 @@
+## 0.7.6
+
+- Fix #338: event duplication bug in a specific scenario
+
 ## 0.7.5
 
 - Call external subscriber callbacks after event transaction is complete
