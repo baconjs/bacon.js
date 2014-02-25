@@ -785,6 +785,21 @@ events are needed.
 implementation of `toString` and `inspect`.
 Returns itself.
 
+<a name="observable-withdescription"></a>
+[`observable.withDescription(param...)`](#observable-withdescription "observable.withDescription(@ : Observable[A], param...) : Observable[A]") Sets the structured description of the observable. The `toString` and `inspect` methods
+use this data recursively to create a string representation for the observable. This method
+is probably useful for Bacon core / library / plugin development only.
+
+For example:
+
+    var src = Bacon.once(1)
+    var obs = src.map(function(x) { return -x })
+    console.log(obs.toString())
+    --> Bacon.once(1).map(function)
+    obs.withDescription(src, "times", -1)
+    console.log(obs.toString())
+    --> Bacon.once(1).times(-1)
+
 EventStream
 -----------
 
