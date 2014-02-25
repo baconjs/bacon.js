@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.5';
+  Bacon.version = '0.7.6';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -1566,6 +1566,7 @@
           if (this.hasSubscribers()) {
             return Bacon.more;
           } else {
+            unsubscribeFromSource();
             return Bacon.noMore;
           }
         } else {
@@ -1593,7 +1594,7 @@
       })(this);
       this.subscribe = (function(_this) {
         return function(sink) {
-          var subscription;
+          var subscription, unsubSrc;
           if (ended) {
             sink(end());
             return nop;
@@ -1604,7 +1605,11 @@
             };
             subscriptions = subscriptions.concat(subscription);
             if (subscriptions.length === 1) {
-              unsubscribeFromSource = subscribe(_this.handleEvent);
+              unsubSrc = subscribe(_this.handleEvent);
+              unsubscribeFromSource = function() {
+                unsubSrc();
+                return unsubscribeFromSource = nop;
+              };
             }
             assertFunction(unsubscribeFromSource);
             return function() {
