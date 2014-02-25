@@ -734,10 +734,10 @@ describe "Property.flatMap", ->
   describe "works in a complex scenario #338", ->
     expectStreamEvents(
       -> 
-        a = series(2, [0, 0]).toProperty()
-        b = series(2, [1, 2]).delay(1).toProperty()
-        a.flatMap(-> b)
-      [1, 1, 2], unstable)
+        a = activate(series(2, ["a", "A"])).toProperty()
+        b = activate(series(2, ["b", "B"])).delay(1).toProperty()
+        a.flatMapLatest((a) -> b.map((b) -> a + b))
+      ["ab", "Ab", "AB"], unstable)
   it "toString", ->
     expect(Bacon.constant(1).flatMap(->).toString()).to.equal("Bacon.constant(1).flatMap(function)")
 
@@ -3034,4 +3034,7 @@ lessThan = (limit) ->
 times = (x, y) -> x * y
 add = (x, y) -> x + y
 id = (x) -> x
+activate = (obs) -> 
+  obs.onValue(->)
+  obs
 
