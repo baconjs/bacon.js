@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.4';
+  Bacon.version = '0.7.5-rc1';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -868,7 +868,7 @@
               });
             }
           };
-          unsub = _this.subscribe(function(event) {
+          unsub = _this.subscribeInternal(function(event) {
             var next, prev;
             if (event.hasValue()) {
               if (initSent && event.isInitial()) {
@@ -1020,7 +1020,7 @@
         }
       };
       composite.add(function(__, unsubRoot) {
-        return root.subscribe(function(event) {
+        return root.subscribeInternal(function(event) {
           var child;
           if (event.isEnd()) {
             return checkEnd(unsubRoot);
@@ -1034,7 +1034,7 @@
             }
             child = makeObservable(f(event.value()));
             return composite.add(function(unsubAll, unsubMe) {
-              return child.subscribe(function(event) {
+              return child.subscribeInternal(function(event) {
                 var reply;
                 if (event.isEnd()) {
                   checkEnd(unsubMe);
@@ -1072,8 +1072,8 @@
       EventStream.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
       dispatcher = new Dispatcher(subscribe);
-      this.subscribe = dispatcher.subscribe;
-      this.subscribeInternal = this.subscribe;
+      this.subscribeInternal = dispatcher.subscribe;
+      this.subscribe = UpdateBarrier.wrappedSubscribe(this);
       this.hasSubscribers = dispatcher.hasSubscribers;
       registerObs(this);
     }
@@ -1195,7 +1195,7 @@
         ends = 0;
         smartSink = function(obs) {
           return function(unsubBoth) {
-            return obs.subscribe(function(event) {
+            return obs.subscribeInternal(function(event) {
               var reply;
               if (event.isEnd()) {
                 ends++;
@@ -1239,9 +1239,9 @@
       return new EventStream(describe(left, "concat", right), function(sink) {
         var unsubLeft, unsubRight;
         unsubRight = nop;
-        unsubLeft = left.subscribe(function(e) {
+        unsubLeft = left.subscribeInternal(function(e) {
           if (e.isEnd()) {
-            return unsubRight = right.subscribe(sink);
+            return unsubRight = right.subscribeInternal(sink);
           } else {
             return sink(e);
           }
@@ -1310,7 +1310,7 @@
 
     EventStream.prototype.withHandler = function(handler) {
       var dispatcher;
-      dispatcher = new Dispatcher(this.subscribe, handler);
+      dispatcher = new Dispatcher(this.subscribeInternal, handler);
       return new EventStream(describe(this, "withHandler", handler), dispatcher.subscribe);
     };
 
@@ -1350,13 +1350,13 @@
             };
           }
           thisSource = new Source(_this, false, false, _this.subscribeInternal, lazy);
-          samplerSource = new Source(sampler, true, false, sampler.subscribe, lazy);
+          samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy);
           stream = Bacon.when([thisSource, samplerSource], combinator);
           result = sampler instanceof Property ? stream.toProperty() : stream;
           return withDescription(_this, "sampledBy", sampler, combinator, result);
         };
       })(this);
-      this.subscribe = this.subscribeInternal;
+      this.subscribe = UpdateBarrier.wrappedSubscribe(this);
       registerObs(this);
     }
 
@@ -1367,7 +1367,7 @@
     Property.prototype.changes = function() {
       return new EventStream(describe(this, "changes"), (function(_this) {
         return function(sink) {
-          return _this.subscribe(function(event) {
+          return _this.subscribeInternal(function(event) {
             if (!event.isInitial()) {
               return sink(event);
             }
@@ -1388,7 +1388,7 @@
     Property.prototype.toEventStream = function() {
       return new EventStream(describe(this, "toEventStream"), (function(_this) {
         return function(sink) {
-          return _this.subscribe(function(event) {
+          return _this.subscribeInternal(function(event) {
             if (event.isInitial()) {
               event = event.toNext();
             }
@@ -1478,7 +1478,7 @@
     justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
       var unsub, value;
       value = null;
-      unsub = property.subscribe(function(event) {
+      unsub = property.subscribeInternal(function(event) {
         if (event.hasValue()) {
           value = event;
         }
@@ -1717,7 +1717,7 @@
         return _results;
       };
       subscribeInput = function(subscription) {
-        return subscription.unsub = subscription.input.subscribe(guardedSink(subscription.input));
+        return subscription.unsub = subscription.input.subscribeInternal(guardedSink(subscription.input));
       };
       unsubscribeInput = function(input) {
         var i, sub, _i, _len;
@@ -1802,7 +1802,7 @@
         return f();
       };
       if (this.subscribe == null) {
-        this.subscribe = obs.subscribe;
+        this.subscribe = obs.subscribeInternal;
       }
       this.markEnded = function() {
         return this.ended = true;
@@ -1850,7 +1850,7 @@
       var queue;
       this.obs = obs;
       queue = [];
-      BufferingSource.__super__.constructor.call(this, this.obs, true, false, this.obs.subscribe, false, queue);
+      BufferingSource.__super__.constructor.call(this, this.obs, true, false, this.obs.subscribeInternal, false, queue);
       this.consume = function() {
         var values;
         values = queue;
@@ -2355,25 +2355,20 @@
   };
 
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDoneWith;
+    var afterTransaction, afters, currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiters = [];
-    afters = null;
+    afters = [];
     afterTransaction = function(f) {
       if (rootEvent) {
-        if (!afters) {
-          afters = [];
-        }
-        return afters.push({
-          f: f
-        });
+        return afters.push(f);
       } else {
         return f();
       }
     };
     independent = function(waiter) {
-      return !waiter.obs || !_.any(waiters, (function(other) {
-        return other.obs && waiter.obs.dependsOn(other.obs);
+      return !_.any(waiters, (function(other) {
+        return waiter.obs.dependsOn(other.obs);
       }));
     };
     whenDoneWith = function(obs, f) {
@@ -2393,14 +2388,12 @@
       return waiters.splice(0, 1)[0];
     };
     flush = function() {
+      var _results;
+      _results = [];
       while (waiters.length) {
-        findIndependent().f();
+        _results.push(findIndependent().f());
       }
-      if (afters) {
-        waiters = afters;
-        afters = null;
-        return flush();
-      }
+      return _results;
     };
     inTransaction = function(event, context, f, args) {
       var result;
@@ -2413,6 +2406,10 @@
           flush();
         } finally {
           rootEvent = void 0;
+          while (afters.length) {
+            f = afters.splice(0, 1)[0];
+            f();
+          }
         }
         return result;
       }
@@ -2424,11 +2421,36 @@
         return void 0;
       }
     };
+    wrappedSubscribe = function(obs) {
+      return function(sink) {
+        var doUnsub, unsub, unsubd;
+        unsubd = false;
+        doUnsub = function() {};
+        unsub = function() {
+          unsubd = true;
+          return doUnsub();
+        };
+        if (!unsubd) {
+          doUnsub = obs.subscribeInternal(function(event) {
+            return afterTransaction(function() {
+              var reply;
+              if (!unsubd) {
+                reply = sink(event);
+                if (reply === Bacon.noMore) {
+                  return unsub();
+                }
+              }
+            });
+          });
+        }
+        return unsub;
+      };
+    };
     return {
-      afterTransaction: afterTransaction,
       whenDoneWith: whenDoneWith,
       inTransaction: inTransaction,
-      currentEventId: currentEventId
+      currentEventId: currentEventId,
+      wrappedSubscribe: wrappedSubscribe
     };
   })();
 
@@ -2852,8 +2874,6 @@
       return new Date().getTime();
     }
   };
-
-  Bacon.afterTransaction = UpdateBarrier.afterTransaction;
 
   if (typeof module !== "undefined" && module !== null) {
     module.exports = Bacon;
