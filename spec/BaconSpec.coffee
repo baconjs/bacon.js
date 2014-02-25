@@ -731,7 +731,7 @@ describe "Property.flatMap", ->
         once = (x) -> Bacon.once(x)
         Bacon.fromArray([1, 2]).toProperty(0).flatMap(once)
       [0, 1, 2], unstable)
-  describe.only "works in a complex scenario #338", ->
+  describe "works in a complex scenario #338", ->
     expectStreamEvents(
       -> 
         a = activate(series(2, ["a", "A"]))

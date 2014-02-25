@@ -822,6 +822,7 @@ class Dispatcher
           if @hasSubscribers()
             Bacon.more
           else
+            unsubscribeFromSource()
             Bacon.noMore
         else
           queue = (queue or []).concat([event])
@@ -842,7 +843,10 @@ class Dispatcher
         subscription = { sink: sink }
         subscriptions = subscriptions.concat(subscription)
         if subscriptions.length == 1
-          unsubscribeFromSource = subscribe @handleEvent
+          unsubSrc = subscribe @handleEvent
+          unsubscribeFromSource = ->
+            unsubSrc()
+            unsubscribeFromSource = nop
         assertFunction unsubscribeFromSource
         =>
           removeSub subscription
