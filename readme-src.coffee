@@ -434,7 +434,7 @@ produce a Next event with `undefined` value.
 
 doc.fn "observable.filter(@ : Observable[A], f : A -> Bool) : Observable[A]", """
 filters values using given predicate function.
-Instead of a function, you can use a constant value (true/false) or a
+Instead of a function, you can use a constant value (`true` to include all, `false` to exclude all) or a
 property extractor string (like ".isValuable") instead. Just like with
 [`map`](#observable-map), indeed.
 """
