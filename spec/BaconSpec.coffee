@@ -740,7 +740,7 @@ describe "Property.flatMap", ->
       ["b", "b", "B"], unstable)
     expectStreamEvents(
       -> 
-        a = activate(series(2, ["a", "A"])).toProperty()
+        a = activate(series(2, ["a", "A"]))
         b = activate(series(2, ["b", "B"])).delay(1).toProperty()
         a.flatMapLatest((a) -> b.map((b) -> a + b))
       ["ab", "Ab", "AB"], unstable)
