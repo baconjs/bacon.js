@@ -1222,7 +1222,7 @@ UpdateBarrier = (->
     else
       f()
   independent = (waiter) ->
-    !waiter.obs || !_.any(waiters, ((other) -> other.obs && waiter.obs.dependsOn(other.obs)))
+    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
 
   whenDoneWith = (obs, f) -> 
     if rootEvent
