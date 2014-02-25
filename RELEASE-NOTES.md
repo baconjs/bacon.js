@@ -1,3 +1,8 @@
+## 0.7.5
+
+- Call external subscriber callbacks after event transaction is complete
+- Remove Bacon.afterTransaction
+
 ## 0.7.4
 
 - Add Bacon.afterTransaction for coordinating timings, in e.g. Bacon.Model
