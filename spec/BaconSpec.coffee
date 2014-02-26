@@ -1703,38 +1703,32 @@ describe "When an Event triggers another one in the same stream, while dispatchi
     expect(values).to.deep.equal(["foo"])
 
 describe "independent observables created while dispatching", ->
-  verifyIndependent = (f, expected) ->
-    values = []
-    Bacon.once(1).onValue ->
-      f().onValue (value) ->
-        values.push(value)
+  verifyWhileDispatching = (name, f, expected) ->
+    it name, ->
+      values = []
+      Bacon.once(1).onValue ->
+        f().onValue (value) ->
+          values.push(value)
+        expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
-    expect(values).to.deep.equal(expected)
-  it "with combineAsArray", ->
-    verifyIndependent (-> Bacon.combineAsArray([Bacon.constant(1)])), [[1]]
-  it "with combineAsArray.startWith", ->
-    verifyIndependent (->
+
+  verifyWhileDispatching "with combineAsArray", (-> Bacon.combineAsArray([Bacon.constant(1)])), [[1]]
+  verifyWhileDispatching "with combineAsArray.startWith", (->
       a = Bacon.constant("lolbal")
       Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), ["right"]
-  it "with stream.startWith", ->
-    verifyIndependent (-> Bacon.later(1).startWith(0)), [0]
-  it "with combineAsArray.changes.startWith", ->
-    verifyIndependent (->
+  verifyWhileDispatching "with stream.startWith", (-> Bacon.later(1).startWith(0)), [0]
+  verifyWhileDispatching "with combineAsArray.changes.startWith", (->
       a = Bacon.constant("lolbal")
       Bacon.combineAsArray([a, a]).changes().startWith("right")), ["right"]
-  it "with flatMap", ->
-    verifyIndependent (->
+  verifyWhileDispatching "with flatMap", (->
       a = Bacon.constant("lolbal")
       a.flatMap((x) -> Bacon.once(x))), ["lolbal"]
-  it "with awaiting", ->
-    verifyIndependent (->
+  verifyWhileDispatching "with awaiting", (->
       a = Bacon.constant(1)
       s = a.awaiting(a.map(->))), [true]
-  it "with concat", ->
-    verifyIndependent (->
+  verifyWhileDispatching "with concat", (->
       s = Bacon.once(1).concat(Bacon.once(2))), [1,2]
-  it "with Property.delay", ->
-    verifyIndependent (->
+  verifyWhileDispatching "with Property.delay", (->
       c = Bacon.constant(1)
       Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
 
