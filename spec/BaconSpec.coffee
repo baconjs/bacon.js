@@ -1751,7 +1751,7 @@ describe "when subscribing while dispatching", ->
           trigger.flatMap ->
             value.take(1)
         [1,2])
-    describe "delayed bounce (TODO: how to name better)", ->
+    describe "delayed bounce", ->
       expectStreamEvents(
         ->
           src = series(1, [1,2])
@@ -1775,7 +1775,7 @@ describe "when subscribing while dispatching", ->
             value.onValue(->)
             value.take(1)
         [1,2])
-    describe "delayed bounce (TODO: how to name better)", ->
+    describe "delayed bounce", ->
       expectStreamEvents(
         ->
           src = series(1, [1,2])
