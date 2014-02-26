@@ -1702,12 +1702,21 @@ describe "When an Event triggers another one in the same stream, while dispatchi
     bus.push("foo")
     expect(values).to.deep.equal(["foo"])
 
-describe "independent observables created while dispatching", ->
+describe "observables created while dispatching", ->
   verifyWhileDispatching = (name, f, expected) ->
-    it name, ->
+    it name + " (independent)", ->
       values = []
       Bacon.once(1).onValue ->
         f().onValue (value) ->
+          values.push(value)
+        expect(values).to.deep.equal(expected)
+      expect(values).to.deep.equal(expected)
+
+    it name + " (dependent)", ->
+      values = []
+      src = Bacon.combineAsArray(Bacon.once(1).toProperty(), Bacon.constant(2))
+      src.onValue ->
+        src.flatMap(f()).onValue (value) ->
           values.push(value)
         expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
