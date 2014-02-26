@@ -1703,59 +1703,40 @@ describe "When an Event triggers another one in the same stream, while dispatchi
     expect(values).to.deep.equal(["foo"])
 
 describe "independent observables created while dispatching", ->
+  verifyIndependent = (f, expected) ->
+    values = []
+    Bacon.once(1).onValue ->
+      f().onValue (value) ->
+        values.push(value)
+      expect(values).to.deep.equal(expected)
+    expect(values).to.deep.equal(expected)
   it "with combineAsArray", ->
-    calls = 0
-    Bacon.once(1).onValue ->
-      Bacon.combineAsArray([Bacon.constant(1)]).onValue ->
-        calls++
-    expect(calls).to.equal(1)
+    verifyIndependent (-> Bacon.combineAsArray([Bacon.constant(1)])), [[1]]
   it "with combineAsArray.startWith", ->
-    result = null
-    Bacon.once(1).onValue ->
+    verifyIndependent (->
       a = Bacon.constant("lolbal")
-      s = Bacon.combineAsArray([a, a]).map("right").startWith("wrong");
-      s.onValue((x) -> result = x)
-    expect(result).to.equal("right")
+      Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), ["right"]
   it "with stream.startWith", ->
-    result = null
-    Bacon.once(1).onValue ->
-      s = Bacon.later(1).startWith(0)
-      s.onValue((x) -> result = x)
-    expect(result).to.equal(0)
+    verifyIndependent (-> Bacon.later(1).startWith(0)), [0]
   it "with combineAsArray.changes.startWith", ->
-    result = null
-    Bacon.once(1).onValue ->
+    verifyIndependent (->
       a = Bacon.constant("lolbal")
-      s = Bacon.combineAsArray([a, a]).changes().startWith("right")
-      s.onValue((x) -> result = x)
-    expect(result).to.equal("right")
+      Bacon.combineAsArray([a, a]).changes().startWith("right")), ["right"]
   it "with flatMap", ->
-    result = null
-    Bacon.once(1).onValue ->
+    verifyIndependent (->
       a = Bacon.constant("lolbal")
-      s = a.flatMap((x) -> Bacon.once(x))
-      s.onValue((x) -> result = x)
-    expect(result).to.equal("lolbal")
+      a.flatMap((x) -> Bacon.once(x))), ["lolbal"]
   it "with awaiting", ->
-    result = null
-    Bacon.once(1).onValue ->
+    verifyIndependent (->
       a = Bacon.constant(1)
-      s = a.awaiting(a.map(->))
-      s.onValue((x) -> result = x)
-    expect(result).to.equal(true)
+      s = a.awaiting(a.map(->))), [true]
   it "with concat", ->
-    result = []
-    Bacon.once(1).onValue ->
-      s = Bacon.once(1).concat(Bacon.once(2))
-      s.onValue((x) -> result.push(x))
-    expect(result).to.deep.equal([1,2])
+    verifyIndependent (->
+      s = Bacon.once(1).concat(Bacon.once(2))), [1,2]
   it "with Property.delay", ->
-    result = []
-    Bacon.once(1).onValue ->
+    verifyIndependent (->
       c = Bacon.constant(1)
-      s = Bacon.combineAsArray([c, c]).delay(1).map(".0")
-      s.onValue((x) -> result.push(x))
-    expect(result).to.deep.equal([1])
+      Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
 
 describe "when subscribing within the while dispatching", ->
   describe "single subscriber", ->
