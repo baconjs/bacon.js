@@ -1044,27 +1044,6 @@ describe "EventStream.takeUntil", ->
   it "toString", ->
     expect(Bacon.later(1, "a").takeUntil(Bacon.later(2, "b")).toString()).to.equal("Bacon.later(1,a).takeUntil(Bacon.later(2,b))")
 
-describe "When an Event triggers another one in the same stream, while dispatching", ->
-  it "Delivers triggered events correctly", ->
-    bus = new Bacon.Bus
-    values = []
-    bus.take(2).onValue (v) ->
-      bus.push "A"
-      bus.push "B"
-    bus.onValue (v) ->
-      values.push(v)
-    bus.push "a"
-    bus.push "b"
-    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
-  it "EventStream.take(1) works correctly (bug fix)", ->
-    bus = new Bacon.Bus
-    values = []
-    bus.take(1).onValue (v) ->
-      bus.push("onValue triggers a side-effect here")
-      values.push(v)
-    bus.push("foo")
-    expect(values).to.deep.equal(["foo"])
-
 describe "EventStream.awaiting(other)", ->
   describe "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
     expectPropertyEvents(
@@ -1701,6 +1680,28 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
+
+describe "When an Event triggers another one in the same stream, while dispatching", ->
+  it "Delivers triggered events correctly", ->
+    bus = new Bacon.Bus
+    values = []
+    bus.take(2).onValue (v) ->
+      bus.push "A"
+      bus.push "B"
+    bus.onValue (v) ->
+      values.push(v)
+    bus.push "a"
+    bus.push "b"
+    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
+  it "EventStream.take(1) works correctly (bug fix)", ->
+    bus = new Bacon.Bus
+    values = []
+    bus.take(1).onValue (v) ->
+      bus.push("onValue triggers a side-effect here")
+      values.push(v)
+    bus.push("foo")
+    expect(values).to.deep.equal(["foo"])
+
 describe "independent observables created while dispatching", ->
   it "with combineAsArray", ->
     calls = 0
