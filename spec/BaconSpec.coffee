@@ -1738,7 +1738,7 @@ describe "independent observables created while dispatching", ->
       c = Bacon.constant(1)
       Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
 
-describe "when subscribing within the while dispatching", ->
+describe "when subscribing while dispatching", ->
   describe "single subscriber", ->
     describe "up-to-date values are used (skipped bounce)", ->
       expectStreamEvents(
