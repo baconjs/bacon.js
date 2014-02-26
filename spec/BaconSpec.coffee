@@ -1701,7 +1701,7 @@ describe "Property update is atomic", ->
     expectStreamEvents(
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
-describe "independent observables created within the dispatch loop", ->
+describe "independent observables created while dispatching", ->
   it "with combineAsArray", ->
     calls = 0
     Bacon.once(1).onValue ->
@@ -1756,7 +1756,7 @@ describe "independent observables created within the dispatch loop", ->
       s.onValue((x) -> result.push(x))
     expect(result).to.deep.equal([1])
 
-describe "when subscribing within the dispatch loop", ->
+describe "when subscribing within the while dispatching", ->
   describe "single subscriber", ->
     describe "up-to-date values are used (skipped bounce)", ->
       expectStreamEvents(
