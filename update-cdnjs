@@ -8,7 +8,7 @@ fi
 version=$1
 dir=../cdnjs/ajax/libs/bacon.js
 
-if [[ ! -d "$dir" ]]; then
+if [[ ! -d "$dir/$version" ]]; then
   mkdir $dir/$version
 fi
 
