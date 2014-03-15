@@ -715,12 +715,17 @@ class EventStream extends Observable
           Bacon.more
 
   holdWhen: (valve) ->
-    changes = valve.toEventStream().skipDuplicates()
-    blocker = changes.filter(_.id).map ->
-      changes.take(1).errors()
-    blockedForever = valve.errors().mapEnd().filter(valve)
+    valve_ = valve.startWith(false)
+    releaseHold = valve_.filter (x) -> !x
+    putToHold = valve_.filter _.id
+
     withDescription this, "holdWhen", valve,
-      this.map(Bacon.once).merge(blocker).flatMapConcat(_.id).takeUntil(blockedForever)
+      # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
+      this.filter(false).merge valve_.flatMapConcat (shouldHold) =>
+        if !shouldHold
+          this.takeUntil(putToHold)
+        else
+          this.scan([], (xs,x) -> xs.concat(x)).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray)
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
