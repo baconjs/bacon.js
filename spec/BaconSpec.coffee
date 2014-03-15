@@ -2079,6 +2079,20 @@ describe "Property.sampledBy(stream)", ->
       expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never(),function)")
+  describe "With circular Bus setup", ->
+    it "Just works (bug fix)", ->
+      values = []
+      clicks = new Bacon.Bus()
+      toggleBus = new Bacon.Bus()
+
+      shown = toggleBus.toProperty(false)
+      shown.changes().onValue (show) => values.push show
+      toggleClicks = shown.sampledBy(clicks).map (shown) => not shown
+
+      toggleBus.plug(toggleClicks)
+
+      clicks.push(true)
+      expect(values).to.deep.equal([true])
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->
