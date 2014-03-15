@@ -2285,10 +2285,10 @@ describe "EventStream.fold", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1, 2, error(), 3]).fold(0, add)
       [error(), 6])
-  describe "works with big chunks too", ->
-    count = 5000
+  describe "works with really large chunks too, with { eager: true }", ->
+    count = 50000
     expectPropertyEvents(
-      -> Bacon.fromArray([1..count]).fold(0, (x,y) -> x+1)
+      -> Bacon.fromArray([1..count]).fold(0, ((x,y) -> x+1), { eager: true })
       [count])
 
 describe "Property.scan", ->
