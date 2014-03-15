@@ -1,3 +1,7 @@
+## 0.7.7
+
+- Fix #345: stack overflow with circular setups with Bus
+
 ## 0.7.6
 
 - Fix #338: event duplication bug in a specific scenario
