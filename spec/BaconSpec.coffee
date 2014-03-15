@@ -968,6 +968,16 @@ describe "EventStream.holdWhen", ->
         valve = series(2, [false]).delay(1).toProperty(true)
         src.holdWhen(valve)
       [[3, 1], [4, 2]])
+  describe "Doesn't crash when flushing huge buffers", ->
+    count = 4000
+    expectPropertyEvents(
+      ->
+        source = Bacon.repeatedly(1, "a").take(count)
+        twitch = -> Bacon.fromArray([false, true])
+        flag = twitch().concat(Bacon.later(count).flatMap(twitch))
+        source.holdWhen(flag.toProperty(true)).fold(0, (x,y) -> x+1)
+      [count-1])
+
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
