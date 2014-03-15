@@ -969,7 +969,7 @@ describe "EventStream.holdWhen", ->
         src.holdWhen(valve)
       [[3, 1], [4, 2]])
   describe "Doesn't crash when flushing huge buffers", ->
-    count = 5000
+    count = 6000
     expectPropertyEvents(
       ->
         source = series(1, [1..count])
@@ -2287,7 +2287,7 @@ describe "EventStream.fold", ->
   describe "works with really large chunks too, with { eager: true }", ->
     count = 50000
     expectPropertyEvents(
-      -> Bacon.fromArray([1..count]).fold(0, ((x,y) -> x+1), { eager: true })
+      -> series(1, [1..count]).fold(0, ((x,y) -> x+1), { eager: true })
       [count])
 
 describe "Property.scan", ->

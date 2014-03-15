@@ -731,7 +731,7 @@ class EventStream extends Observable
         if !shouldHold
           this.takeUntil(putToHold)
         else
-          this.scan([], (xs,x) -> xs.concat(x)).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray)
+          this.scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray)
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
