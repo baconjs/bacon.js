@@ -153,15 +153,14 @@ Bacon.fromArray = (values) ->
   values = cloneArray(values)
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
-    send = ->
+    reply = Bacon.more
+    while (reply != Bacon.noMore) && !unsubd
       if _.empty values
         sink(end())
+        reply = Bacon.noMore
       else
         value = _.popHead(values)
         reply = sink(toEvent(value))
-        if (reply != Bacon.noMore) && !unsubd
-          send()
-    send()
     -> unsubd = true
 
 Bacon.mergeAll = (streams...) ->
