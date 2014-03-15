@@ -244,21 +244,18 @@
     assertArray(values);
     values = cloneArray(values);
     return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-      var send, unsubd;
+      var reply, unsubd, value;
       unsubd = false;
-      send = function() {
-        var reply, value;
+      reply = Bacon.more;
+      while ((reply !== Bacon.noMore) && !unsubd) {
         if (_.empty(values)) {
-          return sink(end());
+          sink(end());
+          reply = Bacon.noMore;
         } else {
           value = _.popHead(values);
           reply = sink(toEvent(value));
-          if ((reply !== Bacon.noMore) && !unsubd) {
-            return send();
-          }
         }
-      };
-      send();
+      }
       return function() {
         return unsubd = true;
       };
@@ -843,10 +840,13 @@
       }));
     };
 
-    Observable.prototype.scan = function(seed, f, lazyF) {
+    Observable.prototype.scan = function(seed, f, options) {
       var acc, f_, resultProperty, subscribe;
+      if (options == null) {
+        options = {};
+      }
       f_ = toCombinator(f);
-      f = lazyF ? f_ : function(x, y) {
+      f = options.lazyF ? f_ : function(x, y) {
         return f_(x(), y());
       };
       acc = toOption(seed).map(function(x) {
@@ -887,6 +887,9 @@
                   return f(prev, event.value);
                 });
                 acc = new Some(next);
+                if (options.eager) {
+                  next();
+                }
                 return sink(event.apply(next));
               }
             } else {
@@ -905,8 +908,8 @@
       return resultProperty = new Property(describe(this, "scan", seed, f), subscribe);
     };
 
-    Observable.prototype.fold = function(seed, f) {
-      return withDescription(this, "fold", seed, f, this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty()));
+    Observable.prototype.fold = function(seed, f, options) {
+      return withDescription(this, "fold", seed, f, this.scan(seed, f, options).sampledBy(this.filter(false).mapEnd().toProperty()));
     };
 
     Observable.prototype.zip = function(other, f) {
@@ -1254,7 +1257,9 @@
       if (arguments.length === 0) {
         initValue = None;
       }
-      return withDescription(this, "toProperty", initValue, this.scan(initValue, latterF, true));
+      return withDescription(this, "toProperty", initValue, this.scan(initValue, latterF, {
+        lazyF: true
+      }));
     };
 
     EventStream.prototype.toEventStream = function() {
@@ -1337,13 +1342,25 @@
     };
 
     EventStream.prototype.holdWhen = function(valve) {
-      var blockedForever, blocker, changes;
-      changes = valve.toEventStream().skipDuplicates();
-      blocker = changes.filter(_.id).map(function() {
-        return changes.take(1).errors();
+      var putToHold, releaseHold, valve_;
+      valve_ = valve.startWith(false);
+      releaseHold = valve_.filter(function(x) {
+        return !x;
       });
-      blockedForever = valve.errors().mapEnd().filter(valve);
-      return withDescription(this, "holdWhen", valve, this.map(Bacon.once).merge(blocker).flatMapConcat(_.id).takeUntil(blockedForever));
+      putToHold = valve_.filter(_.id);
+      return withDescription(this, "holdWhen", valve, this.filter(false).merge(valve_.flatMapConcat((function(_this) {
+        return function(shouldHold) {
+          if (!shouldHold) {
+            return _this.takeUntil(putToHold);
+          } else {
+            return _this.scan([], (function(xs, x) {
+              return xs.concat(x);
+            }), {
+              eager: true
+            }).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
+          }
+        };
+      })(this))));
     };
 
     EventStream.prototype.startWith = function(seed) {

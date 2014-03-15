@@ -416,13 +416,7 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-<<<<<<< HEAD
-  scan: (seed, f, lazyF) ->
-||||||| merged common ancestors
-  scan: (seed, f, lazyF) =>
-=======
-  scan: (seed, f, options = {}) =>
->>>>>>> Scan, fold support options hash with "eager" flag
+  scan: (seed, f, options = {}) ->
     f_ = toCombinator(f)
     f = if options.lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
