@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "keywords": [
     "bacon.js", "bacon", "frp", "functional", "reactive", "programming",
     "stream", "streams", "EventStream", "Rx", "RxJs", "Observable"
