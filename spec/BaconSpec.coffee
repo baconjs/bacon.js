@@ -856,9 +856,8 @@ describe "EventStream.debounce", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).debounce(1).scan(0, (x,y) -> count++; x + y)
       [0, 1, 3, 6]
+      {extraCheck: -> it "calls function once per value", -> expect(count).to.equal(3)}
     )
-    it "calls accumulator once per value", ->
-      expect(count).to.equal(3)
   it "toString", ->
     expect(Bacon.never().debounce(1).toString()).to.equal("Bacon.never().debounce(1)")
 
@@ -2174,9 +2173,8 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
       [0, 1, 3, 6]
+      { extraCheck: -> it "calls accumulator once per value", -> expect(count).to.equal(3)}
     )
-    it "calls accumulator once per value", ->
-      expect(count).to.equal(3)
 
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->

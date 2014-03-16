@@ -54,35 +54,58 @@ if grep
     verifySwitchingWithUnsub src, expectedEvents unless browser
     verifySwitchingAggressively src, expectedEvents
 
-@expectPropertyEvents = (src, expectedEvents, {unstable} = {}) ->
+@expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
   expect(expectedEvents.length > 0).to.deep.equal(true)
-  property = null
-  events = []
-  events2 = []
-  streamEnded = -> ended
-  before ->
-    property = src()
-  before (done) ->
-    property.subscribe (event) -> 
+  verifyPSingleSubscriber src, expectedEvents, extraCheck
+  verifyPLateEval src, expectedEvents
+  if not unstable
+    verifyPSwitching src, justValues(expectedEvents)
+
+verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
+  verifyPropertyWith "(single subscriber)", srcF, expectedEvents, ((src, events, done) ->
+    src.subscribe (event) -> 
       if event.isEnd()
         done()
       else
-        events.push(toValue(event))
+        events.push(toValue(event))), extraCheck
+
+verifyPLateEval = (srcF, expectedEvents) ->
+  verifyPropertyWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
+        events.push(event)
+
+verifyPSwitching = (srcF, expectedEvents) ->
+  verifyPropertyWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
         if event.hasValue()
-          property.subscribe (event) ->
+          src.subscribe (event) ->
             if event.isInitial()
-              events2.push(event.value())
+              events.push(event.value())
             Bacon.noMore
-  it "is a Property", ->
-    expect(property instanceof Bacon.Property).to.deep.equal(true)
-  it "outputs expected events in order", ->
-    expect(events).to.deep.equal(toValues(expectedEvents))
-  if not unstable
-    it "outputs expected events in order when subscribing after each value", ->
-      expect(events2).to.deep.equal(justValues(expectedEvents))
-  it "has correct final state", ->
-    verifyFinalState(property, lastNonError(expectedEvents))
-  it "cleans up observers", verifyCleanup
+
+verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) ->
+  describe description, ->
+    src = null
+    events = []
+    before -> 
+      src = srcF()
+    before (done) ->
+      collectF(src, events, done)
+    it "is a Property", ->
+      expect(src instanceof Bacon.Property).to.deep.equal(true)
+    it "outputs expected events in order", ->
+      expect(toValues(events)).to.deep.equal(toValues(expectedEvents))
+    it "has correct final state", ->
+      verifyFinalState(src, lastNonError(expectedEvents))
+    it "cleans up observers", verifyCleanup
+    if (extraCheck)
+      extraCheck()
 
 verifyLateEval = (srcF, expectedEvents) ->
   verifyStreamWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
