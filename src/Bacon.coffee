@@ -1084,7 +1084,7 @@ Bacon.when = (patterns...) ->
             for p in pats
                if match(p)
                  #console.log "match", p
-                 functions = _.map ((i) -> sources[i.index].consume()), p.ixs
+                 functions = (sources[i.index].consume() for i in p.ixs)
                  reply = sink trigger.e.apply ->
                    values = (fun() for fun in functions)
                    p.f(values ...)
