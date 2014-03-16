@@ -951,18 +951,18 @@ class Bus extends EventStream
 
 class Source
   constructor: (@obs, @sync, consume, @subscribe, lazy = false, queue = []) ->
-    invoke = if lazy then _.id else (f) -> f()
+    lazify = if lazy then (x) -> (-> x) else _.id
     @subscribe = obs.subscribeInternal if not @subscribe?
     @markEnded = -> @ended = true
     @toString = @obs.toString
     if consume
-      @consume = () -> invoke(queue.shift())
+      @consume = -> lazify(queue.shift())
       @push  = (x) -> queue.push(x)
       @mayHave = (c) -> !@ended || queue.length >= c
       @hasAtLeast = (c) -> queue.length >= c
       @flatten = false
     else
-      @consume = () -> invoke(queue[0])
+      @consume = -> lazify(queue[0])
       @push  = (x) -> queue = [x]
       @mayHave = -> true
       @hasAtLeast = -> queue.length
@@ -975,7 +975,7 @@ class BufferingSource extends Source
     @consume = ->
       values = queue
       queue = []
-      values
+      -> values
     @push = (x) -> queue.push(x())
     @hasAtLeast = -> true
 
@@ -1086,8 +1086,10 @@ Bacon.when = (patterns...) ->
             for p in pats
                if match(p)
                  #console.log "match", p
-                 val = -> p.f(sources[i.index].consume() for i in p.ixs ...)
-                 reply = sink trigger.e.apply(val)
+                 functions = _.map ((i) -> sources[i.index].consume()), p.ixs
+                 reply = sink trigger.e.apply ->
+                   values = (fun() for fun in functions)
+                   p.f(values ...)
                  if triggers.length and needsBarrier
                    triggers = _.filter nonFlattened, triggers
                  if reply == Bacon.noMore
