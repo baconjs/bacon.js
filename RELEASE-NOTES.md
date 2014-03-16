@@ -1,3 +1,7 @@
+## 0.7.8
+
+- Fix #347: bug related to evaluating (lazy) event values later
+
 ## 0.7.7
 
 - Fix #345: stack overflow with circular setups with Bus
