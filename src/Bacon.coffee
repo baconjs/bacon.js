@@ -915,8 +915,6 @@ class Bus extends EventStream
         unsubscribeInput(input)
         Bacon.noMore
       else
-        # Force evaluate, because Buses may have circular refs. (#345)
-        event.value() if event.hasValue()
         sink event
     unsubAll = ->
       sub.unsub?() for sub in subscriptions
