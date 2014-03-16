@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.7';
+  Bacon.version = '0.7.8';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -1707,9 +1707,6 @@
               unsubscribeInput(input);
               return Bacon.noMore;
             } else {
-              if (event.hasValue()) {
-                event.value();
-              }
               return sink(event);
             }
           };
@@ -1796,7 +1793,7 @@
 
   Source = (function() {
     function Source(obs, sync, consume, subscribe, lazy, queue) {
-      var invoke;
+      var lazify;
       this.obs = obs;
       this.sync = sync;
       this.subscribe = subscribe;
@@ -1806,9 +1803,11 @@
       if (queue == null) {
         queue = [];
       }
-      invoke = lazy ? _.id : function(f) {
-        return f();
-      };
+      lazify = lazy ? function(x) {
+        return function() {
+          return x;
+        };
+      } : _.id;
       if (this.subscribe == null) {
         this.subscribe = obs.subscribeInternal;
       }
@@ -1818,7 +1817,7 @@
       this.toString = this.obs.toString;
       if (consume) {
         this.consume = function() {
-          return invoke(queue.shift());
+          return lazify(queue.shift());
         };
         this.push = function(x) {
           return queue.push(x);
@@ -1832,7 +1831,7 @@
         this.flatten = false;
       } else {
         this.consume = function() {
-          return invoke(queue[0]);
+          return lazify(queue[0]);
         };
         this.push = function(x) {
           return queue = [x];
@@ -1863,7 +1862,9 @@
         var values;
         values = queue;
         queue = [];
-        return values;
+        return function() {
+          return values;
+        };
       };
       this.push = function(x) {
         return queue.push(x());
@@ -2058,26 +2059,36 @@
             return UpdateBarrier.whenDoneWith(resultStream, flush);
           };
           flushWhileTriggers = function() {
-            var p, reply, trigger, val, _k, _len2;
+            var functions, p, reply, trigger, _k, _len2;
             if (triggers.length > 0) {
               reply = Bacon.more;
               trigger = triggers.pop();
               for (_k = 0, _len2 = pats.length; _k < _len2; _k++) {
                 p = pats[_k];
                 if (match(p)) {
-                  val = function() {
-                    return p.f.apply(p, (function() {
-                      var _l, _len3, _ref2, _results;
-                      _ref2 = p.ixs;
+                  functions = (function() {
+                    var _l, _len3, _ref2, _results;
+                    _ref2 = p.ixs;
+                    _results = [];
+                    for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+                      i = _ref2[_l];
+                      _results.push(sources[i.index].consume());
+                    }
+                    return _results;
+                  })();
+                  reply = sink(trigger.e.apply(function() {
+                    var fun, values;
+                    values = (function() {
+                      var _l, _len3, _results;
                       _results = [];
-                      for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
-                        i = _ref2[_l];
-                        _results.push(sources[i.index].consume());
+                      for (_l = 0, _len3 = functions.length; _l < _len3; _l++) {
+                        fun = functions[_l];
+                        _results.push(fun());
                       }
                       return _results;
-                    })());
-                  };
-                  reply = sink(trigger.e.apply(val));
+                    })();
+                    return p.f.apply(p, values);
+                  }));
                   if (triggers.length && needsBarrier) {
                     triggers = _.filter(nonFlattened, triggers);
                   }
