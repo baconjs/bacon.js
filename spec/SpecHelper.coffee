@@ -43,11 +43,12 @@ if grep
     relativeTime = () -> 
       Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
-    src().map(withRelativeTime)
+    src().flatMap(withRelativeTime)
   @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
 
 @expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
+  verifyLateEval src, expectedEvents
   if not unstable
     verifySwitching src, expectedEvents unless browser
     verifySwitchingWithUnsub src, expectedEvents unless browser
@@ -82,6 +83,16 @@ if grep
   it "has correct final state", ->
     verifyFinalState(property, lastNonError(expectedEvents))
   it "cleans up observers", verifyCleanup
+
+verifyLateEval = (srcF, expectedEvents) ->
+  verifyStreamWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
+        expect(event instanceof Bacon.Initial).to.deep.equal(false)
+        events.push(event)
+
 
 verifySingleSubscriber = (srcF, expectedEvents) ->
   verifyStreamWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
@@ -152,7 +163,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
     before (done) ->
       collectF(src, events, done)
     it "outputs expected value in order", ->
-      expect(events).to.deep.equal(toValues(expectedEvents))
+      expect(toValues(events)).to.deep.equal(toValues(expectedEvents))
     it "the stream is exhausted", ->
        verifyExhausted src
     it "cleans up observers", verifyCleanup
