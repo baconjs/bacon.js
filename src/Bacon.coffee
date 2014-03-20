@@ -1470,10 +1470,10 @@ Bacon.scheduler =
   clearInterval: (id) -> clearInterval(id)
   now: -> new Date().getTime()
 
-if module?
+if define? and define.amd?  
+  define [], -> Bacon  
+else if module?
   module.exports = Bacon # for Bacon = require 'baconjs'
   Bacon.Bacon = Bacon # for {Bacon} = require 'baconjs'
 else
-  if define? and define.amd?
-    define [], -> Bacon
   @Bacon = Bacon # otherwise for execution context
