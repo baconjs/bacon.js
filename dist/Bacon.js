@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.9';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -476,6 +476,10 @@
       return this.toString();
     };
 
+    Event.prototype.log = function() {
+      return this.toString();
+    };
+
     return Event;
 
   })();
@@ -518,6 +522,10 @@
 
     Next.prototype.toString = function() {
       return _.toString(this.value());
+    };
+
+    Next.prototype.log = function() {
+      return this.value();
     };
 
     return Next;
@@ -954,7 +962,7 @@
       var args;
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       this.subscribe(function(event) {
-        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, __slice.call(args).concat([event.toString()])) : void 0 : void 0;
+        return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, __slice.call(args).concat([event.log()])) : void 0 : void 0;
       });
       return this;
     };
@@ -2894,15 +2902,15 @@
     }
   };
 
-  if (typeof module !== "undefined" && module !== null) {
+  if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+    define([], function() {
+      return Bacon;
+    });
+    this.Bacon = Bacon;
+  } else if (typeof module !== "undefined" && module !== null) {
     module.exports = Bacon;
     Bacon.Bacon = Bacon;
   } else {
-    if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-      define([], function() {
-        return Bacon;
-      });
-    }
     this.Bacon = Bacon;
   }
 
