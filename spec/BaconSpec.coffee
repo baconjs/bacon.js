@@ -355,6 +355,12 @@ describe "Observable.log", ->
     preservingLog ->
       console.log = undefined
       Bacon.constant(1).log()
+  it "logs event values as themselves (doesn't stringify)", ->
+    value = {}
+    expect(new Bacon.Next(value).log()).to.equal(value)
+  it "logs Error, End events as strings", ->
+    expect(new Bacon.Error("err").log()).to.equal("<error> err")
+    expect(new Bacon.End().log()).to.equal("<end>")
   it "toString", ->
     expect(Bacon.never().log().toString()).to.equal("Bacon.never()")
 

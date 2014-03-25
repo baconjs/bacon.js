@@ -250,6 +250,7 @@ class Event
   hasValue: -> false
   filter: -> true
   inspect: -> @toString()
+  log: ->@toString()
 
 class Next extends Event
   constructor: (valueF) ->
@@ -264,6 +265,7 @@ class Next extends Event
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   toString: -> _.toString(@value())
+  log: -> @value()
 
 class Initial extends Next
   isInitial: -> true
@@ -478,7 +480,7 @@ class Observable
       makeObservable(f(value)).takeUntil(stream))
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
-    @subscribe (event) -> console?.log?(args..., event.toString())
+    @subscribe (event) -> console?.log?(args..., event.log())
     this
   slidingWindow: (n, minValues = 0) ->
     withDescription(this, "slidingWindow", n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
