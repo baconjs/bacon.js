@@ -1,3 +1,8 @@
+## 0.7.9
+
+- Fix #348: toString problems with jQuery
+- Make .log() log the actual values instead of strings, again
+
 ## 0.7.8
 
 - Fix #347: bug related to evaluating (lazy) event values later
