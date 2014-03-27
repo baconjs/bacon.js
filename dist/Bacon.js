@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.9';
+  Bacon.version = '0.7.10';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -52,7 +52,7 @@
       if (isFunction(selector)) {
         _ref = [selector, null], eventTransformer = _ref[0], selector = _ref[1];
       }
-      return withDescription(this.selector ||  this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
+      return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
         return function(handler) {
           _this.on(eventName, selector, handler);
           return function() {
