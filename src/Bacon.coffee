@@ -24,7 +24,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
-  withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
+  withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
   , eventTransformer)
