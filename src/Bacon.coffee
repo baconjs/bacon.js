@@ -1011,19 +1011,11 @@ class Desc
         [x.obs]
       else
         []
-    flatDeps = null
-
-    collectDeps = (o) ->
-      deps = o.internalDeps()
-      for dep in deps
-        flatDeps[dep.id] = true
-        collectDeps(dep)
 
     dependsOn = (b) ->
-      if true #!flatDeps?
-        flatDeps = {}
-        collectDeps this
-      return flatDeps[b.id]
+      for dep in this.internalDeps()
+        if dep is b or dep.dependsOn(b)
+          return true
 
     @apply = (obs) ->
       deps = _.cached (-> findDeps([context].concat(args)))
