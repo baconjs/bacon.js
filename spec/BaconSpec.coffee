@@ -766,6 +766,21 @@ describe "EventStream.flatMapLatest", ->
       ["sir francis"])
   it "toString", ->
     expect(Bacon.never().flatMapLatest(->).toString()).to.equal("Bacon.never().flatMapLatest(function)")
+  describe "No glitches in a complex scenario", ->
+    expectPropertyEvents(
+      ->
+        changes = series(1, [{a:0,b:0},{a:1,b:1}])
+
+        a = changes.map '.a'
+        b = changes.map '.b'
+
+        ab = Bacon.combineAsArray a, b
+
+        f = ab.flatMapLatest (values) ->
+          Bacon.once 'f' + values
+
+        Bacon.combineAsArray(f, b).map(".0")
+      ["f0,0","f1,1"])
 
 describe "Property.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
