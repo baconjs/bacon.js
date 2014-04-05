@@ -539,9 +539,8 @@ flatMap_ = (root, f, firstOnly) ->
             reply
     composite.unsubscribe
   extraDeps = []
-  origDeps = result.internalDeps
   result.internalDeps = ->
-    origDeps().concat(extraDeps)
+    extraDeps.concat(root)
   result
 
 
