@@ -568,13 +568,15 @@ Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
 
 flatMap_ = (root, f, firstOnly, limit) ->
-  new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
+  result = new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     queue = []
     spawn = (event) ->
       child = makeObservable(f event.value())
+      extraDeps.push(child)
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
+          _.remove(child, extraDeps)
           checkQueue()
           checkEnd(unsubMe)
           Bacon.noMore
@@ -605,6 +607,10 @@ flatMap_ = (root, f, firstOnly, limit) ->
         else
           spawn event
     composite.unsubscribe
+  extraDeps = []
+  result.internalDeps = ->
+    extraDeps.concat(root)
+  result
 
 
 class EventStream extends Observable
@@ -1089,13 +1095,11 @@ class Desc
     @context = context
     @method = method
     @args = args
-    @flatDeps = null
 
   dependsOn = (o, b) ->
-    if !@flatDeps?
-      @flatDeps = {}
-      @collectDeps o
-    return @flatDeps[b.id]
+    for dep in o.internalDeps()
+      if dep is b or dep.dependsOn(b)
+        return true
 
   apply: (obs) ->
     that = @
@@ -1109,14 +1113,6 @@ class Desc
     obs.inspect = -> obs.toString()
     obs.desc = (-> { context: that.context, method: that.method, args: that.args })
     obs
-
-  collectDeps: (o) ->
-    deps = o.internalDeps()
-    for dep in deps
-      @flatDeps[dep.id] = true
-      @collectDeps(dep)
-
-
 
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
