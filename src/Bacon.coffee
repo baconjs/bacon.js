@@ -509,7 +509,7 @@ class Observable
 Observable :: reduce = Observable :: fold
 
 flatMap_ = (root, f, firstOnly) ->
-  new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
+  result = new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     checkEnd = (unsub) ->
       unsub()
@@ -524,8 +524,10 @@ flatMap_ = (root, f, firstOnly) ->
       else
         return Bacon.noMore if composite.unsubscribed
         child = makeObservable(f event.value())
+        extraDeps.push(child)
         composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
           if event.isEnd()
+            _.remove(child, extraDeps)
             checkEnd(unsubMe)
             Bacon.noMore
           else
@@ -536,6 +538,11 @@ flatMap_ = (root, f, firstOnly) ->
             unsubAll() if reply == Bacon.noMore
             reply
     composite.unsubscribe
+  extraDeps = []
+  origDeps = result.internalDeps
+  result.internalDeps = ->
+    origDeps().concat(extraDeps)
+  result
 
 
 class EventStream extends Observable
@@ -1013,7 +1020,7 @@ class Desc
         collectDeps(dep)
 
     dependsOn = (b) ->
-      if !flatDeps?
+      if true #!flatDeps?
         flatDeps = {}
         collectDeps this
       return flatDeps[b.id]
