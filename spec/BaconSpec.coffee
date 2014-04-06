@@ -2990,6 +2990,40 @@ describe "Observable.withDescription", ->
     expect(stream.dependsOn(src)).to.equal(true)
     expect(stream.dependsOn(bogus)).to.equal(false)
 
+describe "Dependency cache", ->
+  it "partially invalidates after removing changing dependencies", ->
+    a = Bacon.once(1)
+    b = Bacon.once(1)
+    c = b.map((x) -> x)
+    c.dependsOn(a) # force cache
+    b.addInternalDeps(a)
+    expect(c.dependsOn(a)).to.equal(true)
+    b.removeInternalDep(a)
+    expect(c.dependsOn(a)).to.equal(false)
+  it "works in a complex scenario", ->
+    a = Bacon.once('a')
+    b = Bacon.once('b')
+    c = Bacon.once('c')
+    d = Bacon.once('d')
+    d.addInternalDeps(a, b)
+    e = Bacon.once('e')
+    e.addInternalDeps(b, c)
+    f = Bacon.once('f')
+    f.addInternalDeps(d, e)
+    n = Bacon.once('n')
+    expect(f.dependsOn(a)).to.equal(true)
+    expect(f.dependsOn(n)).to.equal(false)
+    b.addInternalDeps(n)
+    expect(f.dependsOn(a)).to.equal(true)
+    expect(f.dependsOn(n)).to.equal(true)
+    d.removeInternalDep(b)
+    e.removeInternalDep(b)
+    expect(f.dependsOn(a)).to.equal(true)
+    expect(f.dependsOn(n)).to.equal(false)
+    c.addInternalDeps(b)
+    expect(f.dependsOn(a)).to.equal(true)
+    expect(f.dependsOn(n)).to.equal(true)
+
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
