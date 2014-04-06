@@ -524,7 +524,7 @@ flatMap_ = (root, f, firstOnly) ->
       else
         return Bacon.noMore if composite.unsubscribed
         child = makeObservable(f event.value())
-        result.addInternalDep(child)
+        result.addInternalDeps(child)
         composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
           if event.isEnd()
             result.removeInternalDep(child)
@@ -998,7 +998,7 @@ describe = (context, method, args...) ->
 class Desc
   CacheManager =
     withCachedDepId: {}
-    invalidIds: {}
+    dirtyIds: {}
 
     collectDepsFor: (obs) ->
       obs.flatDeps = flatDeps = {}
@@ -1016,23 +1016,23 @@ class Desc
     depsOfIdChanged: (obsId) ->
       idsToInvalidate = @withCachedDepId[obsId]
       return if not idsToInvalidate
-      invalidIds = @invalidIds
-      invalidIds[obsId] = true
+      dirtyIds = @dirtyIds
+      dirtyIds[obsId] = true
       for id of idsToInvalidate
-        invalidIds[id] = true
+        dirtyIds[id] = true
       delete @withCachedDepId[obsId]
 
     flatDepsFor: (obs) ->
-      if !obs.flatDeps or @invalidIds[obs.id]
+      if !obs.flatDeps or @dirtyIds[obs.id]
         @collectDepsFor(obs)
-        delete @invalidIds[obs.id]
+        delete @dirtyIds[obs.id]
       obs.flatDeps
 
     dependsOn: (dep, obs) -> !!@flatDepsFor(obs)[dep.id]
 
   ObservableMethods = 
-    addInternalDep: (dep) ->
-      newDeps = @internalDeps().concat([dep])
+    addInternalDeps: (deps...) ->
+      newDeps = @internalDeps().concat(deps)
       @internalDeps = -> newDeps
       CacheManager.depsOfIdChanged @id
 
