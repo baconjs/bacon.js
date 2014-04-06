@@ -524,10 +524,10 @@ flatMap_ = (root, f, firstOnly) ->
       else
         return Bacon.noMore if composite.unsubscribed
         child = makeObservable(f event.value())
-        extraDeps.push(child)
+        result.addInternalDep(child)
         composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
           if event.isEnd()
-            _.remove(child, extraDeps)
+            result.removeInternalDep(child)
             checkEnd(unsubMe)
             Bacon.noMore
           else
@@ -538,10 +538,6 @@ flatMap_ = (root, f, firstOnly) ->
             unsubAll() if reply == Bacon.noMore
             reply
     composite.unsubscribe
-  extraDeps = []
-  result.internalDeps = ->
-    extraDeps.concat(root)
-  result
 
 
 class EventStream extends Observable
@@ -1000,30 +996,73 @@ describe = (context, method, args...) ->
     new Desc(context, method, args)
 
 class Desc
+  CacheManager =
+    withCachedDepId: {}
+    invalidIds: {}
+
+    collectDepsFor: (obs) ->
+      obs.flatDeps = flatDeps = {}
+      for dep in obs.internalDeps()
+        flatDeps[dep.id] = true
+        _.extend flatDeps, @flatDepsFor(dep)
+      withCachedDepId = @withCachedDepId
+      obsId = obs.id
+      for depId of flatDeps
+        unless depChildren = withCachedDepId[depId]
+          depChildren = withCachedDepId[depId] = {}
+        depChildren[obsId] = yes
+      flatDeps
+
+    depsOfIdChanged: (obsId) ->
+      idsToInvalidate = @withCachedDepId[obsId]
+      return if not idsToInvalidate
+      invalidIds = @invalidIds
+      invalidIds[obsId] = true
+      for id of idsToInvalidate
+        invalidIds[id] = true
+      delete @withCachedDepId[obsId]
+
+    flatDepsFor: (obs) ->
+      if !obs.flatDeps or @invalidIds[obs.id]
+        @collectDepsFor(obs)
+        delete @invalidIds[obs.id]
+      obs.flatDeps
+
+    dependsOn: (dep, obs) -> !!@flatDepsFor(obs)[dep.id]
+
+  ObservableMethods = 
+    addInternalDep: (dep) ->
+      newDeps = @internalDeps().concat([dep])
+      @internalDeps = -> newDeps
+      CacheManager.depsOfIdChanged @id
+
+    removeInternalDep: (dep) ->
+      newDeps = _.without(dep, @internalDeps()) 
+      @internalDeps = -> newDeps
+      CacheManager.depsOfIdChanged @id
+
+    dependsOn: (b) -> CacheManager.dependsOn(b, this)
+    flatDepsIds: -> id for id of CacheManager.flatDepsFor(this)
+
+  findDeps = (x) ->
+    if isArray(x)
+      _.flatMap findDeps, x
+    else if isObservable(x)
+      [x]
+    else if x instanceof Source
+      [x.obs]
+    else
+      []
+
   constructor: (context, method, args) ->
-    findDeps = (x) ->
-      if isArray(x)
-        _.flatMap findDeps, x
-      else if isObservable(x)
-        [x]
-      else if x instanceof Source
-        [x.obs]
-      else
-        []
-
-    dependsOn = (b) ->
-      for dep in this.internalDeps()
-        if dep is b or dep.dependsOn(b)
-          return true
-
     @apply = (obs) ->
       deps = _.cached (-> findDeps([context].concat(args)))
       obs.internalDeps = obs.internalDeps || deps
-      obs.dependsOn = dependsOn
       obs.deps = deps
       obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
       obs.inspect = -> obs.toString()
       obs.desc = -> { context, method, args }
+      _.extend obs, ObservableMethods
       obs
 
 withDescription = (desc..., obs) ->
@@ -1400,6 +1439,10 @@ _ = {
   each: (xs, f) ->
     for key, value of xs
       f(key, value)
+  extend: (dst, src) ->
+    for key of src
+      dst[key] = src[key]
+    dst
   toArray: (xs) -> if isArray(xs) then xs else [xs]
   contains: (xs, x) -> _.indexOf(xs, x) != -1
   id: (x) -> x

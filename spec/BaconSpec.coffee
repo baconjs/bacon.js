@@ -2988,7 +2988,7 @@ describe "Observable.withDescription", ->
     bogus = Bacon.once("bogus")
     stream = src.map(->).withDescription("Just kidding", bogus)
     expect(stream.dependsOn(src)).to.equal(true)
-    expect(stream.dependsOn(bogus)).to.equal(undefined)
+    expect(stream.dependsOn(bogus)).to.equal(false)
 
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
