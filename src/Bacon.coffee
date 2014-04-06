@@ -997,36 +997,32 @@ describe = (context, method, args...) ->
 
 class Desc
   CacheManager =
-    withCachedDepId: {}
-    dirtyIds: {}
+    cachedDepsOf: {}
+    withCachedDep: {}
 
     collectDepsFor: (obs) ->
-      obs.flatDeps = flatDeps = {}
+      @cachedDepsOf[obs.id] = flatDeps = {}
       for dep in obs.internalDeps()
         flatDeps[dep.id] = true
         _.extend flatDeps, @flatDepsFor(dep)
-      withCachedDepId = @withCachedDepId
+      withCachedDep = @withCachedDep
       obsId = obs.id
       for depId of flatDeps
-        unless depChildren = withCachedDepId[depId]
-          depChildren = withCachedDepId[depId] = {}
+        unless depChildren = withCachedDep[depId]
+          withCachedDep[depId] = depChildren = {}
         depChildren[obsId] = yes
       flatDeps
 
     depsOfIdChanged: (obsId) ->
-      idsToInvalidate = @withCachedDepId[obsId]
-      return if not idsToInvalidate
-      dirtyIds = @dirtyIds
-      dirtyIds[obsId] = true
+      idsToInvalidate = @withCachedDep[obsId]
+      return unless idsToInvalidate
+      cachedDepsOf = @cachedDepsOf
       for id of idsToInvalidate
-        dirtyIds[id] = true
-      delete @withCachedDepId[obsId]
+        delete cachedDepsOf[id]
+      delete cachedDepsOf[obsId]
+      delete @withCachedDep[obsId]
 
-    flatDepsFor: (obs) ->
-      if !obs.flatDeps or @dirtyIds[obs.id]
-        @collectDepsFor(obs)
-        delete @dirtyIds[obs.id]
-      obs.flatDeps
+    flatDepsFor: (obs) -> @cachedDepsOf[obs.id] ? @collectDepsFor(obs)
 
     dependsOn: (dep, obs) -> !!@flatDepsFor(obs)[dep.id]
 
