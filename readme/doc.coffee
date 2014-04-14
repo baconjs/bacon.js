@@ -47,6 +47,19 @@ DOC_SPEC =
       element.anchorName = common.functionAnchorName(element.parsedSignature) + "-" + element.anchorSuffix
       element
 
+class Marble
+  constructor: ->
+    @i = []
+    @o = undefined
+    @type = "marble"
+
+  input: (v) ->
+    @i.push(v)
+    @
+
+  output: (v) ->
+    @o = v
+
 # DSL helper class
 class Doc
   constructor: ->
@@ -57,6 +70,11 @@ class Doc
 
   dump: ->
     console.log @elements
+
+  marble: () ->
+    m = new Marble
+    @elements.push m
+    m
 
 _.each DOC_SPEC, (spec, name) ->
   Doc::[name] = () ->

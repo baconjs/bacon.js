@@ -71,6 +71,8 @@ renderElement = (element) ->
       anchor + "\n[`" + renderSignature(element.parsedSignature) + '`](#' + element.anchorName + ' "' +  element.signature + '") ' + element.content
     when "logo"
       """<img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />"""
+    when "marble"
+      undefined # filter marbles from README.md
     else
       throw new Error("Unknown token type: " + element.type)
 
