@@ -798,12 +798,6 @@ class Dispatcher
         internalSubscriptions = _.without(subscription, internalSubscriptions)
       else
         subscriptions = _.without(subscription, subscriptions)
-    waiters = null
-    done = ->
-      if waiters?
-        ws = waiters
-        waiters = null
-        w() for w in ws
     pushIt = (event) ->
         if not pushing
           return if event is prevError
@@ -826,7 +820,6 @@ class Dispatcher
             event = _.head(queue)
             queue = _.tail(queue)
             @push event
-          done(event)
           if @hasSubscribers()
             Bacon.more
           else
