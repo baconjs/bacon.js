@@ -858,9 +858,19 @@ occurring before the end of `stream` will not be included in the result
 stream.
 """
 
+doc.marble()
+  .input("Bacon.sequentially(200, [9,0,2]).filter(function(x) { return x })")
+  .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
+  .output("function(a,b) { return a.concat(b) }")
+
 doc.fn "stream.merge(otherStream)", """
 merges two streams into one stream that delivers events from both
 """
+
+doc.marble()
+  .input("Bacon.sequentially(200, [9,0,2,0,0,3]).filter(function(x) { return x })")
+  .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
+  .output("function(a,b) { return a.merge(b) }")
 
 doc.fn "stream.startWith(value)", """
 adds a starting value to the stream, i.e. concats a
