@@ -545,7 +545,7 @@ class EventStream extends Observable
       desc = []
     super(desc)
     assertFunction subscribe
-    dispatcher = new Dispatcher(subscribe)
+    dispatcher = new Dispatcher(this, subscribe)
     @subscribeInternal = dispatcher.subscribe
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     @hasSubscribers = dispatcher.hasSubscribers
@@ -694,7 +694,7 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@subscribeInternal, handler)
+    dispatcher = new Dispatcher(this, @subscribeInternal, handler)
     new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
 
 class Property extends Observable
@@ -783,7 +783,7 @@ addPropertyInitValueToStream = (property, stream) ->
   justInitValue.concat(stream).toProperty()
 
 class Dispatcher
-  constructor: (subscribe, handleEvent) ->
+  constructor: (obs, subscribe, handleEvent) ->
     subscribe ?= -> nop
     subscriptions = []
     queue = null
@@ -830,7 +830,7 @@ class Dispatcher
           queue = (queue or []).concat([event])
           Bacon.more
     @push = (event) =>
-      UpdateBarrier.inTransaction event, this, pushIt, [event]
+      UpdateBarrier.inTransaction obs, event, this, pushIt, [event]
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) =>
       if event.isEnd()
@@ -856,7 +856,7 @@ class Dispatcher
 
 class PropertyDispatcher extends Dispatcher
   constructor: (p, subscribe, handleEvent) ->
-    super(subscribe, handleEvent)
+    super(p, subscribe, handleEvent)
     current = None
     currentValueRootId = undefined
     push = @push
@@ -900,7 +900,7 @@ class PropertyDispatcher extends Dispatcher
           maybeSubSource()
         else
           #console.log "bouncing value"
-          UpdateBarrier.inTransaction undefined, this, (-> 
+          UpdateBarrier.inTransaction p, undefined, this, (-> 
             reply = sink initial(current.get().value())
           ), []
           maybeSubSource()
@@ -1223,7 +1223,8 @@ None =
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
-  afters = []
+  aftersStack = []
+  afters = undefined
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)
@@ -1246,22 +1247,34 @@ UpdateBarrier = (->
     while waiters.length
       findIndependent().f()
 
-  inTransaction = (event, context, f, args) ->
+  inTransaction = (obs, event, context, f, args) ->
     if rootEvent
       #console.log "in tx"
       f.apply(context, args)
     else
       #console.log "start tx"
       rootEvent = event
+      afters = []
+      aftersStack.push {afters, obs}
       try
         result = f.apply(context, args)
         #console.log("done with tx")
         flush()
       finally
         rootEvent = undefined
-        while (afters.length)
-          f = afters.splice(0, 1)[0]
-          f()
+        i = -1; l = aftersStack.length
+        try
+          while ++i < l
+            stackItem = aftersStack[i]
+            stackObs = stackItem.obs
+            if stackObs == obs or stackObs.dependsOn(obs)
+              stackAfters = stackItem.afters
+              while (stackAfters.length)
+                f = stackAfters.shift()
+                f()
+        finally
+          aftersStack.pop()
+          afters = aftersStack[aftersStack.length - 1]
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
