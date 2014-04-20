@@ -157,7 +157,7 @@ Bacon.fromArray = (values) ->
       if _.empty values
         sink(end())
       else
-        value = values.splice(0,1)[0]
+        value = values.shift()
         reply = sink(toEvent(value))
         if (reply != Bacon.noMore) && !unsubd
           send()
@@ -545,7 +545,7 @@ class EventStream extends Observable
       desc = []
     super(desc)
     assertFunction subscribe
-    dispatcher = new Dispatcher(subscribe)
+    dispatcher = new Dispatcher(this, subscribe)
     @subscribeInternal = dispatcher.subscribe
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     @hasSubscribers = dispatcher.hasSubscribers
@@ -694,7 +694,7 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@subscribeInternal, handler)
+    dispatcher = new Dispatcher(this, @subscribeInternal, handler)
     new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
 
 class Property extends Observable
@@ -783,7 +783,7 @@ addPropertyInitValueToStream = (property, stream) ->
   justInitValue.concat(stream).toProperty()
 
 class Dispatcher
-  constructor: (subscribe, handleEvent) ->
+  constructor: (obs, subscribe, handleEvent) ->
     subscribe ?= -> nop
     subscriptions = []
     queue = null
@@ -830,7 +830,7 @@ class Dispatcher
           queue = (queue or []).concat([event])
           Bacon.more
     @push = (event) =>
-      UpdateBarrier.inTransaction event, this, pushIt, [event]
+      UpdateBarrier.inTransaction obs, event, this, pushIt, [event]
     handleEvent ?= (event) -> @push event
     @handleEvent = (event) =>
       if event.isEnd()
@@ -856,7 +856,7 @@ class Dispatcher
 
 class PropertyDispatcher extends Dispatcher
   constructor: (p, subscribe, handleEvent) ->
-    super(subscribe, handleEvent)
+    super(p, subscribe, handleEvent)
     current = None
     currentValueRootId = undefined
     push = @push
@@ -900,7 +900,7 @@ class PropertyDispatcher extends Dispatcher
           maybeSubSource()
         else
           #console.log "bouncing value"
-          UpdateBarrier.inTransaction undefined, this, (-> 
+          UpdateBarrier.inTransaction p, undefined, this, (-> 
             reply = sink initial(current.get().value())
           ), []
           maybeSubSource()
@@ -1223,7 +1223,9 @@ None =
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
+  processingAfters = false
   afters = []
+  aftersStack = [ {afters: afters, obs: undefined} ]
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)
@@ -1239,29 +1241,48 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
+      waiters.push(waiters.shift())
+    return waiters.shift()
 
   flush = ->
     while waiters.length
       findIndependent().f()
 
-  inTransaction = (event, context, f, args) ->
+  inTransaction = (obs, event, context, f, args) ->
     if rootEvent
       #console.log "in tx"
       f.apply(context, args)
     else
       #console.log "start tx"
       rootEvent = event
+      if processingAfters
+        afters = []
+        aftersStack.push {afters, obs}
+      else
+        aftersStack[0].obs = obs
       try
         result = f.apply(context, args)
         #console.log("done with tx")
         flush()
       finally
         rootEvent = undefined
-        while (afters.length)
-          f = afters.splice(0, 1)[0]
-          f()
+        processingAfters = true
+        i = -1; l = aftersStack.length
+        try
+          while ++i < l
+            frame = aftersStack[i]
+            frameObs = frame.obs
+            if frameObs is obs or frameObs.dependsOn(obs)
+              frameAfters = frame.afters
+              while frameAfters.length
+                f = frameAfters.shift()
+                f()
+        finally
+          if (l = aftersStack.length) > 1
+            aftersStack.pop()
+            afters = aftersStack[l - 2].afters
+          else
+            processingAfters = false
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
