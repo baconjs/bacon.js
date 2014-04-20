@@ -157,7 +157,7 @@ Bacon.fromArray = (values) ->
       if _.empty values
         sink(end())
       else
-        value = values.splice(0,1)[0]
+        value = values.shift()
         reply = sink(toEvent(value))
         if (reply != Bacon.noMore) && !unsubd
           send()
@@ -1241,8 +1241,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
+      waiters.push(waiters.shift())
+    return waiters.shift()
 
   flush = ->
     while waiters.length
