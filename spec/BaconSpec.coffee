@@ -1691,13 +1691,13 @@ describe "When an Event triggers another one in the same stream, while dispatchi
     bus = new Bacon.Bus
     values = []
     bus.take(2).onValue (v) ->
-      bus.push "A"
-      bus.push "B"
+      bus.push v + "A"
+      bus.push v + "B"
     bus.onValue (v) ->
       values.push(v)
-    bus.push "a"
-    bus.push "b"
-    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
+    bus.push "x"
+    bus.push "y"
+    expect(values).to.deep.equal(["x", "xA", "xAA", "xAB", "xB", "y"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
