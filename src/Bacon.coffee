@@ -1223,7 +1223,8 @@ None =
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
-  afters = []
+  aftersStack = []
+  afters = undefined
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)
@@ -1253,15 +1254,20 @@ UpdateBarrier = (->
     else
       #console.log "start tx"
       rootEvent = event
+      aftersStack.push afters = []
       try
         result = f.apply(context, args)
         #console.log("done with tx")
         flush()
       finally
         rootEvent = undefined
-        while (afters.length)
-          f = afters.splice(0, 1)[0]
-          f()
+        try
+          while (afters.length)
+            f = afters.shift()
+            f()
+        finally
+          aftersStack.pop()
+          afters = aftersStack[aftersStack.length - 1]
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
