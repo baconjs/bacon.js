@@ -352,7 +352,7 @@ new Bacon.Next("value")
 
 But the canonical way would be
 ```js
-new Bacon.Next(function() { return "value") })
+new Bacon.Next(function() { return "value"; })
 ```
 
 The former version is safe only when you know that the actual value in
