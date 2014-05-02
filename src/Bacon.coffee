@@ -261,7 +261,9 @@ class Next extends Event
       @value = _.always(valueF)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(=> f(@value()))
+  fmap: (f) ->
+    value = @value
+    @apply(-> f(value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   toString: -> _.toString(@value())
@@ -416,11 +418,10 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  scan: (seed, f, lazyF) =>
+  scan: (seed, f, lazyF) ->
     f_ = toCombinator(f)
     f = if lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
-    root = this
     subscribe = (sink) =>
       initSent = false
       unsub = nop
@@ -433,7 +434,7 @@ class Observable
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
-      unsub = @subscribeInternal (event) =>
+      unsub = @subscribeInternal (event) ->
         if (event.hasValue())
           if (initSent && event.isInitial())
             Bacon.more # init already sent, skip this one
@@ -452,7 +453,7 @@ class Observable
       unsub
     resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
-  fold: (seed, f) =>
+  fold: (seed, f) ->
     withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
@@ -473,10 +474,10 @@ class Observable
   flatMapFirst: ->
     flatMap_(this, makeSpawner(arguments), true)
 
-  flatMapLatest: =>
+  flatMapLatest: ->
     f = makeSpawner(arguments)
     stream = @toEventStream()
-    withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
+    withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
       makeObservable(f(value)).takeUntil(stream))
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
@@ -485,7 +486,7 @@ class Observable
   slidingWindow: (n, minValues = 0) ->
     withDescription(this, "slidingWindow", n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
           .filter(((values) -> values.length >= minValues)))
-  combine: (other, f) =>
+  combine: (other, f) ->
     combinator = toCombinator(f)
     withDescription(this, "combine", other, f, 
       Bacon.combineAsArray(this, other)
@@ -499,7 +500,7 @@ class Observable
         .map(([myValues, otherValues]) -> otherValues.length == 0)
         .toProperty(false).skipDuplicates())
 
-  name: (name) -> 
+  name: (name) ->
     @toString = -> name
     this
 
@@ -640,7 +641,7 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  sampledBy: (sampler, combinator) =>
+  sampledBy: (sampler, combinator) ->
     withDescription(this, "sampledBy", sampler, combinator,
       @toProperty().sampledBy(sampler, combinator))
 
@@ -655,7 +656,7 @@ class EventStream extends Observable
           sink(e)
       -> unsubLeft() ; unsubRight()
 
-  takeUntil: (stopper) =>
+  takeUntil: (stopper) ->
     endMarker = {}
     withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
       .withHandler((event) ->
@@ -710,37 +711,37 @@ class Property extends Observable
     else
       @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
 
-    @sampledBy = (sampler, combinator) =>
-      if combinator?
-        combinator = toCombinator combinator
-      else
-        lazy = true
-        combinator = (f) -> f()
-      thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
-      samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy)
-      stream = Bacon.when([thisSource, samplerSource], combinator)
-      result = if sampler instanceof Property then stream.toProperty() else stream
-      withDescription(this, "sampledBy", sampler, combinator, result)
-
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     registerObs(this)
 
-  sample: (interval) =>
+  sampledBy: (sampler, combinator) ->
+    if combinator?
+      combinator = toCombinator combinator
+    else
+      lazy = true
+      combinator = (f) -> f()
+    thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
+    samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy)
+    stream = Bacon.when([thisSource, samplerSource], combinator)
+    result = if sampler instanceof Property then stream.toProperty() else stream
+    withDescription(this, "sampledBy", sampler, combinator, result)
+
+  sample: (interval) ->
     withDescription(this, "sample", interval,
       @sampledBy Bacon.interval(interval, {}))
 
-  changes: => new EventStream describe(this, "changes"), (sink) =>
-    @subscribeInternal (event) =>
+  changes: -> new EventStream describe(this, "changes"), (sink) =>
+    @subscribeInternal (event) ->
       #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
   withHandler: (handler) ->
     new Property describe(this, "withHandler", handler), @subscribeInternal, handler
-  toProperty: =>
+  toProperty: ->
     assertNoArguments(arguments)
     this
-  toEventStream: =>
+  toEventStream: ->
     new EventStream describe(this, "toEventStream"), (sink) =>
-      @subscribeInternal (event) =>
+      @subscribeInternal (event) ->
         event = event.toNext() if event.isInitial()
         sink event
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
@@ -1161,7 +1162,7 @@ class CompositeUnsubscribe
     @subscriptions = []
     @starting = []
     @add s for s in ss
-  add: (subscription) =>
+  add: (subscription) ->
     return if @unsubscribed
     ended = false
     unsub = nop
@@ -1184,10 +1185,10 @@ class CompositeUnsubscribe
     s() for s in @subscriptions
     @subscriptions = []
     @starting = []
-  count: =>
+  count: ->
     return 0 if @unsubscribed
     @subscriptions.length + @starting.length
-  empty: =>
+  empty: ->
     @count() == 0
 
 Bacon.CompositeUnsubscribe = CompositeUnsubscribe
