@@ -88,7 +88,7 @@ Bacon.repeatedly = (delay, values) ->
 Bacon.spy = (spy) -> spys.push(spy)
 
 spys = []
-registerObs = (obs) -> 
+registerObs = (obs) ->
   if spys.length
     if not registerObs.running
       try
@@ -286,7 +286,7 @@ class Error extends Event
   isError: -> true
   fmap: -> this
   apply: -> this
-  toString: -> 
+  toString: ->
     "<error> " + _.toString(@error)
 
 idCounter = 0
@@ -488,14 +488,14 @@ class Observable
           .filter(((values) -> values.length >= minValues)))
   combine: (other, f) ->
     combinator = toCombinator(f)
-    withDescription(this, "combine", other, f, 
+    withDescription(this, "combine", other, f,
       Bacon.combineAsArray(this, other)
         .map (values) ->
           combinator(values[0], values[1]))
   decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
   awaiting: (other) ->
-    withDescription(this, "awaiting", other, 
+    withDescription(this, "awaiting", other,
       Bacon.groupSimultaneous(this, other)
         .map(([myValues, otherValues]) -> otherValues.length == 0)
         .toProperty(false).skipDuplicates())
@@ -565,9 +565,9 @@ class EventStream extends Observable
   throttle: (delay) ->
     withDescription(this, "throttle", delay, @bufferWithTime(delay).map((values) -> values[values.length - 1]))
 
-  bufferWithTime: (delay) -> 
+  bufferWithTime: (delay) ->
     withDescription(this, "bufferWithTime", delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
-  bufferWithCount: (count) -> 
+  bufferWithCount: (count) ->
     withDescription(this, "bufferWithCount", count, @bufferWithTimeOrCount(undefined, count))
 
   bufferWithTimeOrCount: (delay, count) ->
@@ -749,12 +749,12 @@ class Property extends Observable
   delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
   debounce: (delay) -> @delayChanges("debounce", delay, (changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges("throttle", delay, (changes) -> changes.throttle(delay))
-  delayChanges: (desc..., f) -> 
+  delayChanges: (desc..., f) ->
     withDescription(this, desc...,
       addPropertyInitValueToStream(this, f(@changes())))
   takeUntil: (stopper) ->
     changes = this.changes().takeUntil(stopper)
-    withDescription(this, "takeUntil", stopper, 
+    withDescription(this, "takeUntil", stopper,
       addPropertyInitValueToStream(this, changes))
   startWith: (value) ->
     withDescription(this, "startWith", value,
@@ -901,7 +901,7 @@ class PropertyDispatcher extends Dispatcher
           maybeSubSource()
         else
           #console.log "bouncing value"
-          UpdateBarrier.inTransaction undefined, this, (-> 
+          UpdateBarrier.inTransaction undefined, this, (->
             reply = sink initial(current.get().value())
           ), []
           maybeSubSource()
@@ -988,7 +988,7 @@ Source.fromObservable = (s) ->
   else
     new Source(s, true, true)
 
-describe = (context, method, args...) -> 
+describe = (context, method, args...) ->
   if (context || method) instanceof Desc
     context || method
   else
@@ -1067,7 +1067,7 @@ Bacon.when = (patterns...) ->
       ends = false
       match = (p) ->
         for i in p.ixs
-          if !sources[i.index].hasAtLeast(i.count) 
+          if !sources[i.index].hasAtLeast(i.count)
             return false
         return true
       cannotSync = (source) ->
@@ -1233,7 +1233,7 @@ UpdateBarrier = (->
   independent = (waiter) ->
     !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
 
-  whenDoneWith = (obs, f) -> 
+  whenDoneWith = (obs, f) ->
     if rootEvent
       waiters.push {obs, f}
     else
@@ -1267,7 +1267,7 @@ UpdateBarrier = (->
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
 
-  wrappedSubscribe = (obs) -> (sink) -> 
+  wrappedSubscribe = (obs) -> (sink) ->
     unsubd = false
     doUnsub = ->
     unsub = ->
@@ -1337,7 +1337,7 @@ makeObservable = (x) ->
   if (isObservable(x))
     x
   else
-    Bacon.once(x) 
+    Bacon.once(x)
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
 Bacon.isFieldKey = isFieldKey
@@ -1426,7 +1426,7 @@ _ = {
       seed = f(seed, x)
     seed
   flatMap: (f, xs) ->
-    _.fold xs, [], ((ys, x) -> 
+    _.fold xs, [], ((ys, x) ->
       ys.concat(f(x)))
 
   cached: (f) ->
@@ -1436,7 +1436,7 @@ _ = {
         value = f()
         f = null
       value
-  toString: (obj) -> 
+  toString: (obj) ->
     try
       recursionDepth++
       if !obj?

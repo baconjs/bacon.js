@@ -2,7 +2,7 @@ Benchmark = require('benchmark')
 Bacon = (require "../src/Bacon").Bacon
 
 _ = Bacon._
-f = 
+f =
   generator: ->
     streams = []
     {
@@ -60,7 +60,7 @@ suite.add 'zip', ->
 suite.add 'Bacon.combineTemplate.sample', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 5, 1)
-      .sampledBy(f.everyNth(10, gen.stream())) 
+      .sampledBy(f.everyNth(10, gen.stream()))
 suite.add 'Bacon.combineTemplate (deep)', ->
   f.withGenerator (gen) ->
     f.combineTemplate(gen, 3, 3)
