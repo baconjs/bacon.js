@@ -1576,8 +1576,14 @@ describe "Property.combine", ->
         expect(events).to.deep.equal([["a", "b"]])
       finally
         delete Array.prototype.foo
-
-
+  describe "diamond-shaped setup with synchronous source", ->
+    expectPropertyEvents(
+      ->
+        src = Bacon.fromArray([1,2,3,4])
+        even = src.filter((x) -> x % 2 == 0)
+        odd = src.filter((x) -> x % 2 == 1)
+        odd.combine(even, (x,y) -> [x,y])
+     [[1,2],[3, 2],[3,4]]) 
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->
