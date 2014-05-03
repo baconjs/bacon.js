@@ -294,7 +294,6 @@ idCounter = 0
 class Observable
   constructor: (desc) ->
     @id = ++idCounter
-    @assign = @onValue
     withDescription(desc, this)
   onValue: ->
     f = makeFunctionArgs(arguments)
@@ -508,6 +507,7 @@ class Observable
     describe(arguments...).apply(this)
 
 Observable :: reduce = Observable :: fold
+Observable :: assign = Observable :: onValue
 
 flatMap_ = (root, f, firstOnly) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
