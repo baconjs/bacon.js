@@ -953,11 +953,10 @@ class Source
   constructor: (@obs, @sync, @subscribe, @lazy = false, @queue = []) ->
     @subscribe = @obs.subscribeInternal if not @subscribe?
     @toString = @obs.toString
-  lazify: (x) -> (-> x)
   markEnded: -> @ended = true
   consume: ->
     if @lazy
-      @lazify(@queue[0])
+      _.always(@queue[0])
     else
       @queue[0]
   push: (x) -> @queue = [x]
@@ -969,7 +968,7 @@ class Source
 class ConsumedSource extends Source
   consume: ->
     if @lazy
-      @lazify(@queue.shift())
+      _.always(@queue.shift())
     else
       @queue.shift()
   push: (x) -> @queue.push(x)
