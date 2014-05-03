@@ -787,7 +787,7 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     subscriptions = []
-    queue = null
+    queue = []
     pushing = false
     ended = false
     @hasSubscribers = -> subscriptions.length > 0
@@ -815,11 +815,10 @@ class Dispatcher
             success = true
           finally
             pushing = false
-            queue = null if not success # ditch queue in case of exception to avoid unexpected behavior
+            queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
           success = true
-          while queue?.length
-            event = _.head(queue)
-            queue = _.tail(queue)
+          while queue.length
+            event = queue.shift()
             @push event
           done(event)
           if @hasSubscribers()
@@ -828,7 +827,7 @@ class Dispatcher
             unsubscribeFromSource()
             Bacon.noMore
         else
-          queue = (queue or []).concat([event])
+          queue.push(event)
           Bacon.more
     @push = (event) =>
       UpdateBarrier.inTransaction event, this, pushIt, [event]
@@ -844,7 +843,7 @@ class Dispatcher
       else
         assertFunction sink
         subscription = { sink: sink }
-        subscriptions = subscriptions.concat(subscription)
+        subscriptions.push(subscription)
         if subscriptions.length == 1
           unsubSrc = subscribe @handleEvent
           unsubscribeFromSource = ->
