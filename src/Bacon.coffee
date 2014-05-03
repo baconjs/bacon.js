@@ -194,7 +194,7 @@ Bacon.combineAsArray = (streams...) ->
     streams[index] = Bacon.constant(stream) if not (isObservable(stream))
   if streams.length
     sources = for s in streams
-      new Source(s, true, false, s.subscribeInternal)
+      new Source(s, true, s.subscribeInternal)
     withDescription(Bacon, "combineAsArray", streams..., Bacon.when(sources, ((xs...) -> xs)).toProperty())
   else
     Bacon.constant([])
@@ -720,8 +720,8 @@ class Property extends Observable
     else
       lazy = true
       combinator = (f) -> f()
-    thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
-    samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy)
+    thisSource = new Source(this, false, this.subscribeInternal, lazy)
+    samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy)
     stream = Bacon.when([thisSource, samplerSource], combinator)
     result = if sampler instanceof Property then stream.toProperty() else stream
     withDescription(this, "sampledBy", sampler, combinator, result)
@@ -951,42 +951,50 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, consume, @subscribe, lazy = false, queue = []) ->
-    lazify = if lazy then (x) -> (-> x) else _.id
-    @subscribe = obs.subscribeInternal if not @subscribe?
-    @markEnded = -> @ended = true
+  constructor: (@obs, @sync, @subscribe, @lazy = false, @queue = []) ->
+    @subscribe = @obs.subscribeInternal if not @subscribe?
     @toString = @obs.toString
-    if consume
-      @consume = -> lazify(queue.shift())
-      @push  = (x) -> queue.push(x)
-      @mayHave = (c) -> !@ended || queue.length >= c
-      @hasAtLeast = (c) -> queue.length >= c
-      @flatten = false
+  lazify: (x) -> (-> x)
+  markEnded: -> @ended = true
+  consume: ->
+    if @lazy
+      @lazify(@queue[0])
     else
-      @consume = -> lazify(queue[0])
-      @push  = (x) -> queue = [x]
-      @mayHave = -> true
-      @hasAtLeast = -> queue.length
-      @flatten = true
+      @queue[0]
+  push: (x) -> @queue = [x]
+  mayHave: -> true
+  hasAtLeast: -> @queue.length
+  flatten: true
+
+
+class ConsumedSource extends Source
+  consume: ->
+    if @lazy
+      @lazify(@queue.shift())
+    else
+      @queue.shift()
+  push: (x) -> @queue.push(x)
+  mayHave: (c) -> !@ended || @queue.length >= c
+  hasAtLeast: (c) -> @queue.length >= c
+  flatten: false
 
 class BufferingSource extends Source
   constructor: (@obs) ->
-    queue = []
-    super(@obs, true, false, @obs.subscribeInternal, false, queue)
-    @consume = ->
-      values = queue
-      queue = []
-      -> values
-    @push = (x) -> queue.push(x())
-    @hasAtLeast = -> true
+    super(@obs, true, @obs.subscribeInternal, false)
+  consume: ->
+    values = @queue
+    @queue = []
+    -> values
+  push: (x) -> @queue.push(x())
+  hasAtLeast: -> true
 
 Source.fromObservable = (s) ->
   if s instanceof Source
     s
   else if s instanceof Property
-    new Source(s, false, false)
+    new Source(s, false)
   else
-    new Source(s, true, true)
+    new ConsumedSource(s, true)
 
 describe = (context, method, args...) ->
   if (context || method) instanceof Desc
