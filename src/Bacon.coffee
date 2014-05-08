@@ -88,7 +88,7 @@ Bacon.repeatedly = (delay, values) ->
 Bacon.spy = (spy) -> spys.push(spy)
 
 spys = []
-registerObs = (obs) -> 
+registerObs = (obs) ->
   if spys.length
     if not registerObs.running
       try
@@ -194,7 +194,7 @@ Bacon.combineAsArray = (streams...) ->
     streams[index] = Bacon.constant(stream) if not (isObservable(stream))
   if streams.length
     sources = for s in streams
-      new Source(s, true, false, s.subscribeInternal)
+      new Source(s, true, s.subscribeInternal)
     withDescription(Bacon, "combineAsArray", streams..., Bacon.when(sources, ((xs...) -> xs)).toProperty())
   else
     Bacon.constant([])
@@ -261,7 +261,9 @@ class Next extends Event
       @value = _.always(valueF)
   isNext: -> true
   hasValue: -> true
-  fmap: (f) -> @apply(=> f(@value()))
+  fmap: (f) ->
+    value = @value
+    @apply(-> f(value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   toString: -> _.toString(@value())
@@ -284,7 +286,7 @@ class Error extends Event
   isError: -> true
   fmap: -> this
   apply: -> this
-  toString: -> 
+  toString: ->
     "<error> " + _.toString(@error)
 
 idCounter = 0
@@ -292,7 +294,6 @@ idCounter = 0
 class Observable
   constructor: (desc) ->
     @id = ++idCounter
-    @assign = @onValue
     withDescription(desc, this)
   onValue: ->
     f = makeFunctionArgs(arguments)
@@ -416,11 +417,10 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  scan: (seed, f, lazyF) =>
+  scan: (seed, f, lazyF) ->
     f_ = toCombinator(f)
     f = if lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
-    root = this
     subscribe = (sink) =>
       initSent = false
       unsub = nop
@@ -433,7 +433,7 @@ class Observable
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
-      unsub = @subscribeInternal (event) =>
+      unsub = @subscribeInternal (event) ->
         if (event.hasValue())
           if (initSent && event.isInitial())
             Bacon.more # init already sent, skip this one
@@ -452,7 +452,7 @@ class Observable
       unsub
     resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
-  fold: (seed, f) =>
+  fold: (seed, f) ->
     withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
@@ -473,10 +473,10 @@ class Observable
   flatMapFirst: ->
     flatMap_(this, makeSpawner(arguments), true)
 
-  flatMapLatest: =>
+  flatMapLatest: ->
     f = makeSpawner(arguments)
     stream = @toEventStream()
-    withDescription(this, "flatMapLatest", f, stream.flatMap (value) =>
+    withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
       makeObservable(f(value)).takeUntil(stream))
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
@@ -485,21 +485,21 @@ class Observable
   slidingWindow: (n, minValues = 0) ->
     withDescription(this, "slidingWindow", n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
           .filter(((values) -> values.length >= minValues)))
-  combine: (other, f) =>
+  combine: (other, f) ->
     combinator = toCombinator(f)
-    withDescription(this, "combine", other, f, 
+    withDescription(this, "combine", other, f,
       Bacon.combineAsArray(this, other)
         .map (values) ->
           combinator(values[0], values[1]))
   decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
   awaiting: (other) ->
-    withDescription(this, "awaiting", other, 
+    withDescription(this, "awaiting", other,
       Bacon.groupSimultaneous(this, other)
         .map(([myValues, otherValues]) -> otherValues.length == 0)
         .toProperty(false).skipDuplicates())
 
-  name: (name) -> 
+  name: (name) ->
     @toString = -> name
     this
 
@@ -507,6 +507,7 @@ class Observable
     describe(arguments...).apply(this)
 
 Observable :: reduce = Observable :: fold
+Observable :: assign = Observable :: onValue
 
 flatMap_ = (root, f, firstOnly) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
@@ -564,9 +565,9 @@ class EventStream extends Observable
   throttle: (delay) ->
     withDescription(this, "throttle", delay, @bufferWithTime(delay).map((values) -> values[values.length - 1]))
 
-  bufferWithTime: (delay) -> 
+  bufferWithTime: (delay) ->
     withDescription(this, "bufferWithTime", delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
-  bufferWithCount: (count) -> 
+  bufferWithCount: (count) ->
     withDescription(this, "bufferWithCount", count, @bufferWithTimeOrCount(undefined, count))
 
   bufferWithTimeOrCount: (delay, count) ->
@@ -640,7 +641,7 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  sampledBy: (sampler, combinator) =>
+  sampledBy: (sampler, combinator) ->
     withDescription(this, "sampledBy", sampler, combinator,
       @toProperty().sampledBy(sampler, combinator))
 
@@ -655,7 +656,7 @@ class EventStream extends Observable
           sink(e)
       -> unsubLeft() ; unsubRight()
 
-  takeUntil: (stopper) =>
+  takeUntil: (stopper) ->
     endMarker = {}
     withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
       .withHandler((event) ->
@@ -710,37 +711,37 @@ class Property extends Observable
     else
       @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
 
-    @sampledBy = (sampler, combinator) =>
-      if combinator?
-        combinator = toCombinator combinator
-      else
-        lazy = true
-        combinator = (f) -> f()
-      thisSource = new Source(this, false, false, this.subscribeInternal, lazy)
-      samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy)
-      stream = Bacon.when([thisSource, samplerSource], combinator)
-      result = if sampler instanceof Property then stream.toProperty() else stream
-      withDescription(this, "sampledBy", sampler, combinator, result)
-
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     registerObs(this)
 
-  sample: (interval) =>
+  sampledBy: (sampler, combinator) ->
+    if combinator?
+      combinator = toCombinator combinator
+    else
+      lazy = true
+      combinator = (f) -> f()
+    thisSource = new Source(this, false, this.subscribeInternal, lazy)
+    samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy)
+    stream = Bacon.when([thisSource, samplerSource], combinator)
+    result = if sampler instanceof Property then stream.toProperty() else stream
+    withDescription(this, "sampledBy", sampler, combinator, result)
+
+  sample: (interval) ->
     withDescription(this, "sample", interval,
       @sampledBy Bacon.interval(interval, {}))
 
-  changes: => new EventStream describe(this, "changes"), (sink) =>
-    @subscribeInternal (event) =>
+  changes: -> new EventStream describe(this, "changes"), (sink) =>
+    @subscribeInternal (event) ->
       #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
   withHandler: (handler) ->
     new Property describe(this, "withHandler", handler), @subscribeInternal, handler
-  toProperty: =>
+  toProperty: ->
     assertNoArguments(arguments)
     this
-  toEventStream: =>
+  toEventStream: ->
     new EventStream describe(this, "toEventStream"), (sink) =>
-      @subscribeInternal (event) =>
+      @subscribeInternal (event) ->
         event = event.toNext() if event.isInitial()
         sink event
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
@@ -748,12 +749,12 @@ class Property extends Observable
   delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
   debounce: (delay) -> @delayChanges("debounce", delay, (changes) -> changes.debounce(delay))
   throttle: (delay) -> @delayChanges("throttle", delay, (changes) -> changes.throttle(delay))
-  delayChanges: (desc..., f) -> 
+  delayChanges: (desc..., f) ->
     withDescription(this, desc...,
       addPropertyInitValueToStream(this, f(@changes())))
   takeUntil: (stopper) ->
     changes = this.changes().takeUntil(stopper)
-    withDescription(this, "takeUntil", stopper, 
+    withDescription(this, "takeUntil", stopper,
       addPropertyInitValueToStream(this, changes))
   startWith: (value) ->
     withDescription(this, "startWith", value,
@@ -786,7 +787,7 @@ class Dispatcher
   constructor: (subscribe, handleEvent) ->
     subscribe ?= -> nop
     subscriptions = []
-    queue = null
+    queue = []
     pushing = false
     ended = false
     @hasSubscribers = -> subscriptions.length > 0
@@ -814,11 +815,10 @@ class Dispatcher
             success = true
           finally
             pushing = false
-            queue = null if not success # ditch queue in case of exception to avoid unexpected behavior
+            queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
           success = true
-          while queue?.length
-            event = _.head(queue)
-            queue = _.tail(queue)
+          while queue.length
+            event = queue.shift()
             @push event
           done(event)
           if @hasSubscribers()
@@ -827,7 +827,7 @@ class Dispatcher
             unsubscribeFromSource()
             Bacon.noMore
         else
-          queue = (queue or []).concat([event])
+          queue.push(event)
           Bacon.more
     @push = (event) =>
       UpdateBarrier.inTransaction event, this, pushIt, [event]
@@ -843,7 +843,7 @@ class Dispatcher
       else
         assertFunction sink
         subscription = { sink: sink }
-        subscriptions = subscriptions.concat(subscription)
+        subscriptions.push(subscription)
         if subscriptions.length == 1
           unsubSrc = subscribe @handleEvent
           unsubscribeFromSource = ->
@@ -900,7 +900,7 @@ class PropertyDispatcher extends Dispatcher
           maybeSubSource()
         else
           #console.log "bouncing value"
-          UpdateBarrier.inTransaction undefined, this, (-> 
+          UpdateBarrier.inTransaction undefined, this, (->
             reply = sink initial(current.get().value())
           ), []
           maybeSubSource()
@@ -950,44 +950,51 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, consume, @subscribe, lazy = false, queue = []) ->
-    lazify = if lazy then (x) -> (-> x) else _.id
-    @subscribe = obs.subscribeInternal if not @subscribe?
-    @markEnded = -> @ended = true
+  constructor: (@obs, @sync, @subscribe, @lazy = false, @queue = []) ->
+    @subscribe = @obs.subscribeInternal if not @subscribe?
     @toString = @obs.toString
-    if consume
-      @consume = -> lazify(queue.shift())
-      @push  = (x) -> queue.push(x)
-      @mayHave = (c) -> !@ended || queue.length >= c
-      @hasAtLeast = (c) -> queue.length >= c
-      @flatten = false
+  markEnded: -> @ended = true
+  consume: ->
+    if @lazy
+      _.always(@queue[0])
     else
-      @consume = -> lazify(queue[0])
-      @push  = (x) -> queue = [x]
-      @mayHave = -> true
-      @hasAtLeast = -> queue.length
-      @flatten = true
+      @queue[0]
+  push: (x) -> @queue = [x]
+  mayHave: -> true
+  hasAtLeast: -> @queue.length
+  flatten: true
+
+
+class ConsumedSource extends Source
+  consume: ->
+    if @lazy
+      _.always(@queue.shift())
+    else
+      @queue.shift()
+  push: (x) -> @queue.push(x)
+  mayHave: (c) -> !@ended || @queue.length >= c
+  hasAtLeast: (c) -> @queue.length >= c
+  flatten: false
 
 class BufferingSource extends Source
   constructor: (@obs) ->
-    queue = []
-    super(@obs, true, false, @obs.subscribeInternal, false, queue)
-    @consume = ->
-      values = queue
-      queue = []
-      -> values
-    @push = (x) -> queue.push(x())
-    @hasAtLeast = -> true
+    super(@obs, true, @obs.subscribeInternal, false)
+  consume: ->
+    values = @queue
+    @queue = []
+    -> values
+  push: (x) -> @queue.push(x())
+  hasAtLeast: -> true
 
 Source.fromObservable = (s) ->
   if s instanceof Source
     s
   else if s instanceof Property
-    new Source(s, false, false)
+    new Source(s, false)
   else
-    new Source(s, true, true)
+    new ConsumedSource(s, true)
 
-describe = (context, method, args...) -> 
+describe = (context, method, args...) ->
   if (context || method) instanceof Desc
     context || method
   else
@@ -1066,7 +1073,7 @@ Bacon.when = (patterns...) ->
       ends = false
       match = (p) ->
         for i in p.ixs
-          if !sources[i.index].hasAtLeast(i.count) 
+          if !sources[i.index].hasAtLeast(i.count)
             return false
         return true
       cannotSync = (source) ->
@@ -1161,7 +1168,7 @@ class CompositeUnsubscribe
     @subscriptions = []
     @starting = []
     @add s for s in ss
-  add: (subscription) =>
+  add: (subscription) ->
     return if @unsubscribed
     ended = false
     unsub = nop
@@ -1184,10 +1191,10 @@ class CompositeUnsubscribe
     s() for s in @subscriptions
     @subscriptions = []
     @starting = []
-  count: =>
+  count: ->
     return 0 if @unsubscribed
     @subscriptions.length + @starting.length
-  empty: =>
+  empty: ->
     @count() == 0
 
 Bacon.CompositeUnsubscribe = CompositeUnsubscribe
@@ -1232,7 +1239,7 @@ UpdateBarrier = (->
   independent = (waiter) ->
     !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
 
-  whenDoneWith = (obs, f) -> 
+  whenDoneWith = (obs, f) ->
     if rootEvent
       waiters.push {obs, f}
     else
@@ -1266,7 +1273,7 @@ UpdateBarrier = (->
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
 
-  wrappedSubscribe = (obs) -> (sink) -> 
+  wrappedSubscribe = (obs) -> (sink) ->
     unsubd = false
     doUnsub = ->
     unsub = ->
@@ -1336,7 +1343,7 @@ makeObservable = (x) ->
   if (isObservable(x))
     x
   else
-    Bacon.once(x) 
+    Bacon.once(x)
 isFieldKey = (f) ->
   (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
 Bacon.isFieldKey = isFieldKey
@@ -1425,7 +1432,7 @@ _ = {
       seed = f(seed, x)
     seed
   flatMap: (f, xs) ->
-    _.fold xs, [], ((ys, x) -> 
+    _.fold xs, [], ((ys, x) ->
       ys.concat(f(x)))
 
   cached: (f) ->
@@ -1435,7 +1442,7 @@ _ = {
         value = f()
         f = null
       value
-  toString: (obj) -> 
+  toString: (obj) ->
     try
       recursionDepth++
       if !obj?
