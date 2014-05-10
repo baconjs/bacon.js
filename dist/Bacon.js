@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumedSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.11';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -1786,12 +1786,12 @@
   })(EventStream);
 
   Source = (function() {
-    function Source(obs, sync, subscribe, lazy, queue) {
+    function Source(obs, sync, subscribe, lazy) {
       this.obs = obs;
       this.sync = sync;
       this.subscribe = subscribe;
       this.lazy = lazy != null ? lazy : false;
-      this.queue = queue != null ? queue : [];
+      this.queue = [];
       if (this.subscribe == null) {
         this.subscribe = this.obs.subscribeInternal;
       }
@@ -1828,36 +1828,32 @@
 
   })();
 
-  ConsumedSource = (function(_super) {
-    __extends(ConsumedSource, _super);
+  ConsumingSource = (function(_super) {
+    __extends(ConsumingSource, _super);
 
-    function ConsumedSource() {
-      return ConsumedSource.__super__.constructor.apply(this, arguments);
+    function ConsumingSource() {
+      return ConsumingSource.__super__.constructor.apply(this, arguments);
     }
 
-    ConsumedSource.prototype.consume = function() {
-      if (this.lazy) {
-        return _.always(this.queue.shift());
-      } else {
-        return this.queue.shift();
-      }
+    ConsumingSource.prototype.consume = function() {
+      return this.queue.shift();
     };
 
-    ConsumedSource.prototype.push = function(x) {
+    ConsumingSource.prototype.push = function(x) {
       return this.queue.push(x);
     };
 
-    ConsumedSource.prototype.mayHave = function(c) {
+    ConsumingSource.prototype.mayHave = function(c) {
       return !this.ended || this.queue.length >= c;
     };
 
-    ConsumedSource.prototype.hasAtLeast = function(c) {
+    ConsumingSource.prototype.hasAtLeast = function(c) {
       return this.queue.length >= c;
     };
 
-    ConsumedSource.prototype.flatten = false;
+    ConsumingSource.prototype.flatten = false;
 
-    return ConsumedSource;
+    return ConsumingSource;
 
   })(Source);
 
@@ -1866,7 +1862,7 @@
 
     function BufferingSource(obs) {
       this.obs = obs;
-      BufferingSource.__super__.constructor.call(this, this.obs, true, this.obs.subscribeInternal, false);
+      BufferingSource.__super__.constructor.call(this, this.obs, true, this.obs.subscribeInternal);
     }
 
     BufferingSource.prototype.consume = function() {
@@ -1896,7 +1892,7 @@
     } else if (s instanceof Property) {
       return new Source(s, false);
     } else {
-      return new ConsumedSource(s, true);
+      return new ConsumingSource(s, true);
     }
   };
 
