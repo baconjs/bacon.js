@@ -950,7 +950,8 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, @subscribe, @lazy = false, @queue = []) ->
+  constructor: (@obs, @sync, @subscribe, @lazy = false) ->
+    @queue = []
     @subscribe = @obs.subscribeInternal if not @subscribe?
     @toString = @obs.toString
   markEnded: -> @ended = true
@@ -963,7 +964,6 @@ class Source
   mayHave: -> true
   hasAtLeast: -> @queue.length
   flatten: true
-
 
 class ConsumedSource extends Source
   consume: ->
