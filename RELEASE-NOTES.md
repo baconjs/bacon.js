@@ -1,3 +1,7 @@
+## 0.7.11
+
+- Optimizations by @lautis (#370)
+
 ## 0.7.9
 
 - Fix #348: toString problems with jQuery
