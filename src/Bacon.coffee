@@ -157,7 +157,7 @@ Bacon.fromArray = (values) ->
       if _.empty values
         sink(end())
       else
-        value = values.splice(0,1)[0]
+        value = values.shift()
         reply = sink(toEvent(value))
         if (reply != Bacon.noMore) && !unsubd
           send()
@@ -1237,7 +1237,8 @@ None =
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
-  afters = []
+  processingAfters = false
+  aftersStack = [ afters = [] ]
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)
@@ -1253,8 +1254,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
+      waiters.push(waiters.shift())
+    return waiters.shift()
 
   flush = ->
     while waiters.length
@@ -1267,15 +1268,25 @@ UpdateBarrier = (->
     else
       #console.log "start tx"
       rootEvent = event
+      if processingAfters
+        aftersStack.push afters = []
       try
         result = f.apply(context, args)
         #console.log("done with tx")
         flush()
       finally
         rootEvent = undefined
-        while (afters.length)
-          f = afters.splice(0, 1)[0]
-          f()
+        processingAfters = true
+        try
+          while afters.length
+            f = afters.shift()
+            f()
+        finally
+          if (l = aftersStack.length) > 1
+            aftersStack.pop()
+            afters = aftersStack[l - 2]
+          else
+            processingAfters = false
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
