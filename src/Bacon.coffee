@@ -1048,7 +1048,6 @@ Bacon.when = (patterns...) ->
        f = patterns[i+1]
        pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
        for s in patSources
-         assert isObservable(s), usage
          index = _.indexOf(sources, s)
          if index < 0
             sources.push(s)
