@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumedSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.10';
+  Bacon.version = '<version>';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -341,7 +341,7 @@
         _results = [];
         for (_j = 0, _len1 = streams.length; _j < _len1; _j++) {
           s = streams[_j];
-          _results.push(new Source(s, true, false, s.subscribeInternal));
+          _results.push(new Source(s, true, s.subscribeInternal));
         }
         return _results;
       })();
@@ -505,11 +505,11 @@
     };
 
     Next.prototype.fmap = function(f) {
-      return this.apply((function(_this) {
-        return function() {
-          return f(_this.value());
-        };
-      })(this));
+      var value;
+      value = this.value;
+      return this.apply(function() {
+        return f(value());
+      });
     };
 
     Next.prototype.apply = function(value) {
@@ -617,12 +617,7 @@
 
   Observable = (function() {
     function Observable(desc) {
-      this.combine = __bind(this.combine, this);
-      this.flatMapLatest = __bind(this.flatMapLatest, this);
-      this.fold = __bind(this.fold, this);
-      this.scan = __bind(this.scan, this);
       this.id = ++idCounter;
-      this.assign = this.onValue;
       withDescription(desc, this);
     }
 
@@ -849,7 +844,7 @@
     };
 
     Observable.prototype.scan = function(seed, f, lazyF) {
-      var acc, f_, resultProperty, root, subscribe;
+      var acc, f_, resultProperty, subscribe;
       f_ = toCombinator(f);
       f = lazyF ? f_ : function(x, y) {
         return f_(x(), y());
@@ -857,7 +852,6 @@
       acc = toOption(seed).map(function(x) {
         return _.always(x);
       });
-      root = this;
       subscribe = (function(_this) {
         return function(sink) {
           var initSent, reply, sendInit, unsub;
@@ -945,11 +939,9 @@
       var f, stream;
       f = makeSpawner(arguments);
       stream = this.toEventStream();
-      return withDescription(this, "flatMapLatest", f, stream.flatMap((function(_this) {
-        return function(value) {
-          return makeObservable(f(value)).takeUntil(stream);
-        };
-      })(this)));
+      return withDescription(this, "flatMapLatest", f, stream.flatMap(function(value) {
+        return makeObservable(f(value)).takeUntil(stream);
+      }));
     };
 
     Observable.prototype.not = function() {
@@ -1017,6 +1009,8 @@
 
   Observable.prototype.reduce = Observable.prototype.fold;
 
+  Observable.prototype.assign = Observable.prototype.onValue;
+
   flatMap_ = function(root, f, firstOnly) {
     return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
       var checkEnd, composite;
@@ -1070,8 +1064,6 @@
     __extends(EventStream, _super);
 
     function EventStream(desc, subscribe) {
-      this.takeUntil = __bind(this.takeUntil, this);
-      this.sampledBy = __bind(this.sampledBy, this);
       var dispatcher;
       if (isFunction(desc)) {
         subscribe = desc;
@@ -1330,10 +1322,6 @@
     __extends(Property, _super);
 
     function Property(desc, subscribe, handler) {
-      this.toEventStream = __bind(this.toEventStream, this);
-      this.toProperty = __bind(this.toProperty, this);
-      this.changes = __bind(this.changes, this);
-      this.sample = __bind(this.sample, this);
       if (isFunction(desc)) {
         handler = subscribe;
         subscribe = desc;
@@ -1346,27 +1334,26 @@
       } else {
         this.subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe;
       }
-      this.sampledBy = (function(_this) {
-        return function(sampler, combinator) {
-          var lazy, result, samplerSource, stream, thisSource;
-          if (combinator != null) {
-            combinator = toCombinator(combinator);
-          } else {
-            lazy = true;
-            combinator = function(f) {
-              return f();
-            };
-          }
-          thisSource = new Source(_this, false, false, _this.subscribeInternal, lazy);
-          samplerSource = new Source(sampler, true, false, sampler.subscribeInternal, lazy);
-          stream = Bacon.when([thisSource, samplerSource], combinator);
-          result = sampler instanceof Property ? stream.toProperty() : stream;
-          return withDescription(_this, "sampledBy", sampler, combinator, result);
-        };
-      })(this);
       this.subscribe = UpdateBarrier.wrappedSubscribe(this);
       registerObs(this);
     }
+
+    Property.prototype.sampledBy = function(sampler, combinator) {
+      var lazy, result, samplerSource, stream, thisSource;
+      if (combinator != null) {
+        combinator = toCombinator(combinator);
+      } else {
+        lazy = true;
+        combinator = function(f) {
+          return f();
+        };
+      }
+      thisSource = new Source(this, false, this.subscribeInternal, lazy);
+      samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy);
+      stream = Bacon.when([thisSource, samplerSource], combinator);
+      result = sampler instanceof Property ? stream.toProperty() : stream;
+      return withDescription(this, "sampledBy", sampler, combinator, result);
+    };
 
     Property.prototype.sample = function(interval) {
       return withDescription(this, "sample", interval, this.sampledBy(Bacon.interval(interval, {})));
@@ -1512,7 +1499,7 @@
         };
       }
       subscriptions = [];
-      queue = null;
+      queue = [];
       pushing = false;
       ended = false;
       this.hasSubscribers = function() {
@@ -1561,13 +1548,12 @@
           } finally {
             pushing = false;
             if (!success) {
-              queue = null;
+              queue = [];
             }
           }
           success = true;
-          while (queue != null ? queue.length : void 0) {
-            event = _.head(queue);
-            queue = _.tail(queue);
+          while (queue.length) {
+            event = queue.shift();
             this.push(event);
           }
           done(event);
@@ -1578,7 +1564,7 @@
             return Bacon.noMore;
           }
         } else {
-          queue = (queue || []).concat([event]);
+          queue.push(event);
           return Bacon.more;
         }
       };
@@ -1611,7 +1597,7 @@
             subscription = {
               sink: sink
             };
-            subscriptions = subscriptions.concat(subscription);
+            subscriptions.push(subscription);
             if (subscriptions.length === 1) {
               unsubSrc = subscribe(_this.handleEvent);
               unsubscribeFromSource = function() {
@@ -1800,87 +1786,105 @@
   })(EventStream);
 
   Source = (function() {
-    function Source(obs, sync, consume, subscribe, lazy, queue) {
-      var lazify;
+    function Source(obs, sync, subscribe, lazy, queue) {
       this.obs = obs;
       this.sync = sync;
       this.subscribe = subscribe;
-      if (lazy == null) {
-        lazy = false;
-      }
-      if (queue == null) {
-        queue = [];
-      }
-      lazify = lazy ? function(x) {
-        return function() {
-          return x;
-        };
-      } : _.id;
+      this.lazy = lazy != null ? lazy : false;
+      this.queue = queue != null ? queue : [];
       if (this.subscribe == null) {
-        this.subscribe = obs.subscribeInternal;
+        this.subscribe = this.obs.subscribeInternal;
       }
-      this.markEnded = function() {
-        return this.ended = true;
-      };
       this.toString = this.obs.toString;
-      if (consume) {
-        this.consume = function() {
-          return lazify(queue.shift());
-        };
-        this.push = function(x) {
-          return queue.push(x);
-        };
-        this.mayHave = function(c) {
-          return !this.ended || queue.length >= c;
-        };
-        this.hasAtLeast = function(c) {
-          return queue.length >= c;
-        };
-        this.flatten = false;
-      } else {
-        this.consume = function() {
-          return lazify(queue[0]);
-        };
-        this.push = function(x) {
-          return queue = [x];
-        };
-        this.mayHave = function() {
-          return true;
-        };
-        this.hasAtLeast = function() {
-          return queue.length;
-        };
-        this.flatten = true;
-      }
     }
+
+    Source.prototype.markEnded = function() {
+      return this.ended = true;
+    };
+
+    Source.prototype.consume = function() {
+      if (this.lazy) {
+        return _.always(this.queue[0]);
+      } else {
+        return this.queue[0];
+      }
+    };
+
+    Source.prototype.push = function(x) {
+      return this.queue = [x];
+    };
+
+    Source.prototype.mayHave = function() {
+      return true;
+    };
+
+    Source.prototype.hasAtLeast = function() {
+      return this.queue.length;
+    };
+
+    Source.prototype.flatten = true;
 
     return Source;
 
   })();
 
+  ConsumedSource = (function(_super) {
+    __extends(ConsumedSource, _super);
+
+    function ConsumedSource() {
+      return ConsumedSource.__super__.constructor.apply(this, arguments);
+    }
+
+    ConsumedSource.prototype.consume = function() {
+      if (this.lazy) {
+        return _.always(this.queue.shift());
+      } else {
+        return this.queue.shift();
+      }
+    };
+
+    ConsumedSource.prototype.push = function(x) {
+      return this.queue.push(x);
+    };
+
+    ConsumedSource.prototype.mayHave = function(c) {
+      return !this.ended || this.queue.length >= c;
+    };
+
+    ConsumedSource.prototype.hasAtLeast = function(c) {
+      return this.queue.length >= c;
+    };
+
+    ConsumedSource.prototype.flatten = false;
+
+    return ConsumedSource;
+
+  })(Source);
+
   BufferingSource = (function(_super) {
     __extends(BufferingSource, _super);
 
     function BufferingSource(obs) {
-      var queue;
       this.obs = obs;
-      queue = [];
-      BufferingSource.__super__.constructor.call(this, this.obs, true, false, this.obs.subscribeInternal, false, queue);
-      this.consume = function() {
-        var values;
-        values = queue;
-        queue = [];
-        return function() {
-          return values;
-        };
-      };
-      this.push = function(x) {
-        return queue.push(x());
-      };
-      this.hasAtLeast = function() {
-        return true;
-      };
+      BufferingSource.__super__.constructor.call(this, this.obs, true, this.obs.subscribeInternal, false);
     }
+
+    BufferingSource.prototype.consume = function() {
+      var values;
+      values = this.queue;
+      this.queue = [];
+      return function() {
+        return values;
+      };
+    };
+
+    BufferingSource.prototype.push = function(x) {
+      return this.queue.push(x());
+    };
+
+    BufferingSource.prototype.hasAtLeast = function() {
+      return true;
+    };
 
     return BufferingSource;
 
@@ -1890,9 +1894,9 @@
     if (s instanceof Source) {
       return s;
     } else if (s instanceof Property) {
-      return new Source(s, false, false);
+      return new Source(s, false);
     } else {
-      return new Source(s, true, true);
+      return new ConsumedSource(s, true);
     }
   };
 
@@ -2231,10 +2235,7 @@
       if (ss == null) {
         ss = [];
       }
-      this.empty = __bind(this.empty, this);
-      this.count = __bind(this.count, this);
       this.unsubscribe = __bind(this.unsubscribe, this);
-      this.add = __bind(this.add, this);
       this.unsubscribed = false;
       this.subscriptions = [];
       this.starting = [];
