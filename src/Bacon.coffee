@@ -965,7 +965,7 @@ class Source
   hasAtLeast: -> @queue.length
   flatten: true
 
-class ConsumedSource extends Source
+class ConsumingSource extends Source
   consume: -> @queue.shift()
   push: (x) -> @queue.push(x)
   mayHave: (c) -> !@ended || @queue.length >= c
@@ -988,7 +988,7 @@ Source.fromObservable = (s) ->
   else if s instanceof Property
     new Source(s, false)
   else
-    new ConsumedSource(s, true)
+    new ConsumingSource(s, true)
 
 describe = (context, method, args...) ->
   if (context || method) instanceof Desc
