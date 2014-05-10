@@ -982,6 +982,12 @@ class BufferingSource extends Source
   push: (x) -> @queue.push(x())
   hasAtLeast: -> true
 
+Source.isTrigger = (s) ->
+  if s instanceof Source
+    s.sync
+  else
+    s instanceof EventStream
+
 Source.fromObservable = (s) ->
   if s instanceof Source
     s
@@ -1047,18 +1053,24 @@ Bacon.when = (patterns...) ->
        patSources = _.toArray patterns[i]
        f = patterns[i+1]
        pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
+       triggerFound = false
        for s in patSources
          index = _.indexOf(sources, s)
+         if !triggerFound
+           triggerFound = Source.isTrigger(s)
          if index < 0
             sources.push(s)
             index = sources.length - 1
          (ix.count++ if ix.index == index) for ix in pat.ixs
          pat.ixs.push {index: index, count: 1}
+       assert "At least one EventStream required", (triggerFound || (!patSources.length))
+
        pats.push pat if patSources.length > 0
        i = i + 2
 
     if !sources.length
       return Bacon.never()
+
 
     sources = _.map Source.fromObservable, sources
     needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))

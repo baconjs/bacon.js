@@ -21,6 +21,13 @@ Bacon.scheduler = sc
 # Generally, all flatMap-based streams are unstable because flatMap discards
 # child streams on unsubscribe.
 unstable = {unstable:true}
+expectError = (errorText, f) ->
+  try
+    f()
+    fail("Error expected")
+  catch err
+    expect(err).to.equal(errorText)
+
 
 describe "Bacon._", ->
   _ = Bacon._
@@ -2442,13 +2449,6 @@ describe "Bacon.when", ->
       [])
     expectStreamEvents(
       ->
-        p = repeat(1, ["p"]).take(100).toProperty()
-        s = series(3, ["1", "2", "3"]).toProperty()
-        Bacon.when(
-          [p,s], (p, s) -> p + s)
-      [])
-    expectStreamEvents(
-      ->
         [a,b,c,_] = ['a','b','c','_']
         as = series(1, [a, _, a, _, a, _, a, _, _, _, a, _, a]).filter((x) -> x == a)
         bs = series(1, [_, b, _, _, _, b, _, b, _, b, _, _, _]).filter((x) -> x == b)
@@ -2457,6 +2457,8 @@ describe "Bacon.when", ->
           [as, bs, cs], (a,b,c) ->  a + b + c,
           [as],         (a)   ->  a)
       ['a', 'ab0', 'a', 'ab1', 'ab2', 'ab3'], unstable)
+  it "Rejects patterns with Properties only", -> expectError("At least one EventStream required", ->
+    Bacon.when([Bacon.constant()], ->))
   describe "doesn't output before properties have values", ->
     expectStreamEvents(
       ->
@@ -2547,6 +2549,8 @@ describe "Bacon.update", ->
           0,
           [one, two],  (i, a, b) -> [i,a,b])
       [0, [0,1,2]], unstable)
+  it "Rejects patterns with Properties only", -> expectError("At least one EventStream required", ->
+    Bacon.update(0, [Bacon.constant()], ->))
   it "toString", ->
     expect(Bacon.update(0, [Bacon.never()], (->)).toString()).to.equal("Bacon.update(0,[Bacon.never()],function)")
 
