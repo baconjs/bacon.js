@@ -966,11 +966,7 @@ class Source
   flatten: true
 
 class ConsumedSource extends Source
-  consume: ->
-    if @lazy
-      _.always(@queue.shift())
-    else
-      @queue.shift()
+  consume: -> @queue.shift()
   push: (x) -> @queue.push(x)
   mayHave: (c) -> !@ended || @queue.length >= c
   hasAtLeast: (c) -> @queue.length >= c
