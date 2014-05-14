@@ -1,3 +1,7 @@
+## NEXT
+
+- Add Bacon.retry, flatMapError, Bacon.error by @mileskin (#310)
+
 ## 0.7.11
 
 - Optimizations by @lautis (#370)
