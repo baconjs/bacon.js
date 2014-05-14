@@ -148,6 +148,8 @@ Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
 
 Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([value]))
 
+Bacon.error = (err) -> withDescription(Bacon, "error", err, Bacon.fromArray([new Bacon.Error(err)]))
+
 Bacon.fromArray = (values) ->
   assertArray values
   values = cloneArray(values)
@@ -1320,12 +1322,6 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
-
-Bacon.error = (err) ->
-  new Bacon.EventStream (subscriber) ->
-    subscriber(new Bacon.Error(err))
-    subscriber(new Bacon.End())
-    ->
 
 nop = ->
 latterF = (_, x) -> x()
