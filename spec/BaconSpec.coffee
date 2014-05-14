@@ -2716,6 +2716,8 @@ describe "Bacon.retry", ->
       done()
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
+  it "toString", ->
+    expect(Bacon.retry({source: -> Bacon.once(1)}).toString()).to.equals("Bacon.retry({source:function})")
 
 describe "Property.decode", ->
   describe "switches between source Properties based on property value", ->
