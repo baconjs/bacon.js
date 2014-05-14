@@ -374,7 +374,7 @@ new Bacon.Next("value")
 
 But the canonical way would be
 ```js
-new Bacon.Next(function() { return "value") })
+new Bacon.Next(function() { return "value"; })
 ```
 
 The former version is safe only when you know that the actual value in
@@ -566,7 +566,7 @@ stream.flatMap(function(text) {
 ```
 
 <a name="observable-flatmaplatest"></a>
-[`observable.flatMapLatest(f)`](#observable-flatmaplatest "observable.flatMapLatest(f)") like flatMap, but instead of including events from
+[`observable.flatMapLatest(f)`](#observable-flatmaplatest "observable.flatMapLatest(f)") like [`flatMap`](#observable-flatmap), but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream.
 Note that instead of a function, you can provide a stream/property too.
@@ -576,6 +576,23 @@ The [Function Construction rules](#function-construction-rules) below apply here
 <a name="observable-flatmapfirst"></a>
 [`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but doesn't spawns a new
 stream only if the previously spawned stream has ended.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-flatmapwithconcurrencylimit"></a>
+[`observable.flatMapWithConcurrencyLimit(limit, f)`](#observable-flatmapwithconcurrencylimit "observable.flatMapWithConcurrencyLimit(@ : Observable[A], limit : Number, f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
+[`flatMapConcat`](#observable-flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
+and [`flatMap`](#observable-flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-flatmapconcat"></a>
+[`observable.flatMapConcat(f)`](#observable-flatmapconcat "observable.flatMapConcat(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a [`flatMapWithConcurrencyLimit`](#observable-flatmapwithconcurrencylimit) with limit of 1.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-ratelimit"></a>
+[`observable.rateLimit(minimumInterval)`](#observable-ratelimit "observable.rateLimit(@ : Observable[A], minimumInterval) : EventStream[A]") rate limits and buffers changes in the observable, so at most one event in minimumInteval is issued.
 
 <a name="observable-scan"></a>
 [`observable.scan(seed, f)`](#observable-scan "observable.scan(seed, f) : Property[A]") scans stream/property with given seed value and
@@ -843,6 +860,10 @@ stream.
 
 <a name="stream-merge"></a>
 [`stream.merge(otherStream)`](#stream-merge "stream.merge(otherStream)") merges two streams into one stream that delivers events from both
+
+<a name="stream-holdwhen"></a>
+[`stream.holdWhen(valve)`](#stream-holdwhen "stream.holdWhen(@ : EventStream[A], valve : Observable[B]) : EventStream[A]") pauses and buffers the event stream if last event in valve is truthy.
+All buffered events are released when valve becomes falsy.
 
 <a name="stream-startwith"></a>
 [`stream.startWith(value)`](#stream-startwith "stream.startWith(value)") adds a starting value to the stream, i.e. concats a
