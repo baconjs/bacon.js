@@ -148,8 +148,6 @@ Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
 
 Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([value]))
 
-Bacon.error = (err) -> withDescription(Bacon, "error", err, Bacon.fromArray([new Bacon.Error(err)]))
-
 Bacon.fromArray = (values) ->
   assertArray values
   values = cloneArray(values)
@@ -256,8 +254,7 @@ Bacon.retry = (options) ->
     if isRetryable(e) && retries > 0
       retry(error: e, retriesDone: maxRetries - retries)
     else
-      Bacon.error(e))
-
+      Bacon.once(new Bacon.Error(e)))
 
 eventIdCounter = 0
 

@@ -1168,12 +1168,6 @@ describe "Bacon.once", ->
       -> Bacon.once(error())
       [error()])
 
-describe "Bacon.error", ->
-  describe "sends a single error and ends", ->
-    expectStreamEvents(
-      -> Bacon.error("oh noes")
-      [error()])
-
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
     expectStreamEvents(
@@ -2673,7 +2667,7 @@ describe "Bacon.retry", ->
         source = ->
           calls += 1
           if calls < 3
-            Bacon.error()
+            Bacon.once(new Bacon.Error())
           else
             Bacon.once({calls})
         Bacon.retry({source, retries: 5})
@@ -2688,7 +2682,7 @@ describe "Bacon.retry", ->
         calls = 0
         source = ->
           calls += 1
-          Bacon.error({calls})
+          Bacon.once(new Bacon.Error({calls}))
         isRetryable = ({calls}) ->
           calls < 2
         Bacon.retry({source, isRetryable, retries: 5})
@@ -2699,7 +2693,7 @@ describe "Bacon.retry", ->
         calls = 0
         source = ->
           calls += 1
-          Bacon.error({calls})
+          Bacon.once(new Bacon.Error({calls}))
         Bacon.retry {source, retries: 2}
       [error(calls: 3)]) # TODO: assert error content
   it "allows specifying interval by context for each retry", (done) ->
@@ -2707,7 +2701,7 @@ describe "Bacon.retry", ->
     contexts = []
     source = ->
       calls += 1
-      Bacon.error({calls})
+      Bacon.once(new Bacon.Error({calls}))
     interval = (context) ->
       contexts.push(context)
       1
