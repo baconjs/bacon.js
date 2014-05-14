@@ -148,6 +148,8 @@ Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
 
 Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([value]))
 
+Bacon.error = (err) -> withDescription(Bacon, "error", err, Bacon.fromArray([new Bacon.Error(err)]))
+
 Bacon.fromArray = (values) ->
   assertArray values
   values = cloneArray(values)
@@ -236,6 +238,26 @@ Bacon.combineTemplate = (template) ->
        f(ctxStack, values)
     rootContext
   withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
+
+
+Bacon.retry = (options) ->
+  throw "'source' option has to be a function" unless isFunction(options.source)
+  source = options.source
+  retries = options.retries || 0
+  maxRetries = options.maxRetries || retries
+  interval = options.interval || -> 0
+  isRetryable = options.isRetryable || -> true
+
+  retry = (context) ->
+    nextAttemptOptions = {source, retries: retries - 1, maxRetries, interval, isRetryable}
+    Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions))
+
+  withDescription(Bacon, "retry", options, source().flatMapError (e) ->
+    if isRetryable(e) && retries > 0
+      retry(error: e, retriesDone: maxRetries - retries)
+    else
+      Bacon.error(e))
+
 
 eventIdCounter = 0
 
@@ -478,6 +500,14 @@ class Observable
     stream = @toEventStream()
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
       makeObservable(f(value)).takeUntil(stream))
+
+  flatMapError: (fn) =>
+    withDescription this, "flatMapError", fn, @mapError((err) -> new Bacon.Error(err)).flatMap (x) ->
+      if x instanceof Bacon.Error
+        fn(x.error)
+      else
+        Bacon.once(x)
+
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.log())
