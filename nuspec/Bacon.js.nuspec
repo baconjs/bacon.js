@@ -3,7 +3,7 @@
   <metadata>
     <id>Bacon.js</id>
     <title>Bacon.js - Functional Reactive Programming library for JavaScript</title>
-    <version>0.7.10</version>
+    <version>0.7.12</version>
     <authors>Bacon.js Organization</authors>
     <description>
         Functional reactive programming lib for JavaScript. Turns your event spaghetti into clean and declarative feng shui bacon, by switching from imperative to functional.

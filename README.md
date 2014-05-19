@@ -88,8 +88,8 @@ Version 0.7.10 can also be found from cdnjs hosting:
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.10/bacon.js
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.10/bacon.min.js
 
-Visual Studio users can obtain version 0.7.10 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.10
+Visual Studio users can obtain version 0.7.12 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.12
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -374,7 +374,7 @@ new Bacon.Next("value")
 
 But the canonical way would be
 ```js
-new Bacon.Next(function() { return "value") })
+new Bacon.Next(function() { return "value"; })
 ```
 
 The former version is safe only when you know that the actual value in
@@ -1268,7 +1268,7 @@ as well as all the spawned stream.
 You can take action on errors by using the [`observable.onError(f)`](#observable-onerror)
 callback.
 
-See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors) above.
+See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors), `Bacon.retry` and `flatMapError` above.
 
 In case you want to convert (some) value events into [`Error`](#bacon-error) events, you may use [`flatMap`](#observable-flatmap) like this:
 
