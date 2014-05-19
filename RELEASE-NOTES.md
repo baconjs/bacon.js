@@ -1,6 +1,7 @@
-## NEXT
+## 0.7.12
 
 - Add Bacon.retry, flatMapError, Bacon.error by @mileskin (#310)
+- Improve mergeAll performance by removing recursion (#373)
 
 ## 0.7.11
 
