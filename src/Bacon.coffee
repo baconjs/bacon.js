@@ -167,7 +167,24 @@ Bacon.fromArray = (values) ->
 Bacon.mergeAll = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
-  withDescription Bacon, "mergeAll", streams..., _.fold(streams, Bacon.never(), ((a, b) -> a.merge(b)))
+  if streams.length
+    new EventStream describe(Bacon, "mergeAll", streams...), (sink) ->
+      ends = 0
+      smartSink = (obs) -> (unsubBoth) -> obs.subscribeInternal (event) ->
+        if event.isEnd()
+          ends++
+          if ends == streams.length
+            sink end()
+          else
+            Bacon.more
+        else
+          reply = sink event
+          unsubBoth() if reply == Bacon.noMore
+          reply
+      sinks = _.map smartSink, streams
+      compositeUnsubscribe sinks...
+  else
+    Bacon.never()
 
 Bacon.zipAsArray = (streams...) ->
   if isArray streams[0]
@@ -647,20 +664,7 @@ class EventStream extends Observable
   merge: (right) ->
     assertEventStream(right)
     left = this
-    new EventStream describe(left, "merge", right), (sink) ->
-      ends = 0
-      smartSink = (obs) -> (unsubBoth) -> obs.subscribeInternal (event) ->
-        if event.isEnd()
-          ends++
-          if ends == 2
-            sink end()
-          else
-            Bacon.more
-        else
-          reply = sink event
-          unsubBoth() if reply == Bacon.noMore
-          reply
-      compositeUnsubscribe (smartSink left), (smartSink right)
+    withDescription left, "merge", right, Bacon.mergeAll(this, right)
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0

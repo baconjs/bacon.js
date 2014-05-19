@@ -1328,7 +1328,7 @@ as well as all the spawned stream.
 You can take action on errors by using the `observable.onError(f)`
 callback.
 
-See documentation on `onError`, `mapError`, `errors`, `skipErrors` above.
+See documentation on `onError`, `mapError`, `errors`, `skipErrors`, `Bacon.retry` and `flatMapError` above.
 
 In case you want to convert (some) value events into [`Error`](#bacon-error) events, you may use `flatMap` like this:
 
