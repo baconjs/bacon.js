@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.11';
+  Bacon.version = '0.7.12';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -271,9 +271,37 @@
     if (isArray(streams[0])) {
       streams = streams[0];
     }
-    return withDescription.apply(null, [Bacon, "mergeAll"].concat(__slice.call(streams), [_.fold(streams, Bacon.never(), (function(a, b) {
-      return a.merge(b);
-    }))]));
+    if (streams.length) {
+      return new EventStream(describe.apply(null, [Bacon, "mergeAll"].concat(__slice.call(streams))), function(sink) {
+        var ends, sinks, smartSink;
+        ends = 0;
+        smartSink = function(obs) {
+          return function(unsubBoth) {
+            return obs.subscribeInternal(function(event) {
+              var reply;
+              if (event.isEnd()) {
+                ends++;
+                if (ends === streams.length) {
+                  return sink(end());
+                } else {
+                  return Bacon.more;
+                }
+              } else {
+                reply = sink(event);
+                if (reply === Bacon.noMore) {
+                  unsubBoth();
+                }
+                return reply;
+              }
+            });
+          };
+        };
+        sinks = _.map(smartSink, streams);
+        return compositeUnsubscribe.apply(null, sinks);
+      });
+    } else {
+      return Bacon.never();
+    }
   };
 
   Bacon.zipAsArray = function() {
@@ -435,6 +463,43 @@
       return rootContext;
     };
     return withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator));
+  };
+
+  Bacon.retry = function(options) {
+    var interval, isRetryable, maxRetries, retries, retry, source;
+    if (!isFunction(options.source)) {
+      throw "'source' option has to be a function";
+    }
+    source = options.source;
+    retries = options.retries || 0;
+    maxRetries = options.maxRetries || retries;
+    interval = options.interval || function() {
+      return 0;
+    };
+    isRetryable = options.isRetryable || function() {
+      return true;
+    };
+    retry = function(context) {
+      var nextAttemptOptions;
+      nextAttemptOptions = {
+        source: source,
+        retries: retries - 1,
+        maxRetries: maxRetries,
+        interval: interval,
+        isRetryable: isRetryable
+      };
+      return Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions));
+    };
+    return withDescription(Bacon, "retry", options, source().flatMapError(function(e) {
+      if (isRetryable(e) && retries > 0) {
+        return retry({
+          error: e,
+          retriesDone: maxRetries - retries
+        });
+      } else {
+        return Bacon.once(new Bacon.Error(e));
+      }
+    }));
   };
 
   eventIdCounter = 0;
@@ -617,6 +682,7 @@
 
   Observable = (function() {
     function Observable(desc) {
+      this.flatMapError = __bind(this.flatMapError, this);
       this.id = ++idCounter;
       withDescription(desc, this);
     }
@@ -944,6 +1010,18 @@
       }));
     };
 
+    Observable.prototype.flatMapError = function(fn) {
+      return withDescription(this, "flatMapError", fn, this.mapError(function(err) {
+        return new Bacon.Error(err);
+      }).flatMap(function(x) {
+        if (x instanceof Bacon.Error) {
+          return fn(x.error);
+        } else {
+          return Bacon.once(x);
+        }
+      }));
+    };
+
     Observable.prototype.not = function() {
       return withDescription(this, "not", this.map(function(x) {
         return !x;
@@ -1190,32 +1268,7 @@
       var left;
       assertEventStream(right);
       left = this;
-      return new EventStream(describe(left, "merge", right), function(sink) {
-        var ends, smartSink;
-        ends = 0;
-        smartSink = function(obs) {
-          return function(unsubBoth) {
-            return obs.subscribeInternal(function(event) {
-              var reply;
-              if (event.isEnd()) {
-                ends++;
-                if (ends === 2) {
-                  return sink(end());
-                } else {
-                  return Bacon.more;
-                }
-              } else {
-                reply = sink(event);
-                if (reply === Bacon.noMore) {
-                  unsubBoth();
-                }
-                return reply;
-              }
-            });
-          };
-        };
-        return compositeUnsubscribe(smartSink(left), smartSink(right));
-      });
+      return withDescription(left, "merge", right, Bacon.mergeAll(this, right));
     };
 
     EventStream.prototype.toProperty = function(initValue) {
@@ -1886,6 +1939,14 @@
 
   })(Source);
 
+  Source.isTrigger = function(s) {
+    if (s instanceof Source) {
+      return s.sync;
+    } else {
+      return s instanceof EventStream;
+    }
+  };
+
   Source.fromObservable = function(s) {
     if (s instanceof Source) {
       return s;
@@ -1975,7 +2036,7 @@
   };
 
   Bacon.when = function() {
-    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, usage, _i, _j, _len, _len1, _ref1;
+    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref1;
     patterns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     if (patterns.length === 0) {
       return Bacon.never();
@@ -1995,10 +2056,13 @@
         })),
         ixs: []
       };
+      triggerFound = false;
       for (_i = 0, _len = patSources.length; _i < _len; _i++) {
         s = patSources[_i];
-        assert(isObservable(s), usage);
         index = _.indexOf(sources, s);
+        if (!triggerFound) {
+          triggerFound = Source.isTrigger(s);
+        }
         if (index < 0) {
           sources.push(s);
           index = sources.length - 1;
@@ -2015,6 +2079,7 @@
           count: 1
         });
       }
+      assert("At least one EventStream required", triggerFound ||  (!patSources.length));
       if (patSources.length > 0) {
         pats.push(pat);
       }
