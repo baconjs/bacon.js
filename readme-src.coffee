@@ -121,7 +121,7 @@ was used here to calculate the "current sum" of events in the `both` stream, by 
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
-Properties can be very conventiently used for assigning values and attributes to DOM elements with JQuery.
+Properties can be very conveniently used for assigning values and attributes to DOM elements with JQuery.
 Here we assign the value of a property as the text of a span element whenever it changes:
 
 ```js
