@@ -153,15 +153,14 @@ Bacon.fromArray = (values) ->
   values = cloneArray(values)
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
-    send = ->
+    reply = Bacon.more
+    while (reply != Bacon.noMore) && !unsubd
       if _.empty values
         sink(end())
+        reply = Bacon.noMore
       else
-        value = values.splice(0,1)[0]
+        value = _.popHead(values)
         reply = sink(toEvent(value))
-        if (reply != Bacon.noMore) && !unsubd
-          send()
-    send()
     -> unsubd = true
 
 Bacon.mergeAll = (streams...) ->
@@ -453,9 +452,9 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply
-  scan: (seed, f, lazyF) ->
+  scan: (seed, f, options = {}) ->
     f_ = toCombinator(f)
-    f = if lazyF then f_ else (x,y) -> f_(x(), y())
+    f = if options.lazyF then f_ else (x,y) -> f_(x(), y())
     acc = toOption(seed).map((x) -> _.always(x))
     subscribe = (sink) =>
       initSent = false
@@ -479,6 +478,7 @@ class Observable
             prev = acc.getOrElse(-> undefined)
             next = _.cached(-> f(prev, event.value))
             acc = new Some(next)
+            next() if (options.eager)
             sink (event.apply(next))
         else
           if event.isEnd()
@@ -488,8 +488,8 @@ class Observable
       unsub
     resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
-  fold: (seed, f) ->
-    withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
+  fold: (seed, f, options) ->
+    withDescription(this, "fold", seed, f, @scan(seed, f, options).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
     withDescription(this, "zip", other,
@@ -504,10 +504,14 @@ class Observable
       .map((tuple) -> tuple[1]))
 
   flatMap: ->
-    flatMap_(this, makeSpawner(arguments))
+    flatMap_ this, makeSpawner(arguments)
 
   flatMapFirst: ->
-    flatMap_(this, makeSpawner(arguments), true)
+    flatMap_ this, makeSpawner(arguments), true
+
+  flatMapWithConcurrencyLimit: (limit, args...) ->
+    withDescription this, "flatMapWithConcurrencyLimit", limit, args...,
+      flatMap_ this, makeSpawner(args), false, limit
 
   flatMapLatest: ->
     f = makeSpawner(arguments)
@@ -521,6 +525,15 @@ class Observable
         fn(x.error)
       else
         Bacon.once(x)
+
+  flatMapConcat: ->
+    withDescription this, "flatMapConcat", arguments...,
+      @flatMapWithConcurrencyLimit 1, arguments...
+
+  bufferingThrottle:  (minimumInterval) ->
+    withDescription this, "bufferingThrottle", minimumInterval,
+      @flatMapConcat (x) ->
+        Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
@@ -553,9 +566,27 @@ class Observable
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
 
-flatMap_ = (root, f, firstOnly) ->
+flatMap_ = (root, f, firstOnly, limit) ->
   new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
+    queue = []
+    spawn = (event) ->
+      child = makeObservable(f event.value())
+      composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
+        if event.isEnd()
+          checkQueue()
+          checkEnd(unsubMe)
+          Bacon.noMore
+        else
+          if event instanceof Initial
+            # To support Property as the spawned stream
+            event = event.toNext()
+          reply = sink event
+          unsubAll() if reply == Bacon.noMore
+          reply
+    checkQueue = ->
+      event = _.popHead(queue)
+      spawn event if event
     checkEnd = (unsub) ->
       unsub()
       sink end() if composite.empty()
@@ -568,18 +599,10 @@ flatMap_ = (root, f, firstOnly) ->
         Bacon.more
       else
         return Bacon.noMore if composite.unsubscribed
-        child = makeObservable(f event.value())
-        composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
-          if event.isEnd()
-            checkEnd(unsubMe)
-            Bacon.noMore
-          else
-            if event instanceof Initial
-              # To support Property as the spawned stream
-              event = event.toNext()
-            reply = sink event
-            unsubAll() if reply == Bacon.noMore
-            reply
+        if limit and composite.count() > limit
+          queue.push(event)
+        else
+          spawn event
     composite.unsubscribe
 
 
@@ -668,7 +691,7 @@ class EventStream extends Observable
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
-    withDescription this, "toProperty", initValue, @scan(initValue, latterF, true)
+    withDescription this, "toProperty", initValue, @scan(initValue, latterF, {lazyF: true})
 
   toEventStream: -> this
 
@@ -720,6 +743,19 @@ class EventStream extends Observable
           @push event
         else
           Bacon.more
+
+  holdWhen: (valve) ->
+    valve_ = valve.startWith(false)
+    releaseHold = valve_.filter (x) -> !x
+    putToHold = valve_.filter _.id
+
+    withDescription this, "holdWhen", valve,
+      # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
+      this.filter(false).merge valve_.flatMapConcat (shouldHold) =>
+        if !shouldHold
+          this.takeUntil(putToHold)
+        else
+          this.scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray)
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
@@ -790,6 +826,8 @@ class Property extends Observable
   startWith: (value) ->
     withDescription(this, "startWith", value,
       @scan(value, (prev, next) -> next))
+  bufferingThrottle: ->
+    super.bufferingThrottle(arguments...).toProperty()
 
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property
@@ -1284,8 +1322,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0, 1)[0])
-    return waiters.splice(0, 1)[0]
+      waiters.push(_.popHead(waiters))
+    return _.popHead(waiters)
 
   flush = ->
     while waiters.length
@@ -1465,6 +1503,8 @@ _ = {
     i = _.indexOf(xs, x)
     if i >= 0
       xs.splice(i, 1)
+  popHead: (xs) ->
+    xs.splice(0,1)[0]
   fold: (xs, seed, f) ->
     for x in xs
       seed = f(seed, x)

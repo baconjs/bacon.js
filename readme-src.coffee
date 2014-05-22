@@ -529,6 +529,24 @@ source.debounceImmediate(2): a-d-----a-d-----
 ```
 """
 
+doc.fn "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]", """
+throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+Unlike `throttle`, it doesn't discard the excessive events but buffers them instead, outputing
+them with a rate of at most one value per minimumInterval.
+
+Example:
+
+```js
+var throttled = source.bufferingThrottle(2)
+```
+
+```
+source:    asdf----asdf----
+throttled: a-s-d-f-a-s-d-f-
+```
+"""
+
+
 doc.fn "observable.doAction(f)", """
 returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -565,7 +583,7 @@ stream.flatMap(function(text) {
 """
 
 doc.fn "observable.flatMapLatest(f)", """
-like flatMap, but instead of including events from
+like `flatMap`, but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream.
 Note that instead of a function, you can provide a stream/property too.
@@ -576,6 +594,22 @@ The [Function Construction rules](#function-construction-rules) below apply here
 doc.fn "observable.flatMapFirst(f)", """
 like flatMap, but doesn't spawns a new
 stream only if the previously spawned stream has ended.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+"""
+
+doc.fn "observable.flatMapWithConcurrencyLimit(@ : Observable[A], limit : Number, f : A -> Observable[B] | Event[B] | B) : EventStream[B]", """
+a super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
+`flatMapConcat` is `flatMapWithConcurrencyLimit(1)` (only one input active),
+and `flatMap` is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+"""
+
+doc.fn "observable.flatMapConcat(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]", """
+a `flatMapWithConcurrencyLimit` with limit of 1.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
 """
 
 doc.fn "observable.scan(seed, f) : Property[A]", """
@@ -871,6 +905,11 @@ doc.marble()
   .input("Bacon.sequentially(200, [9,0,2,0,0,3]).filter(function(x) { return x })")
   .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
   .output("function(a,b) { return a.merge(b) }")
+
+doc.fn "stream.holdWhen(@ : EventStream[A], valve : Observable[B]) : EventStream[A]", """
+pauses and buffers the event stream if last event in valve is truthy.
+All buffered events are released when valve becomes falsy.
+"""
 
 doc.fn "stream.startWith(value)", """
 adds a starting value to the stream, i.e. concats a

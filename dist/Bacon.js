@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.12';
+  Bacon.version = '<version>';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -244,21 +244,18 @@
     assertArray(values);
     values = cloneArray(values);
     return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-      var send, unsubd;
+      var reply, unsubd, value;
       unsubd = false;
-      send = function() {
-        var reply, value;
+      reply = Bacon.more;
+      while ((reply !== Bacon.noMore) && !unsubd) {
         if (_.empty(values)) {
-          return sink(end());
+          sink(end());
+          reply = Bacon.noMore;
         } else {
-          value = values.splice(0, 1)[0];
+          value = _.popHead(values);
           reply = sink(toEvent(value));
-          if ((reply !== Bacon.noMore) && !unsubd) {
-            return send();
-          }
         }
-      };
-      send();
+      }
       return function() {
         return unsubd = true;
       };
@@ -909,10 +906,13 @@
       }));
     };
 
-    Observable.prototype.scan = function(seed, f, lazyF) {
+    Observable.prototype.scan = function(seed, f, options) {
       var acc, f_, resultProperty, subscribe;
+      if (options == null) {
+        options = {};
+      }
       f_ = toCombinator(f);
-      f = lazyF ? f_ : function(x, y) {
+      f = options.lazyF ? f_ : function(x, y) {
         return f_(x(), y());
       };
       acc = toOption(seed).map(function(x) {
@@ -953,6 +953,9 @@
                   return f(prev, event.value);
                 });
                 acc = new Some(next);
+                if (options.eager) {
+                  next();
+                }
                 return sink(event.apply(next));
               }
             } else {
@@ -971,8 +974,8 @@
       return resultProperty = new Property(describe(this, "scan", seed, f), subscribe);
     };
 
-    Observable.prototype.fold = function(seed, f) {
-      return withDescription(this, "fold", seed, f, this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty()));
+    Observable.prototype.fold = function(seed, f, options) {
+      return withDescription(this, "fold", seed, f, this.scan(seed, f, options).sampledBy(this.filter(false).mapEnd().toProperty()));
     };
 
     Observable.prototype.zip = function(other, f) {
@@ -1001,6 +1004,12 @@
       return flatMap_(this, makeSpawner(arguments), true);
     };
 
+    Observable.prototype.flatMapWithConcurrencyLimit = function() {
+      var args, limit;
+      limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      return withDescription.apply(null, [this, "flatMapWithConcurrencyLimit", limit].concat(__slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
+    };
+
     Observable.prototype.flatMapLatest = function() {
       var f, stream;
       f = makeSpawner(arguments);
@@ -1019,6 +1028,16 @@
         } else {
           return Bacon.once(x);
         }
+      }));
+    };
+
+    Observable.prototype.flatMapConcat = function() {
+      return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
+    };
+
+    Observable.prototype.bufferingThrottle = function(minimumInterval) {
+      return withDescription(this, "bufferingThrottle", minimumInterval, this.flatMapConcat(function(x) {
+        return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
       }));
     };
 
@@ -1089,10 +1108,41 @@
 
   Observable.prototype.assign = Observable.prototype.onValue;
 
-  flatMap_ = function(root, f, firstOnly) {
+  flatMap_ = function(root, f, firstOnly, limit) {
     return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
-      var checkEnd, composite;
+      var checkEnd, checkQueue, composite, queue, spawn;
       composite = new CompositeUnsubscribe();
+      queue = [];
+      spawn = function(event) {
+        var child;
+        child = makeObservable(f(event.value()));
+        return composite.add(function(unsubAll, unsubMe) {
+          return child.subscribeInternal(function(event) {
+            var reply;
+            if (event.isEnd()) {
+              checkQueue();
+              checkEnd(unsubMe);
+              return Bacon.noMore;
+            } else {
+              if (event instanceof Initial) {
+                event = event.toNext();
+              }
+              reply = sink(event);
+              if (reply === Bacon.noMore) {
+                unsubAll();
+              }
+              return reply;
+            }
+          });
+        });
+      };
+      checkQueue = function() {
+        var event;
+        event = _.popHead(queue);
+        if (event) {
+          return spawn(event);
+        }
+      };
       checkEnd = function(unsub) {
         unsub();
         if (composite.empty()) {
@@ -1101,7 +1151,6 @@
       };
       composite.add(function(__, unsubRoot) {
         return root.subscribeInternal(function(event) {
-          var child;
           if (event.isEnd()) {
             return checkEnd(unsubRoot);
           } else if (event.isError()) {
@@ -1112,25 +1161,11 @@
             if (composite.unsubscribed) {
               return Bacon.noMore;
             }
-            child = makeObservable(f(event.value()));
-            return composite.add(function(unsubAll, unsubMe) {
-              return child.subscribeInternal(function(event) {
-                var reply;
-                if (event.isEnd()) {
-                  checkEnd(unsubMe);
-                  return Bacon.noMore;
-                } else {
-                  if (event instanceof Initial) {
-                    event = event.toNext();
-                  }
-                  reply = sink(event);
-                  if (reply === Bacon.noMore) {
-                    unsubAll();
-                  }
-                  return reply;
-                }
-              });
-            });
+            if (limit && composite.count() > limit) {
+              return queue.push(event);
+            } else {
+              return spawn(event);
+            }
           }
         });
       });
@@ -1275,7 +1310,9 @@
       if (arguments.length === 0) {
         initValue = None;
       }
-      return withDescription(this, "toProperty", initValue, this.scan(initValue, latterF, true));
+      return withDescription(this, "toProperty", initValue, this.scan(initValue, latterF, {
+        lazyF: true
+      }));
     };
 
     EventStream.prototype.toEventStream = function() {
@@ -1355,6 +1392,28 @@
           }
         }));
       });
+    };
+
+    EventStream.prototype.holdWhen = function(valve) {
+      var putToHold, releaseHold, valve_;
+      valve_ = valve.startWith(false);
+      releaseHold = valve_.filter(function(x) {
+        return !x;
+      });
+      putToHold = valve_.filter(_.id);
+      return withDescription(this, "holdWhen", valve, this.filter(false).merge(valve_.flatMapConcat((function(_this) {
+        return function(shouldHold) {
+          if (!shouldHold) {
+            return _this.takeUntil(putToHold);
+          } else {
+            return _this.scan([], (function(xs, x) {
+              return xs.concat(x);
+            }), {
+              eager: true
+            }).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
+          }
+        };
+      })(this))));
     };
 
     EventStream.prototype.startWith = function(seed) {
@@ -1492,6 +1551,11 @@
       return withDescription(this, "startWith", value, this.scan(value, function(prev, next) {
         return next;
       }));
+    };
+
+    Property.prototype.bufferingThrottle = function() {
+      var _ref1;
+      return (_ref1 = Property.__super__.bufferingThrottle.apply(this, arguments)).bufferingThrottle.apply(_ref1, arguments).toProperty();
     };
 
     return Property;
@@ -2472,9 +2536,9 @@
     };
     findIndependent = function() {
       while (!independent(waiters[0])) {
-        waiters.push(waiters.splice(0, 1)[0]);
+        waiters.push(_.popHead(waiters));
       }
-      return waiters.splice(0, 1)[0];
+      return _.popHead(waiters);
     };
     flush = function() {
       var _results;
@@ -2874,6 +2938,9 @@
       if (i >= 0) {
         return xs.splice(i, 1);
       }
+    },
+    popHead: function(xs) {
+      return xs.splice(0, 1)[0];
     },
     fold: function(xs, seed, f) {
       var x, _i, _len;

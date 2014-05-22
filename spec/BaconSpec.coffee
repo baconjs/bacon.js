@@ -724,6 +724,39 @@ describe "EventStream.flatMap", ->
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
 
+describe "EventStream.flatMapWithConcurrencyLimit", ->
+  describe "limits the number of concurrently active spawned streams by queuing", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).flatMapWithConcurrencyLimit(1, (value) ->
+        Bacon.sequentially(t(2), [value, error(), value]))
+      [1, error(), 1, 2, error(), 2], unstable)
+  describe "works with n=2", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3]).flatMapWithConcurrencyLimit(2, (value) ->
+        Bacon.sequentially(t(2), [value, value]))
+      [1, 2, 1, 2, 3, 3])
+  describe "Respects function construction rules", ->
+    expectStreamEvents(
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
+      ["sir francis"])
+  it "toString", ->
+    expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
+      .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
+
+describe "EventStream.flatMapConcat", ->
+  describe "is like flatMapWithConcurrencyLimit(1)", ->
+    expectStreamEvents(
+      -> series(1, [1, 2]).flatMapConcat((value) ->
+        Bacon.sequentially(t(2), [value, error(), value]))
+      [1, error(), 1, 2, error(), 2], unstable)
+  describe "Respects function construction rules", ->
+    expectStreamEvents(
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")
+      ["sir francis"])
+  it "toString", ->
+    expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")
+
+
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->
     expectStreamEvents(
@@ -923,6 +956,55 @@ describe "EventStream.throttle(delay)", ->
       [3])
   it "toString", ->
     expect(Bacon.never().throttle(1).toString()).to.equal("Bacon.never().throttle(1)")
+
+describe "EventStream.bufferingThrottle(minimumInterval)", ->
+  describe "limits throughput but includes all events", ->
+    th.expectStreamTimings(
+      -> series(1, [1,2,3]).bufferingThrottle(t(3))
+      [[1,1], [4,2], [7,3]])
+  it "toString", ->
+    expect(Bacon.once(1).bufferingThrottle(2).toString()).to.equal("Bacon.once(1).bufferingThrottle(2)")
+
+describe "Property.bufferingThrottle(delay)", ->
+  describe "limits throughput but includes all events", ->
+    th.expectStreamTimings(
+      -> series(1, [1,2,3]).toProperty().bufferingThrottle(t(3)).changes()
+      [[1,1], [4,2], [7,3]])
+
+describe "EventStream.holdWhen", ->
+  describe "Keeps events on hold when a property is true", ->
+    th.expectStreamTimings(
+      ->
+        src = series(2, [1,2,3,4])
+        valve = series(2, [true, false, true, false]).delay(1).toProperty()
+        src.holdWhen(valve)
+      [[2, 1], [5, 2], [6, 3], [9, 4]])
+  describe "Holds forever when the property ends with truthy value", ->
+    th.expectStreamTimings(
+      ->
+        src = series(2, [1,2,3,4])
+        valve = series(2, [true, false, true]).delay(1).toProperty()
+        src.holdWhen(valve)
+      [[2, 1], [5, 2], [6, 3]])
+  describe "Supports truthy init value for property", ->
+    th.expectStreamTimings(
+      ->
+        src = series(2, [1,2])
+        valve = series(2, [false]).delay(1).toProperty(true)
+        src.holdWhen(valve)
+      [[3, 1], [4, 2]])
+  describe.skip "Doesn't crash when flushing huge buffers", ->
+    count = 6000
+    expectPropertyEvents(
+      ->
+        source = series(1, [1..count])
+        flag = source.map((x) -> x != count-1).toProperty(true)
+        source.holdWhen(flag).fold(0, ((x,y) -> x+1), { eager: true})
+      [count-1])
+
+  it "toString", ->
+    expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
+      "Bacon.once(1).holdWhen(Bacon.constant(true))")
 
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
@@ -2227,6 +2309,11 @@ describe "EventStream.fold", ->
     expectPropertyEvents(
       -> Bacon.fromArray([1, 2, error(), 3]).fold(0, add)
       [error(), 6])
+  describe.skip "works with really large chunks too, with { eager: true }", ->
+    count = 50000
+    expectPropertyEvents(
+      -> series(1, [1..count]).fold(0, ((x,y) -> x+1), { eager: true })
+      [count])
 
 describe "Property.scan", ->
   describe "with Init value, starts with f(seed, init)", ->
