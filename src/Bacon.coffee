@@ -487,8 +487,8 @@ class Observable
     withDescription this, "flatMapConcat", arguments...,
       @flatMapWithConcurrencyLimit 1, arguments...
 
-  rateLimit:  (minimumInterval) ->
-    withDescription this, "rateLimit", minimumInterval,
+  bufferingThrottle:  (minimumInterval) ->
+    withDescription this, "bufferingThrottle", minimumInterval,
       @flatMapConcat (x) ->
         Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false))
 
@@ -796,8 +796,8 @@ class Property extends Observable
   startWith: (value) ->
     withDescription(this, "startWith", value,
       @scan(value, (prev, next) -> next))
-  rateLimit: ->
-    super.rateLimit(arguments...).toProperty()
+  bufferingThrottle: ->
+    super.bufferingThrottle(arguments...).toProperty()
 
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property

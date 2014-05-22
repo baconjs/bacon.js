@@ -932,18 +932,18 @@ describe "EventStream.throttle(delay)", ->
   it "toString", ->
     expect(Bacon.never().throttle(1).toString()).to.equal("Bacon.never().throttle(1)")
 
-describe "EventStream.rateLimit(minimumInterval)", ->
+describe "EventStream.bufferingThrottle(minimumInterval)", ->
   describe "limits throughput but includes all events", ->
     th.expectStreamTimings(
-      -> series(1, [1,2,3]).rateLimit(t(3))
+      -> series(1, [1,2,3]).bufferingThrottle(t(3))
       [[1,1], [4,2], [7,3]])
   it "toString", ->
-    expect(Bacon.once(1).rateLimit(2).toString()).to.equal("Bacon.once(1).rateLimit(2)")
+    expect(Bacon.once(1).bufferingThrottle(2).toString()).to.equal("Bacon.once(1).bufferingThrottle(2)")
 
-describe "Property.rateLimit(delay)", ->
+describe "Property.bufferingThrottle(delay)", ->
   describe "limits throughput but includes all events", ->
     th.expectStreamTimings(
-      -> series(1, [1,2,3]).toProperty().rateLimit(t(3)).changes()
+      -> series(1, [1,2,3]).toProperty().bufferingThrottle(t(3)).changes()
       [[1,1], [4,2], [7,3]])
 
 describe "EventStream.holdWhen", ->

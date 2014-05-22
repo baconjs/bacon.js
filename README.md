@@ -533,6 +533,22 @@ source:                      asdf----asdf----
 source.debounceImmediate(2): a-d-----a-d-----
 ```
 
+<a name="observable-bufferingthrottle"></a>
+[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputing
+them with a rate of at most one value per minimumInterval.
+
+Example:
+
+```js
+var throttled = source.bufferingThrottle(2)
+```
+
+```
+source:    asdf----asdf----
+throttled: a-s-d-f-a-s-d-f-
+```
+
 <a name="observable-doaction"></a>
 [`observable.doAction(f)`](#observable-doaction "observable.doAction(f)") returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -590,9 +606,6 @@ The [Function Construction rules](#function-construction-rules) below apply here
 [`observable.flatMapConcat(f)`](#observable-flatmapconcat "observable.flatMapConcat(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a [`flatMapWithConcurrencyLimit`](#observable-flatmapwithconcurrencylimit) with limit of 1.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
-
-<a name="observable-ratelimit"></a>
-[`observable.rateLimit(minimumInterval)`](#observable-ratelimit "observable.rateLimit(@ : Observable[A], minimumInterval) : EventStream[A]") rate limits and buffers changes in the observable, so at most one event in minimumInteval is issued.
 
 <a name="observable-scan"></a>
 [`observable.scan(seed, f)`](#observable-scan "observable.scan(seed, f) : Property[A]") scans stream/property with given seed value and

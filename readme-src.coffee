@@ -529,6 +529,24 @@ source.debounceImmediate(2): a-d-----a-d-----
 ```
 """
 
+doc.fn "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]", """
+throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+Unlike `throttle`, it doesn't discard the excessive events but buffers them instead, outputing
+them with a rate of at most one value per minimumInterval.
+
+Example:
+
+```js
+var throttled = source.bufferingThrottle(2)
+```
+
+```
+source:    asdf----asdf----
+throttled: a-s-d-f-a-s-d-f-
+```
+"""
+
+
 doc.fn "observable.doAction(f)", """
 returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -592,10 +610,6 @@ doc.fn "observable.flatMapConcat(@ : Observable[A], f : A -> Observable[B] | Eve
 a `flatMapWithConcurrencyLimit` with limit of 1.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
-"""
-
-doc.fn "observable.rateLimit(@ : Observable[A], minimumInterval) : EventStream[A]", """
-rate limits and buffers changes in the observable, so at most one event in minimumInteval is issued.
 """
 
 doc.fn "observable.scan(seed, f) : Property[A]", """
