@@ -1355,13 +1355,12 @@ UpdateBarrier = (->
     unsub = ->
       unsubd = true
       doUnsub()
-    if !unsubd
-      doUnsub = obs.subscribeInternal (event) ->
-        afterTransaction ->
-          if not unsubd
-            reply = sink event
-            if reply == Bacon.noMore
-              unsub()
+    doUnsub = obs.subscribeInternal (event) ->
+      afterTransaction ->
+        if not unsubd
+          reply = sink event
+          if reply == Bacon.noMore
+            unsub()
     unsub
 
   { whenDoneWith, inTransaction, currentEventId, wrappedSubscribe }
