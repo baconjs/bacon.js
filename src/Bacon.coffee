@@ -1078,23 +1078,23 @@ class Desc
     @args = args
     @flatDeps = null
 
-    @apply = (obs) ->
-      that = @
+  apply: (obs) ->
+    that = @
 
-      dependsOn = (b) ->
-        if !that.flatDeps?
-          that.flatDeps = {}
-          that.collectDeps this
-        return that.flatDeps[b.id]
+    dependsOn = (b) ->
+      if !that.flatDeps?
+        that.flatDeps = {}
+        that.collectDeps this
+      return that.flatDeps[b.id]
 
-      deps = _.cached (=> @findDeps([@context].concat(@args)))
-      obs.internalDeps = obs.internalDeps || deps
-      obs.dependsOn = dependsOn
-      obs.deps = deps
-      obs.toString = => _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
-      obs.inspect = -> obs.toString()
-      obs.desc = -> { @context, @method, @args }
-      obs
+    deps = _.cached (=> @findDeps([@context].concat(@args)))
+    obs.internalDeps = obs.internalDeps || deps
+    obs.dependsOn = dependsOn
+    obs.deps = deps
+    obs.toString = => _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
+    obs.inspect = -> obs.toString()
+    obs.desc = -> { @context, @method, @args }
+    obs
 
   collectDeps: (o) ->
     deps = o.internalDeps()
