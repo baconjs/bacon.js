@@ -1071,6 +1071,16 @@ describe = (context, method, args...) ->
   else
     new Desc(context, method, args)
 
+findDeps = (x) ->
+  if isArray(x)
+    _.flatMap findDeps, x
+  else if isObservable(x)
+    [x]
+  else if x instanceof Source
+    [x.obs]
+  else
+    []
+
 class Desc
   constructor: (context, method, args) ->
     @context = context
@@ -1085,7 +1095,7 @@ class Desc
     return @flatDeps[b.id]
 
   apply: (obs) ->
-    deps = _.cached (=> @findDeps([@context].concat(@args)))
+    deps = _.cached (=> findDeps([@context].concat(@args)))
     obs.internalDeps = obs.internalDeps || deps
     obs.dependsOn = dependsOn.bind(@, obs)
     obs.deps = deps
@@ -1101,15 +1111,7 @@ class Desc
       @flatDeps[dep.id] = true
       @collectDeps(dep)
 
-  findDeps: (x) ->
-    if isArray(x)
-      _.flatMap @findDeps.bind(@), x
-    else if isObservable(x)
-      [x]
-    else if x instanceof Source
-      [x.obs]
-    else
-      []
+
 
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
