@@ -1080,16 +1080,10 @@ class Desc
 
     that = @
 
-    collectDeps = (o) ->
-      deps = o.internalDeps()
-      for dep in deps
-        that.flatDeps[dep.id] = true
-        collectDeps(dep)
-
     dependsOn = (b) ->
       if !that.flatDeps?
         that.flatDeps = {}
-        collectDeps this
+        that.collectDeps this
       return that.flatDeps[b.id]
 
     @apply = (obs) ->
@@ -1101,6 +1095,12 @@ class Desc
       obs.inspect = -> obs.toString()
       obs.desc = -> { @context, @method, @args }
       obs
+
+  collectDeps: (o) ->
+    deps = o.internalDeps()
+    for dep in deps
+      @flatDeps[dep.id] = true
+      @collectDeps(dep)
 
   findDeps: (x) ->
     if isArray(x)
