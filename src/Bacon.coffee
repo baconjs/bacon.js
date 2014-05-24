@@ -1093,7 +1093,7 @@ class Desc
     obs.deps = deps
     obs.toString = => _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
     obs.inspect = -> obs.toString()
-    obs.desc = -> { @context, @method, @args }
+    obs.desc = => { @context, @method, @args }
     obs
 
   collectDeps: (o) ->
