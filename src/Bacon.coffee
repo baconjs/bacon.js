@@ -1078,15 +1078,15 @@ class Desc
     @args = args
     @flatDeps = null
 
-    that = @
-
-    dependsOn = (b) ->
-      if !that.flatDeps?
-        that.flatDeps = {}
-        that.collectDeps this
-      return that.flatDeps[b.id]
-
     @apply = (obs) ->
+      that = @
+
+      dependsOn = (b) ->
+        if !that.flatDeps?
+          that.flatDeps = {}
+          that.collectDeps this
+        return that.flatDeps[b.id]
+
       deps = _.cached (=> @findDeps([@context].concat(@args)))
       obs.internalDeps = obs.internalDeps || deps
       obs.dependsOn = dependsOn
