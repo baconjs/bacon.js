@@ -1071,40 +1071,47 @@ describe = (context, method, args...) ->
   else
     new Desc(context, method, args)
 
+findDeps = (x) ->
+  if isArray(x)
+    _.flatMap findDeps, x
+  else if isObservable(x)
+    [x]
+  else if x instanceof Source
+    [x.obs]
+  else
+    []
+
 class Desc
   constructor: (context, method, args) ->
-    findDeps = (x) ->
-      if isArray(x)
-        _.flatMap findDeps, x
-      else if isObservable(x)
-        [x]
-      else if x instanceof Source
-        [x.obs]
-      else
-        []
-    flatDeps = null
+    @context = context
+    @method = method
+    @args = args
+    @flatDeps = null
 
-    collectDeps = (o) ->
-      deps = o.internalDeps()
-      for dep in deps
-        flatDeps[dep.id] = true
-        collectDeps(dep)
+  dependsOn = (o, b) ->
+    if !@flatDeps?
+      @flatDeps = {}
+      @collectDeps o
+    return @flatDeps[b.id]
 
-    dependsOn = (b) ->
-      if !flatDeps?
-        flatDeps = {}
-        collectDeps this
-      return flatDeps[b.id]
+  apply: (obs) ->
+    deps = _.cached (=> findDeps([@context].concat(@args)))
+    obs.internalDeps = obs.internalDeps || deps
+    obs.dependsOn = dependsOn.bind(@, obs)
+    obs.deps = deps
 
-    @apply = (obs) ->
-      deps = _.cached (-> findDeps([context].concat(args)))
-      obs.internalDeps = obs.internalDeps || deps
-      obs.dependsOn = dependsOn
-      obs.deps = deps
-      obs.toString = -> _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")"
-      obs.inspect = -> obs.toString()
-      obs.desc = -> { context, method, args }
-      obs
+    obs.toString = (=> _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")")
+    obs.inspect = -> obs.toString()
+    obs.desc = (=> { @context, @method, @args })
+    obs
+
+  collectDeps: (o) ->
+    deps = o.internalDeps()
+    for dep in deps
+      @flatDeps[dep.id] = true
+      @collectDeps(dep)
+
+
 
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
