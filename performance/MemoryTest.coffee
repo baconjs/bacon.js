@@ -2,17 +2,21 @@ Bacon = (require "../src/Bacon").Bacon
 toKb = (x) -> (x / 1024).toFixed(2) + ' KiB'
 toMb = (x) -> (x / 1024 / 1024).toFixed(2) + ' MiB'
 
-byteFormat = (bytes) ->
-  if Math.abs(bytes) > 512 * 1024
+byteFormat = (bytes, comparison) ->
+  if Math.abs(comparison || bytes) > 512 * 1024
     toMb(bytes)
   else
     toKb(bytes)
 
-pad = (string, length = 12) ->
+lpad = (string, length = 12) ->
   while(string.length < length)
     string = " #{string}"
   string
 
+rpad = (string, length = 12) ->
+  while(string.length < length)
+    string = "#{string} "
+  string
 measure = (fun) ->
   global.gc()
   lastMemoryUsage = process.memoryUsage().heapUsed
@@ -22,31 +26,54 @@ measure = (fun) ->
   global.gc()
   [process.memoryUsage().heapUsed - lastMemoryUsage, duration]
 
-createNObservable = (n, generator) ->
-  global.gc()
-  objects = new Array(n) # Preallocate array of n elements
-  unsubscribers = new Array(n)
+sum = (xs) -> xs.reduce (sum, x) -> sum + x
+mean = (xs) -> sum(xs) / xs.length
+stddev = (xs) ->
+  avg = mean(xs)
+  Math.pow(mean(Math.pow((x - avg), 2) for x in xs), 0.5)
 
-  withoutSubscriber = measure ->
-    objects[i] = generator(i) for i in [0...objects.length]
+processResults = (results, i) ->
+  values = (x[i] for x in results)
 
-  withSubscriber = measure ->
-    for i in [0...objects.length]
-      unsubscribers[i] = objects[i].onValue(noop)
+  mean: mean(values)
+  stddev: stddev(values)
 
-  afterCleanup = measure ->
-    for i in [0...objects.length]
-      unsubscribers[i]()
-      unsubscribers[i] = null
+printResult = (label, result, prefix = '') ->
+  console.log("  #{rpad(label, 20)}", prefix, lpad(byteFormat(result.mean), 12 - prefix.length), '\u00b1', byteFormat(result.stddev, result.mean))
+createNObservable = (count, generator) ->
+  n = Math.floor(count / 10)
+  m = 10
 
-  objects = null
-  unsubscribers = null
+  results = for i in [0...m]
+    global.gc()
+    objects = new Array(n) # Preallocate array of n elements
+    unsubscribers = new Array(n)
 
-  plusSubscriber = if withSubscriber[0] > 0 then '+' else ''
-  plusCleanup = if afterCleanup[0] > 0 then '+' else ''
-  console.log('  w/o subscription  ', pad(byteFormat(withoutSubscriber[0]/n)))
-  console.log('  with subscription ', pad(plusSubscriber + byteFormat(withSubscriber[0]/n)))
-  console.log('  unsubscribe       ', pad(plusCleanup + byteFormat(afterCleanup[0]/n)))
+    withoutSubscriber = measure ->
+      objects[i] = generator(i) for i in [0...objects.length]
+
+    withSubscriber = measure ->
+      for i in [0...objects.length]
+        unsubscribers[i] = objects[i].onValue(noop)
+
+    afterCleanup = measure ->
+      for i in [0...objects.length]
+        unsubscribers[i]()
+        unsubscribers[i] = null
+
+    objects = null
+    unsubscribers = null
+    [withoutSubscriber[0]/n, withSubscriber[0]/n, afterCleanup[0]/n]
+
+  withoutSubscriber = processResults(results, 0)
+  withSubscriber = processResults(results, 1)
+  afterCleanup = processResults(results, 2)
+
+  plusSubscriber = if withSubscriber > 0 then '+' else ''
+  plusCleanup = if afterCleanup > 0 then '+' else ''
+  printResult('w/o subscription', withoutSubscriber)
+  printResult('with subscription', withSubscriber, plusSubscriber)
+  printResult('unsubscribe', afterCleanup, plusCleanup)
 
 title = (text) -> console.log('\n' + text)
 noop = ->
