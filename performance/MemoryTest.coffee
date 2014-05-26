@@ -39,7 +39,7 @@ processResults = (results, i) ->
   stddev: stddev(values)
 
 printResult = (label, result, prefix = '') ->
-  console.log("  #{rpad(label, 20)}", prefix, lpad(byteFormat(result.mean), 12 - prefix.length), '\u00b1', byteFormat(result.stddev, result.mean))
+  console.log("  #{rpad(label, 20)}", lpad(prefix + byteFormat(result.mean), 12), '\u00b1', byteFormat(result.stddev, result.mean))
 createNObservable = (count, generator) ->
   n = Math.floor(count / 10)
   m = 10
@@ -69,8 +69,8 @@ createNObservable = (count, generator) ->
   withSubscriber = processResults(results, 1)
   afterCleanup = processResults(results, 2)
 
-  plusSubscriber = if withSubscriber > 0 then '+' else ''
-  plusCleanup = if afterCleanup > 0 then '+' else ''
+  plusSubscriber = if withSubscriber.mean > 0 then '+' else ''
+  plusCleanup = if afterCleanup.mean > 0 then '+' else ''
   printResult('w/o subscription', withoutSubscriber)
   printResult('with subscription', withSubscriber, plusSubscriber)
   printResult('unsubscribe', afterCleanup, plusCleanup)
