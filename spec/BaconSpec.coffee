@@ -2799,6 +2799,15 @@ describe "Bacon.retry", ->
       ]
       expect(err).to.deep.equal {calls: 3}
       done()
+  it "calls source function after delay", (done) ->
+    calls = 0
+    source = ->
+      calls += 1
+      Bacon.once(new Bacon.Error())
+    interval = -> 100
+    Bacon.retry({source, interval, retries: 1}).onValue -> # noop
+    expect(calls).to.equal 1
+    done()
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
   it "toString", ->

@@ -264,7 +264,8 @@ Bacon.retry = (options) ->
 
   retry = (context) ->
     nextAttemptOptions = {source, retries: retries - 1, maxRetries, interval, isRetryable}
-    Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions))
+    delayedRetry = -> Bacon.retry(nextAttemptOptions)
+    Bacon.later(interval(context)).filter(false).concat(Bacon.once().flatMap(delayedRetry))
 
   withDescription(Bacon, "retry", options, source().flatMapError (e) ->
     if isRetryable(e) && retries > 0
