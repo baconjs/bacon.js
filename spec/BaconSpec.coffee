@@ -2783,16 +2783,16 @@ describe "Bacon.retry", ->
           Bacon.once(new Bacon.Error({calls}))
         Bacon.retry {source, retries: 2}
       [error(calls: 3)]) # TODO: assert error content
-  it "allows specifying interval by context for each retry", (done) ->
+  it "allows specifying delay by context for each retry", (done) ->
     calls = 0
     contexts = []
     source = ->
       calls += 1
       Bacon.once(new Bacon.Error({calls}))
-    interval = (context) ->
+    delay = (context) ->
       contexts.push(context)
       1
-    Bacon.retry({source, interval, retries: 2}).onError (err) ->
+    Bacon.retry({source, delay, retries: 2}).onError (err) ->
       expect(contexts).to.deep.equal [
         {error: {calls: 1}, retriesDone: 0}
         {error: {calls: 2}, retriesDone: 1}
