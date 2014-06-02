@@ -2783,22 +2783,31 @@ describe "Bacon.retry", ->
           Bacon.once(new Bacon.Error({calls}))
         Bacon.retry {source, retries: 2}
       [error(calls: 3)]) # TODO: assert error content
-  it "allows specifying interval by context for each retry", (done) ->
+  it "allows specifying delay by context for each retry", (done) ->
     calls = 0
     contexts = []
     source = ->
       calls += 1
       Bacon.once(new Bacon.Error({calls}))
-    interval = (context) ->
+    delay = (context) ->
       contexts.push(context)
       1
-    Bacon.retry({source, interval, retries: 2}).onError (err) ->
+    Bacon.retry({source, delay, retries: 2}).onError (err) ->
       expect(contexts).to.deep.equal [
         {error: {calls: 1}, retriesDone: 0}
         {error: {calls: 2}, retriesDone: 1}
       ]
       expect(err).to.deep.equal {calls: 3}
       done()
+  it "calls source function after delay", (done) ->
+    calls = 0
+    source = ->
+      calls += 1
+      Bacon.once(new Bacon.Error())
+    interval = -> 100
+    Bacon.retry({source, interval, retries: 1}).onValue -> # noop
+    expect(calls).to.equal 1
+    done()
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
   it "toString", ->
