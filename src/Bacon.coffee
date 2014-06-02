@@ -927,8 +927,6 @@ class Dispatcher
             removeSub subscription
             unsubscribeFromSource() unless @hasSubscribers()
       finally
-        if newSubscribe
-          UpdateBarrier.inSubscribe = false
 
 class PropertyDispatcher extends Dispatcher
   constructor: (p, subscribe, handleEvent) ->
@@ -1220,7 +1218,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               #console.log "queuing", e.toString(), _.toString(resultStream)
               triggers.push {source: source, e: e}
-              if needsBarrier || UpdateBarrier.inSubscribe then flushLater() else flush()
+              flushLater()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
