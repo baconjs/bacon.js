@@ -1152,7 +1152,7 @@ Bacon.when = (patterns...) ->
 
 
     sources = _.map Source.fromObservable, sources
-    needsBarrier = (_.any sources, (s) -> s.flatten) #and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
+    needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
 
     resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
       triggers = []
@@ -1214,7 +1214,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               #console.log "queuing", e.toString(), _.toString(resultStream)
               triggers.push {source: source, e: e}
-              if needsBarrier then flushLater() else flush()
+              if needsBarrier || UpdateBarrier.inSubscribe then flushLater() else flush()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
@@ -1358,20 +1358,26 @@ UpdateBarrier = (->
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
-
+  
   wrappedSubscribe = (obs) -> (sink) ->
-    unsubd = false
-    doUnsub = ->
-    unsub = ->
-      unsubd = true
-      doUnsub()
-    doUnsub = obs.subscribeInternal (event) ->
-      afterTransaction ->
-        if not unsubd
-          reply = sink event
-          if reply == Bacon.noMore
-            unsub()
-    unsub
+    newSubscribe = !UpdateBarrier.inSubscribe
+    try
+      UpdateBarrier.inSubscribe = true
+      unsubd = false
+      doUnsub = ->
+      unsub = ->
+        unsubd = true
+        doUnsub()
+      doUnsub = obs.subscribeInternal (event) ->
+        afterTransaction ->
+          if not unsubd
+            reply = sink event
+            if reply == Bacon.noMore
+              unsub()
+      unsub
+    finally
+      if newSubscribe
+        UpdateBarrier.inSubscribe = false
 
   { whenDoneWith, inTransaction, currentEventId, wrappedSubscribe }
 )()
