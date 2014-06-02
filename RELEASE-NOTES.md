@@ -1,3 +1,7 @@
+## 0.7.14
+
+- Fix Bacon.retry (#380)
+
 ## 0.7.13
 
 - Add flatMapWithConcurrencyLimit, flatMapConcat, bufferingThrottle, holdWhen (#324)
