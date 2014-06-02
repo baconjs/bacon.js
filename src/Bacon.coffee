@@ -907,22 +907,28 @@ class Dispatcher
         ended = true
       handleEvent.apply(this, [event])
     @subscribe = (sink) =>
-      if ended
-        sink end()
-        nop
-      else
-        assertFunction sink
-        subscription = { sink: sink }
-        subscriptions.push(subscription)
-        if subscriptions.length == 1
-          unsubSrc = subscribe @handleEvent
-          unsubscribeFromSource = ->
-            unsubSrc()
-            unsubscribeFromSource = nop
-        assertFunction unsubscribeFromSource
-        =>
-          removeSub subscription
-          unsubscribeFromSource() unless @hasSubscribers()
+      newSubscribe = !UpdateBarrier.inSubscribe
+      try
+        UpdateBarrier.inSubscribe = true
+        if ended
+          sink end()
+          nop
+        else
+          assertFunction sink
+          subscription = { sink: sink }
+          subscriptions.push(subscription)
+          if subscriptions.length == 1
+            unsubSrc = subscribe @handleEvent
+            unsubscribeFromSource = ->
+              unsubSrc()
+              unsubscribeFromSource = nop
+          assertFunction unsubscribeFromSource
+          =>
+            removeSub subscription
+            unsubscribeFromSource() unless @hasSubscribers()
+      finally
+        if newSubscribe
+          UpdateBarrier.inSubscribe = false
 
 class PropertyDispatcher extends Dispatcher
   constructor: (p, subscribe, handleEvent) ->
@@ -1360,24 +1366,18 @@ UpdateBarrier = (->
   currentEventId = -> if rootEvent then rootEvent.id else undefined
   
   wrappedSubscribe = (obs) -> (sink) ->
-    newSubscribe = !UpdateBarrier.inSubscribe
-    try
-      UpdateBarrier.inSubscribe = true
-      unsubd = false
-      doUnsub = ->
-      unsub = ->
-        unsubd = true
-        doUnsub()
-      doUnsub = obs.subscribeInternal (event) ->
-        afterTransaction ->
-          if not unsubd
-            reply = sink event
-            if reply == Bacon.noMore
-              unsub()
-      unsub
-    finally
-      if newSubscribe
-        UpdateBarrier.inSubscribe = false
+    unsubd = false
+    doUnsub = ->
+    unsub = ->
+      unsubd = true
+      doUnsub()
+    doUnsub = obs.subscribeInternal (event) ->
+      afterTransaction ->
+        if not unsubd
+          reply = sink event
+          if reply == Bacon.noMore
+            unsub()
+    unsub
 
   { whenDoneWith, inTransaction, currentEventId, wrappedSubscribe }
 )()
