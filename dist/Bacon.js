@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.13';
+  Bacon.version = '0.7.14';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -463,29 +463,32 @@
   };
 
   Bacon.retry = function(options) {
-    var interval, isRetryable, maxRetries, retries, retry, source;
+    var delay, isRetryable, maxRetries, retries, retry, source;
     if (!isFunction(options.source)) {
       throw "'source' option has to be a function";
     }
     source = options.source;
     retries = options.retries || 0;
     maxRetries = options.maxRetries || retries;
-    interval = options.interval || function() {
+    delay = options.delay || function() {
       return 0;
     };
     isRetryable = options.isRetryable || function() {
       return true;
     };
     retry = function(context) {
-      var nextAttemptOptions;
+      var delayedRetry, nextAttemptOptions;
       nextAttemptOptions = {
         source: source,
         retries: retries - 1,
         maxRetries: maxRetries,
-        interval: interval,
+        delay: delay,
         isRetryable: isRetryable
       };
-      return Bacon.later(interval(context)).filter(false).concat(Bacon.retry(nextAttemptOptions));
+      delayedRetry = function() {
+        return Bacon.retry(nextAttemptOptions);
+      };
+      return Bacon.later(delay(context)).filter(false).concat(Bacon.once().flatMap(delayedRetry));
     };
     return withDescription(Bacon, "retry", options, source().flatMapError(function(e) {
       if (isRetryable(e) && retries > 0) {
@@ -2031,63 +2034,74 @@
     }
   };
 
-  Desc = (function() {
-    function Desc(context, method, args) {
-      var collectDeps, dependsOn, findDeps, flatDeps;
-      findDeps = function(x) {
-        if (isArray(x)) {
-          return _.flatMap(findDeps, x);
-        } else if (isObservable(x)) {
-          return [x];
-        } else if (x instanceof Source) {
-          return [x.obs];
-        } else {
-          return [];
-        }
-      };
-      flatDeps = null;
-      collectDeps = function(o) {
-        var dep, deps, _i, _len, _results;
-        deps = o.internalDeps();
-        _results = [];
-        for (_i = 0, _len = deps.length; _i < _len; _i++) {
-          dep = deps[_i];
-          flatDeps[dep.id] = true;
-          _results.push(collectDeps(dep));
-        }
-        return _results;
-      };
-      dependsOn = function(b) {
-        if (flatDeps == null) {
-          flatDeps = {};
-          collectDeps(this);
-        }
-        return flatDeps[b.id];
-      };
-      this.apply = function(obs) {
-        var deps;
-        deps = _.cached((function() {
-          return findDeps([context].concat(args));
-        }));
-        obs.internalDeps = obs.internalDeps || deps;
-        obs.dependsOn = dependsOn;
-        obs.deps = deps;
-        obs.toString = function() {
-          return _.toString(context) + "." + _.toString(method) + "(" + _.map(_.toString, args) + ")";
-        };
-        obs.inspect = function() {
-          return obs.toString();
-        };
-        obs.desc = function() {
-          return {
-            context: context,
-            method: method,
-            args: args
-          };
-        };
-        return obs;
-      };
+  findDeps = function(x) {
+    if (isArray(x)) {
+      return _.flatMap(findDeps, x);
+    } else if (isObservable(x)) {
+      return [x];
+    } else if (x instanceof Source) {
+      return [x.obs];
+    } else {
+      return [];
     }
+  };
+
+  Desc = (function() {
+    var dependsOn;
+
+    function Desc(context, method, args) {
+      this.context = context;
+      this.method = method;
+      this.args = args;
+      this.flatDeps = null;
+    }
+
+    dependsOn = function(o, b) {
+      if (this.flatDeps == null) {
+        this.flatDeps = {};
+        this.collectDeps(o);
+      }
+      return this.flatDeps[b.id];
+    };
+
+    Desc.prototype.apply = function(obs) {
+      var deps, that;
+      that = this;
+      deps = _.cached((function() {
+        return findDeps([that.context].concat(that.args));
+      }));
+      obs.internalDeps = obs.internalDeps || deps;
+      obs.dependsOn = function(b) {
+        return dependsOn.call(that, obs, b);
+      };
+      obs.deps = deps;
+      obs.toString = (function() {
+        return _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")";
+      });
+      obs.inspect = function() {
+        return obs.toString();
+      };
+      obs.desc = (function() {
+        return {
+          context: that.context,
+          method: that.method,
+          args: that.args
+        };
+      });
+      return obs;
+    };
+
+    Desc.prototype.collectDeps = function(o) {
+      var dep, deps, _i, _len, _results;
+      deps = o.internalDeps();
+      _results = [];
+      for (_i = 0, _len = deps.length; _i < _len; _i++) {
+        dep = deps[_i];
+        this.flatDeps[dep.id] = true;
+        _results.push(this.collectDeps(dep));
+      }
+      return _results;
+    };
 
     return Desc;
 
@@ -2583,19 +2597,17 @@
           unsubd = true;
           return doUnsub();
         };
-        if (!unsubd) {
-          doUnsub = obs.subscribeInternal(function(event) {
-            return afterTransaction(function() {
-              var reply;
-              if (!unsubd) {
-                reply = sink(event);
-                if (reply === Bacon.noMore) {
-                  return unsub();
-                }
+        doUnsub = obs.subscribeInternal(function(event) {
+          return afterTransaction(function() {
+            var reply;
+            if (!unsubd) {
+              reply = sink(event);
+              if (reply === Bacon.noMore) {
+                return unsub();
               }
-            });
+            }
           });
-        }
+        });
         return unsub;
       };
     };
