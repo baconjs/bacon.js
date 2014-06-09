@@ -83,13 +83,13 @@ Install
 
 You can download the latest [generated javascript](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
-Version 0.7.10 can also be found from cdnjs hosting:
+Version 0.7.12 can also be found from cdnjs hosting:
 
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.10/bacon.js
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.10/bacon.min.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
 
-Visual Studio users can obtain version 0.7.12 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.12
+Visual Studio users can obtain version 0.7.14 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.14
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -1648,11 +1648,7 @@ Run browser tests:
 
 Run performance tests:
 
-    coffee performance/PerformanceTest.coffe
-
-Run memory usage tests:
-
-    coffee --nodejs '--expose-gc' performance/MemoryTest.coffee
+    coffee performance/*
 
 Dependencies
 ============
