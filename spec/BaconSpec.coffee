@@ -243,9 +243,9 @@ describe "Bacon.fromCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
@@ -279,9 +279,9 @@ describe "Bacon.fromNodeCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(null, param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
@@ -653,7 +653,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
     [1, 2, 3, 1], unstable)
-  
+
   it "toString", ->
     expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")
 
@@ -811,7 +811,7 @@ describe "Property.flatMap", ->
       [0, 1, 2], unstable)
   describe "works in a complex scenario #338", ->
     expectStreamEvents(
-      -> 
+      ->
         a = activate(series(2, ["a", "A"]))
         b = activate(series(2, ["b", "B"])).delay(1).toProperty()
         a.flatMapLatest((a) -> b.map((b) -> a + b))
@@ -1221,12 +1221,12 @@ describe "EventStream.awaiting(other)", ->
       [false, true, false, true])
   describe "supports simultaneouts events", ->
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.awaiting(src.map(->))
       [false])
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.map(->).awaiting(src)
       [false])
@@ -1752,14 +1752,14 @@ describe "EventStream.combine", ->
 describe "Bacon.groupSimultaneous", ->
   describe "groups simultaneous values in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         Bacon.groupSimultaneous(stream)
       [[[1, 2]], [[2,4]]])
   describe "groups simultaneous values from multiple sources in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         stream2 = src.map (x) -> x * 4
@@ -1958,7 +1958,7 @@ describe "when subscribing while dispatching", ->
         [0, 1])
   describe "delayed bounce in case Property ended (bug fix)", ->
     expectStreamEvents(
-      -> 
+      ->
         bus = new Bacon.Bus()
         root = Bacon.once(0).toProperty()
         root.onValue ->
@@ -2282,6 +2282,92 @@ describe "Property.sampledBy(property)", ->
         sampler = series(2, ["1", "2", "1", "2"]).delay(t(1)).toProperty()
         prop.sampledBy(sampler, add)
       ["a1", "b2", "b1", "b2"])
+
+
+describe "Bacon.sampledBy(observables, samplers, f)", ->
+  describe "samples single property at events from single stream, resulting to EventStream", ->
+    expectStreamEvents(
+      ->
+        prop = series(2, [1, 2]).toProperty()
+        stream = repeat(3, ["."]).take(4)
+        Bacon.sampledBy([prop], [stream])
+      [[1, "."], [2, "."], [2, "."], [2, "."]])
+  describe "includes errors from all sources", ->
+    expectStreamEvents(
+      ->
+        s1 = series(4, [error(), 1])
+        s2 = series(4, [error(), 2]).delay(t(1))
+        s3 = series(4, [error(), 3]).delay(t(2))
+        s4 = series(4, [error(), 4]).delay(t(3))
+        Bacon.sampledBy([s1, s2], [s3, s4])
+      [error(), error(), error(), error(), [1,2,3,4]], unstable)
+  describe "ends when all sampling streams ends", ->
+    expectStreamEvents(
+      ->
+        prop = repeat(2, [1, 2]).toProperty()
+        s1 = repeat(4, ["."]).delay(t(1)).take(2)
+        s2 = repeat(4, [".."]).delay(t(3)).take(2)
+        Bacon.sampledBy([prop], [s1, s2])
+      [[1, '.', '..'], [2, '.', '..'], [1, '.', '..']])
+  describe "accepts optional combinator function f(obs1, obs2..., sam1, sam2...)", ->
+    expectStreamEvents(
+      ->
+        s1 = repeat(4, [1, 2])
+        s2 = repeat(4, ['a', 'b']).delay(t(1))
+        s3 = repeat(4, ['.', '..']).delay(t(2)).take(4)
+        s4 = repeat(4, ['I', 'II']).delay(t(3)).take(4)
+        Bacon.sampledBy([s1, s2], [s3, s4], (args...) -> args.join(''))
+      ["1a.I", "2b..I", "2b..II", "1a.II", "1a.I", "2b..I", "2b..II"])
+  describe "works with same origin", ->
+    expectStreamEvents(
+      ->
+        src = series(2, [1, 2])
+        Bacon.sampledBy([src], [src])
+      [[1,1], [2,2]])
+    expectStreamEvents(
+      ->
+        src = series(2, [1, 2])
+        Bacon.sampledBy([src], [src.map(times, 2)])
+      [[1,2], [2,4]])
+  # describe "works with synchronous sampler stream", ->
+  #   expectStreamEvents(
+  #     -> Bacon.sampledBy([Bacon.constant(1)], [Bacon.fromArray([1,2,3])])
+  #     [[1,1], [1,2], [1,3]], unstable)
+  #   expectStreamEvents(
+  #     -> Bacon.sampledBy([Bacon.later(1, 1).toProperty()], [Bacon.fromArray([1,2,3])])
+  #     [])
+  describe "works with properties as samplers", ->
+    expectStreamEvents(
+      ->
+        p1 = series(2, [1]).toProperty(0)
+        p2 = series(2, ['b']).delay(t(1)).toProperty('a')
+        Bacon.sampledBy([p1], [p2])
+      [[0, 'a'], [1, 'b']])
+  # describe "works with multiple sampling properties", ->
+  #   expectStreamEvents(
+  #     ->
+  #       p1 = series(3, [1]).toProperty(0)
+  #       p2 = series(3, ['b']).delay(t(1)).toProperty('a')
+  #       p3 = series(3, ['..']).delay(t(2)).toProperty('.')
+  #       Bacon.sampledBy([p1], [p2, p3])
+  #     [[0, 'a', '.'], [1, 'b', '.'], [1, 'b', '..']])
+  describe "laziness", ->
+    calls = 0
+    before (done) ->
+      id = (x) ->
+        calls++
+        x
+      sampler = Bacon.later(5).map(id)
+      property = repeat(1, [1]).toProperty().map(id)
+      sampled = Bacon.sampledBy([property], [sampler])
+      sampled.onValue()
+      sampled.onEnd(done)
+    it "preserves laziness", ->
+      expect(calls).to.equal(2)
+  it "toString", ->
+    expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()]).toString()).to.equal("Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()])")
+    expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()], ->).toString()).to.equal("Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()],function)")
+
 
 describe "Property.sample", ->
   describe "samples property by given interval", ->
@@ -3171,10 +3257,10 @@ describe "Bacon.fromBinder", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
 describe "String presentations", ->
-  describe "Initial(1).toString", -> 
+  describe "Initial(1).toString", ->
     it "is 1", ->
       expect(new Bacon.Initial(1).toString()).to.equal("1")
-  describe "Next({a:1i}).toString", -> 
+  describe "Next({a:1i}).toString", ->
     it "is {a:1}", ->
       expect(new Bacon.Next({a:1}).toString()).to.equal("{a:1}")
   describe "Error({a:1}).toString", ->
@@ -3276,7 +3362,7 @@ lessThan = (limit) ->
 times = (x, y) -> x * y
 add = (x, y) -> x + y
 id = (x) -> x
-activate = (obs) -> 
+activate = (obs) ->
   obs.onValue(->)
   obs
 

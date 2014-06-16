@@ -185,6 +185,15 @@ Bacon.mergeAll = (streams...) ->
   else
     Bacon.never()
 
+Bacon.sampledBy = (observables, samplers, combinator) ->
+  sampler = Bacon.mergeAll(s.toEventStream() for s in samplers).skipErrors()
+  if combinator
+    combined = Bacon.combineWith(combinator, observables.concat(samplers)...)
+    withDescription(Bacon, "sampledBy", observables, samplers, combinator, combined.sampledBy(sampler))
+  else
+    combined = Bacon.combineAsArray(observables.concat(samplers))
+    withDescription(Bacon, "sampledBy", observables, samplers, combined.sampledBy(sampler))
+
 Bacon.zipAsArray = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
