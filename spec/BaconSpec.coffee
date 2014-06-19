@@ -709,15 +709,26 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.once("bacon"))
       ["bacon"])
-  it "works with a complex setup (fix #363)", ->
-    result = ""
-    prop = Bacon.combineTemplate(faq: Bacon.later(1).toProperty("default value"))
-    Bacon.once().flatMap(->
-        problem = prop.sampledBy(Bacon.once())
-        problem.onValue (x) ->
-          result = x
-    ).onValue ->
-    expect(result).to.deep.equal({faq: "default value"})
+  describe "works with a complex setup (fix #363)", ->
+    it "case 1 (samplee has no subscribers)", ->
+      result = ""
+      prop = Bacon.combineTemplate(faq: Bacon.later(1).toProperty("default value"))
+      Bacon.once().flatMap(->
+          problem = prop.sampledBy(Bacon.once())
+          problem.onValue (x) ->
+            result = x
+      ).onValue ->
+      expect(result).to.deep.equal({faq: "default value"})
+    it "case 2 (samplee has subscriber)", ->
+      result = ""
+      prop = Bacon.combineTemplate(faq: Bacon.later(1).toProperty("default value"))
+      prop.onValue ->
+      Bacon.once().flatMap(->
+          problem = prop.sampledBy(Bacon.once())
+          problem.onValue (x) ->
+            result = x
+      ).onValue ->
+      expect(result).to.deep.equal({faq: "default value"})
   describe "Respects function construction rules", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap(".bacon")
