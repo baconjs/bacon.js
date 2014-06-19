@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.14';
+  Bacon.version = '0.7.15';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -2284,7 +2284,7 @@
                   source: source,
                   e: e
                 });
-                if (needsBarrier) {
+                if (needsBarrier || UpdateBarrier.hasWaiters()) {
                   flushLater();
                 } else {
                   flush();
@@ -2522,7 +2522,7 @@
   };
 
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, findIndependent, flush, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, currentEventId, findIndependent, flush, hasWaiters, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiters = [];
     afters = [];
@@ -2611,8 +2611,12 @@
         return unsub;
       };
     };
+    hasWaiters = function() {
+      return waiters.length > 0;
+    };
     return {
       whenDoneWith: whenDoneWith,
+      hasWaiters: hasWaiters,
       inTransaction: inTransaction,
       currentEventId: currentEventId,
       wrappedSubscribe: wrappedSubscribe
