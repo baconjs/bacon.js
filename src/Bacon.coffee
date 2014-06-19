@@ -962,14 +962,16 @@ class PropertyDispatcher extends Dispatcher
         dispatchingId = UpdateBarrier.currentEventId()
         valId = currentValueRootId
         if !ended && valId && dispatchingId && dispatchingId != valId
-          #console.log "bouncing stale value", event.value(), "root at", valId, "vs", dispatchingId
+          # when subscribing while already dispatching a value and this property hasn't been updated yet
+          # we cannot bounce before this property is up to date.
+          #console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
           UpdateBarrier.whenDoneWith p, ->
             if currentValueRootId == valId
               sink initial(current.get().value())
           # the subscribing thing should be defered
           maybeSubSource()
         else
-          #console.log "bouncing value"
+          #console.log "bouncing value immediately"
           UpdateBarrier.inTransaction undefined, this, (->
             reply = sink initial(current.get().value())
           ), []
@@ -1214,7 +1216,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               #console.log "queuing", e.toString(), _.toString(resultStream)
               triggers.push {source: source, e: e}
-              if needsBarrier then flushLater() else flush()
+              if needsBarrier || UpdateBarrier.hasWaiters() then flushLater() else flush()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
@@ -1373,7 +1375,9 @@ UpdateBarrier = (->
             unsub()
     unsub
 
-  { whenDoneWith, inTransaction, currentEventId, wrappedSubscribe }
+  hasWaiters = -> waiters.length > 0
+
+  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
 )()
 
 Bacon.EventStream = EventStream
