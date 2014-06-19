@@ -1216,7 +1216,7 @@ Bacon.when = (patterns...) ->
             if source.sync
               #console.log "queuing", e.toString(), _.toString(resultStream)
               triggers.push {source: source, e: e}
-              if needsBarrier then flushLater() else flush()
+              if needsBarrier || UpdateBarrier.hasWaiters() then flushLater() else flush()
           unsubAll() if reply == Bacon.noMore
           reply or Bacon.more
 
@@ -1375,7 +1375,9 @@ UpdateBarrier = (->
             unsub()
     unsub
 
-  { whenDoneWith, inTransaction, currentEventId, wrappedSubscribe }
+  hasWaiters = -> waiters.length > 0
+
+  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
 )()
 
 Bacon.EventStream = EventStream
