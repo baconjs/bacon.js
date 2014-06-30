@@ -1,3 +1,11 @@
+## 0.7.16
+
+- Fix #353 (flatMapLatest glitch)
+
+## 0.7.15
+
+- Fix #363 (glitchfree-algorithm bug)
+
 ## 0.7.14
 
 - Fix Bacon.retry (#380)
