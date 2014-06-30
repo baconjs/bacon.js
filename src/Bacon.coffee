@@ -159,7 +159,7 @@ Bacon.fromArray = (values) ->
         sink(end())
         reply = Bacon.noMore
       else
-        value = _.popHead(values)
+        value = values.splice(0,1)[0]
         reply = sink(toEvent(value))
     -> unsubd = true
 
@@ -568,16 +568,17 @@ Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
 
 flatMap_ = (root, f, firstOnly, limit) ->
+  deps = [root]
   result = new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     queue = []
     spawn = (event) ->
       child = makeObservable(f event.value())
-      extraDeps.push(child)
+      deps.push(child)
       UpdateBarrier.flushDepCache()
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
-          _.remove(child, extraDeps)
+          _.remove(child, deps)
           UpdateBarrier.flushDepCache()
           checkQueue()
           checkEnd(unsubMe)
@@ -590,7 +591,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
           unsubAll() if reply == Bacon.noMore
           reply
     checkQueue = ->
-      event = _.popHead(queue)
+      event = queue.splice(0,1)[0]
       spawn event if event
     checkEnd = (unsub) ->
       unsub()
@@ -609,11 +610,8 @@ flatMap_ = (root, f, firstOnly, limit) ->
         else
           spawn event
     composite.unsubscribe
-  extraDeps = []
-  result.internalDeps = ->
-    extraDeps.concat(root)
+  result.internalDeps = -> deps
   result
-
 
 class EventStream extends Observable
   constructor: (desc, subscribe) ->
@@ -1103,7 +1101,7 @@ class Desc
 
     deps = _.cached (-> findDeps([that.context].concat(that.args)))
     obs.internalDeps = obs.internalDeps || deps
-    obs.dependsOn = (b) -> UpdateBarrier.dependsOn.call(that, obs, b)
+    obs.dependsOn = UpdateBarrier.dependsOn
     obs.deps = deps
 
     obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
@@ -1327,8 +1325,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(_.popHead(waiters))
-    return _.popHead(waiters)
+      waiters.push(waiters.splice(0,1)[0])
+    return waiters.splice(0,1)[0]
 
   flush = ->
     while waiters.length
@@ -1373,11 +1371,12 @@ UpdateBarrier = (->
 
   flatDeps = {}
   
-  dependsOn = (o, b) ->
-    if !flatDeps[o.id]?
-      flatDeps[o.id] = {}
-      collectDeps o, o
-    return flatDeps[o.id][b.id]
+  dependsOn = (b) ->
+    myDeps = flatDeps[this.id]
+    if !myDeps
+      myDeps = flatDeps[this.id] = {}
+      collectDeps this, this
+    return myDeps[b.id]
   
   collectDeps = (orig, o) ->
     for dep in o.internalDeps()
@@ -1525,8 +1524,6 @@ _ = {
     i = _.indexOf(xs, x)
     if i >= 0
       xs.splice(i, 1)
-  popHead: (xs) ->
-    xs.splice(0,1)[0]
   fold: (xs, seed, f) ->
     for x in xs
       seed = f(seed, x)
