@@ -574,9 +574,11 @@ flatMap_ = (root, f, firstOnly, limit) ->
     spawn = (event) ->
       child = makeObservable(f event.value())
       extraDeps.push(child)
+      UpdateBarrier.flushDepCache()
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
           _.remove(child, extraDeps)
+          UpdateBarrier.flushDepCache()
           checkQueue()
           checkEnd(unsubMe)
           Bacon.noMore
@@ -1096,17 +1098,12 @@ class Desc
     @method = method
     @args = args
 
-  dependsOn = (o, b) ->
-    for dep in o.internalDeps()
-      if dep is b or dep.dependsOn(b)
-        return true
-
   apply: (obs) ->
     that = @
 
     deps = _.cached (-> findDeps([that.context].concat(that.args)))
     obs.internalDeps = obs.internalDeps || deps
-    obs.dependsOn = (b) -> dependsOn.call(that, obs, b)
+    obs.dependsOn = (b) -> UpdateBarrier.dependsOn.call(that, obs, b)
     obs.deps = deps
 
     obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
@@ -1353,6 +1350,7 @@ UpdateBarrier = (->
         while (afters.length)
           f = afters.splice(0, 1)[0]
           f()
+        flatDeps = {}
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
@@ -1373,7 +1371,22 @@ UpdateBarrier = (->
 
   hasWaiters = -> waiters.length > 0
 
-  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
+  flatDeps = {}
+  
+  dependsOn = (o, b) ->
+    if !flatDeps[o.id]?
+      flatDeps[o.id] = {}
+      collectDeps o, o
+    return flatDeps[o.id][b.id]
+  
+  collectDeps = (orig, o) ->
+    for dep in o.internalDeps()
+      flatDeps[orig.id][dep.id] = true
+      collectDeps(orig, dep)
+
+  flushDepCache = -> flatDeps = {}
+
+  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, dependsOn, flushDepCache }
 )()
 
 Bacon.EventStream = EventStream
