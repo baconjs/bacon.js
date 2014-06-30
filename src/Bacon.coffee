@@ -575,11 +575,11 @@ flatMap_ = (root, f, firstOnly, limit) ->
     spawn = (event) ->
       child = makeObservable(f event.value())
       deps.push(child)
-      UpdateBarrier.flushDepCache()
+      DepCache.invalidate()
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
           _.remove(child, deps)
-          UpdateBarrier.flushDepCache()
+          DepCache.invalidate()
           checkQueue()
           checkEnd(unsubMe)
           Bacon.noMore
@@ -1101,7 +1101,7 @@ class Desc
 
     deps = _.cached (-> findDeps([that.context].concat(that.args)))
     obs.internalDeps = obs.internalDeps || deps
-    obs.dependsOn = UpdateBarrier.dependsOn
+    obs.dependsOn = DepCache.dependsOn
     obs.deps = deps
 
     obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
@@ -1306,6 +1306,26 @@ None =
   inspect: -> "None"
   toString: -> @inspect()
 
+DepCache = (->
+  flatDeps = {}
+  
+  dependsOn = (b) ->
+    myDeps = flatDeps[this.id]
+    if !myDeps
+      myDeps = flatDeps[this.id] = {}
+      collectDeps this, this
+    return myDeps[b.id]
+  
+  collectDeps = (orig, o) ->
+    for dep in o.internalDeps()
+      flatDeps[orig.id][dep.id] = true
+      collectDeps(orig, dep)
+
+  invalidate = -> flatDeps = {}
+
+  { invalidate, dependsOn }
+)()
+
 UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
@@ -1332,6 +1352,8 @@ UpdateBarrier = (->
     while waiters.length
       findIndependent().f()
 
+  invalidateDeps = DepCache.invalidate
+
   inTransaction = (event, context, f, args) ->
     if rootEvent
       #console.log "in tx"
@@ -1348,7 +1370,7 @@ UpdateBarrier = (->
         while (afters.length)
           f = afters.splice(0, 1)[0]
           f()
-        flatDeps = {}
+        invalidateDeps()
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
@@ -1369,23 +1391,8 @@ UpdateBarrier = (->
 
   hasWaiters = -> waiters.length > 0
 
-  flatDeps = {}
-  
-  dependsOn = (b) ->
-    myDeps = flatDeps[this.id]
-    if !myDeps
-      myDeps = flatDeps[this.id] = {}
-      collectDeps this, this
-    return myDeps[b.id]
-  
-  collectDeps = (orig, o) ->
-    for dep in o.internalDeps()
-      flatDeps[orig.id][dep.id] = true
-      collectDeps(orig, dep)
 
-  flushDepCache = -> flatDeps = {}
-
-  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, dependsOn, flushDepCache }
+  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
 )()
 
 Bacon.EventStream = EventStream
