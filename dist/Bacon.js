@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.15';
+  Bacon.version = '0.7.16';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -252,7 +252,7 @@
           sink(end());
           reply = Bacon.noMore;
         } else {
-          value = _.popHead(values);
+          value = values.splice(0, 1)[0];
           reply = sink(toEvent(value));
         }
       }
@@ -1112,17 +1112,23 @@
   Observable.prototype.assign = Observable.prototype.onValue;
 
   flatMap_ = function(root, f, firstOnly, limit) {
-    return new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
+    var deps, result;
+    deps = [root];
+    result = new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
       var checkEnd, checkQueue, composite, queue, spawn;
       composite = new CompositeUnsubscribe();
       queue = [];
       spawn = function(event) {
         var child;
         child = makeObservable(f(event.value()));
+        deps.push(child);
+        UpdateBarrier.flushDepCache();
         return composite.add(function(unsubAll, unsubMe) {
           return child.subscribeInternal(function(event) {
             var reply;
             if (event.isEnd()) {
+              _.remove(child, deps);
+              UpdateBarrier.flushDepCache();
               checkQueue();
               checkEnd(unsubMe);
               return Bacon.noMore;
@@ -1141,7 +1147,7 @@
       };
       checkQueue = function() {
         var event;
-        event = _.popHead(queue);
+        event = queue.splice(0, 1)[0];
         if (event) {
           return spawn(event);
         }
@@ -1174,6 +1180,10 @@
       });
       return composite.unsubscribe;
     });
+    result.internalDeps = function() {
+      return deps;
+    };
+    return result;
   };
 
   EventStream = (function(_super) {
@@ -2047,22 +2057,11 @@
   };
 
   Desc = (function() {
-    var dependsOn;
-
     function Desc(context, method, args) {
       this.context = context;
       this.method = method;
       this.args = args;
-      this.flatDeps = null;
     }
-
-    dependsOn = function(o, b) {
-      if (this.flatDeps == null) {
-        this.flatDeps = {};
-        this.collectDeps(o);
-      }
-      return this.flatDeps[b.id];
-    };
 
     Desc.prototype.apply = function(obs) {
       var deps, that;
@@ -2071,9 +2070,7 @@
         return findDeps([that.context].concat(that.args));
       }));
       obs.internalDeps = obs.internalDeps || deps;
-      obs.dependsOn = function(b) {
-        return dependsOn.call(that, obs, b);
-      };
+      obs.dependsOn = UpdateBarrier.dependsOn;
       obs.deps = deps;
       obs.toString = (function() {
         return _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")";
@@ -2089,18 +2086,6 @@
         };
       });
       return obs;
-    };
-
-    Desc.prototype.collectDeps = function(o) {
-      var dep, deps, _i, _len, _results;
-      deps = o.internalDeps();
-      _results = [];
-      for (_i = 0, _len = deps.length; _i < _len; _i++) {
-        dep = deps[_i];
-        this.flatDeps[dep.id] = true;
-        _results.push(this.collectDeps(dep));
-      }
-      return _results;
     };
 
     return Desc;
@@ -2522,7 +2507,7 @@
   };
 
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, findIndependent, flush, hasWaiters, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, collectDeps, currentEventId, dependsOn, findIndependent, flatDeps, flush, flushDepCache, hasWaiters, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiters = [];
     afters = [];
@@ -2550,9 +2535,9 @@
     };
     findIndependent = function() {
       while (!independent(waiters[0])) {
-        waiters.push(_.popHead(waiters));
+        waiters.push(waiters.splice(0, 1)[0]);
       }
-      return _.popHead(waiters);
+      return waiters.splice(0, 1)[0];
     };
     flush = function() {
       var _results;
@@ -2563,7 +2548,7 @@
       return _results;
     };
     inTransaction = function(event, context, f, args) {
-      var result;
+      var flatDeps, result;
       if (rootEvent) {
         return f.apply(context, args);
       } else {
@@ -2577,6 +2562,7 @@
             f = afters.splice(0, 1)[0];
             f();
           }
+          flatDeps = {};
         }
         return result;
       }
@@ -2614,12 +2600,38 @@
     hasWaiters = function() {
       return waiters.length > 0;
     };
+    flatDeps = {};
+    dependsOn = function(b) {
+      var myDeps;
+      myDeps = flatDeps[this.id];
+      if (!myDeps) {
+        myDeps = flatDeps[this.id] = {};
+        collectDeps(this, this);
+      }
+      return myDeps[b.id];
+    };
+    collectDeps = function(orig, o) {
+      var dep, _i, _len, _ref1, _results;
+      _ref1 = o.internalDeps();
+      _results = [];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        dep = _ref1[_i];
+        flatDeps[orig.id][dep.id] = true;
+        _results.push(collectDeps(orig, dep));
+      }
+      return _results;
+    };
+    flushDepCache = function() {
+      return flatDeps = {};
+    };
     return {
       whenDoneWith: whenDoneWith,
       hasWaiters: hasWaiters,
       inTransaction: inTransaction,
       currentEventId: currentEventId,
-      wrappedSubscribe: wrappedSubscribe
+      wrappedSubscribe: wrappedSubscribe,
+      dependsOn: dependsOn,
+      flushDepCache: flushDepCache
     };
   })();
 
@@ -2954,9 +2966,6 @@
       if (i >= 0) {
         return xs.splice(i, 1);
       }
-    },
-    popHead: function(xs) {
-      return xs.splice(0, 1)[0];
     },
     fold: function(xs, seed, f) {
       var x, _i, _len;
