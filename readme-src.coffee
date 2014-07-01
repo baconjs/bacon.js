@@ -48,8 +48,8 @@ Version 0.7.12 can also be found from cdnjs hosting:
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
 
-Visual Studio users can obtain version 0.7.14 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.14
+Visual Studio users can obtain version 0.7.16 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.16
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
