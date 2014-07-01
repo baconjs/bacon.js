@@ -38,7 +38,8 @@ processResults = (results, i) ->
   mean: mean(values)
   stddev: stddev(values)
 
-printResult = (label, result, prefix = '') ->
+printResult = (label, result, forcePrefix = false) ->
+  prefix = if prefix && result.mean > 0 then '+' else ''
   console.log("  #{rpad(label, 20)}", lpad(prefix + byteFormat(result.mean), 12), '\u00b1', byteFormat(result.stddev, result.mean))
 createNObservable = (count, generator) ->
   n = Math.floor(count / 10)
@@ -48,32 +49,38 @@ createNObservable = (count, generator) ->
     global.gc()
     objects = new Array(n) # Preallocate array of n elements
     unsubscribers = new Array(n)
-
-    withoutSubscriber = measure ->
-      objects[i] = generator(i) for i in [0...objects.length]
-
-    withSubscriber = measure ->
+    subscribe = ->
       for i in [0...objects.length]
         unsubscribers[i] = objects[i].onValue(noop)
-
-    afterCleanup = measure ->
+    unsubscribe = ->
       for i in [0...objects.length]
         unsubscribers[i]()
         unsubscribers[i] = null
 
+    global.gc()
+    withoutSubscriber = measure ->
+      objects[i] = generator(i) for i in [0...objects.length]
+
+    withSubscriber = measure subscribe
+    afterCleanup = measure unsubscribe
+    reSubscribe = measure subscribe
+    afterReCleanup = measure unsubscribe
+
     objects = null
     unsubscribers = null
-    [withoutSubscriber[0]/n, withSubscriber[0]/n, afterCleanup[0]/n]
+    [withoutSubscriber[0]/n, withSubscriber[0]/n, afterCleanup[0]/n, reSubscribe[0]/n, afterReCleanup[0]/n]
 
   withoutSubscriber = processResults(results, 0)
   withSubscriber = processResults(results, 1)
   afterCleanup = processResults(results, 2)
+  reSubscribe = processResults(results, 3)
+  afterReCleanup = processResults(results, 4)
 
-  plusSubscriber = if withSubscriber.mean > 0 then '+' else ''
-  plusCleanup = if afterCleanup.mean > 0 then '+' else ''
   printResult('w/o subscription', withoutSubscriber)
-  printResult('with subscription', withSubscriber, plusSubscriber)
-  printResult('unsubscribe', afterCleanup, plusCleanup)
+  printResult('with subscription', withSubscriber, true)
+  printResult('unsubscribe', afterCleanup, true)
+  printResult('subscribe again', reSubscribe, true)
+  printResult('unsubscribe again', afterReCleanup, true)
 
 title = (text) -> console.log('\n' + text)
 noop = ->
