@@ -34,7 +34,11 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/baconjs/bacon.js.png?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
+[![NuGet version](http://img.shields.io/nuget/v/Bacon.js.svg)](https://www.nuget.org/packages/Bacon.js)
+[![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
+[![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
 Table of contents
 =================
