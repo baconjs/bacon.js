@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, DepCache, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,15 +11,24 @@
     }
   };
 
-  Bacon.version = '0.7.16';
+  Bacon.version = '0.7.17';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
       eventTransformer = _.id;
     }
     return new EventStream(describe(Bacon, "fromBinder", binder, eventTransformer), function(sink) {
-      var unbinder;
-      return unbinder = binder(function() {
+      var unbind, unbinder, unbound;
+      unbound = false;
+      unbind = function() {
+        if (typeof unbinder !== "undefined" && unbinder !== null) {
+          if (!unbound) {
+            unbinder();
+          }
+          return unbound = true;
+        }
+      };
+      unbinder = binder(function() {
         var args, event, reply, value, _i, _len;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         value = eventTransformer.apply(null, args);
@@ -32,17 +41,16 @@
           reply = sink(event = toEvent(event));
           if (reply === Bacon.noMore || event.isEnd()) {
             if (unbinder != null) {
-              unbinder();
+              unbind();
             } else {
-              Bacon.scheduler.setTimeout((function() {
-                return unbinder();
-              }), 0);
+              Bacon.scheduler.setTimeout(unbind, 0);
             }
             return reply;
           }
         }
         return reply;
       });
+      return unbind;
     });
   };
 
@@ -1122,13 +1130,13 @@
         var child;
         child = makeObservable(f(event.value()));
         deps.push(child);
-        UpdateBarrier.flushDepCache();
+        DepCache.invalidate();
         return composite.add(function(unsubAll, unsubMe) {
           return child.subscribeInternal(function(event) {
             var reply;
             if (event.isEnd()) {
               _.remove(child, deps);
-              UpdateBarrier.flushDepCache();
+              DepCache.invalidate();
               checkQueue();
               checkEnd(unsubMe);
               return Bacon.noMore;
@@ -2070,7 +2078,7 @@
         return findDeps([that.context].concat(that.args));
       }));
       obs.internalDeps = obs.internalDeps || deps;
-      obs.dependsOn = UpdateBarrier.dependsOn;
+      obs.dependsOn = DepCache.dependsOn;
       obs.deps = deps;
       obs.toString = (function() {
         return _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")";
@@ -2506,8 +2514,40 @@
     }
   };
 
+  DepCache = (function() {
+    var collectDeps, dependsOn, flatDeps, invalidate;
+    flatDeps = {};
+    dependsOn = function(b) {
+      var myDeps;
+      myDeps = flatDeps[this.id];
+      if (!myDeps) {
+        myDeps = flatDeps[this.id] = {};
+        collectDeps(this, this);
+      }
+      return myDeps[b.id];
+    };
+    collectDeps = function(orig, o) {
+      var dep, _i, _len, _ref1, _results;
+      _ref1 = o.internalDeps();
+      _results = [];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        dep = _ref1[_i];
+        flatDeps[orig.id][dep.id] = true;
+        _results.push(collectDeps(orig, dep));
+      }
+      return _results;
+    };
+    invalidate = function() {
+      return flatDeps = {};
+    };
+    return {
+      invalidate: invalidate,
+      dependsOn: dependsOn
+    };
+  })();
+
   UpdateBarrier = (function() {
-    var afterTransaction, afters, collectDeps, currentEventId, dependsOn, findIndependent, flatDeps, flush, flushDepCache, hasWaiters, inTransaction, independent, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, currentEventId, findIndependent, flush, hasWaiters, inTransaction, independent, invalidateDeps, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiters = [];
     afters = [];
@@ -2547,8 +2587,9 @@
       }
       return _results;
     };
+    invalidateDeps = DepCache.invalidate;
     inTransaction = function(event, context, f, args) {
-      var flatDeps, result;
+      var result;
       if (rootEvent) {
         return f.apply(context, args);
       } else {
@@ -2562,7 +2603,7 @@
             f = afters.splice(0, 1)[0];
             f();
           }
-          flatDeps = {};
+          invalidateDeps();
         }
         return result;
       }
@@ -2600,38 +2641,12 @@
     hasWaiters = function() {
       return waiters.length > 0;
     };
-    flatDeps = {};
-    dependsOn = function(b) {
-      var myDeps;
-      myDeps = flatDeps[this.id];
-      if (!myDeps) {
-        myDeps = flatDeps[this.id] = {};
-        collectDeps(this, this);
-      }
-      return myDeps[b.id];
-    };
-    collectDeps = function(orig, o) {
-      var dep, _i, _len, _ref1, _results;
-      _ref1 = o.internalDeps();
-      _results = [];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        dep = _ref1[_i];
-        flatDeps[orig.id][dep.id] = true;
-        _results.push(collectDeps(orig, dep));
-      }
-      return _results;
-    };
-    flushDepCache = function() {
-      return flatDeps = {};
-    };
     return {
       whenDoneWith: whenDoneWith,
       hasWaiters: hasWaiters,
       inTransaction: inTransaction,
       currentEventId: currentEventId,
-      wrappedSubscribe: wrappedSubscribe,
-      dependsOn: dependsOn,
-      flushDepCache: flushDepCache
+      wrappedSubscribe: wrappedSubscribe
     };
   })();
 
