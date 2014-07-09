@@ -3167,6 +3167,16 @@ describe "Bacon.fromBinder", ->
           sink(new Bacon.End())
           (->)
       [1])
+  it "calls unbinder only once", ->
+    unbound = 0
+    output = undefined
+    timer = Bacon.fromBinder((sink) ->
+        output = sink
+        -> unbound++
+    )
+    timer.take(1).log()
+    output "hello"
+    expect(unbound).to.equal(1)
   it "toString", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 

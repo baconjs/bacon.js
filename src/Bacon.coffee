@@ -7,6 +7,11 @@ Bacon.version = '<version>'
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream describe(Bacon, "fromBinder", binder, eventTransformer), (sink) ->
+    unbound = false
+    unbind = ->
+      if unbinder?
+        unbinder() if not unbound
+        unbound=true
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
       unless isArray(value) and _.last(value) instanceof Event
@@ -17,9 +22,10 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         reply = sink(event = toEvent(event))
         if reply == Bacon.noMore or event.isEnd()
           # defer if binder calls handler in sync before returning unbinder
-          if unbinder? then unbinder() else Bacon.scheduler.setTimeout (-> unbinder()), 0
+          if unbinder? then unbind() else Bacon.scheduler.setTimeout unbind, 0
           return reply
       reply
+    unbind
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
