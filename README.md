@@ -34,11 +34,7 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
-[![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
-[![NuGet version](http://img.shields.io/nuget/v/Bacon.js.svg)](https://www.nuget.org/packages/Bacon.js)
-[![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
-[![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.png?branch=master)](https://travis-ci.org/baconjs/bacon.js)
 
 Table of contents
 =================
@@ -92,8 +88,8 @@ Version 0.7.12 can also be found from cdnjs hosting:
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
 
-Visual Studio users can obtain version 0.7.16 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.16
+Visual Studio users can obtain version 0.7.14 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.14
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -1728,16 +1724,10 @@ define(function (require) {
 Why Bacon?
 ==========
 
-Why not RxJs or something else?
-
-- There is no "something else"
-- I want my bacon to be open source
-- I want good documentation for my bacon
-- I think the Observable abstraction is not good enough. It leaves too much room for variations in
-behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
-- Bacon needs automatic tests. They also serve as documentation.
-- I don't like messing with the Array prototype
-- Because.
+Bacon.js exists largely because I got frustrated with RxJs, which is a good library, but at that time
+didn't have very good documentation and wasn't open-source. Things have improved a lot in the Rx
+world since that. Yet, there are still compelling reasons to use Bacon.js instead. Like, for instance,
+more consistent stream/property behavior and (arguably) simplicity of use.
 
 Contribute
 ==========
