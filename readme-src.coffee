@@ -1183,7 +1183,7 @@ y = Bacon.fromArray([10, 20, 30])
 z = Bacon.fromArray([100, 200, 300])
 Bacon.zipAsArray(x, y, z)
 
-# produces values 111, 222, 333
+# produces values [1, 10, 100], [2, 20, 200] and [3, 30, 300]
 ```
 """
 
