@@ -1,3 +1,7 @@
+## 0.7.17
+
+- Fix #394 (never call unbinder twice in fromBinder)
+
 ## 0.7.16
 
 - Fix #353 (flatMapLatest glitch)
