@@ -1,3 +1,7 @@
+## 0.7.18
+
+- Fix #397 (include minified version in npm)
+
 ## 0.7.17
 
 - Fix #394 (never call unbinder twice in fromBinder)
