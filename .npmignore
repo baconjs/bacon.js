@@ -3,7 +3,6 @@
 bower.json
 browsertest
 component.json
-dist/Bacon.min.js
 examples
 grunt
 Gruntfile.coffee
