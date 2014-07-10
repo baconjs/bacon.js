@@ -1724,10 +1724,16 @@ define(function (require) {
 Why Bacon?
 ==========
 
-Bacon.js exists largely because I got frustrated with RxJs, which is a good library, but at that time
-didn't have very good documentation and wasn't open-source. Things have improved a lot in the Rx
-world since that. Yet, there are still compelling reasons to use Bacon.js instead. Like, for instance,
-more consistent stream/property behavior and (arguably) simplicity of use.
+Why not RxJs or something else?
+
+- There is no "something else"
+- I want my bacon to be open source
+- I want good documentation for my bacon
+- I think the Observable abstraction is not good enough. It leaves too much room for variations in
+behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
+- Bacon needs automatic tests. They also serve as documentation.
+- I don't like messing with the Array prototype
+- Because.
 
 Contribute
 ==========
