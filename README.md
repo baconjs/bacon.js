@@ -34,7 +34,11 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/baconjs/bacon.js.png?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
+[![NuGet version](http://img.shields.io/nuget/v/Bacon.js.svg)](https://www.nuget.org/packages/Bacon.js)
+[![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
+[![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
 Table of contents
 =================
@@ -88,8 +92,8 @@ Version 0.7.12 can also be found from cdnjs hosting:
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
     http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
 
-Visual Studio users can obtain version 0.7.14 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.14
+Visual Studio users can obtain version 0.7.16 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.16
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
