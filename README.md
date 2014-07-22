@@ -594,8 +594,8 @@ Note that instead of a function, you can provide a stream/property too.
 The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="observable-flatmapfirst"></a>
-[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but doesn't spawns a new
-stream only if the previously spawned stream has ended.
+[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but only spawns a new
+stream if the previously spawned stream has ended.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
 
