@@ -1495,8 +1495,8 @@ Bacon.when(
 ```
 
 Now, every time a new 'atom' is spawned from one of the observables,
-this atom is added to the mixture. If at any time there are two oxygen
-atoms, and a hydrogen atom, the corresponding atoms are *consumed*,
+this atom is added to the mixture. If at any time there are two hydrogen
+atoms, and an oxygen atom, the corresponding atoms are *consumed*,
 and output is produced via `make_water`.
 
 The same semantics apply for the second rule to create carbon
