@@ -1037,7 +1037,7 @@ class Source
   constructor: (@obs, @sync, @subscribe, @lazy = false) ->
     @queue = []
     @subscribe = @obs.subscribeInternal if not @subscribe?
-    @toString = @obs.toString
+  toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
   consume: ->
     if @lazy
