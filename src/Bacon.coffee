@@ -564,7 +564,7 @@ class Observable
         .toProperty(false).skipDuplicates())
 
   name: (name) ->
-    @toString = -> name
+    @_name = name
     this
 
   withDescription: ->
@@ -573,8 +573,17 @@ class Observable
   dependsOn: (observable) ->
     DepCache.dependsOn(this, observable)
 
+  toString: ->
+    if @_name
+      @_name
+    else if @desc
+      @desc().toString()
+    else
+      _.toString(this)
+
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
+Observable :: inspect = Observable :: toString
 
 flatMap_ = (root, f, firstOnly, limit) ->
   deps = [root]
@@ -1100,22 +1109,18 @@ findDeps = (x) ->
     []
 
 class Desc
-  constructor: (context, method, args) ->
-    @context = context
-    @method = method
-    @args = args
+  constructor: (@context, @method, @args) ->
 
   apply: (obs) ->
     that = @
 
     deps = _.cached (-> findDeps([that.context].concat(that.args)))
     obs.internalDeps = obs.internalDeps || deps
-    obs.deps = deps
-
-    obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
-    obs.inspect = -> obs.toString()
-    obs.desc = (-> { context: that.context, method: that.method, args: that.args })
+    obs.desc = -> that
     obs
+
+  toString: ->
+    _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
 
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
