@@ -570,6 +570,9 @@ class Observable
   withDescription: ->
     describe(arguments...).apply(this)
 
+  dependsOn: (observable) ->
+    DepCache.dependsOn(this, observable)
+
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
 
@@ -1107,7 +1110,6 @@ class Desc
 
     deps = _.cached (-> findDeps([that.context].concat(that.args)))
     obs.internalDeps = obs.internalDeps || deps
-    obs.dependsOn = DepCache.dependsOn
     obs.deps = deps
 
     obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
@@ -1315,12 +1317,12 @@ None =
 DepCache = (->
   flatDeps = {}
   
-  dependsOn = (b) ->
-    myDeps = flatDeps[this.id]
+  dependsOn = (orig, o) ->
+    myDeps = flatDeps[orig.id]
     if !myDeps
-      myDeps = flatDeps[this.id] = {}
-      collectDeps this, this
-    return myDeps[b.id]
+      myDeps = flatDeps[orig.id] = {}
+      collectDeps orig, orig
+    myDeps[o.id]
   
   collectDeps = (orig, o) ->
     for dep in o.internalDeps()
@@ -1342,7 +1344,7 @@ UpdateBarrier = (->
     else
       f()
   independent = (waiter) ->
-    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
+    !_.any(waiters, ((other) -> DepCache.dependsOn(waiter.obs, other.obs)))
 
   whenDoneWith = (obs, f) ->
     if rootEvent
