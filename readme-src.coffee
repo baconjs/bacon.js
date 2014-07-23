@@ -596,8 +596,8 @@ The [Function Construction rules](#function-construction-rules) below apply here
 """
 
 doc.fn "observable.flatMapFirst(f)", """
-like flatMap, but doesn't spawns a new
-stream only if the previously spawned stream has ended.
+like flatMap, but only spawns a new
+stream if the previously spawned stream has ended.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
 """
