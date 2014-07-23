@@ -165,7 +165,7 @@ Bacon.fromArray = (values) ->
         sink(end())
         reply = Bacon.noMore
       else
-        value = values.splice(0,1)[0]
+        value = values.shift()
         reply = sink(toEvent(value))
     -> unsubd = true
 
@@ -597,7 +597,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
           unsubAll() if reply == Bacon.noMore
           reply
     checkQueue = ->
-      event = queue.splice(0,1)[0]
+      event = queue.shift()
       spawn event if event
     checkEnd = (unsub) ->
       unsub()
@@ -1351,8 +1351,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0,1)[0])
-    return waiters.splice(0,1)[0]
+      waiters.push(waiters.shift())
+    return waiters.shift()
 
   flush = ->
     while waiters.length
@@ -1374,7 +1374,7 @@ UpdateBarrier = (->
       finally
         rootEvent = undefined
         while (afters.length)
-          f = afters.splice(0, 1)[0]
+          f = afters.shift()
           f()
         invalidateDeps()
       result
