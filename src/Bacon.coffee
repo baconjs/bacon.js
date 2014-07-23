@@ -337,6 +337,7 @@ class Observable
   constructor: (desc) ->
     @id = ++idCounter
     withDescription(desc, this)
+    @initialDesc = @desc
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
@@ -576,10 +577,11 @@ class Observable
   toString: ->
     if @_name
       @_name
-    else if @desc
-      @desc().toString()
     else
-      _.toString(this)
+      @desc.toString()
+
+  internalDeps: ->
+    @initialDesc.deps()
 
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
@@ -1110,13 +1112,13 @@ findDeps = (x) ->
 
 class Desc
   constructor: (@context, @method, @args) ->
+    @cached = null
+
+  deps: ->
+    @cached ||= findDeps([@context].concat(@args))
 
   apply: (obs) ->
-    that = @
-
-    deps = _.cached (-> findDeps([that.context].concat(that.args)))
-    obs.internalDeps = obs.internalDeps || deps
-    obs.desc = -> that
+    obs.desc = @
     obs
 
   toString: ->

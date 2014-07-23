@@ -3212,7 +3212,7 @@ describe "Observable.withDescription", ->
   it "affects toString and inspect", ->
     expect(Bacon.once(1).withDescription(Bacon, "una", "mas").inspect()).to.equal("Bacon.una(mas)")
   it "affects desc", ->
-    description = Bacon.once(1).withDescription(Bacon, "una", "mas").desc()
+    description = Bacon.once(1).withDescription(Bacon, "una", "mas").desc
     expect(description.context).to.equal(Bacon)
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
