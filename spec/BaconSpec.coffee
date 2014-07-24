@@ -788,6 +788,60 @@ describe "EventStream.flatMapConcat", ->
   it "toString", ->
     expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")
 
+describe "EventStream.groupBy", ->
+  Bacon.Observable :: flattenAndConcat = ->
+    this.flatMap((obs) ->
+      obs.fold([], (xs,x) ->
+        xs.concat(x)))
+  Bacon.Observable :: flattenAndMerge = ->
+    this.flatMap(Bacon._.id)
+
+  describe "without limiting function", ->
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id)
+          .flattenAndConcat()
+      [[1,1],[2,2,2,2],[3,3]], unstable)
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id)
+          .flattenAndMerge()
+      [1,2,2,3,1,2,2,3])
+  describe "with limiting function", ->
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id, (x) -> x.take(2))
+          .flattenAndConcat()
+      [[2,2],[1,1],[2,2],[3,3]])
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id, (x) -> x.take(2))
+          .flattenAndMerge()
+      [1,2,2,3,1,2,2,3])
+  describe "when mapping all values to same key", ->
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy((x) -> "")
+          .flattenAndConcat()
+      [[1,2,2,3,1,2,2,3]], unstable)
+  describe "when using accumulator function", ->
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id, (x) -> x.fold(0, (x,y) -> x+y))
+          .flattenAndConcat()
+      [[2], [8], [6]], unstable)
+    expectStreamEvents(
+      ->
+        series(2, [1,2,2,3,1,2,2,3])
+          .groupBy(Bacon._.id, (x) -> x.fold(0, (x,y) -> x+y))
+          .flattenAndMerge()
+      [2, 8, 6], unstable)
 
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->

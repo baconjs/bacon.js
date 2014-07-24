@@ -563,6 +563,21 @@ class Observable
         .map(([myValues, otherValues]) -> otherValues.length == 0)
         .toProperty(false).skipDuplicates())
 
+  groupBy: (keyF, limitF = Bacon._.id) ->
+    streams = {}
+    src = this
+    src.filter((x) -> !streams[keyF(x)])
+       .map (x) ->
+          key = keyF(x)
+          similar = src.filter((x) -> keyF(x) == key)
+          data = Bacon.once(x).concat(similar)
+          limited = limitF(data).withHandler((event) ->
+            if event.isEnd()
+              delete streams[key]
+            @push(event)
+          )
+          streams[key] = limited
+
   name: (name) ->
     @toString = -> name
     this
