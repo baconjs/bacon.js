@@ -48,6 +48,7 @@ if grep
 
 @expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
+  verifyDualSubscriber src, expectedEvents
   verifyLateEval src, expectedEvents
   if not unstable
     verifySwitching src, expectedEvents unless browser
@@ -124,6 +125,19 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
         done()
       else
         expect(event instanceof Bacon.Initial).to.deep.equal(false)
+        events.push(toValue(event))
+
+verifyDualSubscriber = (srcF, expectedEvents) ->
+  multiply = (xs) ->
+    Bacon._.flatMap(((x) -> [x,x]), xs)
+  verifyStreamWith "(two subscribers)", srcF, multiply(expectedEvents), (src, events, done) ->
+    src.subscribe (event) -> 
+      if !event.isEnd()
+        events.push(toValue(event))
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
         events.push(toValue(event))
 
 # get each event with new subscriber
