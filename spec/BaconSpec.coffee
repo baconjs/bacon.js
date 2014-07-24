@@ -842,6 +842,15 @@ describe "EventStream.groupBy", ->
           .groupBy(Bacon._.id, (x) -> x.fold(0, (x,y) -> x+y))
           .flattenAndMerge()
       [2, 8, 6], unstable)
+  describe "scenario #402", ->
+    Bacon.Observable :: takeWhileInclusive = (f) ->
+      @takeWhile(f).merge(@filter((x) -> !f(x)).take(1))
+    expectStreamEvents(
+      ->
+        series(2, [{k:1, t:"start"}, {k:2, t:"start"}, {k: 1, t:"data"}, {k: 1, t: "end"}, {k: 1, t: "start"}])
+          .groupBy(((x) -> x.k), (x) -> x.takeWhileInclusive((x) -> x.t != "end"))
+          .flattenAndConcat()
+      [[{k:1, t:"start"}, {k: 1, t:"data"}, {k: 1, t:"end"}], [{k:2, t:"start"}], [{k:1, t:"start"}]], unstable)
 
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->
