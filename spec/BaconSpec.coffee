@@ -796,6 +796,15 @@ describe "EventStream.groupBy", ->
   Bacon.Observable :: flattenAndMerge = ->
     this.flatMap(Bacon._.id)
 
+  Bacon.Observable :: takeWhileInclusive = (f) ->
+    @withHandler (event) ->
+      if event.filter(f)
+        @push event
+      else
+        @push event
+        @push new Bacon.End()
+        Bacon.noMore
+
   describe "without limiting function", ->
     expectStreamEvents(
       ->
@@ -843,8 +852,6 @@ describe "EventStream.groupBy", ->
           .flattenAndMerge()
       [2, 8, 6], unstable)
   describe "scenario #402", ->
-    Bacon.Observable :: takeWhileInclusive = (f) ->
-      @takeWhile(f).merge(@filter((x) -> !f(x)).take(1))
     expectStreamEvents(
       ->
         series(2, [{k:1, t:"start"}, {k:2, t:"start"}, {k: 1, t:"data"}, {k: 1, t: "end"}, {k: 1, t: "start"}])
