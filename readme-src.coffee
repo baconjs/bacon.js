@@ -1722,7 +1722,11 @@ Run browser tests:
 
 Run performance tests:
 
-    coffee performance/*
+    coffee performance/PerformanceTest.coffe
+
+Run memory usage tests:
+
+    coffee --nodejs '--expose-gc' performance/MemoryTest.coffee
 """
 
 doc.section "Dependencies"
