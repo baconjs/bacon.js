@@ -3212,11 +3212,11 @@ describe "Observable.withDescription", ->
   it "affects toString and inspect", ->
     expect(Bacon.once(1).withDescription(Bacon, "una", "mas").inspect()).to.equal("Bacon.una(mas)")
   it "affects desc", ->
-    expect(Bacon.once(1).withDescription(Bacon, "una", "mas").desc()).to.deep.equal({
-      context: Bacon,
-      method: "una",
-      args: ["mas"]
-    })
+    description = Bacon.once(1).withDescription(Bacon, "una", "mas").desc
+    expect(description.context).to.equal(Bacon)
+    expect(description.method).to.equal("una")
+    expect(description.args).to.deep.equal(["mas"])
+
   it "doesn't affect dependency checking", ->
     src = Bacon.once(1)
     bogus = Bacon.once("bogus")
@@ -3239,7 +3239,7 @@ describe "Bacon.spy", ->
     it "map", ->
       testSpy 2, -> Bacon.once(1).map(->)
     it "combineTemplate (also called for the intermediate combineAsArray property)", ->
-      testSpy 4, -> Bacon.combineTemplate(Bacon.once(1), Bacon.constant(2))
+      testSpy 5, -> Bacon.combineTemplate([Bacon.once(1), Bacon.constant(2)])
 
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->

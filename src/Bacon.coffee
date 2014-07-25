@@ -165,7 +165,7 @@ Bacon.fromArray = (values) ->
         sink(end())
         reply = Bacon.noMore
       else
-        value = values.splice(0,1)[0]
+        value = values.shift()
         reply = sink(toEvent(value))
     -> unsubd = true
 
@@ -337,6 +337,7 @@ class Observable
   constructor: (desc) ->
     @id = ++idCounter
     withDescription(desc, this)
+    @initialDesc = @desc
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
@@ -564,14 +565,27 @@ class Observable
         .toProperty(false).skipDuplicates())
 
   name: (name) ->
-    @toString = -> name
+    @_name = name
     this
 
   withDescription: ->
     describe(arguments...).apply(this)
 
+  dependsOn: (observable) ->
+    DepCache.dependsOn(this, observable)
+
+  toString: ->
+    if @_name
+      @_name
+    else
+      @desc.toString()
+
+  internalDeps: ->
+    @initialDesc.deps()
+
 Observable :: reduce = Observable :: fold
 Observable :: assign = Observable :: onValue
+Observable :: inspect = Observable :: toString
 
 flatMap_ = (root, f, firstOnly, limit) ->
   deps = [root]
@@ -597,7 +611,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
           unsubAll() if reply == Bacon.noMore
           reply
     checkQueue = ->
-      event = queue.splice(0,1)[0]
+      event = queue.shift()
       spawn event if event
     checkEnd = (unsub) ->
       unsub()
@@ -1037,7 +1051,7 @@ class Source
   constructor: (@obs, @sync, @subscribe, @lazy = false) ->
     @queue = []
     @subscribe = @obs.subscribeInternal if not @subscribe?
-    @toString = @obs.toString
+  toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
   consume: ->
     if @lazy
@@ -1097,23 +1111,18 @@ findDeps = (x) ->
     []
 
 class Desc
-  constructor: (context, method, args) ->
-    @context = context
-    @method = method
-    @args = args
+  constructor: (@context, @method, @args) ->
+    @cached = null
+
+  deps: ->
+    @cached ||= findDeps([@context].concat(@args))
 
   apply: (obs) ->
-    that = @
-
-    deps = _.cached (-> findDeps([that.context].concat(that.args)))
-    obs.internalDeps = obs.internalDeps || deps
-    obs.dependsOn = DepCache.dependsOn
-    obs.deps = deps
-
-    obs.toString = (-> _.toString(that.context) + "." + _.toString(that.method) + "(" + _.map(_.toString, that.args) + ")")
-    obs.inspect = -> obs.toString()
-    obs.desc = (-> { context: that.context, method: that.method, args: that.args })
+    obs.desc = @
     obs
+
+  toString: ->
+    _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
 
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
@@ -1315,12 +1324,12 @@ None =
 DepCache = (->
   flatDeps = {}
   
-  dependsOn = (b) ->
-    myDeps = flatDeps[this.id]
+  dependsOn = (orig, o) ->
+    myDeps = flatDeps[orig.id]
     if !myDeps
-      myDeps = flatDeps[this.id] = {}
-      collectDeps this, this
-    return myDeps[b.id]
+      myDeps = flatDeps[orig.id] = {}
+      collectDeps orig, orig
+    myDeps[o.id]
   
   collectDeps = (orig, o) ->
     for dep in o.internalDeps()
@@ -1342,7 +1351,7 @@ UpdateBarrier = (->
     else
       f()
   independent = (waiter) ->
-    !_.any(waiters, ((other) -> waiter.obs.dependsOn(other.obs)))
+    !_.any(waiters, ((other) -> DepCache.dependsOn(waiter.obs, other.obs)))
 
   whenDoneWith = (obs, f) ->
     if rootEvent
@@ -1351,8 +1360,8 @@ UpdateBarrier = (->
       f()
   findIndependent = ->
     while (!independent(waiters[0]))
-      waiters.push(waiters.splice(0,1)[0])
-    return waiters.splice(0,1)[0]
+      waiters.push(waiters.shift())
+    return waiters.shift()
 
   flush = ->
     while waiters.length
@@ -1374,7 +1383,7 @@ UpdateBarrier = (->
       finally
         rootEvent = undefined
         while (afters.length)
-          f = afters.splice(0, 1)[0]
+          f = afters.shift()
           f()
         invalidateDeps()
       result
