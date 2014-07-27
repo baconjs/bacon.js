@@ -1,3 +1,7 @@
+## 0.7.19
+
+- Performance and memory footprint improvements
+
 ## 0.7.18
 
 - Fix #397 (include minified version in npm)
