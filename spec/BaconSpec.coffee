@@ -2336,12 +2336,26 @@ describe "EventStream.scan", ->
       -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
       [0,1,3,6], unstable)
   describe "calls accumulator function once per value", ->
-    count = 0
-    expectPropertyEvents(
-      -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
-      [0, 1, 3, 6]
-      { extraCheck: -> it "calls accumulator once per value", -> expect(count).to.equal(3)}
-    )
+    describe "(simple case)", ->
+      count = 0
+      expectPropertyEvents(
+        -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
+        [0, 1, 3, 6]
+        { extraCheck: -> it "calls accumulator once per value", -> expect(count).to.equal(3)}
+      )
+    it "(when pushing to Bus in accumulator)", ->
+      count = 0
+      someBus = new Bacon.Bus()
+      someBus.onValue ->
+      src = new Bacon.Bus()
+      result = src.scan 0, ->
+        someBus.push()
+        count++
+      result.onValue ->
+      result.onValue ->
+      src.push()
+      expect(count).to.equal(1)
+
 
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->
