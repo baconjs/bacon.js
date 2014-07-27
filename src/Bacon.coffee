@@ -1345,7 +1345,6 @@ UpdateBarrier = (->
   rootEvent = undefined
   waiters = []
   afters = []
-  processingAfters = false
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)
@@ -1383,14 +1382,11 @@ UpdateBarrier = (->
         flush()
       finally
         rootEvent = undefined
-        if not processingAfters
-          processingAfters = true
-          try
-            while (afters.length)
-              f = afters.shift()
-              f()
-          finally
-            processingAfters = false
+        while (afters.length)
+          theseAfters = afters
+          afters = []
+          for f in theseAfters
+            f()
         invalidateDeps()
       result
 
