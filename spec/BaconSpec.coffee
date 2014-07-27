@@ -180,7 +180,7 @@ describe "Bacon.sequentially", ->
         s.onValue (value) ->
           throw "testing"
         s
-      ["lol", "wut"], unstable)
+      [], unstable)
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
@@ -516,7 +516,7 @@ describe "EventStream.take", ->
         s.onValue (value) ->
           throw "testing" if value == "lol"
         s
-      ["lol", "wut"], unstable)
+      ["wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3,4]).take(2)
