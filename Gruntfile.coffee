@@ -31,12 +31,17 @@ module.exports = (grunt) ->
           from: /assert.*/g
           to: ''
         ]
+    watch:
+      coffee:
+        files: 'src/*.coffee'
+        tasks: 'build'
 
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-copy'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-text-replace'
 
   grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
