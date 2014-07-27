@@ -1669,7 +1669,7 @@ Compatibility with other libs
 
 Bacon.js doesn't mess with prototypes or the global object. Only exceptions below.
 
-* It exports the Bacon object. In a browser, this is added to the window object.
+* It exports the Bacon object, except in Node.js. In a browser, this is added to the window object.
 * If jQuery is defined, it adds the asEventStream method to jQuery (similarly to Zepto)
 
 So, it should be pretty much compatible and a nice citizen.
