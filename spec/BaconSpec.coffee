@@ -2714,7 +2714,14 @@ describe "Bacon.update", ->
     expect(Bacon.update(0, [Bacon.never()], (->)).toString()).to.equal("Bacon.update(0,[Bacon.never()],function)")
 
 describe "combineTemplate", ->
-  describe "combines streams according to a template object", ->
+  describe "combines streams and properties according to a template object", ->
+    expectPropertyEvents(
+      ->
+         name = Bacon.constant({first:"jack", last:"bauer"})
+         stuff = Bacon.later(1, { key: "value" })
+         Bacon.combineTemplate({ name, stuff })
+      [{ name: { first:"jack", last:"bauer"}, stuff: {key:"value"}}])
+  describe "combines properties according to a template object", ->
     expectPropertyEvents(
       ->
          firstName = Bacon.constant("juha")
