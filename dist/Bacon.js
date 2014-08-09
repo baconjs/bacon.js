@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.19';
+  Bacon.version = '0.7.20';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -2242,7 +2242,7 @@
                     })();
                     return p.f.apply(p, values);
                   }));
-                  if (triggers.length && needsBarrier) {
+                  if (triggers.length) {
                     triggers = _.filter(nonFlattened, triggers);
                   }
                   if (reply === Bacon.noMore) {
@@ -2598,7 +2598,7 @@
     };
     invalidateDeps = DepCache.invalidate;
     inTransaction = function(event, context, f, args) {
-      var result;
+      var result, theseAfters, _i, _len;
       if (rootEvent) {
         return f.apply(context, args);
       } else {
@@ -2609,8 +2609,12 @@
         } finally {
           rootEvent = void 0;
           while (afters.length) {
-            f = afters.shift();
-            f();
+            theseAfters = afters;
+            afters = [];
+            for (_i = 0, _len = theseAfters.length; _i < _len; _i++) {
+              f = theseAfters[_i];
+              f();
+            }
           }
           invalidateDeps();
         }
