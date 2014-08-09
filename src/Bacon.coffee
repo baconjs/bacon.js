@@ -1191,7 +1191,7 @@ Bacon.when = (patterns...) ->
                  reply = sink trigger.e.apply ->
                    values = (fun() for fun in functions)
                    p.f(values ...)
-                 if triggers.length and needsBarrier
+                 if triggers.length
                    triggers = _.filter nonFlattened, triggers
                  if reply == Bacon.noMore
                    return reply
