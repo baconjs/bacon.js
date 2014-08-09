@@ -1383,8 +1383,10 @@ UpdateBarrier = (->
       finally
         rootEvent = undefined
         while (afters.length)
-          f = afters.shift()
-          f()
+          theseAfters = afters
+          afters = []
+          for f in theseAfters
+            f()
         invalidateDeps()
       result
 

@@ -180,7 +180,7 @@ describe "Bacon.sequentially", ->
         s.onValue (value) ->
           throw "testing"
         s
-      ["lol", "wut"], unstable)
+      [], unstable)
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
@@ -516,7 +516,7 @@ describe "EventStream.take", ->
         s.onValue (value) ->
           throw "testing" if value == "lol"
         s
-      ["lol", "wut"], unstable)
+      ["wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3,4]).take(2)
@@ -1858,7 +1858,7 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push "a"
     bus.push "b"
-    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
+    expect(values).to.deep.equal(["A", "B", "A", "B", "a", "b"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
@@ -2344,12 +2344,26 @@ describe "EventStream.scan", ->
       -> Bacon.fromArray([1,2,3]).scan(0, ((x,y)->x+y))
       [0,1,3,6], unstable)
   describe "calls accumulator function once per value", ->
-    count = 0
-    expectPropertyEvents(
-      -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
-      [0, 1, 3, 6]
-      { extraCheck: -> it "calls accumulator once per value", -> expect(count).to.equal(3)}
-    )
+    describe "(simple case)", ->
+      count = 0
+      expectPropertyEvents(
+        -> series(2, [1,2,3]).scan(0, (x,y) -> count++; x + y)
+        [0, 1, 3, 6]
+        { extraCheck: -> it "calls accumulator once per value", -> expect(count).to.equal(3)}
+      )
+    it "(when pushing to Bus in accumulator)", ->
+      count = 0
+      someBus = new Bacon.Bus()
+      someBus.onValue ->
+      src = new Bacon.Bus()
+      result = src.scan 0, ->
+        someBus.push()
+        count++
+      result.onValue ->
+      result.onValue ->
+      src.push()
+      expect(count).to.equal(1)
+
 
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->
