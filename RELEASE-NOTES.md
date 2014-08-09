@@ -1,3 +1,8 @@
+## 0.7.20
+
+- Fix #399 (double evaluation of lazies with Bus)
+- Fix #407 (event duplication in a specific scenario)
+
 ## 0.7.19
 
 - Performance and memory footprint improvements
