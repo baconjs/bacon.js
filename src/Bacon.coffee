@@ -1137,27 +1137,26 @@ Bacon.when = (patterns...) ->
     pats = []
     i = 0
     while (i < len)
-       patSources = _.toArray patterns[i]
-       f = patterns[i+1]
-       pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
-       triggerFound = false
-       for s in patSources
-         index = _.indexOf(sources, s)
-         if !triggerFound
-           triggerFound = Source.isTrigger(s)
-         if index < 0
-            sources.push(s)
-            index = sources.length - 1
-         (ix.count++ if ix.index == index) for ix in pat.ixs
-         pat.ixs.push {index: index, count: 1}
-       assert "At least one EventStream required", (triggerFound || (!patSources.length))
+      patSources = _.toArray patterns[i]
+      f = patterns[i+1]
+      pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
+      triggerFound = false
+      for s in patSources
+        index = _.indexOf(sources, s)
+        if !triggerFound
+          triggerFound = Source.isTrigger(s)
+        if index < 0
+          sources.push(s)
+          index = sources.length - 1
+        (ix.count++ if ix.index == index) for ix in pat.ixs
+        pat.ixs.push {index: index, count: 1}
+      assert "At least one EventStream required", (triggerFound || (!patSources.length))
 
-       pats.push pat if patSources.length > 0
-       i = i + 2
+      pats.push pat if patSources.length > 0
+      i = i + 2
 
     if !sources.length
       return Bacon.never()
-
 
     sources = _.map Source.fromObservable, sources
     needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
@@ -1323,14 +1322,14 @@ None =
 
 DepCache = (->
   flatDeps = {}
-  
+
   dependsOn = (orig, o) ->
     myDeps = flatDeps[orig.id]
     if !myDeps
       myDeps = flatDeps[orig.id] = {}
       collectDeps orig, orig
     myDeps[o.id]
-  
+
   collectDeps = (orig, o) ->
     for dep in o.internalDeps()
       flatDeps[orig.id][dep.id] = true
