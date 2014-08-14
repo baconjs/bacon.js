@@ -12,6 +12,14 @@ module.exports = (grunt) ->
           'dist/Bacon.min.js': 'dist/Bacon.noAssert.coffee'
         ]
 
+    coffeelint:
+      bacon: [ 'src/Bacon.coffee' ]
+      options:
+        max_line_length:
+          level: 'ignore'
+        no_throwing_strings:
+          level: 'ignore'
+
     uglify:
       dist:
         files:
@@ -23,6 +31,8 @@ module.exports = (grunt) ->
         files:[
           'dist/Bacon.coffee': 'src/Bacon.coffee'
         ]
+
+
     replace:
       asserts:
         dest: 'dist/Bacon.noAssert.coffee'
@@ -43,6 +53,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-text-replace'
+  grunt.loadNpmTasks 'grunt-coffeelint';
 
   grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build']

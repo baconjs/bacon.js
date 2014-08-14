@@ -131,8 +131,8 @@ Bacon.fromNodeCallback = liftCallback "fromNodeCallback", (f, args...) ->
     makeFunction(f, args)(handler)
     nop
   , (error, value) ->
-      return [new Error(error), end()] if error
-      [value, end()]
+    return [new Error(error), end()] if error
+    [value, end()]
 
 Bacon.fromPoll = (delay, poll) ->
   withDescription(Bacon, "fromPoll", delay, poll,
@@ -255,7 +255,7 @@ Bacon.combineTemplate = (template) ->
     rootContext = mkContext(template)
     ctxStack = [rootContext]
     for f in funcs
-       f(ctxStack, values)
+      f(ctxStack, values)
     rootContext
   withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
 
@@ -860,7 +860,7 @@ convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property
     sampled = f.sampledBy(obs, (p,s) -> [p,s])
     method.apply(sampled, [([p, s]) -> p])
-     .map(([p, s]) -> s)
+      .map(([p, s]) -> s)
   else
     f = makeFunction(f, args)
     method.apply(obs, [f])
@@ -898,33 +898,33 @@ class Dispatcher
         waiters = null
         w() for w in ws
     pushIt = (event) ->
-        if not pushing
-          return if event is prevError
-          prevError = event if event.isError()
-          success = false
-          try
-            pushing = true
-            tmp = subscriptions
-            for sub in tmp
-              reply = sub.sink event
-              removeSub sub if reply == Bacon.noMore or event.isEnd()
-            success = true
-          finally
-            pushing = false
-            queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
+      if not pushing
+        return if event is prevError
+        prevError = event if event.isError()
+        success = false
+        try
+          pushing = true
+          tmp = subscriptions
+          for sub in tmp
+            reply = sub.sink event
+            removeSub sub if reply == Bacon.noMore or event.isEnd()
           success = true
-          while queue.length
-            event = queue.shift()
-            @push event
-          done(event)
-          if @hasSubscribers()
-            Bacon.more
-          else
-            unsubscribeFromSource()
-            Bacon.noMore
-        else
-          queue.push(event)
+        finally
+          pushing = false
+          queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
+        success = true
+        while queue.length
+          event = queue.shift()
+          @push event
+        done(event)
+        if @hasSubscribers()
           Bacon.more
+        else
+          unsubscribeFromSource()
+          Bacon.noMore
+      else
+        queue.push(event)
+        Bacon.more
     @push = (event) =>
       UpdateBarrier.inTransaction event, this, pushIt, [event]
     handleEvent ?= (event) -> @push event
@@ -1010,7 +1010,7 @@ class Bus extends EventStream
     sink = undefined
     subscriptions = []
     ended = false
-    guardedSink = (input) => (event) =>
+    guardedSink = (input) -> (event) ->
       if (event.isEnd())
         unsubscribeInput(input)
         Bacon.noMore
@@ -1026,23 +1026,23 @@ class Bus extends EventStream
           sub.unsub?()
           subscriptions.splice(i, 1)
           return
-    subscribeAll = (newSink) =>
+    subscribeAll = (newSink) ->
       sink = newSink
       for subscription in cloneArray(subscriptions)
         subscribeInput(subscription)
       unsubAll
     super(describe(Bacon, "Bus"), subscribeAll)
-    @plug = (input) =>
+    @plug = (input) ->
       return if ended
       sub = { input: input }
       subscriptions.push(sub)
       subscribeInput(sub) if (sink?)
       -> unsubscribeInput(input)
-    @push = (value) =>
+    @push = (value) ->
       sink? next(value)
-    @error = (error) =>
+    @error = (error) ->
       sink? new Error(error)
-    @end = =>
+    @end = ->
       ended = true
       unsubAll()
       sink? end()
@@ -1128,105 +1128,104 @@ withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
 
 Bacon.when = (patterns...) ->
-    return Bacon.never() if patterns.length == 0
-    len = patterns.length
-    usage = "when: expecting arguments in the form (Observable+,function)+"
+  return Bacon.never() if patterns.length == 0
+  len = patterns.length
+  usage = "when: expecting arguments in the form (Observable+,function)+"
 
-    assert usage, (len % 2 == 0)
-    sources = []
-    pats = []
-    i = 0
-    while (i < len)
-       patSources = _.toArray patterns[i]
-       f = patterns[i+1]
-       pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
-       triggerFound = false
-       for s in patSources
-         index = _.indexOf(sources, s)
-         if !triggerFound
-           triggerFound = Source.isTrigger(s)
-         if index < 0
-            sources.push(s)
-            index = sources.length - 1
-         (ix.count++ if ix.index == index) for ix in pat.ixs
-         pat.ixs.push {index: index, count: 1}
-       assert "At least one EventStream required", (triggerFound || (!patSources.length))
+  assert usage, (len % 2 == 0)
+  sources = []
+  pats = []
+  i = 0
+  while (i < len)
+    patSources = _.toArray patterns[i]
+    f = patterns[i+1]
+    pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
+    triggerFound = false
+    for s in patSources
+      index = _.indexOf(sources, s)
+      if !triggerFound
+        triggerFound = Source.isTrigger(s)
+      if index < 0
+        sources.push(s)
+        index = sources.length - 1
+      (ix.count++ if ix.index == index) for ix in pat.ixs
+      pat.ixs.push {index: index, count: 1}
+    assert "At least one EventStream required", (triggerFound || (!patSources.length))
 
-       pats.push pat if patSources.length > 0
-       i = i + 2
+    pats.push pat if patSources.length > 0
+    i = i + 2
 
-    if !sources.length
-      return Bacon.never()
+  if !sources.length
+    return Bacon.never()
 
+  sources = _.map Source.fromObservable, sources
+  needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
 
-    sources = _.map Source.fromObservable, sources
-    needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
+  resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
+    triggers = []
+    ends = false
+    match = (p) ->
+      for i in p.ixs
+        if !sources[i.index].hasAtLeast(i.count)
+          return false
+      return true
+    cannotSync = (source) ->
+      !source.sync or source.ended
+    cannotMatch = (p) ->
+      for i in p.ixs
+        if !sources[i.index].mayHave(i.count)
+          return true
+    nonFlattened = (trigger) -> !trigger.source.flatten
+    part = (source) -> (unsubAll) ->
+      flushLater = ->
+        UpdateBarrier.whenDoneWith resultStream, flush
+      flushWhileTriggers = ->
+        if triggers.length > 0
+          reply = Bacon.more
+          trigger = triggers.pop()
+          for p in pats
+            if match(p)
+              #console.log "match", p
+              functions = (sources[i.index].consume() for i in p.ixs)
+              reply = sink trigger.e.apply ->
+                values = (fun() for fun in functions)
+                p.f(values ...)
+              if triggers.length
+                triggers = _.filter nonFlattened, triggers
+              if reply == Bacon.noMore
+                return reply
+              else
+                return flushWhileTriggers()
+        else
+          Bacon.more
+      flush = ->
+        #console.log "flushing", _.toString(resultStream)
+        reply = flushWhileTriggers()
+        if ends
+          ends = false
+          if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+            reply = Bacon.noMore
+            sink end()
+        unsubAll() if reply == Bacon.noMore
+        #console.log "flushed"
+        reply
+      source.subscribe (e) ->
+        if e.isEnd()
+          ends = true
+          source.markEnded()
+          flushLater()
+        else if e.isError()
+          reply = sink e
+        else
+          source.push e.value
+          if source.sync
+            #console.log "queuing", e.toString(), _.toString(resultStream)
+            triggers.push {source: source, e: e}
+            if needsBarrier || UpdateBarrier.hasWaiters() then flushLater() else flush()
+        unsubAll() if reply == Bacon.noMore
+        reply or Bacon.more
 
-    resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
-      triggers = []
-      ends = false
-      match = (p) ->
-        for i in p.ixs
-          if !sources[i.index].hasAtLeast(i.count)
-            return false
-        return true
-      cannotSync = (source) ->
-        !source.sync or source.ended
-      cannotMatch = (p) ->
-        for i in p.ixs
-          if !sources[i.index].mayHave(i.count)
-            return true
-      nonFlattened = (trigger) -> !trigger.source.flatten
-      part = (source) -> (unsubAll) ->
-        flushLater = ->
-          UpdateBarrier.whenDoneWith resultStream, flush
-        flushWhileTriggers = ->
-          if triggers.length > 0
-            reply = Bacon.more
-            trigger = triggers.pop()
-            for p in pats
-               if match(p)
-                 #console.log "match", p
-                 functions = (sources[i.index].consume() for i in p.ixs)
-                 reply = sink trigger.e.apply ->
-                   values = (fun() for fun in functions)
-                   p.f(values ...)
-                 if triggers.length
-                   triggers = _.filter nonFlattened, triggers
-                 if reply == Bacon.noMore
-                   return reply
-                 else
-                   return flushWhileTriggers()
-          else
-            Bacon.more
-        flush = ->
-          #console.log "flushing", _.toString(resultStream)
-          reply = flushWhileTriggers()
-          if ends
-            ends = false
-            if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
-              reply = Bacon.noMore
-              sink end()
-          unsubAll() if reply == Bacon.noMore
-          #console.log "flushed"
-          reply
-        source.subscribe (e) ->
-          if e.isEnd()
-            ends = true
-            source.markEnded()
-            flushLater()
-          else if e.isError()
-            reply = sink e
-          else
-            source.push e.value
-            if source.sync
-              #console.log "queuing", e.toString(), _.toString(resultStream)
-              triggers.push {source: source, e: e}
-              if needsBarrier || UpdateBarrier.hasWaiters() then flushLater() else flush()
-          unsubAll() if reply == Bacon.noMore
-          reply or Bacon.more
-
-      compositeUnsubscribe (part s for s in sources)...
+    compositeUnsubscribe (part s for s in sources)...
 
 containsDuplicateDeps = (observables, state = []) ->
   checkObservable = (obs) ->
@@ -1442,10 +1441,10 @@ assertString = (x) -> throw "not a string : " + x unless typeof x == "string"
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
 makeSpawner = (args) ->
-    if args.length == 1 and isObservable(args[0])
-      _.always(args[0])
-    else
-      makeFunctionArgs args
+  if args.length == 1 and isObservable(args[0])
+    _.always(args[0])
+  else
+    makeFunctionArgs args
 makeFunctionArgs = (args) ->
   args = Array.prototype.slice.call(args)
   makeFunction_ args...
