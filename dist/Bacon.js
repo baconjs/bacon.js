@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.20';
+  Bacon.version = '0.7.21';
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -1849,18 +1849,16 @@
       sink = void 0;
       subscriptions = [];
       ended = false;
-      guardedSink = (function(_this) {
-        return function(input) {
-          return function(event) {
-            if (event.isEnd()) {
-              unsubscribeInput(input);
-              return Bacon.noMore;
-            } else {
-              return sink(event);
-            }
-          };
+      guardedSink = function(input) {
+        return function(event) {
+          if (event.isEnd()) {
+            unsubscribeInput(input);
+            return Bacon.noMore;
+          } else {
+            return sink(event);
+          }
         };
-      })(this);
+      };
       unsubAll = function() {
         var sub, _i, _len, _results;
         _results = [];
@@ -1886,54 +1884,44 @@
           }
         }
       };
-      subscribeAll = (function(_this) {
-        return function(newSink) {
-          var subscription, _i, _len, _ref1;
-          sink = newSink;
-          _ref1 = cloneArray(subscriptions);
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            subscription = _ref1[_i];
-            subscribeInput(subscription);
-          }
-          return unsubAll;
-        };
-      })(this);
+      subscribeAll = function(newSink) {
+        var subscription, _i, _len, _ref1;
+        sink = newSink;
+        _ref1 = cloneArray(subscriptions);
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          subscription = _ref1[_i];
+          subscribeInput(subscription);
+        }
+        return unsubAll;
+      };
       Bus.__super__.constructor.call(this, describe(Bacon, "Bus"), subscribeAll);
-      this.plug = (function(_this) {
-        return function(input) {
-          var sub;
-          if (ended) {
-            return;
-          }
-          sub = {
-            input: input
-          };
-          subscriptions.push(sub);
-          if ((sink != null)) {
-            subscribeInput(sub);
-          }
-          return function() {
-            return unsubscribeInput(input);
-          };
+      this.plug = function(input) {
+        var sub;
+        if (ended) {
+          return;
+        }
+        sub = {
+          input: input
         };
-      })(this);
-      this.push = (function(_this) {
-        return function(value) {
-          return typeof sink === "function" ? sink(next(value)) : void 0;
-        };
-      })(this);
-      this.error = (function(_this) {
-        return function(error) {
-          return typeof sink === "function" ? sink(new Error(error)) : void 0;
-        };
-      })(this);
-      this.end = (function(_this) {
+        subscriptions.push(sub);
+        if ((sink != null)) {
+          subscribeInput(sub);
+        }
         return function() {
-          ended = true;
-          unsubAll();
-          return typeof sink === "function" ? sink(end()) : void 0;
+          return unsubscribeInput(input);
         };
-      })(this);
+      };
+      this.push = function(value) {
+        return typeof sink === "function" ? sink(next(value)) : void 0;
+      };
+      this.error = function(error) {
+        return typeof sink === "function" ? sink(new Error(error)) : void 0;
+      };
+      this.end = function() {
+        ended = true;
+        unsubAll();
+        return typeof sink === "function" ? sink(end()) : void 0;
+      };
     }
 
     return Bus;
@@ -2159,7 +2147,7 @@
           count: 1
         });
       }
-      assert("At least one EventStream required", triggerFound ||  (!patSources.length));
+      assert("At least one EventStream required", triggerFound || (!patSources.length));
       if (patSources.length > 0) {
         pats.push(pat);
       }
