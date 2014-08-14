@@ -1,3 +1,7 @@
+## 0.7.21 
+
+- Fix #409 (invalid characters)
+
 ## 0.7.20
 
 - Fix #399 (double evaluation of lazies with Bus)
