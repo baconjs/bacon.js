@@ -3,13 +3,23 @@
   "description": "A small functional reactive programming lib for JavaScript.",
   "version": "0.7.20",
   "keywords": [
-    "bacon.js", "bacon", "frp", "functional", "reactive", "programming",
-    "stream", "streams", "EventStream", "Rx", "RxJs", "Observable"
+    "bacon.js",
+    "bacon",
+    "frp",
+    "functional",
+    "reactive",
+    "programming",
+    "stream",
+    "streams",
+    "EventStream",
+    "Rx",
+    "RxJs",
+    "Observable"
   ],
   "author": {
     "name": "Juha Paananen",
-     "email": "juha.paananen@gmail.com",
-     "url": "https://twitter.com/raimohanska"
+    "email": "juha.paananen@gmail.com",
+    "url": "https://twitter.com/raimohanska"
   },
   "contributors": [
     {
@@ -38,7 +48,9 @@
     "grunt-contrib-uglify": "~0.3.2",
     "chai": "1.9.0",
     "mocha": "1.17.1",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "coffeelint": "~1.5.5",
+    "grunt-coffeelint": "0.0.13"
   },
   "repository": {
     "type": "git",
@@ -47,13 +59,34 @@
   "homepage": "https://github.com/baconjs/bacon.js",
   "testling": {
     "browsers": {
-      "ie": [ 6, 7, 8, 9, 10 ],
-      "ff": [ 12, 17, 22 ],
-      "chrome": [ 22 ],
-      "opera": [ 12 ],
-      "safari": [ 5.1, 6 ],
-      "iphone": [ 6 ],
-      "ipad": [ 6 ]
+      "ie": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "ff": [
+        12,
+        17,
+        22
+      ],
+      "chrome": [
+        22
+      ],
+      "opera": [
+        12
+      ],
+      "safari": [
+        5.1,
+        6
+      ],
+      "iphone": [
+        6
+      ],
+      "ipad": [
+        6
+      ]
     },
     "harness": "mocha",
     "files": "spec/CompatibilityTest.coffee"
