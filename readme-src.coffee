@@ -1291,7 +1291,7 @@ combine methods.
 doc.subsection "Bus"
 doc.text """
 `Bus` is an `EventStream` that allows you to [`push`](#bus-push) values into the stream.
-It also allows pluggin other streams into the Bus. The Bus practically
+It also allows plugging other streams into the Bus. The Bus practically
 merges all plugged-in streams and the values pushed using the [`push`](#bus-push)
 method.
 """
