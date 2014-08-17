@@ -22,12 +22,7 @@ Bacon.scheduler = sc
 # child streams on unsubscribe.
 unstable = {unstable:true}
 expectError = (errorText, f) ->
-  try
-    f()
-    fail("Error expected")
-  catch err
-    expect(err).to.equal(errorText)
-
+  expect(f).to.throw(Error, errorText)
 
 describe "Bacon._", ->
   _ = Bacon._

@@ -4,6 +4,9 @@ Bacon = {
 
 Bacon.version = '<version>'
 
+# Bacon has own Error
+Exception = (global ? this).Error
+
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream describe(Bacon, "fromBinder", binder, eventTransformer), (sink) ->
@@ -261,7 +264,7 @@ Bacon.combineTemplate = (template) ->
 
 
 Bacon.retry = (options) ->
-  throw "'source' option has to be a function" unless isFunction(options.source)
+  throw new Exception("'source' option has to be a function") unless isFunction(options.source)
   source = options.source
   retries = options.retries || 0
   maxRetries = options.maxRetries || retries
@@ -1429,15 +1432,15 @@ end = -> new End()
 # instanceof more performant than x.?isEvent?()
 toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
-assert = (message, condition) -> throw message unless condition
-assertEventStream = (event) -> throw "not an EventStream : " + event unless event instanceof EventStream
+assert = (message, condition) -> throw new Exception(message) unless condition
+assertEventStream = (event) -> throw new Exception("not an EventStream : " + event) unless event instanceof EventStream
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 isArray = (xs) -> xs instanceof Array
 isObservable = (x) -> x instanceof Observable
-assertArray = (xs) -> throw "not an array : " + xs unless isArray(xs)
+assertArray = (xs) -> throw new Exception("not an array : " + xs) unless isArray(xs)
 assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
-assertString = (x) -> throw "not a string : " + x unless typeof x == "string"
+assertString = (x) -> throw new Exception("not a string : " + x) unless typeof x == "string"
 partiallyApplied = (f, applied) ->
   (args...) -> f((applied.concat(args))...)
 makeSpawner = (args) ->
