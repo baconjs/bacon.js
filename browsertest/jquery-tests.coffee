@@ -31,4 +31,9 @@ describe 'asEventStream', ->
     $('body').click()
     expect(mock.callCount).to.equal(1)
     expect(mock.firstCall.args[0]).to.equal('body')
+  it 'binds “this” to DOM element', ->
+    mock = sinon.spy()
+    $('body').asEventStream('click', mock).take(1).onValue(->)
+    $('body').click()
+    expect(mock.calledOn($('body')[0])).to.be.true
 
