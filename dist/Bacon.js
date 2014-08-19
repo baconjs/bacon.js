@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, DepCache, Desc, Dispatcher, End, Error, Event, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, DepCache, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,9 @@
     }
   };
 
-  Bacon.version = '0.7.21';
+  Bacon.version = '0.7.22';
+
+  Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
   Bacon.fromBinder = function(binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -473,7 +475,7 @@
   Bacon.retry = function(options) {
     var delay, isRetryable, maxRetries, retries, retry, source;
     if (!isFunction(options.source)) {
-      throw "'source' option has to be a function";
+      throw new Exception("'source' option has to be a function");
     }
     source = options.source;
     retries = options.retries || 0;
@@ -2703,13 +2705,13 @@
 
   assert = function(message, condition) {
     if (!condition) {
-      throw message;
+      throw new Exception(message);
     }
   };
 
   assertEventStream = function(event) {
     if (!(event instanceof EventStream)) {
-      throw "not an EventStream : " + event;
+      throw new Exception("not an EventStream : " + event);
     }
   };
 
@@ -2731,7 +2733,7 @@
 
   assertArray = function(xs) {
     if (!isArray(xs)) {
-      throw "not an array : " + xs;
+      throw new Exception("not an array : " + xs);
     }
   };
 
@@ -2741,7 +2743,7 @@
 
   assertString = function(x) {
     if (typeof x !== "string") {
-      throw "not a string : " + x;
+      throw new Exception("not a string : " + x);
     }
   };
 
