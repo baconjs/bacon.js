@@ -1,3 +1,7 @@
+## 0.7.22
+
+- Throw Errors instead of strings in asserts (fix #414)
+
 ## 0.7.21 
 
 - Fix #409 (invalid characters)
