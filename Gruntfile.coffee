@@ -17,8 +17,6 @@ module.exports = (grunt) ->
       options:
         max_line_length:
           level: 'ignore'
-        no_throwing_strings:
-          level: 'ignore'
 
     uglify:
       dist:
