@@ -9,4 +9,4 @@ npm-debug.log
 browsertest/bundle.js
 src/Testing*
 testing
-ie8*
+performance/performance.js

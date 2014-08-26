@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+# generates performance.js for running the performance.html page on your browser
+
+node_modules/.bin/browserify performance/PerformanceTest.coffee > performance/performance.js
