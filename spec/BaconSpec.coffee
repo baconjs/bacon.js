@@ -3244,13 +3244,6 @@ describe "Observable.withDescription", ->
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
 
-  it "doesn't affect dependency checking", ->
-    src = Bacon.once(1)
-    bogus = Bacon.once("bogus")
-    stream = src.map(->).withDescription("Just kidding", bogus)
-    expect(stream.dependsOn(src)).to.equal(true)
-    expect(stream.dependsOn(bogus)).to.equal(undefined)
-
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
