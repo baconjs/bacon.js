@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, DepCache, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.23';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -253,7 +253,6 @@
   Bacon.fromArray = function(values) {
     var i;
     assertArray(values);
-    values = cloneArray(values);
     i = 0;
     return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
       var reply, unsubd, value;
@@ -1114,10 +1113,6 @@
       return describe.apply(null, arguments).apply(this);
     };
 
-    Observable.prototype.dependsOn = function(observable) {
-      return DepCache.dependsOn(this, observable);
-    };
-
     Observable.prototype.toString = function() {
       if (this._name) {
         return this._name;
@@ -1151,13 +1146,11 @@
         var child;
         child = makeObservable(f(event.value()));
         deps.push(child);
-        DepCache.invalidate();
         return composite.add(function(unsubAll, unsubMe) {
           return child.subscribeInternal(function(event) {
             var reply;
             if (event.isEnd()) {
               _.remove(child, deps);
-              DepCache.invalidate();
               checkQueue();
               checkEnd(unsubMe);
               return Bacon.noMore;
@@ -2500,42 +2493,11 @@
     }
   };
 
-  DepCache = (function() {
-    var collectDeps, dependsOn, flatDeps, invalidate;
-    flatDeps = {};
-    dependsOn = function(orig, o) {
-      var myDeps;
-      myDeps = flatDeps[orig.id];
-      if (!myDeps) {
-        myDeps = flatDeps[orig.id] = {};
-        collectDeps(orig, orig);
-      }
-      return myDeps[o.id];
-    };
-    collectDeps = function(orig, o) {
-      var dep, _i, _len, _ref1, _results;
-      _ref1 = o.internalDeps();
-      _results = [];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        dep = _ref1[_i];
-        flatDeps[orig.id][dep.id] = true;
-        _results.push(collectDeps(orig, dep));
-      }
-      return _results;
-    };
-    invalidate = function() {
-      return flatDeps = {};
-    };
-    return {
-      invalidate: invalidate,
-      dependsOn: dependsOn
-    };
-  })();
-
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, findIndependent, flush, hasWaiters, inTransaction, independent, invalidateDeps, rootEvent, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
-    waiters = [];
+    waiterObs = [];
+    waiters = {};
     afters = [];
     afterTransaction = function(f) {
       if (rootEvent) {
@@ -2544,36 +2506,59 @@
         return f();
       }
     };
-    independent = function(waiter) {
-      return !_.any(waiters, (function(other) {
-        return DepCache.dependsOn(waiter.obs, other.obs);
-      }));
-    };
     whenDoneWith = function(obs, f) {
+      var obsWaiters;
       if (rootEvent) {
-        return waiters.push({
-          obs: obs,
-          f: f
-        });
+        obsWaiters = waiters[obs.id];
+        if (obsWaiters == null) {
+          obsWaiters = waiters[obs.id] = [f];
+          return waiterObs.push(obs);
+        } else {
+          return obsWaiters.push(f);
+        }
       } else {
         return f();
       }
     };
-    findIndependent = function() {
-      while (!independent(waiters[0])) {
-        waiters.push(waiters.shift());
-      }
-      return waiters.shift();
-    };
     flush = function() {
       var _results;
       _results = [];
-      while (waiters.length) {
-        _results.push(findIndependent().f());
+      while (waiterObs.length > 0) {
+        _results.push(flushWaiters(0));
       }
       return _results;
     };
-    invalidateDeps = DepCache.invalidate;
+    flushWaiters = function(index) {
+      var f, obs, obsId, obsWaiters, _i, _len, _results;
+      obs = waiterObs[index];
+      obsId = obs.id;
+      obsWaiters = waiters[obsId];
+      waiterObs.splice(index, 1);
+      delete waiters[obsId];
+      flushDepsOf(obs);
+      _results = [];
+      for (_i = 0, _len = obsWaiters.length; _i < _len; _i++) {
+        f = obsWaiters[_i];
+        _results.push(f());
+      }
+      return _results;
+    };
+    flushDepsOf = function(obs) {
+      var dep, deps, index, _i, _len, _results;
+      deps = obs.internalDeps();
+      _results = [];
+      for (_i = 0, _len = deps.length; _i < _len; _i++) {
+        dep = deps[_i];
+        flushDepsOf(dep);
+        if (waiters[dep.id]) {
+          index = _.indexOf(waiterObs, dep);
+          _results.push(flushWaiters(index));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
     inTransaction = function(event, context, f, args) {
       var result, theseAfters, _i, _len;
       if (rootEvent) {
@@ -2593,7 +2578,6 @@
               f();
             }
           }
-          invalidateDeps();
         }
         return result;
       }
@@ -2629,7 +2613,7 @@
       };
     };
     hasWaiters = function() {
-      return waiters.length > 0;
+      return waiterObs.length > 0;
     };
     return {
       whenDoneWith: whenDoneWith,
