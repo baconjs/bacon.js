@@ -283,7 +283,7 @@ value: `Bacon.once(new Bacon.Error("fail"))`.
 series of values (given as array) to the first subscriber. The stream ends after these
 values have been delivered. You can also send [`Bacon.Error`](#bacon-error) events, or
 any combination of pure values and error events like this:
-`Bacon.fromArray([1, new Bacon.Error()])
+`Bacon.fromArray([1, new Bacon.Error()])`
 
 <a name="bacon-interval"></a>
 [`Bacon.interval(interval, value)`](#bacon-interval "Bacon.interval(interval : Number, value : A) : EventStream[A]") repeats the single element

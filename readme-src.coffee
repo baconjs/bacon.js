@@ -250,7 +250,7 @@ creates an EventStream that delivers the given
 series of values (given as array) to the first subscriber. The stream ends after these
 values have been delivered. You can also send `Bacon.Error` events, or
 any combination of pure values and error events like this:
-`Bacon.fromArray([1, new Bacon.Error()])
+`Bacon.fromArray([1, new Bacon.Error()])`
 """
 
 doc.fn "Bacon.interval(interval : Number, value : A) : EventStream[A]", """
