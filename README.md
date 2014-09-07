@@ -471,7 +471,7 @@ true. [Function Construction rules](#function-construction-rules) apply.
 property holds `true`.
 
 <a name="observable-take"></a>
-[`observable.take(n)`](#observable-take "observable.take(@ : Observable[A], n : Number) : Observable[A]") [`observable.take(n)`](#observable-take) takes at most n elements from the stream. Equals to
+[`observable.take(n)`](#observable-take "observable.take(@ : Observable[A], n : Number) : Observable[A]") takes at most n elements from the stream. Equals to
 [`Bacon.never()`](#bacon-never) if `n <= 0`.
 
 <a name="observable-takeuntil"></a>
