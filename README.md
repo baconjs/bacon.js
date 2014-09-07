@@ -538,9 +538,9 @@ source.debounceImmediate(2): a-d-----a-d-----
 ```
 
 <a name="observable-bufferingthrottle"></a>
-[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in `minimumInterval` is issued.
 Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputing
-them with a rate of at most one value per minimumInterval.
+them with a rate of at most one value per `minimumInterval`.
 
 Example:
 
