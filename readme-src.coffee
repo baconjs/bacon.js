@@ -883,7 +883,7 @@ doc.fn "stream.skipDuplicates([isEqual])", """
 drops consecutive equal elements. So,
 from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
 checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+isEqual(oldValue, newValue). For instance, to do a deep comparison, you can
 use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
 """
