@@ -459,7 +459,7 @@ property extractor string (like ".isValuable") instead. Just like with
 
 <a name="observable-filter-property"></a>
 [`observable.filter(property)`](#observable-filter-property "observable.filter(property)") filters values based on the value of a
-property. Event will be included in output iff the property holds `true`
+property. Event will be included in output if the property holds `true`
 at the time of the event.
 
 <a name="observable-takewhile"></a>
