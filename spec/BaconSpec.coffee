@@ -123,7 +123,7 @@ describe "Bacon._", ->
     it "for strings", ->
       expect(_.toString("lol")).to.equal("lol")
     it "for dates", ->
-      expect(_.toString(new Date(0))).to.contain("1970")
+      expect(_.toString(new Date((new Date(0)).getTimezoneOffset() * 60 * 1000))).to.contain("1970")
     it "for arrays", ->
       expect(_.toString([1,2,3])).to.equal("[1,2,3]")
     it "for objects", ->
