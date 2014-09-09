@@ -214,6 +214,41 @@ doc.fnOverload "Bacon.fromCallback(object, methodName [, args...]) : EventStream
 a variant of fromCallback which calls the named method of a given object.
 """
 
+doc.fn "Bacon.fromMultiCallback(f : (A -> void) -> void [, args...]) : EventStream[A]", """
+creates an EventStream from a function that accepts a
+callback. The function may call its callback multiple times,
+with each call resulting in a new event in the stream.
+Useful for things like Socket.IO handlers, Express, and so
+forth. For example:
+
+```js
+var bacons = Bacon.fromMultiCallback(function(callback) {
+  setInterval(function() {
+    callback("Bacon!")
+  }, 1000)
+})
+```
+
+This would create a stream that outputs "Bacon!" that never
+ends. The use of setTimeout causes the value to be delayed
+by 1 second.
+
+You can also give any number of arguments to [`fromMultiCallback`](#bacon-fromcallback), which will be
+passed to the function. These arguments can be simple variables, Bacon
+EventStreams or Properties. For example the following will output "Bacon rules":
+
+```js
+bacon = Bacon.constant('bacon')
+Bacon.fromMultiCallback(function(a, b, callback) {
+  callback(a + ' ' + b);
+}, bacon, 'rules').log();
+```
+"""
+
+doc.fnOverload "Bacon.fromMultiCallback(object, methodName [, args...]) : EventStream[A]", "object", """
+a variant of fromMultiCallback which calls the named method of a given object.
+"""
+
 doc.fn "Bacon.fromNodeCallback(f : (E -> A -> void) -> void [, args...]) : EventStream[A]", """
 behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
 except that it expects the callback to be called in the Node.js convention:

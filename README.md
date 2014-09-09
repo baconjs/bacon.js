@@ -250,6 +250,39 @@ Bacon.fromCallback(function(a, b, callback) {
 <a name="bacon-fromcallback-object"></a>
 [`Bacon.fromCallback(object, methodName [, args...])`](#bacon-fromcallback-object "Bacon.fromCallback(object, methodName [, args...]) : EventStream[A]") a variant of fromCallback which calls the named method of a given object.
 
+<a name="bacon-frommulticallback"></a>
+[`Bacon.fromMultiCallback(f [, args...])`](#bacon-frommulticallback "Bacon.fromMultiCallback(f : (A -> void) -> void [, args...]) : EventStream[A]") creates an EventStream from a function that accepts a
+callback. The function may call its callback multiple times,
+with each call resulting in a new event in the stream.
+Useful for things like Socket.IO handlers, Express, and so
+forth. For example:
+
+```js
+var bacons = Bacon.fromMultiCallback(function(callback) {
+  setInterval(function() {
+    callback("Bacon!")
+  }, 1000)
+})
+```
+
+This would create a stream that outputs "Bacon!" that never
+ends. The use of setTimeout causes the value to be delayed
+by 1 second.
+
+You can also give any number of arguments to [`fromMultiCallback`](#bacon-fromcallback), which will be
+passed to the function. These arguments can be simple variables, Bacon
+EventStreams or Properties. For example the following will output "Bacon rules":
+
+```js
+bacon = Bacon.constant('bacon')
+Bacon.fromMultiCallback(function(a, b, callback) {
+  callback(a + ' ' + b);
+}, bacon, 'rules').log();
+```
+
+<a name="bacon-frommulticallback-object"></a>
+[`Bacon.fromMultiCallback(object, methodName [, args...])`](#bacon-frommulticallback-object "Bacon.fromMultiCallback(object, methodName [, args...]) : EventStream[A]") a variant of fromMultiCallback which calls the named method of a given object.
+
 <a name="bacon-fromnodecallback"></a>
 [`Bacon.fromNodeCallback(f [, args...])`](#bacon-fromnodecallback "Bacon.fromNodeCallback(f : (E -> A -> void) -> void [, args...]) : EventStream[A]") behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
 except that it expects the callback to be called in the Node.js convention:
@@ -1388,7 +1421,7 @@ var result = Bacon.update(
 As input, each function above will get the previous value of the `result` Property, along with values from the listed Observables.
 The value returned by the function will be used as the next value of `result`.
 
-Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled. 
+Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled.
 So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
 
 Here's a simple gaming example:
