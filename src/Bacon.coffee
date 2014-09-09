@@ -123,6 +123,11 @@ liftCallback = (desc, wrapped) ->
       f(values..., callback)])
     withDescription Bacon, desc, f, args..., Bacon.combineAsArray(args).flatMap(stream)
 
+Bacon.fromMultiCallback = liftCallback "fromMultiCallback", (f, args...) ->
+  Bacon.fromBinder (handler) ->
+    makeFunction(f, args)(handler)
+    nop
+
 Bacon.fromCallback = liftCallback "fromCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)

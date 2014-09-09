@@ -216,6 +216,50 @@ testLiftedCallback = (src, liftedCallback) ->
     [output]
   )
 
+describe "Bacon.fromMultiCallback", ->
+  describe "makes an EventStream from function that takes a callback", ->
+    expectStreamEvents(
+      ->
+        src = (callback) ->
+          setTimeout (() -> callback("lol")), 0
+          setTimeout (() -> callback(new Bacon.End())), 25
+        stream = Bacon.fromMultiCallback(src)
+      ["lol"])
+  describe "supports partial application", ->
+    expectStreamEvents(
+      ->
+        src = (param, callback) ->
+          setTimeout (() -> callback(param)), 0
+          setTimeout (() -> callback(new Bacon.End())), 25
+        stream = Bacon.fromMultiCallback(src, "lol")
+      ["lol"])
+  describe "supports partial application with Observable arguments", ->
+    testLiftedCallback(
+      (values..., callback) ->
+        setTimeout (() -> callback(values)), 0
+        setTimeout (() -> callback(new Bacon.End())), 25
+      Bacon.fromMultiCallback
+    )
+  describe "supports object, methodName, partial application", ->
+    expectStreamEvents(
+      ->
+        go = (param, callback) ->
+          setTimeout (() => callback(param + " " + @name)), 0
+          setTimeout (() => callback(new Bacon.End())), 25
+        src = go: go, name: "bob"
+        stream = Bacon.fromMultiCallback(src, "go", "hello")
+      ["hello bob"])
+  describe "calling the callback multiple times", ->
+    expectStreamEvents(
+      ->
+        src = (callback) ->
+          setTimeout (() -> callback("lol"); callback("zomg")), 0 # two calls, same tick
+          setTimeout (() -> callback("roflmao")), 25
+          setTimeout (() -> callback(new Bacon.End())), 50
+        stream = Bacon.fromMultiCallback(src)
+      ["lol", "zomg", "roflmao"])
+  it "toString", ->
+    expect(Bacon.fromMultiCallback((->), "lol").toString()).to.equal("Bacon.fromMultiCallback(function,lol)")
 
 describe "Bacon.fromCallback", ->
   describe "makes an EventStream from function that takes a callback", ->
