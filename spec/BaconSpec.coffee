@@ -244,6 +244,14 @@ describe "Bacon.fromCallback", ->
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
+  describe "calling the callback a single time", ->
+    expectStreamEvents(
+      ->
+        src = (callback) ->
+          callback("lol")
+          callback("roflmao")
+        stream = Bacon.fromCallback(src)
+      ["lol"])
   it "toString", ->
     expect(Bacon.fromCallback((->), "lol").toString()).to.equal("Bacon.fromCallback(function,lol)")
 
@@ -280,6 +288,14 @@ describe "Bacon.fromNodeCallback", ->
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
+  describe "calling the callback a single time", ->
+    expectStreamEvents(
+      ->
+        src = (callback) ->
+          callback(null, "lol")
+          callback(null, "roflmao")
+        stream = Bacon.fromNodeCallback(src)
+      ["lol"])
   it "toString", ->
     expect(Bacon.fromNodeCallback((->), "lol").toString()).to.equal("Bacon.fromNodeCallback(function,lol)")
 
