@@ -250,6 +250,22 @@ Bacon.fromCallback(function(a, b, callback) {
 <a name="bacon-fromcallback-object"></a>
 [`Bacon.fromCallback(object, methodName [, args...])`](#bacon-fromcallback-object "Bacon.fromCallback(object, methodName [, args...]) : EventStream[A]") a variant of fromCallback which calls the named method of a given object.
 
+<a name="bacon-fromnodecallback"></a>
+[`Bacon.fromNodeCallback(f [, args...])`](#bacon-fromnodecallback "Bacon.fromNodeCallback(f : (E -> A -> void) -> void [, args...]) : EventStream[A]") behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
+except that it expects the callback to be called in the Node.js convention:
+`callback(error, data)`, where error is null if everything is fine. For example:
+
+```js
+var Bacon = require('baconjs').Bacon,
+    fs = require('fs');
+var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
+read.onError(function(error) { console.log("Reading failed: " + error); });
+read.onValue(function(value) { console.log("Read contents: " + value); });
+```
+
+<a name="bacon-fromnodecallback-object"></a>
+[`Bacon.fromNodeCallback(object, methodName [, args...])`](#bacon-fromnodecallback-object "Bacon.fromNodeCallback(object, methodName [, args...])") a variant of fromNodeCallback which calls the named method of a given object.
+
 <a name="bacon-frommulticallback"></a>
 [`Bacon.fromMultiCallback(f [, args...])`](#bacon-frommulticallback "Bacon.fromMultiCallback(f : (A -> void) -> void [, args...]) : EventStream[A]") creates an EventStream from a function that accepts a
 callback. The function may call its callback multiple times,
@@ -266,38 +282,11 @@ var bacons = Bacon.fromMultiCallback(function(callback) {
 ```
 
 This would create a stream that outputs "Bacon!" that never
-ends. The use of setTimeout causes the value to be delayed
-by 1 second.
-
-You can also give any number of arguments to [`fromMultiCallback`](#bacon-fromcallback), which will be
-passed to the function. These arguments can be simple variables, Bacon
-EventStreams or Properties. For example the following will output "Bacon rules":
-
-```js
-bacon = Bacon.constant('bacon')
-Bacon.fromMultiCallback(function(a, b, callback) {
-  callback(a + ' ' + b);
-}, bacon, 'rules').log();
-```
+ends. The use of setInterval results in a new event every 1
+second.
 
 <a name="bacon-frommulticallback-object"></a>
 [`Bacon.fromMultiCallback(object, methodName [, args...])`](#bacon-frommulticallback-object "Bacon.fromMultiCallback(object, methodName [, args...]) : EventStream[A]") a variant of fromMultiCallback which calls the named method of a given object.
-
-<a name="bacon-fromnodecallback"></a>
-[`Bacon.fromNodeCallback(f [, args...])`](#bacon-fromnodecallback "Bacon.fromNodeCallback(f : (E -> A -> void) -> void [, args...]) : EventStream[A]") behaves the same way as [`Bacon.fromCallback`](#bacon-fromcallback),
-except that it expects the callback to be called in the Node.js convention:
-`callback(error, data)`, where error is null if everything is fine. For example:
-
-```js
-var Bacon = require('baconjs').Bacon,
-    fs = require('fs');
-var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
-read.onError(function(error) { console.log("Reading failed: " + error); });
-read.onValue(function(value) { console.log("Read contents: " + value); });
-```
-
-<a name="bacon-fromnodecallback-object"></a>
-[`Bacon.fromNodeCallback(object, methodName [, args...])`](#bacon-fromnodecallback-object "Bacon.fromNodeCallback(object, methodName [, args...])") a variant of fromNodeCallback which calls the named method of a given object.
 
 <a name="bacon-frompoll"></a>
 [`Bacon.fromPoll(interval, f)`](#bacon-frompoll "Bacon.fromPoll(interval : Number, f : -> Event[A]) : EventStream[A]") polls given function with given interval.
