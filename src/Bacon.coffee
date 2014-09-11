@@ -238,24 +238,27 @@ Bacon.sampledBy = (values, samplers, combinator) ->
       i = -1; while ++i < numValues
         vals.push fs[i]()
       vals
+  else
+    waitForSamplers = true
+  result = sampledBy_(values, samplers, combinator, lazy, waitForSamplers)
+  if lazy
+    withDescription(Bacon, "sampledBy", values, samplers, result)
+  else
+    withDescription(Bacon, "sampledBy", values, samplers, combinator, result)
+
+sampledBy_ = (values, samplers, combinator, lazy, waitForSamplers) ->
   allProperties = yes
   samplerSources = for s in samplers
     unless s instanceof Property then allProperties = no
     src = new Source(s, true, s.subscribeInternal, lazy)
-    # when no combinator is specified, we're not interested in waiting for
-    # all samplers to get their first events as their values are not used
-    if lazy then src.push(true)
+    unless waitForSamplers then src.push(null)
     src
   valueSources = for v in values
     p = v.toProperty()
     new Source(p, false, p.subscribeInternal, lazy)
   ptn = valueSources.concat samplerSources
   result = Bacon.when(ptn, combinator)
-  if allProperties then result = result.toProperty()
-  if lazy
-    withDescription(Bacon, "sampledBy", values, samplers, result)
-  else
-    withDescription(Bacon, "sampledBy", values, samplers, combinator, result)
+  if allProperties then result.toProperty() else result
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -845,10 +848,7 @@ class Property extends Observable
     else
       lazy = true
       combinator = (f) -> f()
-    thisSource = new Source(this, false, this.subscribeInternal, lazy)
-    samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy)
-    stream = Bacon.when([thisSource, samplerSource], combinator)
-    result = if sampler instanceof Property then stream.toProperty() else stream
+    result = sampledBy_([this], [sampler], combinator, lazy, true)
     withDescription(this, "sampledBy", sampler, combinator, result)
 
   sample: (interval) ->
