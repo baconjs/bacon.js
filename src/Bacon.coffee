@@ -229,6 +229,34 @@ Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
 Bacon.combineWith = (f, streams...) ->
   withDescription(Bacon, "combineWith", f, streams..., Bacon.combineAsArray(streams).map (values) -> f(values...))
 
+Bacon.sampledBy = (values, samplers, combinator) ->
+  unless combinator
+    lazy = true
+    numValues = values.length
+    combinator = (fs...) ->
+      vals = []
+      i = -1; while ++i < numValues
+        vals.push fs[i]()
+      vals
+  allProperties = yes
+  samplerSources = for s in samplers
+    unless s instanceof Property then allProperties = no
+    src = new Source(s, true, s.subscribeInternal, lazy)
+    # when no combinator is specified, we're not interested in waiting for
+    # all samplers to get their first events as their values are not used
+    if lazy then src.push(true)
+    src
+  valueSources = for v in values
+    p = v.toProperty()
+    new Source(p, false, p.subscribeInternal, lazy)
+  ptn = valueSources.concat samplerSources
+  result = Bacon.when(ptn, combinator)
+  if allProperties then result = result.toProperty()
+  if lazy
+    withDescription(Bacon, "sampledBy", values, samplers, result)
+  else
+    withDescription(Bacon, "sampledBy", values, samplers, combinator, result)
+
 Bacon.combineTemplate = (template) ->
   funcs = []
   streams = []

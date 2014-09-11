@@ -2141,6 +2141,384 @@ describe "Bacon.mergeAll", ->
   it "toString", ->
     expect(Bacon.mergeAll(Bacon.never()).toString()).to.equal("Bacon.mergeAll(Bacon.never())")
 
+describe "Bacon.sampledBy(values, samplers, combinator)", ->
+
+  concatenateWithDashes = (vals...) -> vals.join '-'
+
+  describe "combines latest values of both properties and samplers at events from samplers,
+            using the given combinator function, resulting to an EventStream", ->
+    expectStreamEvents(
+      ->
+        values = [
+          series(3, [1, 2, 3]).toProperty()
+          series(4, [4, 5]).delay(t(1))
+        ]
+        samplers = [
+          series(3, ["a"])
+          series(3, ["b", "c", "d"]).delay(t(1))
+          series(8, ["e"])
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:     1-----2-----3---
+        # v2:         4-------5---
+        # s1:     a
+        # s2:       b     c    <d>
+        # s3:              <e>
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["2-4-a-c-e", "3-5-a-d-e"])
+  describe "results to a Property when all samplers are Properties", ->
+    expectPropertyEvents(
+      ->
+        values = [
+          series(3, [2]).toProperty(1)
+          series(7, [4]).toProperty(3)
+        ]
+        samplers = [
+          series(2, ["b", "c"]).toProperty("a")
+          series(2, ["e", "f"]).delay(t(4)).toProperty("d")
+        ]
+        #  t:    1 2 3 4 5 6 7 8 9 10
+        # v1: [1]----2---------------
+        # v2: [3]------------4-------
+        # s1: [a]-<b>-<c>------------
+        # s2: [d]---------<e>-<f>----
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["1-3-a-d", "1-3-b-d", "2-3-c-d", "2-3-c-e", "2-4-c-f"])
+  describe "skips samplings that occur before all properties get their first values
+            and all samplers recieve their first events", ->
+    expectStreamEvents(
+       ->
+        values = [
+          series(3, [1])
+          series(6, [2])
+        ]
+        samplers = [
+          repeat(2, [3]).take(2)
+          repeat(1, [4]).take(4)
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:     1---------------
+        # v2:           2---------
+        # s1:   3   3
+        # s2: 4 4 4 4
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      [])
+    describe "when samplers are EventStreams", ->
+      expectStreamEvents(
+        ->
+          values = [
+            series(3, [1])
+            series(5, [2])
+          ]
+          samplers = [
+            series(2, ["a", "b", "c", "d"])
+            series(3, ["e", "f"]).delay(t(4))
+          ]
+          #  t: 1 2 3 4 5 6 7 8 9 10
+          # v1:     1---------------
+          # v2:         2-----------
+          # s1:   a   b   c  <d>
+          # s2:            <e>   <f>
+          #
+          Bacon.sampledBy(values, samplers, concatenateWithDashes)
+        ["1-2-c-e", "1-2-d-e", "1-2-d-f"], unstable)
+    describe "when samplers are Properties", ->
+      expectPropertyEvents(
+        ->
+          values = [
+            series(3, [1])
+            series(5, [2])
+          ]
+          samplers = [
+            series(2, ["a", "b", "c", "d"]).toProperty()
+            series(3, ["e", "f"]).delay(t(4)).toProperty()
+          ]
+          #  t: 1 2 3 4 5 6 7 8 9 10
+          # v1:     1---------------
+          # v2:         2-----------
+          # s1:   a---b---c--<d>----
+          # s2:            <e>---<f>
+          #
+          Bacon.sampledBy(values, samplers, concatenateWithDashes)
+        ["1-2-c-e", "1-2-d-e", "1-2-d-f"], unstable)
+  describe "when combinator is not specified, combines values of sampled properties into an array
+            and doesn't wait for all samplers to get their first events", ->
+    describe "when all samplers are EventStreams", -> expectStreamEvents(
+      ->
+        values = [
+          series(2, ["a", "b", "c"])
+          series(6, ["d"]).toProperty("i")
+        ]
+        samplers = [
+          series(2, [0, 0]).delay(t(1))
+          series(7, [0])
+          series(1, [0])
+        ]
+        #  t:  0 1 2 3 4 5 6 7 8 9 10
+        # v1:      a---b---c---------
+        # v2: [i]----------d---------
+        # s1:       <0> <0>
+        # s2:               <0>
+        # s3:    0
+        #
+        Bacon.sampledBy(values, samplers)
+    [["a", "i"], ["b", "i"], ["c", "d"]])
+    describe "when all samplers are Properties", -> expectPropertyEvents(
+      ->
+        values = [
+          series(2, ["a", "b", "c"])
+          series(6, ["d"]).toProperty("i")
+        ]
+        samplers = [
+          series(2, [0, 0]).delay(t(1)).toProperty("j")
+          series(7, [0]).toProperty("k")
+          series(1, [0]).toProperty("l")
+        ]
+        #  t:  0  1 2 3 4 5 6 7 8 9 10
+        # v1:       a---b---c---------
+        # v2: [i]-----------d---------
+        # s1: [j]----<0>-<0>----------
+        # s2: [k]------------<0>------
+        # s3: [l]-0-------------------
+        #
+        Bacon.sampledBy(values, samplers)
+    [["a", "i"], ["b", "i"], ["c", "d"]])
+    describe "when some of the samplers are Properties", -> expectStreamEvents(
+      ->
+        values = [
+          series(2, ["a", "b", "c"])
+          series(6, ["d"]).toProperty("i")
+        ]
+        samplers = [
+          series(2, [0, 0]).delay(t(1)).toProperty("j")
+          series(7, [0])
+          series(1, [0])
+        ]
+        #  t:  0  1 2 3 4 5 6 7 8 9 10
+        # v1:       a---b---c---------
+        # v2: [i]-----------d---------
+        # s1: [j]----<0>-<0>----------
+        # s2:                <0>
+        # s3:     0
+        #
+        Bacon.sampledBy(values, samplers)
+    [["a", "i"], ["b", "i"], ["c", "d"]])
+    it "laziness", ->
+      calls = [0, 0]; ids = for i in [0..1] then do (i) -> (x) ->
+        ++calls[i]
+        x
+      before (done) ->
+        values = [
+          series(2, [1]).map(ids[0])
+          series(4, [2]).toProperty(0).map(ids[1])
+        ]
+        samplers = [
+          series(6, [0]).toProperty(0).map(ids[0])
+          series(8, [0]).map(ids[1])
+        ]
+        result = Bacon.sampledBy(values, samplers)
+        result.onValue ->
+        result.onEnd done
+      it "is preserved", -> expect(calls).to.deep.equal([1, 1])
+  describe "ends when all samplers end", ->
+    expectStreamEvents(
+      ->
+        values = [
+          repeat(3, [1, 2]).toProperty()
+          repeat(5, [3]).toProperty()
+        ]
+        samplers = [
+          repeat(3, ["a", "b"]).delay(t(4)).take(2)
+          repeat(4, ["c", "d"]).take(2)
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+        # v1:     1-----2-----1-------2-------
+        # v2:         3-----------------------
+        # s1:            <a>   <b>.
+        # s2:       c      <d>.
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["2-3-a-c", "2-3-a-d", "1-3-b-d"])
+  describe "includes errors from all source observables", ->
+    expectStreamEvents(
+      ->
+        values = [
+          series(3, [error(), 1]).toProperty()
+          series(2, [error(), 2]).delay(t(3))
+        ]
+        samplers = [
+          series(2, [error(), "a"]).delay(t(6))
+          series(3, ["b", error()]).delay(t(1))
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:    (E)    1----------
+        # v2:        (E)  2--------
+        # s1:              (E)  <a>
+        # s2:       b----(E)
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      [error(), error(), error(), error(), "1-2-a-b"])
+  describe "works with same origins", ->
+    expectStreamEvents(
+      ->
+        samplers = [
+          series(3, [1, 2])
+          series(4, [3, 4])
+        ]
+        values = [
+          samplers[0].toProperty()
+          samplers[1].toProperty()
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:     1-----2---------
+        # v2:       3-------4-----
+        # s1:     1    <2>
+        # s2:      <3>     <4>
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["1-3-1-3", "2-3-2-3", "2-4-2-4"])
+    expectStreamEvents(
+      ->
+        src = [
+          series(3, [1, 2])
+          series(4, [3, 4])
+        ]
+        samplers = [
+          src[0].map(times, 2)
+          src[1].map(times, 2)
+        ]
+        values = [
+          src[0].toProperty()
+          src[1].toProperty()
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:     1-----2---------
+        # v2:       3-------4-----
+        # s1:     2    <4>
+        # s2:      <6>     <8>
+        #
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["1-3-2-6", "2-3-4-6", "2-4-4-8"])
+  describe "works with functional values", ->
+    withName = (obj, name) -> obj.inspect = obj.toString = (-> name); obj
+    f = withName (->), "f"
+    g = withName (->), "g"
+    describe "without combinator", -> expectStreamEvents(
+      ->
+        values = [
+          series(2, [g, f, g, f])
+          series(3, [g, f])
+        ]
+        samplers = [
+          series(2, [0, 0, 0]).delay(t(3))
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:   g---f---g---f-----
+        # v2:     g-----f---------
+        #  s:        <0> <0> <0>
+        #
+        Bacon.sampledBy(values, samplers)
+      [[f, g], [g, f], [f, f]])
+    wrapInArray = (args...) -> args
+    describe "with combinator", -> expectStreamEvents(
+      ->
+        values = [
+          series(2, [g, f, g, f])
+          series(3, [g, f])
+        ]
+        samplers = [
+          series(2, [wrapInArray, wrapInArray, wrapInArray]).delay(t(3))
+        ]
+        #  t: 1 2 3 4 5 6 7 8 9 10
+        # v1:   g---f---g---f-----
+        # v2:     g-----f---------
+        #  s:         w   w   w
+        #
+        Bacon.sampledBy(values, samplers, (a, b, f) -> f(a, b))
+      [[f, g], [g, f], [f, f]])
+  describe "uses updated properties after combine", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        values = [
+          series(3, ["b", "c"]).toProperty("a")
+          series(2, ["d", "e"]).toProperty()
+        ]
+        combinedSamplers = [
+          Bacon.constant().combine(values[0], latter)
+          Bacon.constant().combine(values[1], latter)
+        ]
+        #  t:  0 1 2 3 4 5 6 7 8 9 10
+        # v1: [a]----b-----c---------
+        # v2:      d---e-------------
+        # s1: [a]---<b>---<c>--------
+        # s2:     <d>-<e>------------
+        #
+        Bacon.sampledBy(values, combinedSamplers, concatenateWithDashes)
+      ["a-d-a-d", "b-d-b-d", "b-e-b-e", "c-e-c-e"])
+  describe "uses updated properties after combine with subscribers", ->
+    latter = (a, b) -> b
+    expectPropertyEvents(
+      ->
+        values = [
+          series(3, ["b", "c"]).toProperty("a")
+          series(2, ["d", "e"]).toProperty()
+        ]
+        combinedSamplers = [
+          Bacon.constant().combine(values[0], latter)
+          Bacon.constant().combine(values[1], latter)
+        ]
+        #  t:  0 1 2 3 4 5 6 7 8 9 10
+        # v1: [a]----b-----c---------
+        # v2:      d---e-------------
+        # s1: [a]---<b>---<c>--------
+        # s2:     <d>-<e>------------
+        #
+        combined.onValue(->) for combined in combinedSamplers
+        Bacon.sampledBy(values, combinedSamplers, concatenateWithDashes)
+      ["a-d-a-d", "b-d-b-d", "b-e-b-e", "c-e-c-e"])
+  describe "works with synchronous sampler stream", ->
+    describe "case 1", -> expectStreamEvents(
+      ->
+        values = [
+          Bacon.constant("a")
+          Bacon.constant("b")
+        ]
+        samplers = [
+          Bacon.fromArray([1,2,3])
+        ]
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["a-b-1", "a-b-2", "a-b-3"], unstable)
+    describe "case 2", -> expectStreamEvents(
+      ->
+        values = [
+          Bacon.later(1, "a").toProperty("i")
+          Bacon.later(1, "b").toProperty()
+        ]
+        samplers = [
+          Bacon.fromArray([1,2,3])
+        ]
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      [])
+    describe "case 3", -> expectStreamEvents(
+      ->
+        values = [
+          Bacon.later(1, "a").toProperty("i")
+          Bacon.later(1, "b").toProperty()
+        ]
+        samplers = [
+          Bacon.fromArray([1,2,3])
+          Bacon.fromArray([4, 5, 6]).merge Bacon.later(3, [7])
+        ]
+        Bacon.sampledBy(values, samplers, concatenateWithDashes)
+      ["a-b-3-7"], unstable)
+  it "toString", ->
+    expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()]).toString()).to.equal("Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()])")
+    expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()], concatenateWithDashes).toString()).to.equal("Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()],function)")
+
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
     expectStreamEvents(
