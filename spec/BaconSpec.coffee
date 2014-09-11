@@ -2354,10 +2354,10 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
           series(3, ["b", error()]).delay(t(1))
         ]
         #  t: 1 2 3 4 5 6 7 8 9 10
-        # v1:    (E)    1----------
-        # v2:        (E)  2--------
-        # s1:              (E)  <a>
-        # s2:       b----(E)
+        # v1:    <E>    1----------
+        # v2:        <E>  2--------
+        # s1:              <E>  <a>
+        # s2:       b    <E>
         #
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       [error(), error(), error(), error(), "1-2-a-b"])
@@ -2435,7 +2435,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         #  t: 1 2 3 4 5 6 7 8 9 10
         # v1:   g---f---g---f-----
         # v2:     g-----f---------
-        #  s:         w   w   w
+        #  s:        <w> <w> <w>
         #
         Bacon.sampledBy(values, samplers, (a, b, f) -> f(a, b))
       [[f, g], [g, f], [f, f]])
