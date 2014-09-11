@@ -190,6 +190,15 @@
     });
   };
 
+  Bacon.fromMultiCallback = liftCallback("fromMultiCallback", function() {
+    var args, f;
+    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return Bacon.fromBinder(function(handler) {
+      makeFunction(f, args)(handler);
+      return nop;
+    });
+  });
+
   Bacon.fromCallback = liftCallback("fromCallback", function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
