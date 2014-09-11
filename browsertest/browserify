@@ -1,4 +1,4 @@
 # Creates a bundle.js file from node project, so that you can run tests
 # in the browser using mocha.runner.html
 
-node_modules/.bin/browserify browsertest/mocha-harness.coffee > browsertest/bundle.js
+node_modules/.bin/browserify --extension .coffee -t coffeeify browsertest/mocha-harness.coffee > browsertest/bundle.js
