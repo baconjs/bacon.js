@@ -2328,16 +2328,16 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
       ->
         values = [
           repeat(3, [1, 2]).toProperty()
-          repeat(5, [3]).toProperty()
+          series(5, [3]).toProperty()
         ]
         samplers = [
-          repeat(3, ["a", "b"]).delay(t(4)).take(2)
+          repeat(3, ["a", "b"]).delay(t(4)).take(2).toProperty()
           repeat(4, ["c", "d"]).take(2)
         ]
         #  t: 1 2 3 4 5 6 7 8 9 10 11 12 13 14
         # v1:     1-----2-----1-------2-------
-        # v2:         3-----------------------
-        # s1:            <a>   <b>.
+        # v2:         3.----------------------
+        # s1:            <a>---<b>.-----------
         # s2:       c      <d>.
         #
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
