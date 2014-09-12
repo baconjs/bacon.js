@@ -247,16 +247,16 @@ Bacon.sampledBy = (values, samplers, combinator) ->
     withDescription(Bacon, "sampledBy", values, samplers, combinator, result)
 
 sampledBy_ = (values, samplers, combinator, lazy, waitForSamplers) ->
-  allProperties = yes
+  allProperties = true
   samplerSources = for s in samplers
-    unless s instanceof Property then allProperties = no
+    unless s instanceof Property then allProperties = false
     src = new Source(s, true, s.subscribeInternal, lazy)
     unless waitForSamplers then src.push(null)
     src
   valueSources = for v in values
     p = v.toProperty()
     new Source(p, false, p.subscribeInternal, lazy)
-  ptn = valueSources.concat samplerSources
+  ptn = valueSources.concat(samplerSources)
   result = Bacon.when(ptn, combinator)
   if allProperties then result.toProperty() else result
 

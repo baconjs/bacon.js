@@ -2403,9 +2403,9 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["1-3-2-6", "2-3-4-6", "2-4-4-8"])
   describe "works with functional values", ->
-    withName = (obj, name) -> obj.inspect = obj.toString = (-> name); obj
-    f = withName (->), "f"
-    g = withName (->), "g"
+    withName = (name, obj) -> obj.inspect = obj.toString = (-> name); obj
+    f = withName("f", ->)
+    g = withName("g", ->)
     describe "without combinator", -> expectStreamEvents(
       ->
         values = [
@@ -2511,7 +2511,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         ]
         samplers = [
           Bacon.fromArray([1,2,3])
-          Bacon.fromArray([4, 5, 6]).merge Bacon.later(3, [7])
+          Bacon.fromArray([4, 5, 6]).merge(Bacon.later(3, 7))
         ]
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["a-b-3-7"], unstable)
