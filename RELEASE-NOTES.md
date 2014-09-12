@@ -1,3 +1,53 @@
+## 0.7.22
+
+- Throw Errors instead of strings in asserts (fix #414)
+
+## 0.7.21 
+
+- Fix #409 (invalid characters)
+
+## 0.7.20
+
+- Fix #399 (double evaluation of lazies with Bus)
+- Fix #407 (event duplication in a specific scenario)
+
+## 0.7.19
+
+- Performance and memory footprint improvements
+
+## 0.7.18
+
+- Fix #397 (include minified version in npm)
+
+## 0.7.17
+
+- Fix #394 (never call unbinder twice in fromBinder)
+
+## 0.7.16
+
+- Fix #353 (flatMapLatest glitch)
+
+## 0.7.15
+
+- Fix #363 (glitchfree-algorithm bug)
+
+## 0.7.14
+
+- Fix Bacon.retry (#380)
+
+## 0.7.13
+
+- Add flatMapWithConcurrencyLimit, flatMapConcat, bufferingThrottle, holdWhen (#324)
+
+## 0.7.12
+
+- Add Bacon.retry, flatMapError, Bacon.error by @mileskin (#310)
+- Improve mergeAll performance by removing recursion (#373)
+
+## 0.7.11
+
+- Optimizations by @lautis (#370)
+
 ## 0.7.9
 
 - Fix #348: toString problems with jQuery

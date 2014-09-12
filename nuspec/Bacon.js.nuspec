@@ -3,7 +3,7 @@
   <metadata>
     <id>Bacon.js</id>
     <title>Bacon.js - Functional Reactive Programming library for JavaScript</title>
-    <version>0.7.2</version>
+    <version>0.7.16</version>
     <authors>Bacon.js Organization</authors>
     <description>
         Functional reactive programming lib for JavaScript. Turns your event spaghetti into clean and declarative feng shui bacon, by switching from imperative to functional.
@@ -15,7 +15,7 @@
     <language>en-US</language>
     <tags>Bacon Bacon.js Reactive Functional Observable FRP Event</tags>
     <dependencies>
-      <dependency id="jQuery" />
+      <dependency id="jQuery" version="(1.11,)" />
     </dependencies>
   </metadata>
   <files>

@@ -34,7 +34,11 @@ And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
 Please contribute!
 
-[![Build Status](https://travis-ci.org/baconjs/bacon.js.png?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
+[![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
+[![NuGet version](http://img.shields.io/nuget/v/Bacon.js.svg)](https://www.nuget.org/packages/Bacon.js)
+[![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
+[![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
 Table of contents
 =================
@@ -83,13 +87,13 @@ Install
 
 You can download the latest [generated javascript](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
-Version 0.7.2 can also be found from cdnjs hosting:
+Version 0.7.12 can also be found from cdnjs hosting:
 
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.2/bacon.js
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.2/bacon.min.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
+    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
 
-Visual Studio users can obtain version 0.7.2 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.2
+Visual Studio users can obtain version 0.7.16 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.16
 
 If you're targeting to [node.js](http://nodejs.org/), you can
 
@@ -161,7 +165,7 @@ was used here to calculate the "current sum" of events in the `both` stream, by 
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
-Properties can be very conventiently used for assigning values and attributes to DOM elements with JQuery.
+Properties can be very conveniently used for assigning values and attributes to DOM elements with JQuery.
 Here we assign the value of a property as the text of a span element whenever it changes:
 
 ```js
@@ -374,7 +378,7 @@ new Bacon.Next("value")
 
 But the canonical way would be
 ```js
-new Bacon.Next(function() { return "value") })
+new Bacon.Next(function() { return "value"; })
 ```
 
 The former version is safe only when you know that the actual value in
@@ -533,6 +537,22 @@ source:                      asdf----asdf----
 source.debounceImmediate(2): a-d-----a-d-----
 ```
 
+<a name="observable-bufferingthrottle"></a>
+[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputing
+them with a rate of at most one value per minimumInterval.
+
+Example:
+
+```js
+var throttled = source.bufferingThrottle(2)
+```
+
+```
+source:    asdf----asdf----
+throttled: a-s-d-f-a-s-d-f-
+```
+
 <a name="observable-doaction"></a>
 [`observable.doAction(f)`](#observable-doaction "observable.doAction(f)") returns a stream/property where the function f
 is executed for each value, before dispatching to subscribers. This is
@@ -566,7 +586,7 @@ stream.flatMap(function(text) {
 ```
 
 <a name="observable-flatmaplatest"></a>
-[`observable.flatMapLatest(f)`](#observable-flatmaplatest "observable.flatMapLatest(f)") like flatMap, but instead of including events from
+[`observable.flatMapLatest(f)`](#observable-flatmaplatest "observable.flatMapLatest(f)") like [`flatMap`](#observable-flatmap), but instead of including events from
 all spawned streams, only includes them from the latest spawned stream.
 You can think this as switching from stream to stream.
 Note that instead of a function, you can provide a stream/property too.
@@ -574,8 +594,22 @@ Note that instead of a function, you can provide a stream/property too.
 The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="observable-flatmapfirst"></a>
-[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but doesn't spawns a new
-stream only if the previously spawned stream has ended.
+[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but only spawns a new
+stream if the previously spawned stream has ended.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-flatmapwithconcurrencylimit"></a>
+[`observable.flatMapWithConcurrencyLimit(limit, f)`](#observable-flatmapwithconcurrencylimit "observable.flatMapWithConcurrencyLimit(@ : Observable[A], limit : Number, f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
+[`flatMapConcat`](#observable-flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
+and [`flatMap`](#observable-flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
+
+The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-flatmapconcat"></a>
+[`observable.flatMapConcat(f)`](#observable-flatmapconcat "observable.flatMapConcat(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a [`flatMapWithConcurrencyLimit`](#observable-flatmapwithconcurrencylimit) with limit of 1.
+
+The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="observable-scan"></a>
 [`observable.scan(seed, f)`](#observable-scan "observable.scan(seed, f) : Property[A]") scans stream/property with given seed value and
@@ -844,6 +878,10 @@ stream.
 <a name="stream-merge"></a>
 [`stream.merge(otherStream)`](#stream-merge "stream.merge(otherStream)") merges two streams into one stream that delivers events from both
 
+<a name="stream-holdwhen"></a>
+[`stream.holdWhen(valve)`](#stream-holdwhen "stream.holdWhen(@ : EventStream[A], valve : Observable[B]) : EventStream[A]") pauses and buffers the event stream if last event in valve is truthy.
+All buffered events are released when valve becomes falsy.
+
 <a name="stream-startwith"></a>
 [`stream.startWith(value)`](#stream-startwith "stream.startWith(value)") adds a starting value to the stream, i.e. concats a
 single-element stream contains [`value`](#event-value) with this stream.
@@ -1084,7 +1122,7 @@ y = Bacon.fromArray([10, 20, 30])
 z = Bacon.fromArray([100, 200, 300])
 Bacon.zipAsArray(x, y, z)
 
-# produces values 111, 222, 333
+# produces values [1, 10, 100], [2, 20, 200] and [3, 30, 300]
 ```
 
 <a name="bacon-zipasarray-multiple-streams"></a>
@@ -1188,7 +1226,7 @@ Bus
 ---
 
 [`Bus`](#bus) is an [`EventStream`](#eventstream) that allows you to [`push`](#bus-push) values into the stream.
-It also allows pluggin other streams into the Bus. The Bus practically
+It also allows plugging other streams into the Bus. The Bus practically
 merges all plugged-in streams and the values pushed using the [`push`](#bus-push)
 method.
 
@@ -1268,7 +1306,7 @@ as well as all the spawned stream.
 You can take action on errors by using the [`observable.onError(f)`](#observable-onerror)
 callback.
 
-See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors) above.
+See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors), `Bacon.retry` and `flatMapError` above.
 
 In case you want to convert (some) value events into [`Error`](#bacon-error) events, you may use [`flatMap`](#observable-flatmap) like this:
 
@@ -1389,8 +1427,8 @@ Bacon.when(
 ```
 
 Now, every time a new 'atom' is spawned from one of the observables,
-this atom is added to the mixture. If at any time there are two oxygen
-atoms, and a hydrogen atom, the corresponding atoms are *consumed*,
+this atom is added to the mixture. If at any time there are two hydrogen
+atoms, and an oxygen atom, the corresponding atoms are *consumed*,
 and output is produced via `make_water`.
 
 The same semantics apply for the second rule to create carbon
@@ -1605,16 +1643,25 @@ Run unit tests:
 
     npm test
 
-Run browser tests:
+Run browser tests (using testem):
 
     npm install
-    npm install --save-dev browserify@1.18.0
     npm install -g testem
     testem
 
+Run browser (without testem):
+
+    npm install
+    browsertest/browserify
+    open browsertest/mocha.runner.html
+
 Run performance tests:
 
-    coffee performance/*
+    coffee performance/PerformanceTest.coffe
+
+Run memory usage tests:
+
+    coffee --nodejs '--expose-gc' performance/MemoryTest.coffee
 
 Dependencies
 ============
@@ -1627,7 +1674,7 @@ Compatibility with other libs
 
 Bacon.js doesn't mess with prototypes or the global object. Only exceptions below.
 
-* It exports the Bacon object. In a browser, this is added to the window object.
+* It exports the Bacon object, except in Node.js. In a browser, this is added to the window object.
 * If jQuery is defined, it adds the asEventStream method to jQuery (similarly to Zepto)
 
 So, it should be pretty much compatible and a nice citizen.
@@ -1690,21 +1737,18 @@ define(function (require) {
 Why Bacon?
 ==========
 
-Why not RxJs or something else?
-
-- There is no "something else"
-- I want my bacon to be open source
-- I want good documentation for my bacon
-- I think the Observable abstraction is not good enough. It leaves too much room for variations in
-behaviour (like hot/cold observables). I feel much more comfortable with EventStream and Property.
-- Bacon needs automatic tests. They also serve as documentation.
-- I don't like messing with the Array prototype
-- Because.
+Bacon.js exists largely because I got frustrated with RxJs, which is a good library, but at that time
+didn't have very good documentation and wasn't open-source. Things have improved a lot in the Rx
+world since that. Yet, there are still compelling reasons to use Bacon.js instead. Like, for instance,
+more consistent stream/property behavior and (arguably) simplicity of use.
 
 Contribute
 ==========
 
 Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
+
+Note: this readme is generated from `readme-src.coffee`. After updating the src file, run `grunt readme`.
+
 
 Sponsors
 ========

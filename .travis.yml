@@ -6,7 +6,7 @@ node_js:
 before_install: npm conf set strict-ssl false
 
 after_install:
-  - sudo npm install -g phantomjs
+  - sudo npm install -g phantomjs grunt-cli
 
 before_script:
   - phantomjs --version
