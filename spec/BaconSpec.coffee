@@ -1842,6 +1842,59 @@ describe "Property update is atomic", ->
       -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
 
+describe "Side effects of source observables are observed before the ones of dependent observables", ->
+  it "in a simple case, when the order of subscription matches the order of dependency", ->
+    src = new Bacon.Bus
+    dep = src.map (v) -> v
+    src.onValue logSideEffects("src")
+    dep.onValue logSideEffects("dep")
+    src.push "a"
+    src.push "b"
+    expectSideEffectsOrder
+      "src a": isObservedBefore: ["dep a"]
+      "src b": isObservedBefore: ["dep b"]
+  it "in a simple case, when the order of subscription doesn't match the order of dependency", ->
+    src = new Bacon.Bus
+    dep = src.map (v) -> v
+    dep.onValue logSideEffects("dep")
+    src.onValue logSideEffects("src")
+    src.push "a"
+    src.push "b"
+    expectSideEffectsOrder
+      "src a": isObservedBefore: ["dep a"]
+      "src b": isObservedBefore: ["dep b"]
+  it "in a complex case, when the order of subscription doesn't match the order of dependency", ->
+    id = (v) -> v
+    latter = (a, b) -> b
+    s = new Bacon.Bus
+    a = s.map id
+    b = s.map id
+    c = Bacon.combineWith latter, a, b
+    d = Bacon.combineWith latter, a, c
+    d.onValue logSideEffects("d")
+    c.onValue logSideEffects("c")
+    b.onValue logSideEffects("b")
+    a.onValue logSideEffects("a")
+    s.onValue logSideEffects("s")
+    s.push 1
+    expectSideEffectsOrder
+      "s 1": isObservedBefore: ["a 1", "b 1", "c 1", "d 1"]
+      "a 1": isObservedBefore: ["c 1", "d 1"]
+      "b 1": isObservedBefore: ["c 1", "d 1"]
+      "c 1": isObservedBefore: ["d 1"]
+  observedSideEffects = null
+  beforeEach -> observedSideEffects = []
+  logSideEffects = (obsName) -> (v) -> observedSideEffects.push(obsName + ' ' + v)
+  expectSideEffectsOrder = (order) ->
+    for effect, effectDesc of order
+      shouldBeAfter = effectDesc.isObservedBefore
+      effectOrder = observedSideEffects.indexOf(effect)
+      expect(effectOrder).to.be.greaterThan -1, "side effect #{effect} is observed"
+      for otherEffect in shouldBeAfter
+        otherOrder = observedSideEffects.indexOf(otherEffect)
+        expect(otherOrder).to.be.greaterThan -1, "side effect #{otherEffect} is observed"
+        expect(effectOrder).to.be.lessThan otherOrder, "#{effect} is observed before #{otherEffect}"
+
 describe "When an Event triggers another one in the same stream, while dispatching", ->
   it "Delivers triggered events correctly", ->
     bus = new Bacon.Bus
@@ -1853,7 +1906,7 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push "a"
     bus.push "b"
-    expect(values).to.deep.equal(["A", "B", "A", "B", "a", "b"])
+    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
