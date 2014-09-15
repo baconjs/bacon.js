@@ -604,16 +604,17 @@ Observable :: assign = Observable :: onValue
 Observable :: inspect = Observable :: toString
 
 flatMap_ = (root, f, firstOnly, limit) ->
-  deps = [root]
+  rootDep = [root]
+  childDeps = []
   result = new EventStream describe(root, "flatMap" + (if firstOnly then "First" else ""), f), (sink) ->
     composite = new CompositeUnsubscribe()
     queue = []
     spawn = (event) ->
       child = makeObservable(f event.value())
-      deps.push(child)
+      childDeps.push(child)
       composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
         if event.isEnd()
-          _.remove(child, deps)
+          _.remove(child, childDeps)
           checkQueue()
           checkEnd(unsubMe)
           Bacon.noMore
@@ -644,7 +645,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
         else
           spawn event
     composite.unsubscribe
-  result.internalDeps = -> deps
+  result.internalDeps = -> if (childDeps.length) then rootDep.concat(childDeps) else rootDep
   result
 
 class EventStream extends Observable
