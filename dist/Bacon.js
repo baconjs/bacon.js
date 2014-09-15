@@ -143,22 +143,21 @@
   spys = [];
 
   registerObs = function(obs) {
-    var spy, _i, _len, _results;
+    var spy, _i, _len;
     if (spys.length) {
       if (!registerObs.running) {
         try {
           registerObs.running = true;
-          _results = [];
           for (_i = 0, _len = spys.length; _i < _len; _i++) {
             spy = spys[_i];
-            _results.push(spy(obs));
+            spy(obs);
           }
-          return _results;
         } finally {
           delete registerObs.running;
         }
       }
     }
+    return void 0;
   };
 
   withMethodCallSupport = function(wrapped) {
@@ -1842,13 +1841,14 @@
         };
       };
       unsubAll = function() {
-        var sub, _i, _len, _results;
-        _results = [];
+        var sub, _i, _len;
         for (_i = 0, _len = subscriptions.length; _i < _len; _i++) {
           sub = subscriptions[_i];
-          _results.push(typeof sub.unsub === "function" ? sub.unsub() : void 0);
+          if (typeof sub.unsub === "function") {
+            sub.unsub();
+          }
         }
-        return _results;
+        return void 0;
       };
       subscribeInput = function(subscription) {
         return subscription.unsub = subscription.input.subscribeInternal(guardedSink(subscription.input));
@@ -2521,43 +2521,37 @@
       }
     };
     flush = function() {
-      var _results;
-      _results = [];
       while (waiterObs.length > 0) {
-        _results.push(flushWaiters(0));
+        flushWaiters(0);
       }
-      return _results;
+      return void 0;
     };
     flushWaiters = function(index) {
-      var f, obs, obsId, obsWaiters, _i, _len, _results;
+      var f, obs, obsId, obsWaiters, _i, _len;
       obs = waiterObs[index];
       obsId = obs.id;
       obsWaiters = waiters[obsId];
       waiterObs.splice(index, 1);
       delete waiters[obsId];
       flushDepsOf(obs);
-      _results = [];
       for (_i = 0, _len = obsWaiters.length; _i < _len; _i++) {
         f = obsWaiters[_i];
-        _results.push(f());
+        f();
       }
-      return _results;
+      return void 0;
     };
     flushDepsOf = function(obs) {
-      var dep, deps, index, _i, _len, _results;
+      var dep, deps, index, _i, _len;
       deps = obs.internalDeps();
-      _results = [];
       for (_i = 0, _len = deps.length; _i < _len; _i++) {
         dep = deps[_i];
         flushDepsOf(dep);
         if (waiters[dep.id]) {
           index = _.indexOf(waiterObs, dep);
-          _results.push(flushWaiters(index));
-        } else {
-          _results.push(void 0);
+          flushWaiters(index);
         }
       }
-      return _results;
+      return void 0;
     };
     inTransaction = function(event, context, f, args) {
       var result, theseAfters, _i, _len;
