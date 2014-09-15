@@ -1135,8 +1135,9 @@
   Observable.prototype.inspect = Observable.prototype.toString;
 
   flatMap_ = function(root, f, firstOnly, limit) {
-    var deps, result;
-    deps = [root];
+    var childDeps, result, rootDep;
+    rootDep = [root];
+    childDeps = [];
     result = new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function(sink) {
       var checkEnd, checkQueue, composite, queue, spawn;
       composite = new CompositeUnsubscribe();
@@ -1144,12 +1145,12 @@
       spawn = function(event) {
         var child;
         child = makeObservable(f(event.value()));
-        deps.push(child);
+        childDeps.push(child);
         return composite.add(function(unsubAll, unsubMe) {
           return child.subscribeInternal(function(event) {
             var reply;
             if (event.isEnd()) {
-              _.remove(child, deps);
+              _.remove(child, childDeps);
               checkQueue();
               checkEnd(unsubMe);
               return Bacon.noMore;
@@ -1202,7 +1203,11 @@
       return composite.unsubscribe;
     });
     result.internalDeps = function() {
-      return deps;
+      if (childDeps.length) {
+        return rootDep.concat(childDeps);
+      } else {
+        return rootDep;
+      }
     };
     return result;
   };
