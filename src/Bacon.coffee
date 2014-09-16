@@ -894,12 +894,6 @@ class Dispatcher
     unsubscribeFromSource = nop
     removeSub = (subscription) ->
       subscriptions = _.without(subscription, subscriptions)
-    waiters = null
-    done = ->
-      if waiters?
-        ws = waiters
-        waiters = null
-        w() for w in ws
     pushIt = (event) ->
       if not pushing
         return if event is prevError
@@ -919,7 +913,6 @@ class Dispatcher
         while queue.length
           event = queue.shift()
           @push event
-        done(event)
         if @hasSubscribers()
           Bacon.more
         else
