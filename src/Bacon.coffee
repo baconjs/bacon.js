@@ -33,7 +33,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, undefined] if isFunction(selector)
-  withDescription(@selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
+  withDescription(@selector or this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
   , eventTransformer)
@@ -264,10 +264,10 @@ Bacon.combineTemplate = (template) ->
 Bacon.retry = (options) ->
   throw new Exception("'source' option has to be a function") unless isFunction(options.source)
   source = options.source
-  retries = options.retries || 0
-  maxRetries = options.maxRetries || retries
-  delay = options.delay || -> 0
-  isRetryable = options.isRetryable || -> true
+  retries = options.retries or 0
+  maxRetries = options.maxRetries or retries
+  delay = options.delay or -> 0
+  isRetryable = options.isRetryable or -> true
 
   retry = (context) ->
     nextAttemptOptions = {source, retries: retries - 1, maxRetries, delay, isRetryable}
@@ -863,7 +863,7 @@ class Property extends Observable
 
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
 
-  or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x || y))
+  or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x or y))
 
   delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
 
@@ -1090,7 +1090,7 @@ class Source
 class ConsumingSource extends Source
   consume: -> @queue.shift()
   push: (x) -> @queue.push(x)
-  mayHave: (c) -> !@ended || @queue.length >= c
+  mayHave: (c) -> !@ended or @queue.length >= c
   hasAtLeast: (c) -> @queue.length >= c
   flatten: false
 
@@ -1119,8 +1119,8 @@ Source.fromObservable = (s) ->
     new ConsumingSource(s, true)
 
 describe = (context, method, args...) ->
-  if (context || method) instanceof Desc
-    context || method
+  if (context or method) instanceof Desc
+    context or method
   else
     new Desc(context, method, args)
 
@@ -1138,7 +1138,7 @@ class Desc
   constructor: (@context, @method, @args) ->
     @cached = undefined
   deps: ->
-    @cached ||= findDeps([@context].concat(@args))
+    @cached or= findDeps([@context].concat(@args))
   apply: (obs) ->
     obs.desc = this
     obs
@@ -1171,7 +1171,7 @@ Bacon.when = (patterns...) ->
         index = sources.length - 1
       (ix.count++ if ix.index == index) for ix in pat.ixs
       pat.ixs.push {index: index, count: 1}
-    assert "At least one EventStream required", (triggerFound || (!patSources.length))
+    assert "At least one EventStream required", (triggerFound or (!patSources.length))
 
     pats.push pat if patSources.length > 0
     i = i + 2
@@ -1242,7 +1242,7 @@ Bacon.when = (patterns...) ->
           if source.sync
             #console.log "queuing", e.toString(), _.toString(resultStream)
             triggers.push {source: source, e: e}
-            if needsBarrier || UpdateBarrier.hasWaiters() then flushLater() else flush()
+            if needsBarrier or UpdateBarrier.hasWaiters() then flushLater() else flush()
         unsubAll() if reply == Bacon.noMore
         reply or Bacon.more
 
@@ -1517,7 +1517,7 @@ toCombinator = (f) ->
     assert "not a function or a field key: " + f, false
 
 toOption = (v) ->
-  if v instanceof Some || v == None
+  if v instanceof Some or v == None
     v
   else
     new Some(v)
