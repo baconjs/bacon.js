@@ -1443,7 +1443,7 @@ makeSpawner = (args) ->
     makeFunctionArgs args
 makeFunctionArgs = (args) ->
   args = Array.prototype.slice.call(args)
-  makeFunction_ args...
+  makeFunction_(args...)
 makeFunction_ = withMethodCallSupport (f, args...) ->
   if isFunction f
     if args.length then partiallyApplied(f, args) else f
