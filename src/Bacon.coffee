@@ -1574,7 +1574,6 @@ _ = {
   flatMap: (f, xs) ->
     _.fold xs, [], ((ys, x) ->
       ys.concat(f(x)))
-
   cached: (f) ->
     value = None
     ->
