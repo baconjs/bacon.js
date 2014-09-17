@@ -339,21 +339,27 @@ class Observable
     @id = ++idCounter
     withDescription(desc, this)
     @initialDesc = @desc
+
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.value() if event.hasValue()
+
   onValues: (f) ->
     @onValue (args) -> f(args...)
+
   onError: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.error if event.isError()
+
   onEnd: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f() if event.isEnd()
+
   errors: -> withDescription(this, "errors", @filter(-> false))
+
   filter: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
       withDescription(this, "filter", f, @withHandler (event) ->
@@ -361,6 +367,7 @@ class Observable
           @push event
         else
           Bacon.more)
+
   takeWhile: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
       withDescription(this, "takeWhile", f, @withHandler (event) ->
@@ -369,6 +376,7 @@ class Observable
         else
           @push end()
           Bacon.noMore)
+
   endOnError: (f, args...) ->
     f = true if !f?
     convertArgsToFunction this, f, args, (f) ->
@@ -378,6 +386,7 @@ class Observable
           @push end()
         else
           @push event)
+
   take: (count) ->
     return Bacon.never() if count <= 0
     withDescription(this, "take", count, @withHandler (event) ->
@@ -407,6 +416,7 @@ class Observable
         @push next (f event.error)
       else
         @push event)
+
   mapEnd: ->
     f = makeFunctionArgs(arguments)
     withDescription(this, "mapEnd", f, @withHandler (event) ->
@@ -416,6 +426,7 @@ class Observable
         Bacon.noMore
       else
         @push event)
+
   doAction: ->
     f = makeFunctionArgs(arguments)
     withDescription(this, "doAction", f, @withHandler (event) ->
@@ -461,6 +472,7 @@ class Observable
         if reply == Bacon.noMore
           return reply
       reply)
+
   scan: (seed, f, options = {}) ->
     f_ = toCombinator(f)
     f = if options.lazyF then f_ else (x,y) -> f_(x(), y())
@@ -545,18 +557,22 @@ class Observable
         Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
+  
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.log())
     this
+
   slidingWindow: (n, minValues = 0) ->
     withDescription(this, "slidingWindow", n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
           .filter(((values) -> values.length >= minValues)))
+
   combine: (other, f) ->
     combinator = toCombinator(f)
     withDescription(this, "combine", other, f,
       Bacon.combineAsArray(this, other)
         .map (values) ->
           combinator(values[0], values[1]))
+
   decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
   awaiting: (other) ->
@@ -646,9 +662,11 @@ class EventStream extends Observable
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     @hasSubscribers = dispatcher.hasSubscribers
     registerObs(this)
+
   delay: (delay) ->
     withDescription(this, "delay", delay, @flatMap (value) ->
       Bacon.later delay, value)
+
   debounce: (delay) ->
     withDescription(this, "debounce", delay, @flatMapLatest (value) ->
       Bacon.later delay, value)
@@ -662,6 +680,7 @@ class EventStream extends Observable
 
   bufferWithTime: (delay) ->
     withDescription(this, "bufferWithTime", delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
+
   bufferWithCount: (count) ->
     withDescription(this, "bufferWithCount", count, @bufferWithTimeOrCount(undefined, count))
 
@@ -828,31 +847,43 @@ class Property extends Observable
     @subscribeInternal (event) ->
       #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
+
   withHandler: (handler) ->
     new Property describe(this, "withHandler", handler), @subscribeInternal, handler
+
   toProperty: ->
     assertNoArguments(arguments)
     this
+
   toEventStream: ->
     new EventStream describe(this, "toEventStream"), (sink) =>
       @subscribeInternal (event) ->
         event = event.toNext() if event.isInitial()
         sink event
+
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
+
   or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x || y))
+
   delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
+
   debounce: (delay) -> @delayChanges("debounce", delay, (changes) -> changes.debounce(delay))
+
   throttle: (delay) -> @delayChanges("throttle", delay, (changes) -> changes.throttle(delay))
+
   delayChanges: (desc..., f) ->
     withDescription(this, desc...,
       addPropertyInitValueToStream(this, f(@changes())))
+
   takeUntil: (stopper) ->
     changes = @changes().takeUntil(stopper)
     withDescription(this, "takeUntil", stopper,
       addPropertyInitValueToStream(this, changes))
+
   startWith: (value) ->
     withDescription(this, "startWith", value,
       @scan(value, (prev, next) -> next))
+  
   bufferingThrottle: ->
     super.bufferingThrottle(arguments...).toProperty()
 
