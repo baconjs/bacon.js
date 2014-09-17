@@ -443,12 +443,12 @@ class Observable
       else
         @push event)
 
-  skipDuplicates: (isEqual = (a, b) -> a is b) ->
+  skipDuplicates: (isEqual = (a, b) -> a == b) ->
     withDescription(this, "skipDuplicates",
       @withStateMachine None, (prev, event) ->
         unless event.hasValue()
           [prev, [event]]
-        else if event.isInitial() or prev == None or not isEqual(prev.get(), event.value())
+        else if event.isInitial() or prev == None or !isEqual(prev.get(), event.value())
           [new Some(event.value()), [event]]
         else
           [prev, []])
@@ -819,7 +819,7 @@ class Property extends Observable
       desc = []
     super(desc)
     assertFunction(subscribe)
-    if handler is true
+    if handler == true
       @subscribeInternal = subscribe
     else
       @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
@@ -924,7 +924,7 @@ class Dispatcher
       subscriptions = _.without(subscription, subscriptions)
     pushIt = (event) ->
       unless pushing
-        return if event is prevError
+        return if event == prevError
         prevError = event if event.isError()
         success = false
         try
@@ -1536,7 +1536,7 @@ _ = {
     -1
   head: (xs) -> xs[0]
   always: (x) -> (-> x)
-  negate: (f) -> (x) -> not f(x)
+  negate: (f) -> (x) -> !f(x)
   empty: (xs) -> xs.length == 0
   tail: (xs) -> xs[1...xs.length]
   filter: (f, xs) ->
@@ -1592,7 +1592,7 @@ _ = {
       else if isArray(obj)
         return "[..]" if recursionDepth > 5
         "[" + _.map(_.toString, obj).toString() + "]"
-      else if obj?.toString? and obj.toString!=Object.prototype.toString
+      else if obj?.toString? and obj.toString != Object.prototype.toString
         obj.toString()
       else if (typeof obj == "object")
         return "{..}" if recursionDepth > 5
