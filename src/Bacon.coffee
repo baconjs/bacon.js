@@ -32,13 +32,13 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
-  [eventTransformer, selector] = [selector, null] if isFunction(selector)
+  [eventTransformer, selector] = [selector, undefined] if isFunction(selector)
   withDescription(@selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
   , eventTransformer)
 
-(jQuery ? (Zepto ? null))?.fn.asEventStream = Bacon.$.asEventStream
+(jQuery ? (Zepto ? undefined))?.fn.asEventStream = Bacon.$.asEventStream
 
 # Wrap DOM EventTarget, Node EventEmitter, or
 # [un]bind: (Any, (Any) -> None) -> None interfaces
@@ -695,7 +695,7 @@ class EventStream extends Observable
   buffer: (delay, onInput = nop, onFlush = nop) ->
     buffer = {
       scheduled: false
-      end: null
+      end: undefined
       values: []
       flush: ->
         @scheduled = false
@@ -898,7 +898,7 @@ convertArgsToFunction = (obs, f, args, method) ->
 
 addPropertyInitValueToStream = (property, stream) ->
   justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->
-    value = null
+    value = undefined
     unsub = property.subscribeInternal (event) ->
       if event.hasValue()
         value = event
@@ -918,7 +918,7 @@ class Dispatcher
     pushing = false
     ended = false
     @hasSubscribers = -> subscriptions.length > 0
-    prevError = null
+    prevError = undefined
     unsubscribeFromSource = nop
     removeSub = (subscription) ->
       subscriptions = _.without(subscription, subscriptions)
@@ -1136,7 +1136,7 @@ findDeps = (x) ->
 
 class Desc
   constructor: (@context, @method, @args) ->
-    @cached = null
+    @cached = undefined
   deps: ->
     @cached ||= findDeps([@context].concat(@args))
   apply: (obs) ->
@@ -1580,7 +1580,7 @@ _ = {
     ->
       if value == None
         value = f()
-        f = null
+        f = undefined
       value
   toString: (obj) ->
     try
