@@ -293,7 +293,7 @@ class Event
   hasValue: -> false
   filter: -> true
   inspect: -> @toString()
-  log: ->@toString()
+  log: -> @toString()
 
 class Next extends Event
   constructor: (valueF) ->
