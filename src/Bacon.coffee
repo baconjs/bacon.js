@@ -13,7 +13,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
     unbound = false
     unbind = ->
       if unbinder?
-        unbinder() if not unbound
+        unbinder() unless unbound
         unbound = true
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
@@ -98,7 +98,7 @@ Bacon.spy = (spy) -> spys.push(spy)
 spys = []
 registerObs = (obs) ->
   if spys.length
-    if not registerObs.running
+    unless registerObs.running
       try
         registerObs.running = true
         for spy in spys
@@ -215,7 +215,7 @@ Bacon.combineAsArray = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))
     streams = streams[0]
   for stream, index in streams
-    streams[index] = Bacon.constant(stream) if not (isObservable(stream))
+    streams[index] = Bacon.constant(stream) unless (isObservable(stream))
   if streams.length
     sources = for s in streams
       new Source(s, true, s.subscribeInternal)
@@ -709,12 +709,12 @@ class EventStream extends Observable
         else
           @push @end if @end?
       schedule: ->
-        if not @scheduled
+        unless @scheduled
           @scheduled = true
           delay(=> @flush())
     }
     reply = Bacon.more
-    if not isFunction(delay)
+    unless isFunction(delay)
       delayMs = delay
       delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
     withDescription(this, "buffer", @withHandler (event) ->
@@ -723,7 +723,7 @@ class EventStream extends Observable
         reply = @push event
       else if event.isEnd()
         buffer.end = event
-        if not buffer.scheduled
+        unless buffer.scheduled
           buffer.flush()
       else
         buffer.values.push(event.value())
@@ -923,7 +923,7 @@ class Dispatcher
     removeSub = (subscription) ->
       subscriptions = _.without(subscription, subscriptions)
     pushIt = (event) ->
-      if not pushing
+      unless pushing
         return if event is prevError
         prevError = event if event.isError()
         success = false
@@ -1074,7 +1074,7 @@ class Bus extends EventStream
 class Source
   constructor: (@obs, @sync, @subscribe, @lazy = false) ->
     @queue = []
-    @subscribe = @obs.subscribeInternal if not @subscribe?
+    @subscribe = @obs.subscribeInternal unless @subscribe?
   toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
   consume: ->
@@ -1420,7 +1420,7 @@ UpdateBarrier = (->
       doUnsub()
     doUnsub = obs.subscribeInternal (event) ->
       afterTransaction ->
-        if not unsubd
+        unless unsubd
           reply = sink event
           if reply == Bacon.noMore
             unsub()
@@ -1495,7 +1495,7 @@ toFieldExtractor = (f, args) ->
       value = f(value)
     value
 toSimpleExtractor = (args) -> (key) -> (value) ->
-  if not value?
+  unless value?
     undefined
   else
     fieldValue = value[key]
@@ -1555,7 +1555,7 @@ _ = {
   last: (xs) -> xs[xs.length-1]
   all: (xs, f = _.id) ->
     for x in xs
-      return false if not f(x)
+      return false unless f(x)
     return true
   any: (xs, f = _.id) ->
     for x in xs
