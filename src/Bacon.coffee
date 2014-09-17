@@ -402,14 +402,14 @@ class Observable
         withDescription this, "map", f, @withHandler (event) ->
           @push event.fmap(f)
 
-  mapError : ->
+  mapError: ->
     f = makeFunctionArgs(arguments)
     withDescription this, "mapError", f, @withHandler (event) ->
       if event.isError()
         @push next (f event.error)
       else
         @push event
-  mapEnd : ->
+  mapEnd: ->
     f = makeFunctionArgs(arguments)
     withDescription this, "mapEnd", f, @withHandler (event) ->
       if (event.isEnd())
@@ -424,7 +424,7 @@ class Observable
       f(event.value()) if event.hasValue()
       @push event
 
-  skip : (count) ->
+  skip: (count) ->
     withDescription this, "skip", count, @withHandler (event) ->
       if !event.hasValue()
         @push event
@@ -679,8 +679,8 @@ class EventStream extends Observable
   buffer: (delay, onInput = (->), onFlush = (->)) ->
     buffer = {
       scheduled: false
-      end : null
-      values : []
+      end: null
+      values: []
       flush: ->
         @scheduled = false
         if @values.length > 0
