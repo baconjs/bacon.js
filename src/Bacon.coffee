@@ -199,7 +199,7 @@ Bacon.zipAsArray = (streams...) ->
   withDescription(Bacon, "zipAsArray", streams..., Bacon.zipWith(streams, (xs...) -> xs))
 
 Bacon.zipWith = (f, streams...) ->
-  if !isFunction(f)
+  unless isFunction(f)
     [streams, f] = [f, streams[0]]
   streams = _.map(((s) -> s.toEventStream()), streams)
   withDescription(Bacon, "zipWith", f, streams..., Bacon.when(streams, f))
@@ -378,7 +378,7 @@ class Observable
           Bacon.noMore)
 
   endOnError: (f, args...) ->
-    f = true if !f?
+    f = true unless f?
     convertArgsToFunction this, f, args, (f) ->
       withDescription(this, "endOnError", @withHandler (event) ->
         if event.isError() and f(event.error)
@@ -390,7 +390,7 @@ class Observable
   take: (count) ->
     return Bacon.never() if count <= 0
     withDescription(this, "take", count, @withHandler (event) ->
-      if !event.hasValue()
+      unless event.hasValue()
         @push event
       else
         count--
@@ -435,7 +435,7 @@ class Observable
 
   skip: (count) ->
     withDescription(this, "skip", count, @withHandler (event) ->
-      if !event.hasValue()
+      unless event.hasValue()
         @push event
       else if (count > 0)
         count--
@@ -446,7 +446,7 @@ class Observable
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
     withDescription(this, "skipDuplicates",
       @withStateMachine None, (prev, event) ->
-        if !event.hasValue()
+        unless event.hasValue()
           [prev, [event]]
         else if event.isInitial() or prev == None or not isEqual(prev.get(), event.value())
           [new Some(event.value()), [event]]
@@ -482,7 +482,7 @@ class Observable
       unsub = nop
       reply = Bacon.more
       sendInit = ->
-        if !initSent
+        unless initSent
           acc.forEach (valueF) ->
             initSent = true
             reply = sink(new Initial(valueF))
@@ -760,7 +760,7 @@ class EventStream extends Observable
     endMarker = {}
     withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.skipErrors())
       .withHandler((event) ->
-        if !event.hasValue()
+        unless event.hasValue()
           @push event
         else
           [data, stopper] = event.value()
@@ -798,7 +798,7 @@ class EventStream extends Observable
     withDescription(this, "holdWhen", valve,
       # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
       @filter(false).merge valve_.flatMapConcat (shouldHold) =>
-        if !shouldHold
+        unless shouldHold
           @takeUntil(putToHold)
         else
           @scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
@@ -1164,7 +1164,7 @@ Bacon.when = (patterns...) ->
     triggerFound = false
     for s in patSources
       index = _.indexOf(sources, s)
-      if !triggerFound
+      unless triggerFound
         triggerFound = Source.isTrigger(s)
       if index < 0
         sources.push(s)
@@ -1176,7 +1176,7 @@ Bacon.when = (patterns...) ->
     pats.push pat if patSources.length > 0
     i = i + 2
 
-  if !sources.length
+  unless sources.length
     return Bacon.never()
 
   sources = _.map Source.fromObservable, sources
@@ -1187,14 +1187,14 @@ Bacon.when = (patterns...) ->
     ends = false
     match = (p) ->
       for i in p.ixs
-        if !sources[i.index].hasAtLeast(i.count)
+        unless sources[i.index].hasAtLeast(i.count)
           return false
       return true
     cannotSync = (source) ->
       !source.sync or source.ended
     cannotMatch = (p) ->
       for i in p.ixs
-        if !sources[i.index].mayHave(i.count)
+        unless sources[i.index].mayHave(i.count)
           return true
     nonFlattened = (trigger) -> !trigger.source.flatten
     part = (source) -> (unsubAll) ->
@@ -1346,7 +1346,7 @@ DepCache = (->
   
   dependsOn = (orig, o) ->
     myDeps = flatDeps[orig.id]
-    if !myDeps
+    unless myDeps
       myDeps = flatDeps[orig.id] = {}
       collectDeps orig, orig
     myDeps[o.id]
@@ -1585,7 +1585,7 @@ _ = {
   toString: (obj) ->
     try
       recursionDepth++
-      if !obj?
+      unless obj?
         "undefined"
       else if isFunction(obj)
         "function"
