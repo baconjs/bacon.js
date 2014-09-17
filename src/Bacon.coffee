@@ -14,7 +14,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
     unbind = ->
       if unbinder?
         unbinder() if not unbound
-        unbound=true
+        unbound = true
     unbinder = binder (args...) ->
       value = eventTransformer(args...)
       unless isArray(value) and _.last(value) instanceof Event
