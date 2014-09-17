@@ -1210,7 +1210,7 @@ Bacon.when = (patterns...) ->
               functions = (sources[i.index].consume() for i in p.ixs)
               reply = sink trigger.e.apply ->
                 values = (fun() for fun in functions)
-                p.f(values ...)
+                p.f(values...)
               if triggers.length
                 triggers = _.filter nonFlattened, triggers
               if reply == Bacon.noMore
