@@ -850,7 +850,7 @@ class Property extends Observable
     withDescription(this, desc...,
       addPropertyInitValueToStream(this, f(@changes())))
   takeUntil: (stopper) ->
-    changes = this.changes().takeUntil(stopper)
+    changes = @changes().takeUntil(stopper)
     withDescription(this, "takeUntil", stopper,
       addPropertyInitValueToStream(this, changes))
   startWith: (value) ->
