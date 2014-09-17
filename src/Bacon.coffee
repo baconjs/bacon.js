@@ -71,7 +71,6 @@ Bacon.fromPromise = (promise, abort) ->
     -> promise.abort?() if abort
   , ((value) -> [value, end()]))
 
-
 Bacon.noMore = ["<no-more>"]
 
 Bacon.more = ["<more>"]
@@ -261,7 +260,6 @@ Bacon.combineTemplate = (template) ->
       f(ctxStack, values)
     rootContext
   withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
-
 
 Bacon.retry = (options) ->
   throw new Exception("'source' option has to be a function") unless isFunction(options.source)
@@ -674,7 +672,6 @@ class EventStream extends Observable
       else if (delay != undefined)
         buffer.schedule()
     withDescription(this, "bufferWithTimeOrCount", delay, count, @buffer(delay, flushOrSchedule, flushOrSchedule))
-
 
   buffer: (delay, onInput = (->), onFlush = (->)) ->
     buffer = {
@@ -1402,7 +1399,6 @@ UpdateBarrier = (->
     unsub
 
   hasWaiters = -> waiters.length > 0
-
 
   { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
 )()
