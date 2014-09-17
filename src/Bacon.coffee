@@ -278,7 +278,7 @@ Bacon.retry = (options) ->
     if isRetryable(e) && retries > 0
       retry(error: e, retriesDone: maxRetries - retries)
     else
-      Bacon.once(new Bacon.Error(e)))
+      Bacon.once(new Error(e)))
 
 eventIdCounter = 0
 
@@ -541,8 +541,8 @@ class Observable
       makeObservable(f(value)).takeUntil(stream))
 
   flatMapError: (fn) =>
-    withDescription(this, "flatMapError", fn, @mapError((err) -> new Bacon.Error(err)).flatMap (x) ->
-      if x instanceof Bacon.Error
+    withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->
+      if x instanceof Error
         fn(x.error)
       else
         Bacon.once(x))
