@@ -692,7 +692,7 @@ class EventStream extends Observable
         buffer.schedule()
     withDescription(this, "bufferWithTimeOrCount", delay, count, @buffer(delay, flushOrSchedule, flushOrSchedule))
 
-  buffer: (delay, onInput = (->), onFlush = (->)) ->
+  buffer: (delay, onInput = nop, onFlush = nop) ->
     buffer = {
       scheduled: false
       end: null
