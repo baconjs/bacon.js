@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.22';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1649,7 +1649,7 @@
 
   Dispatcher = (function() {
     function Dispatcher(subscribe, handleEvent) {
-      var done, ended, prevError, pushIt, pushing, queue, removeSub, subscriptions, unsubscribeFromSource, waiters;
+      var ended, prevError, pushIt, pushing, queue, removeSub, subscriptions, unsubscribeFromSource;
       if (subscribe == null) {
         subscribe = function() {
           return nop;
@@ -1666,20 +1666,6 @@
       unsubscribeFromSource = nop;
       removeSub = function(subscription) {
         return subscriptions = _.without(subscription, subscriptions);
-      };
-      waiters = null;
-      done = function() {
-        var w, ws, _i, _len, _results;
-        if (waiters != null) {
-          ws = waiters;
-          waiters = null;
-          _results = [];
-          for (_i = 0, _len = ws.length; _i < _len; _i++) {
-            w = ws[_i];
-            _results.push(w());
-          }
-          return _results;
-        }
       };
       pushIt = function(event) {
         var reply, sub, success, tmp, _i, _len;
@@ -1713,7 +1699,6 @@
             event = queue.shift();
             this.push(event);
           }
-          done(event);
           if (this.hasSubscribers()) {
             return Bacon.more;
           } else {
