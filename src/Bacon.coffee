@@ -1106,14 +1106,11 @@ findDeps = (x) ->
 class Desc
   constructor: (@context, @method, @args) ->
     @cached = null
-
   deps: ->
     @cached ||= findDeps([@context].concat(@args))
-
   apply: (obs) ->
     obs.desc = this
     obs
-
   toString: ->
     _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
 
