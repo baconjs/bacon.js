@@ -1114,7 +1114,7 @@ class Desc
     @cached ||= findDeps([@context].concat(@args))
 
   apply: (obs) ->
-    obs.desc = @
+    obs.desc = this
     obs
 
   toString: ->
