@@ -33,7 +33,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, null] if isFunction(selector)
-  withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
+  withDescription(@selector || this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
     => @off(eventName, selector, handler)
   , eventTransformer)
@@ -563,7 +563,7 @@ class Observable
     this
 
   slidingWindow: (n, minValues = 0) ->
-    withDescription(this, "slidingWindow", n, minValues, this.scan([], ((window, value) -> window.concat([value]).slice(-n)))
+    withDescription(this, "slidingWindow", n, minValues, @scan([], ((window, value) -> window.concat([value]).slice(-n)))
           .filter(((values) -> values.length >= minValues)))
 
   combine: (other, f) ->
@@ -758,7 +758,7 @@ class EventStream extends Observable
 
   takeUntil: (stopper) ->
     endMarker = {}
-    withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
+    withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.skipErrors())
       .withHandler((event) ->
         if !event.hasValue()
           @push event
@@ -778,7 +778,7 @@ class EventStream extends Observable
 
   skipUntil: (starter) ->
     started = starter.take(1).map(true).toProperty(false)
-    withDescription(this, "skipUntil", starter, this.filter(started))
+    withDescription(this, "skipUntil", starter, @filter(started))
 
   skipWhile: (f, args...) ->
     ok = false
@@ -797,11 +797,11 @@ class EventStream extends Observable
 
     withDescription(this, "holdWhen", valve,
       # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
-      this.filter(false).merge valve_.flatMapConcat (shouldHold) =>
+      @filter(false).merge valve_.flatMapConcat (shouldHold) =>
         if !shouldHold
-          this.takeUntil(putToHold)
+          @takeUntil(putToHold)
         else
-          this.scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+          @scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
@@ -833,7 +833,7 @@ class Property extends Observable
     else
       lazy = true
       combinator = (f) -> f()
-    thisSource = new Source(this, false, this.subscribeInternal, lazy)
+    thisSource = new Source(this, false, @subscribeInternal, lazy)
     samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy)
     stream = Bacon.when([thisSource, samplerSource], combinator)
     result = if sampler instanceof Property then stream.toProperty() else stream
