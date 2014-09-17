@@ -121,7 +121,7 @@ liftCallback = (desc, wrapped) ->
   withMethodCallSupport (f, args...) ->
     stream = partiallyApplied(wrapped, [(values, callback) ->
       f(values..., callback)])
-    withDescription Bacon, desc, f, args..., Bacon.combineAsArray(args).flatMap(stream)
+    withDescription(Bacon, desc, f, args..., Bacon.combineAsArray(args).flatMap(stream)
 
 Bacon.fromCallback = liftCallback "fromCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
@@ -197,7 +197,7 @@ Bacon.mergeAll = (streams...) ->
 Bacon.zipAsArray = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
-  withDescription Bacon, "zipAsArray", streams..., Bacon.zipWith(streams, (xs...) -> xs)
+  withDescription(Bacon, "zipAsArray", streams..., Bacon.zipWith(streams, (xs...) -> xs))
 
 Bacon.zipWith = (f, streams...) ->
   if !isFunction(f)
@@ -358,31 +358,31 @@ class Observable
   errors: -> withDescription(this, "errors", @filter(-> false))
   filter: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
-      withDescription this, "filter", f, @withHandler (event) ->
+      withDescription(this, "filter", f, @withHandler (event) ->
         if event.filter(f)
           @push event
         else
-          Bacon.more
+          Bacon.more)
   takeWhile: (f, args...) ->
     convertArgsToFunction this, f, args, (f) ->
-      withDescription this, "takeWhile", f, @withHandler (event) ->
+      withDescription(this, "takeWhile", f, @withHandler (event) ->
         if event.filter(f)
           @push event
         else
           @push end()
-          Bacon.noMore
+          Bacon.noMore)
   endOnError: (f, args...) ->
     f = true if !f?
     convertArgsToFunction this, f, args, (f) ->
-      withDescription this, "endOnError", @withHandler (event) ->
+      withDescription(this, "endOnError", @withHandler (event) ->
         if event.isError() && f(event.error)
           @push event
           @push end()
         else
-          @push event
+          @push event)
   take: (count) ->
     return Bacon.never() if count <= 0
-    withDescription this, "take", count, @withHandler (event) ->
+    withDescription(this, "take", count, @withHandler (event) ->
       if !event.hasValue()
         @push event
       else
@@ -392,47 +392,47 @@ class Observable
         else
           @push event if count == 0
           @push end()
-          Bacon.noMore
+          Bacon.noMore)
 
   map: (p, args...) ->
     if (p instanceof Property)
       p.sampledBy(this, former)
     else
       convertArgsToFunction this, p, args, (f) ->
-        withDescription this, "map", f, @withHandler (event) ->
-          @push event.fmap(f)
+        withDescription(this, "map", f, @withHandler (event) ->
+          @push event.fmap(f))
 
   mapError: ->
     f = makeFunctionArgs(arguments)
-    withDescription this, "mapError", f, @withHandler (event) ->
+    withDescription(this, "mapError", f, @withHandler (event) ->
       if event.isError()
         @push next (f event.error)
       else
-        @push event
+        @push event)
   mapEnd: ->
     f = makeFunctionArgs(arguments)
-    withDescription this, "mapEnd", f, @withHandler (event) ->
+    withDescription(this, "mapEnd", f, @withHandler (event) ->
       if (event.isEnd())
         @push next(f(event))
         @push end()
         Bacon.noMore
       else
-        @push event
+        @push event)
   doAction: ->
     f = makeFunctionArgs(arguments)
-    withDescription this, "doAction", f, @withHandler (event) ->
+    withDescription(this, "doAction", f, @withHandler (event) ->
       f(event.value()) if event.hasValue()
-      @push event
+      @push event)
 
   skip: (count) ->
-    withDescription this, "skip", count, @withHandler (event) ->
+    withDescription(this, "skip", count, @withHandler (event) ->
       if !event.hasValue()
         @push event
       else if (count > 0)
         count--
         Bacon.more
       else
-        @push event
+        @push event)
 
   skipDuplicates: (isEqual = (a, b) -> a is b) ->
     withDescription(this, "skipDuplicates",
@@ -445,15 +445,15 @@ class Observable
           [prev, []])
 
   skipErrors: ->
-    withDescription this, "skipErrors", @withHandler (event) ->
+    withDescription(this, "skipErrors", @withHandler (event) ->
       if event.isError()
         Bacon.more
       else
-        @push event
+        @push event)
 
   withStateMachine: (initState, f) ->
     state = initState
-    withDescription this, "withStateMachine", initState, f, @withHandler (event) ->
+    withDescription(this, "withStateMachine", initState, f, @withHandler (event) ->
       fromF = f(state, event)
       [newState, outputs] = fromF
       state = newState
@@ -462,7 +462,7 @@ class Observable
         reply = @push output
         if reply == Bacon.noMore
           return reply
-      reply
+      reply)
   scan: (seed, f, options = {}) ->
     f_ = toCombinator(f)
     f = if options.lazyF then f_ else (x,y) -> f_(x(), y())
@@ -521,8 +521,8 @@ class Observable
     flatMap_ this, makeSpawner(arguments), true
 
   flatMapWithConcurrencyLimit: (limit, args...) ->
-    withDescription this, "flatMapWithConcurrencyLimit", limit, args...,
-      flatMap_ this, makeSpawner(args), false, limit
+    withDescription(this, "flatMapWithConcurrencyLimit", limit, args...,
+      flatMap_ this, makeSpawner(args), false, limit)
 
   flatMapLatest: ->
     f = makeSpawner(arguments)
@@ -531,20 +531,20 @@ class Observable
       makeObservable(f(value)).takeUntil(stream))
 
   flatMapError: (fn) =>
-    withDescription this, "flatMapError", fn, @mapError((err) -> new Bacon.Error(err)).flatMap (x) ->
+    withDescription(this, "flatMapError", fn, @mapError((err) -> new Bacon.Error(err)).flatMap (x) ->
       if x instanceof Bacon.Error
         fn(x.error)
       else
-        Bacon.once(x)
+        Bacon.once(x))
 
   flatMapConcat: ->
-    withDescription this, "flatMapConcat", arguments...,
-      @flatMapWithConcurrencyLimit 1, arguments...
+    withDescription(this, "flatMapConcat", arguments...,
+      @flatMapWithConcurrencyLimit 1, arguments...)
 
   bufferingThrottle:  (minimumInterval) ->
-    withDescription this, "bufferingThrottle", minimumInterval,
+    withDescription(this, "bufferingThrottle", minimumInterval,
       @flatMapConcat (x) ->
-        Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false))
+        Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
   log: (args...) ->
@@ -701,7 +701,7 @@ class EventStream extends Observable
     if not isFunction(delay)
       delayMs = delay
       delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
-    withDescription this, "buffer", @withHandler (event) ->
+    withDescription(this, "buffer", @withHandler (event) ->
       buffer.push = @push
       if event.isError()
         reply = @push event
@@ -712,16 +712,16 @@ class EventStream extends Observable
       else
         buffer.values.push(event.value())
         onInput(buffer)
-      reply
+      reply)
 
   merge: (right) ->
     assertEventStream(right)
     left = this
-    withDescription left, "merge", right, Bacon.mergeAll(this, right)
+    withDescription(left, "merge", right, Bacon.mergeAll(this, right))
 
   toProperty: (initValue) ->
     initValue = None if arguments.length == 0
-    withDescription this, "toProperty", initValue, @scan(initValue, latterF, {lazyF: true})
+    withDescription(this, "toProperty", initValue, @scan(initValue, latterF, {lazyF: true}))
 
   toEventStream: -> this
 
@@ -767,25 +767,25 @@ class EventStream extends Observable
   skipWhile: (f, args...) ->
     ok = false
     convertArgsToFunction this, f, args, (f) ->
-      withDescription this, "skipWhile", f, @withHandler (event) ->
+      withDescription(this, "skipWhile", f, @withHandler (event) ->
         if ok or !event.hasValue() or !f(event.value())
           ok = true if event.hasValue()
           @push event
         else
-          Bacon.more
+          Bacon.more)
 
   holdWhen: (valve) ->
     valve_ = valve.startWith(false)
     releaseHold = valve_.filter (x) -> !x
     putToHold = valve_.filter _.id
 
-    withDescription this, "holdWhen", valve,
+    withDescription(this, "holdWhen", valve,
       # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
       this.filter(false).merge valve_.flatMapConcat (shouldHold) =>
         if !shouldHold
           this.takeUntil(putToHold)
         else
-          this.scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray)
+          this.scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
