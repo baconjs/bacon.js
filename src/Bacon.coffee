@@ -1523,7 +1523,7 @@ toOption = (v) ->
     new Some(v)
 
 _ = {
-  indexOf: if Array::indexOf
+  indexOf: if Array :: indexOf
     (xs, x) -> xs.indexOf(x)
   else
     (xs, x) ->
