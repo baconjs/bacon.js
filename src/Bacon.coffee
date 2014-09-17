@@ -1250,18 +1250,18 @@ Bacon.when = (patterns...) ->
 
 containsDuplicateDeps = (observables, state = []) ->
   checkObservable = (obs) ->
-    if Bacon._.contains(state, obs)
+    if _.contains(state, obs)
       true
     else
       deps = obs.internalDeps()
       if deps.length
         state.push(obs)
-        Bacon._.any(deps, checkObservable)
+        _.any(deps, checkObservable)
       else
         state.push(obs)
         false
 
-  Bacon._.any observables, checkObservable
+  _.any observables, checkObservable
 
 Bacon.update = (initial, patterns...) ->
   lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
