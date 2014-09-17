@@ -162,7 +162,7 @@ Bacon.fromArray = (values) ->
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
     reply = Bacon.more
-    while (reply != Bacon.noMore) && !unsubd
+    while (reply != Bacon.noMore) and !unsubd
       if _.empty values
         sink(end())
         reply = Bacon.noMore
@@ -240,7 +240,7 @@ Bacon.combineTemplate = (template) ->
     if (isObservable(value))
       streams.push(value)
       funcs.push(applyStreamValue(key, streams.length - 1))
-    else if (value == Object(value) and typeof value != "function" && !(value instanceof RegExp) && !(value instanceof Date))
+    else if (value == Object(value) and typeof value != "function" and !(value instanceof RegExp) and !(value instanceof Date))
       pushContext = (key) -> (ctxStack) ->
         newContext = mkContext(value)
         setValue(ctxStack, key, newContext)
@@ -275,7 +275,7 @@ Bacon.retry = (options) ->
     Bacon.later(delay(context)).filter(false).concat(Bacon.once().flatMap(delayedRetry))
 
   withDescription(Bacon, "retry", options, source().flatMapError (e) ->
-    if isRetryable(e) && retries > 0
+    if isRetryable(e) and retries > 0
       retry(error: e, retriesDone: maxRetries - retries)
     else
       Bacon.once(new Error(e)))
@@ -381,7 +381,7 @@ class Observable
     f = true if !f?
     convertArgsToFunction this, f, args, (f) ->
       withDescription(this, "endOnError", @withHandler (event) ->
-        if event.isError() && f(event.error)
+        if event.isError() and f(event.error)
           @push event
           @push end()
         else
@@ -491,7 +491,7 @@ class Observable
               unsub = nop
       unsub = @subscribeInternal (event) ->
         if (event.hasValue())
-          if (initSent && event.isInitial())
+          if (initSent and event.isInitial())
             Bacon.more # init already sent, skip this one
           else
             sendInit() unless event.isInitial()
@@ -861,7 +861,7 @@ class Property extends Observable
         event = event.toNext() if event.isInitial()
         sink event
 
-  and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x && y))
+  and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x and y))
 
   or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x or y))
 
@@ -1011,7 +1011,7 @@ class PropertyDispatcher extends Dispatcher
         # should bounce init value
         dispatchingId = UpdateBarrier.currentEventId()
         valId = currentValueRootId
-        if !ended && valId && dispatchingId && dispatchingId != valId
+        if !ended and valId and dispatchingId and dispatchingId != valId
           # when subscribing while already dispatching a value and this property hasn't been updated yet
           # we cannot bounce before this property is up to date.
           #console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
