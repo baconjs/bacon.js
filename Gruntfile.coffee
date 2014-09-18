@@ -15,7 +15,6 @@ module.exports = (grunt) ->
     coffeelint:
       bacon: [ 'src/Bacon.coffee' ]
       options:
-        max_line_length: { level: 'ignore' }
         configFile: 'coffeelint.json'
 
     uglify:
