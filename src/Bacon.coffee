@@ -1268,7 +1268,7 @@ Bacon.update = (initial, patterns...) ->
   i = patterns.length - 1
   while (i > 0)
     unless patterns[i] instanceof Function
-      patterns[i] = do(x=patterns[i])->(->x)
+      patterns[i] = do(x=patterns[i]) -> (-> x)
     patterns[i] = lateBindFirst patterns[i]
     i = i - 2
   withDescription(Bacon, "update", initial, patterns..., Bacon.when(patterns...).scan initial, ((x,f) -> f x))
