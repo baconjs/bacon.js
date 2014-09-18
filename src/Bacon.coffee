@@ -551,7 +551,7 @@ class Observable
     withDescription(this, "flatMapConcat", arguments...,
       @flatMapWithConcurrencyLimit 1, arguments...)
 
-  bufferingThrottle:  (minimumInterval) ->
+  bufferingThrottle: (minimumInterval) ->
     withDescription(this, "bufferingThrottle", minimumInterval,
       @flatMapConcat (x) ->
         Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
@@ -801,7 +801,7 @@ class EventStream extends Observable
         unless shouldHold
           @takeUntil(putToHold)
         else
-          @scan([], ((xs,x) -> xs.concat(x)), {eager:true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+          @scan([], ((xs,x) -> xs.concat(x)), {eager: true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
@@ -863,7 +863,7 @@ class Property extends Observable
 
   and: (other) -> withDescription(this, "and", other, @combine(other, (x, y) -> x and y))
 
-  or:  (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x or y))
+  or: (other) -> withDescription(this, "or", other, @combine(other, (x, y) -> x or y))
 
   delay: (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
 
