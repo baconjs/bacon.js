@@ -31,7 +31,8 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
     unbind
 
 # eventTransformer - defaults to returning the first argument to handler
-Bacon.$ = asEventStream: (eventName, selector, eventTransformer) ->
+Bacon.$ = {}
+Bacon.$.asEventStream = (eventName, selector, eventTransformer) ->
   [eventTransformer, selector] = [selector, undefined] if isFunction(selector)
   withDescription(@selector or this, "asEventStream", eventName, Bacon.fromBinder (handler) =>
     @on(eventName, selector, handler)
@@ -276,7 +277,7 @@ Bacon.retry = (options) ->
 
   withDescription(Bacon, "retry", options, source().flatMapError (e) ->
     if isRetryable(e) and retries > 0
-      retry(error: e, retriesDone: maxRetries - retries)
+      retry({error: e, retriesDone: maxRetries - retries})
     else
       Bacon.once(new Error(e)))
 
@@ -1331,7 +1332,7 @@ class Some
   inspect: -> "Some(" + @value + ")"
   toString: -> @inspect()
 
-None =
+None = {
   getOrElse: (value) -> value
   filter: -> None
   map: -> None
@@ -1340,6 +1341,7 @@ None =
   toArray: -> []
   inspect: -> "None"
   toString: -> @inspect()
+}
 
 DepCache = (->
   flatDeps = {}
@@ -1612,11 +1614,12 @@ recursionDepth = 0
 
 Bacon._ = _
 
-Bacon.scheduler =
+Bacon.scheduler = {
   setTimeout: (f,d) -> setTimeout(f,d)
   setInterval: (f, i) -> setInterval(f, i)
   clearInterval: (id) -> clearInterval(id)
   now: -> new Date().getTime()
+}
 
 if define? and define.amd?
   define [], -> Bacon
