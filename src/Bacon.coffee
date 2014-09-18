@@ -1160,7 +1160,7 @@ Bacon.when = (patterns...) ->
   i = 0
   while (i < len)
     patSources = _.toArray patterns[i]
-    f = patterns[i+1]
+    f = patterns[i + 1]
     pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
     triggerFound = false
     for s in patSources
@@ -1269,7 +1269,7 @@ Bacon.update = (initial, patterns...) ->
   i = patterns.length - 1
   while (i > 0)
     unless patterns[i] instanceof Function
-      patterns[i] = do(x=patterns[i]) -> (-> x)
+      patterns[i] = do (x = patterns[i]) -> (-> x)
     patterns[i] = lateBindFirst patterns[i]
     i = i - 2
   withDescription(Bacon, "update", initial, patterns..., Bacon.when(patterns...).scan initial, ((x,f) -> f x))
@@ -1554,7 +1554,7 @@ _ = {
   toArray: (xs) -> if isArray(xs) then xs else [xs]
   contains: (xs, x) -> _.indexOf(xs, x) != -1
   id: (x) -> x
-  last: (xs) -> xs[xs.length-1]
+  last: (xs) -> xs[xs.length - 1]
   all: (xs, f = _.id) ->
     for x in xs
       return false unless f(x)
