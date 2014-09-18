@@ -9,10 +9,6 @@
             "right": 1
         }
     },
-    "cyclomatic_complexity": {
-        "value": 10,
-        "level": "warn"
-    },
     "empty_constructor_needs_parens": {
         "level": "error"
     },
@@ -21,7 +17,7 @@
         "value": "unix"
     },
     "max_line_length": {
-        "value": 100,
+        "value": 130,
         "level": "warn",
         "limitComments": true
     },
