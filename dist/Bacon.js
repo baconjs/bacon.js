@@ -56,21 +56,21 @@
     });
   };
 
-  Bacon.$ = {
-    asEventStream: function(eventName, selector, eventTransformer) {
-      var _ref;
-      if (isFunction(selector)) {
-        _ref = [selector, void 0], eventTransformer = _ref[0], selector = _ref[1];
-      }
-      return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
-        return function(handler) {
-          _this.on(eventName, selector, handler);
-          return function() {
-            return _this.off(eventName, selector, handler);
-          };
-        };
-      })(this), eventTransformer));
+  Bacon.$ = {};
+
+  Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
+    var _ref;
+    if (isFunction(selector)) {
+      _ref = [selector, void 0], eventTransformer = _ref[0], selector = _ref[1];
     }
+    return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
+      return function(handler) {
+        _this.on(eventName, selector, handler);
+        return function() {
+          return _this.off(eventName, selector, handler);
+        };
+      };
+    })(this), eventTransformer));
   };
 
   if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : void 0) != null) {
