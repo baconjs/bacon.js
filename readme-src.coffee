@@ -1713,12 +1713,17 @@ Run unit tests:
 
     npm test
 
-Run browser tests:
+Run browser tests (using testem):
 
     npm install
-    npm install --save-dev browserify@1.18.0
     npm install -g testem
     testem
+
+Run browser (without testem):
+
+    npm install
+    browsertest/browserify
+    open browsertest/mocha.runner.html
 
 Run performance tests:
 

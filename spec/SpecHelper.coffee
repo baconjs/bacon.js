@@ -55,7 +55,7 @@ if grep
     verifySwitchingAggressively src, expectedEvents
 
 @expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
-  expect(expectedEvents.length > 0).to.deep.equal(true)
+  expect(expectedEvents.length > 0).to.deep.equal(true, "at least one expected event is specified")
   verifyPSingleSubscriber src, expectedEvents, extraCheck
   verifyPLateEval src, expectedEvents
   if not unstable
@@ -113,7 +113,7 @@ verifyLateEval = (srcF, expectedEvents) ->
       if event.isEnd()
         done()
       else
-        expect(event instanceof Bacon.Initial).to.deep.equal(false)
+        expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
         events.push(event)
 
 
@@ -123,7 +123,7 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
       if event.isEnd()
         done()
       else
-        expect(event instanceof Bacon.Initial).to.deep.equal(false)
+        expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
         events.push(toValue(event))
 
 # get each event with new subscriber
@@ -134,7 +134,7 @@ verifySwitching = (srcF, expectedEvents, done) ->
         if event.isEnd()
           done()
         else
-          expect(event instanceof Bacon.Initial).to.deep.equal(false)
+          expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
           events.push(toValue(event))
           src.subscribe(newSink())
           Bacon.noMore
@@ -163,7 +163,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
             ended = true
             done()
           else
-            expect(event instanceof Bacon.Initial).to.deep.equal(false)
+            expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
             events.push(toValue(event))
             prevUnsub = unsub
             noMoreExpected = true
@@ -182,7 +182,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
     events = []
     before -> 
       src = srcF()
-      expect(src instanceof Bacon.EventStream).to.equal(true)
+      expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
       collectF(src, events, done)
     it "outputs expected value in order", ->
@@ -197,7 +197,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
     events = []
     before -> 
       src = srcF()
-      expect(src instanceof Bacon.EventStream).to.equal(true)
+      expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
       newSink = -> 
         unsub = null
@@ -205,7 +205,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
           if event.isEnd()
             done()
           else
-            expect(event instanceof Bacon.Initial).to.deep.equal(false)
+            expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
             events.push(toValue(event))
             unsub() if unsub?
             unsub = src.subscribe(newSink())
