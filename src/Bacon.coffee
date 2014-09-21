@@ -1113,8 +1113,8 @@ class ConsumingSource extends Source
   flatten: false
 
 class BufferingSource extends Source
-  constructor: (@obs) ->
-    super(@obs, true, @obs.subscribeInternal)
+  constructor: (obs) ->
+    super(obs, true)
   consume: ->
     values = @queue
     @queue = []
