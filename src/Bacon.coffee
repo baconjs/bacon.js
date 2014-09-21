@@ -230,35 +230,31 @@ Bacon.combineWith = (f, streams...) ->
   withDescription(Bacon, "combineWith", f, streams..., Bacon.combineAsArray(streams).map (values) -> f(values...))
 
 Bacon.sampledBy = (values, samplers, combinator) ->
-  unless combinator
-    lazy = true
-    numValues = values.length
-    combinator = (fs...) ->
-      vals = []
-      i = -1; while ++i < numValues
-        vals.push fs[i]()
-      vals
-  else
-    waitForSamplers = true
-  result = sampledBy_(values, samplers, combinator, lazy, waitForSamplers)
-  if lazy
-    withDescription(Bacon, "sampledBy", values, samplers, result)
-  else
-    withDescription(Bacon, "sampledBy", values, samplers, combinator, result)
+  assertFunction combinator
+  withDescription(Bacon, "sampledBy", values, samplers, combinator,
+    sampledBy_ values, samplers, combinator, false)
 
-sampledBy_ = (values, samplers, combinator, lazy, waitForSamplers) ->
-  allProperties = true
-  samplerSources = for s in samplers
-    unless s instanceof Property then allProperties = false
-    src = new Source(s, true, s.subscribeInternal, lazy)
-    unless waitForSamplers then src.push(null)
-    src
-  valueSources = for v in values
-    p = v.toProperty()
-    new Source(p, false, p.subscribeInternal, lazy)
-  ptn = valueSources.concat(samplerSources)
-  result = Bacon.when(ptn, combinator)
-  if allProperties then result.toProperty() else result
+sampledBy_ = (values, samplers, combinator, needsSamplerValues) ->
+  assert "at least one sampler required", samplers.length
+  generateProperty = true
+  samplerSources = for sampler in samplers
+    assert "sampler is not an Observable: " + sampler, isObservable(sampler)
+    unless sampler instanceof Property then generateProperty = false
+    if needsSamplerValues then new Source(sampler, true) else new SamplerSource(sampler)
+  valueSources = for value in values
+    value = Bacon.constant(value) unless isObservable(value)
+    new Source(value, false)
+  sources = valueSources.concat(samplerSources)
+  f = if needsSamplerValues
+    combinator ? (vals...) -> vals
+  else
+    numValues = values.length
+    slice = Array::slice
+    ->
+      vals = slice.call(arguments, 0, numValues)
+      if combinator? then combinator.apply(null, vals) else vals
+  result = Bacon.when(sources, f)
+  if generateProperty then result.toProperty() else result
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -860,13 +856,10 @@ class Property extends Observable
     registerObs(this)
 
   sampledBy: (sampler, combinator) ->
-    if combinator?
-      combinator = toCombinator combinator
-    else
-      lazy = true
-      combinator = (f) -> f()
-    result = sampledBy_([this], [sampler], combinator, lazy, true)
-    withDescription(this, "sampledBy", sampler, combinator, result)
+    needsSamplerValue = combinator?
+    combinator = if combinator? then toCombinator(combinator) else _.id
+    withDescription(this, "sampledBy", sampler, combinator,
+      sampledBy_ [this], [sampler], combinator, needsSamplerValue)
 
   sample: (interval) ->
     withDescription(this, "sample", interval,
@@ -1101,16 +1094,12 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, @subscribe, @lazy = false) ->
+  constructor: (@obs, @sync, @subscribe) ->
     @queue = []
     @subscribe = @obs.subscribeInternal unless @subscribe?
   toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
-  consume: ->
-    if @lazy
-      _.always(@queue[0])
-    else
-      @queue[0]
+  consume: -> @queue[0]
   push: (x) -> @queue = [x]
   mayHave: -> true
   hasAtLeast: -> @queue.length
@@ -1132,6 +1121,12 @@ class BufferingSource extends Source
     -> values
   push: (x) -> @queue.push(x())
   hasAtLeast: -> true
+
+class SamplerSource extends Source
+  constructor: (obs) ->
+    super(obs, true)
+    @queue = [nop]
+  push: ->
 
 Source.isTrigger = (s) ->
   if s instanceof Source
