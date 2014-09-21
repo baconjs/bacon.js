@@ -333,7 +333,7 @@ describe "Bacon.fromEventTarget", ->
     values = []
     mockSource = {
       on: (type, callback) -> callback(type)
-      off: (callback) -> 
+      off: (callback) ->
     }
     Bacon.fromEventTarget(mockSource, "test").take(1).onValue (value) ->
       values.push(value)
@@ -1931,21 +1931,21 @@ describe "observables created while dispatching", ->
         expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
 
-  verifyWhileDispatching "with combineAsArray", 
+  verifyWhileDispatching "with combineAsArray",
     (-> Bacon.combineAsArray([Bacon.constant(1)])),
     [[1]]
-  verifyWhileDispatching "with combineAsArray.startWith", 
+  verifyWhileDispatching "with combineAsArray.startWith",
       (->
         a = Bacon.constant("lolbal")
-        Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), 
+        Bacon.combineAsArray([a, a]).map("right").startWith("wrong")),
       ["right"]
-  verifyWhileDispatching "with stream.startWith", 
-    (-> Bacon.later(1).startWith(0)), 
+  verifyWhileDispatching "with stream.startWith",
+    (-> Bacon.later(1).startWith(0)),
     [0]
-  verifyWhileDispatching "with combineAsArray.changes.startWith", 
+  verifyWhileDispatching "with combineAsArray.changes.startWith",
     (->
       a = Bacon.constant("lolbal")
-      Bacon.combineAsArray([a, a]).changes().startWith("right")), 
+      Bacon.combineAsArray([a, a]).changes().startWith("right")),
     ["right"]
   verifyWhileDispatching "with flatMap", (->
       a = Bacon.constant("lolbal")
@@ -3296,7 +3296,7 @@ describe "Observable.withDescription", ->
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> 
+    spy = (obs) ->
       obs.toString()
       calls++
     Bacon.spy spy
