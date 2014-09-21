@@ -459,6 +459,12 @@ class Observable
       else
         @push event)
 
+  sampledBy: (sampler, combinator) ->
+    needsSamplerValue = combinator?
+    combinator = if combinator? then toCombinator(combinator) else _.id
+    withDescription(this, "sampledBy", sampler, combinator,
+      sampledBy_ [this], [sampler], combinator, needsSamplerValue)
+
   doAction: ->
     f = makeFunctionArgs(arguments)
     withDescription(this, "doAction", f, @withHandler (event) ->
@@ -773,10 +779,6 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  sampledBy: (sampler, combinator) ->
-    withDescription(this, "sampledBy", sampler, combinator,
-      @toProperty().sampledBy(sampler, combinator))
-
   concat: (right) ->
     left = this
     new EventStream describe(left, "concat", right), (sink) ->
@@ -858,12 +860,6 @@ class Property extends Observable
 
     @subscribe = UpdateBarrier.wrappedSubscribe(this)
     registerObs(this)
-
-  sampledBy: (sampler, combinator) ->
-    needsSamplerValue = combinator?
-    combinator = if combinator? then toCombinator(combinator) else _.id
-    withDescription(this, "sampledBy", sampler, combinator,
-      sampledBy_ [this], [sampler], combinator, needsSamplerValue)
 
   sample: (interval) ->
     withDescription(this, "sample", interval,
