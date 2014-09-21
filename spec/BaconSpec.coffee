@@ -2522,7 +2522,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
     expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()], ->).toString()).to.equal(
       "Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()],function)")
 
-describe "Bacon.sampledByAsArray(values, samplers)", ->
+describe "Bacon.sampleByAsArray(values, samplers)", ->
   describe "behaves just like Bacon.sampledBy, but combines all values into an array", ->
     expectStreamEvents(
       ->
@@ -2542,11 +2542,11 @@ describe "Bacon.sampledByAsArray(values, samplers)", ->
         # s1: x    x   !
         # s2:                !   !
         #
-        Bacon.sampledByAsArray(values, samplers)
+        Bacon.sampleByAsArray(values, samplers)
       [["i", 2, "j"], ["i", 3, "j"], [1, 3, "j"]])
   it "toString", ->
-    expect(Bacon.sampledByAsArray([Bacon.constant(0)], [Bacon.never()]).toString()).to.equal(
-      "Bacon.sampledByAsArray([Bacon.constant(0)],[Bacon.never()])")
+    expect(Bacon.sampleByAsArray([Bacon.constant(0)], [Bacon.never()]).toString()).to.equal(
+      "Bacon.sampleByAsArray([Bacon.constant(0)],[Bacon.never()])")
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->

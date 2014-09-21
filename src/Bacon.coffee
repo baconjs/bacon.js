@@ -234,8 +234,8 @@ Bacon.sampledBy = (values, samplers, combinator) ->
   withDescription(Bacon, "sampledBy", values, samplers, combinator,
     sampledBy_ values, samplers, combinator, false)
 
-Bacon.sampledByAsArray = (values, samplers) ->
-  withDescription(Bacon, "sampledByAsArray", values, samplers,
+Bacon.sampleByAsArray = (values, samplers) ->
+  withDescription(Bacon, "sampleByAsArray", values, samplers,
     sampledBy_ values, samplers, null, false)
 
 sampledBy_ = (values, samplers, combinator, needsSamplerValues) ->
