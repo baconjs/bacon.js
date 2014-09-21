@@ -2855,7 +2855,7 @@ describe "Bacon.retry", ->
       contexts.push(context)
       1
     Bacon.retry({source, delay, retries: 2}).onError (err) ->
-      expect(contexts).to.deep.equal [{error: {calls: 1}, retriesDone: 0} {error: {calls: 2}, retriesDone: 1} ]
+      expect(contexts).to.deep.equal [{error: {calls: 1}, retriesDone: 0}, {error: {calls: 2}, retriesDone: 1} ]
       expect(err).to.deep.equal {calls: 3}
       done()
   it "calls source function after delay", (done) ->
