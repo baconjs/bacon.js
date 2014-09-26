@@ -160,15 +160,16 @@ Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([v
 Bacon.fromArray = (values) ->
   assertArray values
   values = cloneArray(values)
+  i = 0
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
     reply = Bacon.more
     while (reply != Bacon.noMore) and !unsubd
-      if _.empty values
+      if i >= values.length
         sink(end())
         reply = Bacon.noMore
       else
-        value = values.shift()
+        value = values[i++]
         reply = sink(toEvent(value))
     -> unsubd = true
 
