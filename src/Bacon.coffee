@@ -159,7 +159,6 @@ Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([v
 
 Bacon.fromArray = (values) ->
   assertArray values
-  values = cloneArray(values)
   i = 0
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
