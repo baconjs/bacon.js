@@ -1,3 +1,7 @@
+## 0.7.23
+
+- Fix fromArray.toString (#436)
+
 ## 0.7.22
 
 - Throw Errors instead of strings in asserts (fix #414)
