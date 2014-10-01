@@ -1291,6 +1291,13 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once(error())
       [error()])
+  it "Responds synchronously", ->
+    values = []
+    s = Bacon.once(1)
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
 
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
