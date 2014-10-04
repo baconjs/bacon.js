@@ -239,7 +239,7 @@ Bacon.sampleByAsArray = (values, samplers) ->
     sampledBy_ values, samplers, null, false, false)
 
 sampledBy_ = (values, samplers, combinator, needsSamplerValues, allowPropertyResult) ->
-  assert "at least one sampler required", samplers.length
+  return Bacon.never() unless samplers.length
   hasSamplerProperties = false
   samplerSources = for sampler in samplers
     assert "sampler is not an Observable: " + sampler, isObservable(sampler)

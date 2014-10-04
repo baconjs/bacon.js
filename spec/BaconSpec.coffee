@@ -2237,14 +2237,14 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
     expect ->
       Bacon.sampledBy([Bacon.constant(1)], [Bacon.once(1)])
     .to.throw "not a function"
-  it "requires to specify at least one sampler", ->
-    expect ->
-      Bacon.sampledBy([Bacon.constant(1)], [], concatenateWithDashes)
-    .to.throw "at least one sampler required"
   it "prohibits samplers that are not observables", ->
     expect ->
       Bacon.sampledBy([Bacon.constant(1)], [Bacon.once(1), 2], concatenateWithDashes)
     .to.throw "sampler is not an Observable"
+  describe "given no samplers, results to an empty stream", ->
+    expectStreamEvents(
+      -> Bacon.sampledBy([Bacon.constant(1)], [], concatenateWithDashes)
+      [])
   describe "respects initial values", ->
     describe "when sampler is an EventStream", -> expectStreamEvents(
       ->
@@ -2521,6 +2521,8 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
   it "toString", ->
     expect(Bacon.sampledBy([Bacon.constant(0)], [Bacon.never()], ->).toString()).to.equal(
       "Bacon.sampledBy([Bacon.constant(0)],[Bacon.never()],function)")
+    expect(Bacon.sampledBy([Bacon.constant(0)], [], ->).toString()).to.equal(
+      "Bacon.sampledBy([Bacon.constant(0)],[],function)")
 
 describe "Bacon.sampleByAsArray(values, samplers)", ->
   describe "behaves just like Bacon.sampledBy, but combines all values into an array", ->
@@ -2544,9 +2546,15 @@ describe "Bacon.sampleByAsArray(values, samplers)", ->
         #
         Bacon.sampleByAsArray(values, samplers)
       [["i", 2, "j"], ["i", 3, "j"], [1, 3, "j"]])
+  describe "given no samplers, results to an empty stream", ->
+    expectStreamEvents(
+      -> Bacon.sampleByAsArray([Bacon.constant(1)], [])
+      [])
   it "toString", ->
     expect(Bacon.sampleByAsArray([Bacon.constant(0)], [Bacon.never()]).toString()).to.equal(
       "Bacon.sampleByAsArray([Bacon.constant(0)],[Bacon.never()])")
+    expect(Bacon.sampleByAsArray([Bacon.constant(0)], []).toString()).to.equal(
+      "Bacon.sampleByAsArray([Bacon.constant(0)],[])")
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
