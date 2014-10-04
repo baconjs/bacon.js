@@ -1202,6 +1202,57 @@ just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 """
 
+doc.fn "Bacon.sampledBy(props, samplers, f)", """
+combines the latest values of given n `props` using the given n-ary function
+`f(p1, p2, ...)` on each event from any sampler. Both `props` and `samplers`
+arrays may contain Properties and EventStreams. The `props` array may also
+include constant values. The result is an EventStream.
+
+Note that values of samplers are not passed to the combinator function. If you
+need them, you can include the selected observables into both arrays. For example,
+this will produce the result of the `(a + b) * mult` calculation, but only when
+either `a` or `b` changes:
+
+```js
+var a, b // properties or streams
+var mult // a property, a stream or a constant value
+function f(a, b, mult) { return (a + b) * mult }
+Bacon.sampledBy([a, b, mult], [a, b], f)
+```
+
+You have probably noticed that similar EventStream can be created using `Bacon.when`:
+
+```js
+Bacon.when([ a.toEventStream(), b.toEventStream(), mult.toProperty() ], f)
+```
+
+But here is an important difference: `Bacon.when` synchronizes all streams,
+so when one stream produces values more frequently than the other, values
+from the first stream will be buffered until the second stream produces
+the next value (just like in `Bacon.zipWith`):
+
+```js
+a ~> 1
+b ~> 1
+// Bacon.when      ~> (1 + 1) * mult
+// Bacon.sampledBy ~> (1 + 1) * mult
+b ~> 2
+// Bacon.sampledBy ~> (1 + 2) * mult
+b ~> 3
+// Bacon.sampledBy ~> (1 + 3) * mult
+a ~> 10
+// Bacon.when      ~> (10 + 2) * mult
+// Bacon.sampledBy ~> (10 + 3) * mult
+a ~> 20
+// Bacon.when      ~> (20 + 3) * mult
+// Bacon.sampledBy ~> (20 + 3) * mult
+```
+"""
+
+doc.fn "Bacon.sampleByAsArray(props, samplers)", """
+is just like `Bacon.sampledBy`, but combines the latest values of all `props` into an array.
+"""
+
 doc.fn "Bacon.onValues(a, b [, c...], f)", """
 is a shorthand for combining multiple
 sources (streams, properties, constants) as array and assigning the
