@@ -70,7 +70,7 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
         events.push(toValue(event))), extraCheck
 
 verifyPLateEval = (srcF, expectedEvents) ->
-  verifyPropertyWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
+  verifyPropertyWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) -> 
       if event.isEnd()
         done()
