@@ -232,18 +232,18 @@ Bacon.combineWith = (f, streams...) ->
 Bacon.sampledBy = (values, samplers, combinator) ->
   assertFunction combinator
   withDescription(Bacon, "sampledBy", values, samplers, combinator,
-    sampledBy_ values, samplers, combinator, false)
+    sampledBy_ values, samplers, combinator, false, false)
 
 Bacon.sampleByAsArray = (values, samplers) ->
   withDescription(Bacon, "sampleByAsArray", values, samplers,
-    sampledBy_ values, samplers, null, false)
+    sampledBy_ values, samplers, null, false, false)
 
-sampledBy_ = (values, samplers, combinator, needsSamplerValues) ->
+sampledBy_ = (values, samplers, combinator, needsSamplerValues, allowPropertyResult) ->
   assert "at least one sampler required", samplers.length
-  generateProperty = true
+  hasSamplerProperties = false
   samplerSources = for sampler in samplers
     assert "sampler is not an Observable: " + sampler, isObservable(sampler)
-    unless sampler instanceof Property then generateProperty = false
+    if sampler instanceof Property then hasSamplerProperties = true
     if needsSamplerValues then new Source(sampler, true) else new SamplerSource(sampler)
   valueSources = for value in values
     value = Bacon.constant(value) unless isObservable(value)
@@ -258,7 +258,11 @@ sampledBy_ = (values, samplers, combinator, needsSamplerValues) ->
       vals = slice.call(arguments, 0, numValues)
       if combinator? then combinator.apply(null, vals) else vals
   result = Bacon.when(sources, f)
-  if generateProperty then result.toProperty() else result
+  if hasSamplerProperties
+    if allowPropertyResult then result.toProperty() else new EventStream (sink) ->
+      result.subscribeInternal (event) ->
+        sink if event.isInitial() then event.toNext() else event
+  else result
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -463,7 +467,7 @@ class Observable
     needsSamplerValue = combinator?
     combinator = if combinator? then toCombinator(combinator) else _.id
     withDescription(this, "sampledBy", sampler, combinator,
-      sampledBy_ [this], [sampler], combinator, needsSamplerValue)
+      sampledBy_ [this], [sampler], combinator, needsSamplerValue, true)
 
   doAction: ->
     f = makeFunctionArgs(arguments)

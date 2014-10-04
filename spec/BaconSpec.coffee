@@ -2216,8 +2216,8 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         #
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["1", "2"])
-  describe "results to a Property when all samplers are Properties", ->
-    expectPropertyEvents(
+  describe "results to an EventStream even when all samplers are Properties", ->
+    expectStreamEvents(
       ->
         values = [
           series(4, [1, 2])
@@ -2262,7 +2262,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         #
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["i-j", "1-j", "1-2"])
-    describe "when sampler is a Property with initial value", -> expectPropertyEvents(
+    describe "when sampler is a Property with an initial value", -> expectStreamEvents(
       ->
         values = [
           series(3, [1]).toProperty("i")
@@ -2281,7 +2281,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["i-j-k", "1-j-k", "1-2-k"])
   describe "skips samplings that occur before all values produce their first output", ->
-    expectPropertyEvents(
+    expectStreamEvents(
       ->
         values = [
           series(3, [1, 2]).delay(t(1)).toProperty("i")
@@ -2316,7 +2316,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         #
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["1-3", "2-4", "2-5"])
-    describe "Property", -> expectPropertyEvents(
+    describe "Property", -> expectStreamEvents(
       ->
         values = [
           series(4, [1, 2]).toProperty("i")
@@ -2452,7 +2452,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
       [[f, g], [g, f], [f, f]])
   describe "uses updated properties after combine", ->
     add = (a, b) -> a + b
-    expectPropertyEvents(
+    expectStreamEvents(
       ->
         src = series(3, [1, 2]).toProperty(0)
         values = [
@@ -2470,7 +2470,7 @@ describe "Bacon.sampledBy(values, samplers, combinator)", ->
         Bacon.sampledBy(values, samplers, concatenateWithDashes)
       ["0-1", "1-2", "2-3"])
     describe "with subscribers", ->
-      expectPropertyEvents(
+      expectStreamEvents(
         ->
           src = series(3, [1, 2]).toProperty(0)
           values = [
