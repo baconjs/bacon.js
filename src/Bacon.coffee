@@ -1208,6 +1208,7 @@ Bacon.when = (patterns...) ->
 
   resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
     triggers = []
+    initSent = false
     ends = false
     match = (p) ->
       for i in p.ixs
@@ -1228,9 +1229,12 @@ Bacon.when = (patterns...) ->
         if triggers.length > 0
           reply = Bacon.more
           trigger = triggers.pop()
+          if isInitial = trigger.e.isInitial()
+            if initSent then return flushWhileTriggers()
           for p in pats
             if match(p)
               #console.log "match", p
+              if isInitial then initSent = true
               functions = (sources[i.index].consume() for i in p.ixs)
               reply = sink trigger.e.apply ->
                 values = (fun() for fun in functions)
