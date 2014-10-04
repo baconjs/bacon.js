@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.23';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -251,18 +251,20 @@
   };
 
   Bacon.fromArray = function(values) {
+    var i;
     assertArray(values);
     values = cloneArray(values);
+    i = 0;
     return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
       var reply, unsubd, value;
       unsubd = false;
       reply = Bacon.more;
       while ((reply !== Bacon.noMore) && !unsubd) {
-        if (_.empty(values)) {
+        if (i >= values.length) {
           sink(end());
           reply = Bacon.noMore;
         } else {
-          value = values.shift();
+          value = values[i++];
           reply = sink(toEvent(value));
         }
       }

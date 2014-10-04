@@ -1291,6 +1291,13 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once(error())
       [error()])
+  it "Responds synchronously", ->
+    values = []
+    s = Bacon.once(1)
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
 
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
@@ -1309,6 +1316,14 @@ describe "Bacon.fromArray", ->
     expectStreamEvents(
       -> Bacon.fromArray([error(), 1])
       [error(), 1])
+  it "toString", ->
+    expect(Bacon.fromArray([1,2]).toString()).to.equal("Bacon.fromArray([1,2])")
+  it "doesn't mutate the given array, toString works after subscribe (bug fix)", ->
+    array = [1,2]
+    s = Bacon.fromArray(array)
+    s.onValue(->)
+    expect(s.toString()).to.equal("Bacon.fromArray([1,2])")
+    expect(array).to.deep.equal([1,2])
 
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
