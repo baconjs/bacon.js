@@ -51,7 +51,9 @@
     "mocha": "1.17.1",
     "lodash": "~2.4.1",
     "coffeelint": "~1.5.5",
-    "grunt-coffeelint": "0.0.13"
+    "grunt-coffeelint": "0.0.13",
+    "assertive-chai": "^1.0.0",
+    "split": "^0.3.0"
   },
   "repository": {
     "type": "git",

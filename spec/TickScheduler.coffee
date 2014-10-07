@@ -23,7 +23,7 @@ exports.TickScheduler = ->
   run = ->
     while Object.keys(schedule).length
       while schedule[currentTick]?.length
-        forNow = schedule[currentTick].splice(0)
+        forNow = schedule[currentTick].splice(0, schedule[currentTick].length)
         for entry in forNow
           if _.contains(toRemove, entry.id)
             _.remove(entry.id, toRemove)

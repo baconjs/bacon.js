@@ -45,11 +45,7 @@ describe "Bacon._", ->
   describe "filter", ->
     expect(_.filter(_.empty, ["","1",[],[2]])).to.deep.equal(["",[]])
   describe "map", ->
-    expect(_.map(_.head, [
-      [], [1], [2,2], [3,3,3]
-    ])).to.deep.equal([
-      undefined, 1, 2, 3
-    ])
+    expect(_.map(_.head, [[], [1], [2,2], [3,3,3] ])).to.deep.equal([undefined, 1, 2, 3 ])
   describe "flatMap", ->
     expect(_.flatMap(((x) -> [x, x]), [1,2,3])).to.deep.equal([1,1,2,2,3,3])
   describe "each", ->
@@ -102,13 +98,10 @@ describe "Bacon._", ->
       expect(_.any([false, false, false])).to.be.false
       expect(_.any([true, false, true])).to.be.true
   describe "without", ->
-    expect(_.without("apple", ["bacon","apple","apple","omelette"]))
-      .to.deep.equal(["bacon","omelette"])
+    expect(_.without("apple", ["bacon","apple","apple","omelette"])).to.deep.equal(["bacon","omelette"])
   describe "remove", ->
-    expect(_.remove("apple", ["bacon","apple","apple","omelette"]))
-      .to.deep.equal(["apple"])
-    expect(_.remove("raisin", ["bacon","apple","apple","omelette"]))
-      .to.deep.equal(undefined)
+    expect(_.remove("apple", ["bacon","apple","apple","omelette"])).to.deep.equal(["apple"])
+    expect(_.remove("raisin", ["bacon","apple","apple","omelette"])).to.deep.equal(undefined)
   describe "fold", ->
     expect(_.fold([1,2,3,4,5], 0, (s, n) -> s + n)).to.equal(15)
   describe "toString", ->
@@ -238,9 +231,9 @@ describe "Bacon.fromCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
@@ -274,9 +267,9 @@ describe "Bacon.fromNodeCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(null, param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
@@ -648,7 +641,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
     [1, 2, 3, 1], unstable)
-  
+
   it "toString", ->
     expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")
 
@@ -767,8 +760,7 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
       ["sir francis"])
   it "toString", ->
-    expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
-      .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
+    expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString()).to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
 
 describe "EventStream.flatMapConcat", ->
   describe "is like flatMapWithConcurrencyLimit(1)", ->
@@ -806,7 +798,7 @@ describe "Property.flatMap", ->
       [0, 1, 2], unstable)
   describe "works in a complex scenario #338", ->
     expectStreamEvents(
-      -> 
+      ->
         a = activate(series(2, ["a", "A"]))
         b = activate(series(2, ["b", "B"])).delay(1).toProperty()
         a.flatMapLatest((a) -> b.map((b) -> a + b))
@@ -1045,8 +1037,7 @@ describe "EventStream.holdWhen", ->
       [count-1])
 
   it "toString", ->
-    expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
-      "Bacon.once(1).holdWhen(Bacon.constant(true))")
+    expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal("Bacon.once(1).holdWhen(Bacon.constant(true))")
 
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
@@ -1216,12 +1207,12 @@ describe "EventStream.awaiting(other)", ->
       [false, true, false, true])
   describe "supports simultaneouts events", ->
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.awaiting(src.map(->))
       [false])
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.map(->).awaiting(src)
       [false])
@@ -1762,14 +1753,14 @@ describe "EventStream.combine", ->
 describe "Bacon.groupSimultaneous", ->
   describe "groups simultaneous values in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         Bacon.groupSimultaneous(stream)
       [[[1, 2]], [[2,4]]])
   describe "groups simultaneous values from multiple sources in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         stream2 = src.map (x) -> x * 4
@@ -1968,7 +1959,7 @@ describe "when subscribing while dispatching", ->
         [0, 1])
   describe "delayed bounce in case Property ended (bug fix)", ->
     expectStreamEvents(
-      -> 
+      ->
         bus = new Bacon.Bus()
         root = Bacon.once(0).toProperty()
         root.onValue ->
@@ -2054,7 +2045,7 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon
           .once(123)
           .flatMap ->
@@ -2879,10 +2870,7 @@ describe "Bacon.retry", ->
       contexts.push(context)
       1
     Bacon.retry({source, delay, retries: 2}).onError (err) ->
-      expect(contexts).to.deep.equal [
-        {error: {calls: 1}, retriesDone: 0}
-        {error: {calls: 2}, retriesDone: 1}
-      ]
+      expect(contexts).to.deep.equal [{error: {calls: 1}, retriesDone: 0}, {error: {calls: 2}, retriesDone: 1} ]
       expect(err).to.deep.equal {calls: 3}
       done()
   it "calls source function after delay", (done) ->
@@ -3220,10 +3208,10 @@ describe "Bacon.fromBinder", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
 describe "String presentations", ->
-  describe "Initial(1).toString", -> 
+  describe "Initial(1).toString", ->
     it "is 1", ->
       expect(new Bacon.Initial(1).toString()).to.equal("1")
-  describe "Next({a:1i}).toString", -> 
+  describe "Next({a:1i}).toString", ->
     it "is {a:1}", ->
       expect(new Bacon.Next({a:1}).toString()).to.equal("{a:1}")
   describe "Error({a:1}).toString", ->
@@ -3325,7 +3313,7 @@ lessThan = (limit) ->
 times = (x, y) -> x * y
 add = (x, y) -> x + y
 id = (x) -> x
-activate = (obs) -> 
+activate = (obs) ->
   obs.onValue(->)
   obs
 
