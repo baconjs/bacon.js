@@ -1,3 +1,7 @@
+## 0.7.24
+
+- Changed dispatching of delayed events for improved memory performance
+
 ## 0.7.23
 
 - Fix fromArray.toString (#436)
