@@ -1548,6 +1548,7 @@ _ = {
   each: (xs, f) ->
     for key, value of xs
       f(key, value)
+    undefined
   toArray: (xs) -> if isArray(xs) then xs else [xs]
   contains: (xs, x) -> _.indexOf(xs, x) != -1
   id: (x) -> x
