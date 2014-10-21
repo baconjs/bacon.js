@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.24';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2893,13 +2893,12 @@
       return _results;
     },
     each: function(xs, f) {
-      var key, value, _results;
-      _results = [];
+      var key, value;
       for (key in xs) {
         value = xs[key];
-        _results.push(f(key, value));
+        f(key, value);
       }
-      return _results;
+      return void 0;
     },
     toArray: function(xs) {
       if (isArray(xs)) {
