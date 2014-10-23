@@ -1,3 +1,7 @@
+## 0.7.25
+
+- Fix #441: check for module.exports
+
 ## 0.7.24
 
 - Changed dispatching of delayed events for improved memory performance
