@@ -77,7 +77,7 @@ Bacon.noMore = ["<no-more>"]
 Bacon.more = ["<more>"]
 
 Bacon.later = (delay, value) ->
-  withDescription(Bacon, "later", delay, value, Bacon.sequentially(delay, [value]))
+  withDescription(Bacon, "later", delay, value, Bacon.fromPoll(delay, -> [value, end()]))
 
 Bacon.sequentially = (delay, values) ->
   index = 0
@@ -154,9 +154,17 @@ Bacon.constant = (value) ->
     sink (end())
     nop
 
-Bacon.never = -> withDescription(Bacon, "never", Bacon.fromArray([]))
+Bacon.never = ->
+  new EventStream describe(Bacon, "never"), (sink) ->
+    sink (end())
+    nop
 
-Bacon.once = (value) -> withDescription(Bacon, "once", value, Bacon.fromArray([value]))
+Bacon.once = (value) ->
+  new EventStream describe(Bacon, "once", value), (sink) ->
+    sink (toEvent(value))
+    sink (end())
+    nop
+
 
 Bacon.fromArray = (values) ->
   assertArray values
