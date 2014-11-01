@@ -3069,7 +3069,7 @@ describe "Bacon.Bus", ->
     inputSubscribe = input.subscribeInternal
     input.subscribeInternal = (sink) ->
       subscribed++
-      inputSubscribe(sink)
+      inputSubscribe.call(input, sink)
     bus.plug(input)
     dispose = bus.onValue(=>)
     input.end()

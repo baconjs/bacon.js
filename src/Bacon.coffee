@@ -220,7 +220,7 @@ Bacon.combineAsArray = (streams...) ->
     streams[index] = Bacon.constant(stream) unless (isObservable(stream))
   if streams.length
     sources = for s in streams
-      new Source(s, true, s.subscribeInternal)
+      new Source(s, true)
     withDescription(Bacon, "combineAsArray", streams..., Bacon.when(sources, ((xs...) -> xs)).toProperty())
   else
     Bacon.constant([])
@@ -655,10 +655,14 @@ class EventStream extends Observable
       desc = []
     super(desc)
     assertFunction subscribe
-    dispatcher = new Dispatcher(subscribe)
-    @subscribeInternal = dispatcher.subscribe
-    @hasSubscribers = dispatcher.hasSubscribers
+    @dispatcher = new Dispatcher(subscribe)
     registerObs(this)
+
+  subscribeInternal: (sink) ->
+    @dispatcher.subscribe(sink)
+
+  hasSubscribers: ->
+    @dispatcher.hasSubscribers()
 
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
@@ -808,7 +812,7 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@subscribeInternal, handler)
+    dispatcher = new Dispatcher(@dispatcher.subscribe, handler)
     new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
 
 class Property extends Observable
@@ -819,12 +823,12 @@ class Property extends Observable
       desc = []
     super(desc)
     assertFunction(subscribe)
-    if handler == true
-      @subscribeInternal = subscribe
-    else
-      @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
+    @dispatcher = new PropertyDispatcher(this, subscribe, handler)
 
     registerObs(this)
+
+  subscribeInternal: (sink) ->
+    @dispatcher.subscribe(sink)
 
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
@@ -851,7 +855,7 @@ class Property extends Observable
       sink event unless event.isInitial()
 
   withHandler: (handler) ->
-    new Property describe(this, "withHandler", handler), @subscribeInternal, handler
+    new Property describe(this, "withHandler", handler), @dispatcher.subscribe, handler
 
   toProperty: ->
     assertNoArguments(arguments)
@@ -1075,9 +1079,9 @@ class Bus extends EventStream
       sink? end()
 
 class Source
-  constructor: (@obs, @sync, @subscribe, @lazy = false) ->
+  constructor: (@obs, @sync, @lazy = false) ->
     @queue = []
-    @subscribe = @obs.subscribeInternal unless @subscribe?
+  subscribe: (sink) -> @obs.subscribeInternal(sink)
   toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
   consume: ->
@@ -1098,8 +1102,8 @@ class ConsumingSource extends Source
   flatten: false
 
 class BufferingSource extends Source
-  constructor: (@obs) ->
-    super(@obs, true, @obs.subscribeInternal)
+  constructor: (obs) ->
+    super(obs, true)
   consume: ->
     values = @queue
     @queue = []
