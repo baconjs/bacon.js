@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.26';
+  Bacon.version = '0.7.27';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -33,7 +33,7 @@
       unbinder = binder(function() {
         var args, event, reply, value, _i, _len;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        value = eventTransformer.apply(null, args);
+        value = eventTransformer.apply(this, args);
         if (!(isArray(value) && _.last(value) instanceof Event)) {
           value = [value];
         }
