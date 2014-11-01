@@ -917,123 +917,131 @@ addPropertyInitValueToStream = (property, stream) ->
   justInitValue.concat(stream).toProperty()
 
 class Dispatcher
-  constructor: (subscribe, handleEvent) ->
-    subscribe ?= -> nop
-    subscriptions = []
-    queue = []
-    pushing = false
-    ended = false
-    @hasSubscribers = -> subscriptions.length > 0
-    prevError = undefined
-    unsubscribeFromSource = nop
-    removeSub = (subscription) ->
-      subscriptions = _.without(subscription, subscriptions)
-    pushIt = (event) ->
-      unless pushing
-        return if event == prevError
-        prevError = event if event.isError()
-        success = false
-        try
-          pushing = true
-          tmp = subscriptions
-          for sub in tmp
-            reply = sub.sink event
-            removeSub sub if reply == Bacon.noMore or event.isEnd()
-          success = true
-        finally
-          pushing = false
-          queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
+  constructor: (@_subscribe, @_handleEvent) ->
+    @subscriptions = []
+    @queue = []
+    @pushing = false
+    @ended = false
+    @prevError = undefined
+    @unsubscribeFromSource = nop
+
+  hasSubscribers: ->
+    @subscriptions.length > 0
+
+  removeSub: (subscription) =>
+    @subscriptions = _.without(subscription, @subscriptions)
+
+  push: (event) =>
+    UpdateBarrier.inTransaction event, this, @pushIt, [event]
+
+  pushIt: (event) ->
+    unless @pushing
+      return if event == @prevError
+      @prevError = event if event.isError()
+      success = false
+      try
+        @pushing = true
+        tmp = @subscriptions
+        for sub in tmp
+          reply = sub.sink event
+          @removeSub sub if reply == Bacon.noMore or event.isEnd()
         success = true
-        while queue.length
-          event = queue.shift()
-          @push event
-        if @hasSubscribers()
-          Bacon.more
-        else
-          unsubscribeFromSource()
-          Bacon.noMore
-      else
-        queue.push(event)
+      finally
+        @pushing = false
+        @queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
+      success = true
+      while @queue.length
+        event = @queue.shift()
+        @push event
+      if @hasSubscribers()
         Bacon.more
-    @push = (event) =>
-      UpdateBarrier.inTransaction event, this, pushIt, [event]
-    handleEvent ?= (event) -> @push event
-    @handleEvent = (event) =>
-      if event.isEnd()
-        ended = true
-      handleEvent.apply(this, [event])
-    @subscribe = (sink) =>
-      if ended
-        sink end()
-        nop
       else
-        assertFunction sink
-        subscription = { sink: sink }
-        subscriptions.push(subscription)
-        if subscriptions.length == 1
-          unsubSrc = subscribe @handleEvent
-          unsubscribeFromSource = ->
-            unsubSrc()
-            unsubscribeFromSource = nop
-        assertFunction unsubscribeFromSource
-        =>
-          removeSub subscription
-          unsubscribeFromSource() unless @hasSubscribers()
+        @unsubscribeFromSource()
+        Bacon.noMore
+    else
+      @queue.push(event)
+      Bacon.more
+
+  handleEvent: (event) =>
+    if event.isEnd()
+      @ended = true
+
+    if @_handleEvent
+      @_handleEvent(event)
+    else
+      @push event
+
+  subscribe: (sink) =>
+    if @ended
+      sink end()
+      nop
+    else
+      assertFunction sink
+      subscription = { sink: sink }
+      @subscriptions.push(subscription)
+      if @subscriptions.length == 1
+        unsubSrc = @_subscribe @handleEvent
+        @unsubscribeFromSource = ->
+          unsubSrc()
+          @unsubscribeFromSource = nop
+      assertFunction @unsubscribeFromSource
+      =>
+        @removeSub subscription
+        @unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
-  constructor: (p, subscribe, handleEvent) ->
+  constructor: (@property, subscribe, handleEvent) ->
     super(subscribe, handleEvent)
-    current = None
-    currentValueRootId = undefined
-    push = @push
-    subscribe = @subscribe
-    ended = false
-    @push = (event) =>
-      if event.isEnd()
-        ended = true
-      if event.hasValue()
-        current = new Some(event)
-        currentValueRootId = UpdateBarrier.currentEventId()
-        #console.log "push", event.value()
-      push.apply(this, [event])
-    @subscribe = (sink) =>
-      initSent = false
-      # init value is "bounced" here because the base Dispatcher class
-      # won't add more than one subscription to the underlying observable.
-      # without bouncing, the init value would be missing from all new subscribers
-      # after the first one
-      reply = Bacon.more
+    @current = None
+    @currentValueRootId = undefined
+    @propertyEnded = false
 
-      maybeSubSource = ->
-        if reply == Bacon.noMore
-          nop
-        else if ended
-          sink end()
-          nop
-        else
-          subscribe.apply(this, [sink])
+  push: (event) =>
+    if event.isEnd()
+      @propertyEnded = true
+    if event.hasValue()
+      @current = new Some(event)
+      @currentValueRootId = UpdateBarrier.currentEventId()
+    super(event)
 
-      if current.isDefined and (@hasSubscribers() or ended)
-        # should bounce init value
-        dispatchingId = UpdateBarrier.currentEventId()
-        valId = currentValueRootId
-        if !ended and valId and dispatchingId and dispatchingId != valId
-          # when subscribing while already dispatching a value and this property hasn't been updated yet
-          # we cannot bounce before this property is up to date.
-          #console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
-          UpdateBarrier.whenDoneWith p, ->
-            if currentValueRootId == valId
-              sink initial(current.get().value())
-          # the subscribing thing should be defered
-          maybeSubSource()
-        else
-          #console.log "bouncing value immediately"
-          UpdateBarrier.inTransaction undefined, this, (->
-            reply = sink initial(current.get().value())
-          ), []
-          maybeSubSource()
+  maybeSubSource: (sink, reply) ->
+    if reply == Bacon.noMore
+      nop
+    else if @propertyEnded
+      sink end()
+      nop
+    else
+      Dispatcher::subscribe.apply(this, [sink])
+
+  subscribe: (sink) =>
+    initSent = false
+    # init value is "bounced" here because the base Dispatcher class
+    # won't add more than one subscription to the underlying observable.
+    # without bouncing, the init value would be missing from all new subscribers
+    # after the first one
+    reply = Bacon.more
+
+    if @current.isDefined and (@hasSubscribers() or @propertyEnded)
+      # should bounce init value
+      dispatchingId = UpdateBarrier.currentEventId()
+      valId = @currentValueRootId
+      if !@propertyEnded and valId and dispatchingId and dispatchingId != valId
+        # when subscribing while already dispatching a value and this property hasn't been updated yet
+        # we cannot bounce before this property is up to date.
+        #console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
+        UpdateBarrier.whenDoneWith @property, =>
+          if @currentValueRootId == valId
+            sink initial(@current.get().value())
+        # the subscribing thing should be defered
+        @maybeSubSource(sink, reply)
       else
-        maybeSubSource()
+        #console.log "bouncing value immediately"
+        UpdateBarrier.inTransaction(undefined, this, (->
+          reply = sink initial(@current.get().value())
+        ), [])
+        @maybeSubSource(sink, reply)
+    else
+      @maybeSubSource(sink, reply)
 
 class Bus extends EventStream
   constructor: ->
