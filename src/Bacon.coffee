@@ -657,9 +657,11 @@ class EventStream extends Observable
     assertFunction subscribe
     dispatcher = new Dispatcher(subscribe)
     @subscribeInternal = dispatcher.subscribe
-    @subscribe = UpdateBarrier.wrappedSubscribe(this)
     @hasSubscribers = dispatcher.hasSubscribers
     registerObs(this)
+
+  subscribe: (sink) ->
+    UpdateBarrier.wrappedSubscribe(this, sink)
 
   delay: (delay) ->
     withDescription(this, "delay", delay, @flatMap (value) ->
@@ -822,8 +824,10 @@ class Property extends Observable
     else
       @subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe
 
-    @subscribe = UpdateBarrier.wrappedSubscribe(this)
     registerObs(this)
+
+  subscribe: (sink) ->
+    UpdateBarrier.wrappedSubscribe(this, sink)
 
   sampledBy: (sampler, combinator) ->
     if combinator?
@@ -831,8 +835,8 @@ class Property extends Observable
     else
       lazy = true
       combinator = (f) -> f()
-    thisSource = new Source(this, false, @subscribeInternal, lazy)
-    samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy)
+    thisSource = new Source(this, false, lazy)
+    samplerSource = new Source(sampler, true, lazy)
     stream = Bacon.when([thisSource, samplerSource], combinator)
     result = if sampler instanceof Property then stream.toProperty() else stream
     withDescription(this, "sampledBy", sampler, combinator, result)
@@ -1411,7 +1415,7 @@ UpdateBarrier = (->
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
 
-  wrappedSubscribe = (obs) -> (sink) ->
+  wrappedSubscribe = (obs, sink) ->
     unsubd = false
     doUnsub = ->
     unsub = ->
