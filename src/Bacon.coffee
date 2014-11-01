@@ -1097,7 +1097,7 @@ class Bus extends EventStream
     @unsubAll()
     @sink? end()
 
-  push: (value) =>
+  push: (value) ->
     @sink? next(value)
 
   error: (error) ->
