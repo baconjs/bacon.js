@@ -1045,7 +1045,10 @@ class PropertyDispatcher extends Dispatcher
       else
         #console.log "bouncing value immediately"
         UpdateBarrier.inTransaction(undefined, this, (->
-          reply = sink initial(@current.get().value())
+          reply = try
+            sink initial(@current.get().value())
+          catch
+            Bacon.more
         ), [])
         @maybeSubSource(sink, reply)
     else
@@ -1180,18 +1183,21 @@ class Desc
 withDescription = (desc..., obs) ->
   describe(desc...).apply(obs)
 
-Bacon.when = (patterns...) ->
-  return Bacon.never() if patterns.length == 0
-  len = patterns.length
+Bacon.when = ->
+  return Bacon.never() if arguments.length == 0
+  len = arguments.length
   usage = "when: expecting arguments in the form (Observable+,function)+"
 
   assert usage, (len % 2 == 0)
   sources = []
   pats = []
   i = 0
+  patterns = []
   while (i < len)
-    patSources = _.toArray patterns[i]
-    f = patterns[i + 1]
+    patterns[i] = arguments[i]
+    patterns[i + 1] = arguments[i + 1]
+    patSources = _.toArray arguments[i]
+    f = arguments[i + 1]
     pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
     triggerFound = false
     for s in patSources
@@ -1429,17 +1435,15 @@ UpdateBarrier = (->
     else
       #console.log "start tx"
       rootEvent = event
-      try
-        result = f.apply(context, args)
-        #console.log("done with tx")
-        flush()
-      finally
-        rootEvent = undefined
-        while (afters.length)
-          theseAfters = afters
-          afters = []
-          for f in theseAfters
-            f()
+      result = f.apply(context, args)
+      #console.log("done with tx")
+      flush()
+      rootEvent = undefined
+      while (afters.length)
+        theseAfters = afters
+        afters = []
+        for f in theseAfters
+          f()
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
