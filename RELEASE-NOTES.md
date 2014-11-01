@@ -1,3 +1,7 @@
+## 0.7.26
+
+- Fix #447: issue with Property::takeUntil error handling
+
 ## 0.7.25
 
 - Fix #441: check for module.exports
