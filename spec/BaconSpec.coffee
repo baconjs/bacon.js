@@ -1584,6 +1584,12 @@ describe "Property.takeUntil", ->
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
+  it "works with synchronous error (fix #447)", ->
+    errors = []
+    Bacon.once(new Bacon.Error("fail")).toProperty()
+      .takeUntil(Bacon.never())
+      .onError((e) -> errors.push(e))
+    expect(errors).to.deep.equal(["fail"])
   it "toString", ->
     expect(Bacon.constant(1).takeUntil(Bacon.never()).toString()).to.equal("Bacon.constant(1).takeUntil(Bacon.never())")
 
