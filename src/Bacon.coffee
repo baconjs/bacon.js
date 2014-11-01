@@ -898,7 +898,7 @@ addPropertyInitValueToStream = (property, stream) ->
   justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->
     value = undefined
     unsub = property.subscribeInternal (event) ->
-      if event.hasValue() or event.isError()
+      if !event.isEnd()
         value = event
       Bacon.noMore
     UpdateBarrier.whenDoneWith justInitValue, ->
