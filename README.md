@@ -1671,7 +1671,7 @@ Run browser (without testem):
 
 Run performance tests:
 
-    coffee performance/PerformanceTest.coffe
+    coffee performance/PerformanceTest.coffee
 
 Run memory usage tests:
 
