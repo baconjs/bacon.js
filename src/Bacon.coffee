@@ -730,7 +730,7 @@ class EventStream extends Observable
       delayMs = delay
       delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
     withDescription(this, "buffer", @withHandler (event) ->
-      buffer.push = @push
+      buffer.push = (event) => @push(event)
       if event.isError()
         reply = @push event
       else if event.isEnd()
@@ -939,7 +939,7 @@ class Dispatcher
   removeSub: (subscription) =>
     @subscriptions = _.without(subscription, @subscriptions)
 
-  push: (event) =>
+  push: (event) ->
     UpdateBarrier.inTransaction event, this, @pushIt, [event]
 
   pushIt: (event) ->
@@ -1004,7 +1004,7 @@ class PropertyDispatcher extends Dispatcher
     @currentValueRootId = undefined
     @propertyEnded = false
 
-  push: (event) =>
+  push: (event) ->
     if event.isEnd()
       @propertyEnded = true
     if event.hasValue()
