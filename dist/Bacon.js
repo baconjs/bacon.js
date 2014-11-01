@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.25';
+  Bacon.version = '0.7.26';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1630,7 +1630,7 @@
       var unsub, value;
       value = void 0;
       unsub = property.subscribeInternal(function(event) {
-        if (event.hasValue()) {
+        if (!event.isEnd()) {
           value = event;
         }
         return Bacon.noMore;
