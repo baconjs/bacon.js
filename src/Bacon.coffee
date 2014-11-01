@@ -1037,46 +1037,55 @@ class PropertyDispatcher extends Dispatcher
 
 class Bus extends EventStream
   constructor: ->
-    sink = undefined
-    subscriptions = []
-    ended = false
-    guardedSink = (input) -> (event) ->
-      if (event.isEnd())
-        unsubscribeInput(input)
-        Bacon.noMore
-      else
-        sink event
-    unsubAll = ->
-      sub.unsub?() for sub in subscriptions
-      undefined
-    subscribeInput = (subscription) ->
-      subscription.unsub = (subscription.input.subscribeInternal(guardedSink(subscription.input)))
-    unsubscribeInput = (input) ->
-      for sub, i in subscriptions
-        if sub.input == input
-          sub.unsub?()
-          subscriptions.splice(i, 1)
-          return
-    subscribeAll = (newSink) ->
-      sink = newSink
-      for subscription in cloneArray(subscriptions)
-        subscribeInput(subscription)
-      unsubAll
-    super(describe(Bacon, "Bus"), subscribeAll)
-    @plug = (input) ->
-      return if ended
-      sub = { input: input }
-      subscriptions.push(sub)
-      subscribeInput(sub) if (sink?)
-      -> unsubscribeInput(input)
-    @push = (value) ->
-      sink? next(value)
-    @error = (error) ->
-      sink? new Error(error)
-    @end = ->
-      ended = true
-      unsubAll()
-      sink? end()
+    @sink = undefined
+    @subscriptions = []
+    @ended = false
+    super(describe(Bacon, "Bus"), @subscribeAll)
+
+  unsubAll: =>
+    sub.unsub?() for sub in @subscriptions
+    undefined
+
+  subscribeAll: (newSink) =>
+    @sink = newSink
+    for subscription in cloneArray(@subscriptions)
+      @subscribeInput(subscription)
+    @unsubAll
+
+  guardedSink: (input) => (event) =>
+    if (event.isEnd())
+      @unsubscribeInput(input)
+      Bacon.noMore
+    else
+      @sink event
+
+  subscribeInput: (subscription) ->
+    subscription.unsub = (subscription.input.subscribeInternal(@guardedSink(subscription.input)))
+
+  unsubscribeInput: (input) ->
+    for sub, i in @subscriptions
+      if sub.input == input
+        sub.unsub?()
+        @subscriptions.splice(i, 1)
+        return
+
+  plug: (input) ->
+    return if @ended
+    sub = { input: input }
+    @subscriptions.push(sub)
+    @subscribeInput(sub) if (@sink?)
+    => @unsubscribeInput(input)
+
+  end: ->
+    @ended = true
+    @unsubAll()
+    @sink? end()
+
+  push: (value) =>
+    @sink? next(value)
+
+  error: (error) ->
+    @sink? new Error(error)
 
 class Source
   constructor: (@obs, @sync, @lazy = false) ->
