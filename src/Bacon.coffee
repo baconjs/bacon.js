@@ -904,11 +904,11 @@ class Property extends Observable
 convertArgsToFunction = (obs, f, args, method) ->
   if f instanceof Property
     sampled = f.sampledBy(obs, (p,s) -> [p,s])
-    method.apply(sampled, [([p, s]) -> p])
+    method.call(sampled, ([p, s]) -> p)
       .map(([p, s]) -> s)
   else
     f = makeFunction(f, args)
-    method.apply(obs, [f])
+    method.call(obs, f)
 
 addPropertyInitValueToStream = (property, stream) ->
   justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->
@@ -1019,7 +1019,7 @@ class PropertyDispatcher extends Dispatcher
       sink end()
       nop
     else
-      Dispatcher::subscribe.apply(this, [sink])
+      Dispatcher::subscribe.call(this, sink)
 
   subscribe: (sink) =>
     initSent = false
