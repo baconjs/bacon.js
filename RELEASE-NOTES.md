@@ -1,3 +1,7 @@
+## 0.7.27
+
+- Merge #413: preserve "this" context in eventTransformer of fromBinder etc
+
 ## 0.7.26
 
 - Fix #447: issue with Property::takeUntil error handling
