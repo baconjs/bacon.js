@@ -3054,8 +3054,8 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     input = new Bacon.Bus()
     # override subscribe to increase the subscribed-count
-    inputSubscribe = input.subscribeInternal
-    input.subscribeInternal = (sink) ->
+    inputSubscribe = input.dispatcher.subscribe
+    input.dispatcher.subscribe = (sink) ->
       subscribed++
       inputSubscribe.call(input, sink)
     bus.plug(input)
