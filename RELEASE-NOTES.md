@@ -1,3 +1,7 @@
+## 0.7.28
+
+- Performance and memory footprint improvements (#450)
+
 ## 0.7.27
 
 - Merge #413: preserve "this" context in eventTransformer of fromBinder etc
