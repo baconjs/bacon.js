@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.27';
+  Bacon.version = '0.7.28';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -109,7 +109,9 @@
   Bacon.more = ["<more>"];
 
   Bacon.later = function(delay, value) {
-    return withDescription(Bacon, "later", delay, value, Bacon.sequentially(delay, [value]));
+    return withDescription(Bacon, "later", delay, value, Bacon.fromPoll(delay, function() {
+      return [value, end()];
+    }));
   };
 
   Bacon.sequentially = function(delay, values) {
@@ -242,11 +244,18 @@
   };
 
   Bacon.never = function() {
-    return withDescription(Bacon, "never", Bacon.fromArray([]));
+    return new EventStream(describe(Bacon, "never"), function(sink) {
+      sink(end());
+      return nop;
+    });
   };
 
   Bacon.once = function(value) {
-    return withDescription(Bacon, "once", value, Bacon.fromArray([value]));
+    return new EventStream(describe(Bacon, "once", value), function(sink) {
+      sink(toEvent(value));
+      sink(end());
+      return nop;
+    });
   };
 
   Bacon.fromArray = function(values) {
@@ -284,7 +293,7 @@
         ends = 0;
         smartSink = function(obs) {
           return function(unsubBoth) {
-            return obs.subscribeInternal(function(event) {
+            return obs.dispatcher.subscribe(function(event) {
               var reply;
               if (event.isEnd()) {
                 ends++;
@@ -376,7 +385,7 @@
         _results = [];
         for (_j = 0, _len1 = streams.length; _j < _len1; _j++) {
           s = streams[_j];
-          _results.push(new Source(s, true, s.subscribeInternal));
+          _results.push(new Source(s, true));
         }
         return _results;
       })();
@@ -698,6 +707,10 @@
       this.initialDesc = this.desc;
     }
 
+    Observable.prototype.subscribe = function(sink) {
+      return UpdateBarrier.wrappedSubscribe(this, sink);
+    };
+
     Observable.prototype.onValue = function() {
       var f;
       f = makeFunctionArgs(arguments);
@@ -950,7 +963,7 @@
               });
             }
           };
-          unsub = _this.subscribeInternal(function(event) {
+          unsub = _this.dispatcher.subscribe(function(event) {
             var next, prev;
             if (event.hasValue()) {
               if (initSent && event.isInitial()) {
@@ -1147,7 +1160,7 @@
         child = makeObservable(f(event.value()));
         childDeps.push(child);
         return composite.add(function(unsubAll, unsubMe) {
-          return child.subscribeInternal(function(event) {
+          return child.dispatcher.subscribe(function(event) {
             var reply;
             if (event.isEnd()) {
               _.remove(child, childDeps);
@@ -1181,7 +1194,7 @@
         }
       };
       composite.add(function(__, unsubRoot) {
-        return root.subscribeInternal(function(event) {
+        return root.dispatcher.subscribe(function(event) {
           if (event.isEnd()) {
             return checkEnd(unsubRoot);
           } else if (event.isError()) {
@@ -1216,17 +1229,13 @@
     __extends(EventStream, _super);
 
     function EventStream(desc, subscribe) {
-      var dispatcher;
       if (isFunction(desc)) {
         subscribe = desc;
         desc = [];
       }
       EventStream.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
-      dispatcher = new Dispatcher(subscribe);
-      this.subscribeInternal = dispatcher.subscribe;
-      this.subscribe = UpdateBarrier.wrappedSubscribe(this);
-      this.hasSubscribers = dispatcher.hasSubscribers;
+      this.dispatcher = new Dispatcher(subscribe);
       registerObs(this);
     }
 
@@ -1322,7 +1331,11 @@
         };
       }
       return withDescription(this, "buffer", this.withHandler(function(event) {
-        buffer.push = this.push;
+        buffer.push = (function(_this) {
+          return function(event) {
+            return _this.push(event);
+          };
+        })(this);
         if (event.isError()) {
           reply = this.push(event);
         } else if (event.isEnd()) {
@@ -1368,9 +1381,9 @@
       return new EventStream(describe(left, "concat", right), function(sink) {
         var unsubLeft, unsubRight;
         unsubRight = nop;
-        unsubLeft = left.subscribeInternal(function(e) {
+        unsubLeft = left.dispatcher.subscribe(function(e) {
           if (e.isEnd()) {
-            return unsubRight = right.subscribeInternal(sink);
+            return unsubRight = right.dispatcher.subscribe(sink);
           } else {
             return sink(e);
           }
@@ -1461,7 +1474,7 @@
 
     EventStream.prototype.withHandler = function(handler) {
       var dispatcher;
-      dispatcher = new Dispatcher(this.subscribeInternal, handler);
+      dispatcher = new Dispatcher(this.dispatcher.subscribe, handler);
       return new EventStream(describe(this, "withHandler", handler), dispatcher.subscribe);
     };
 
@@ -1480,12 +1493,7 @@
       }
       Property.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
-      if (handler === true) {
-        this.subscribeInternal = subscribe;
-      } else {
-        this.subscribeInternal = new PropertyDispatcher(this, subscribe, handler).subscribe;
-      }
-      this.subscribe = UpdateBarrier.wrappedSubscribe(this);
+      this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
       registerObs(this);
     }
 
@@ -1499,8 +1507,8 @@
           return f();
         };
       }
-      thisSource = new Source(this, false, this.subscribeInternal, lazy);
-      samplerSource = new Source(sampler, true, sampler.subscribeInternal, lazy);
+      thisSource = new Source(this, false, lazy);
+      samplerSource = new Source(sampler, true, lazy);
       stream = Bacon.when([thisSource, samplerSource], combinator);
       result = sampler instanceof Property ? stream.toProperty() : stream;
       return withDescription(this, "sampledBy", sampler, combinator, result);
@@ -1513,7 +1521,7 @@
     Property.prototype.changes = function() {
       return new EventStream(describe(this, "changes"), (function(_this) {
         return function(sink) {
-          return _this.subscribeInternal(function(event) {
+          return _this.dispatcher.subscribe(function(event) {
             if (!event.isInitial()) {
               return sink(event);
             }
@@ -1523,7 +1531,7 @@
     };
 
     Property.prototype.withHandler = function(handler) {
-      return new Property(describe(this, "withHandler", handler), this.subscribeInternal, handler);
+      return new Property(describe(this, "withHandler", handler), this.dispatcher.subscribe, handler);
     };
 
     Property.prototype.toProperty = function() {
@@ -1534,7 +1542,7 @@
     Property.prototype.toEventStream = function() {
       return new EventStream(describe(this, "toEventStream"), (function(_this) {
         return function(sink) {
-          return _this.subscribeInternal(function(event) {
+          return _this.dispatcher.subscribe(function(event) {
             if (event.isInitial()) {
               event = event.toNext();
             }
@@ -1607,20 +1615,18 @@
       sampled = f.sampledBy(obs, function(p, s) {
         return [p, s];
       });
-      return method.apply(sampled, [
-        function(_arg) {
-          var p, s;
-          p = _arg[0], s = _arg[1];
-          return p;
-        }
-      ]).map(function(_arg) {
+      return method.call(sampled, function(_arg) {
+        var p, s;
+        p = _arg[0], s = _arg[1];
+        return p;
+      }).map(function(_arg) {
         var p, s;
         p = _arg[0], s = _arg[1];
         return s;
       });
     } else {
       f = makeFunction(f, args);
-      return method.apply(obs, [f]);
+      return method.call(obs, f);
     }
   };
 
@@ -1629,7 +1635,7 @@
     justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
       var unsub, value;
       value = void 0;
-      unsub = property.subscribeInternal(function(event) {
+      unsub = property.dispatcher.subscribe(function(event) {
         if (!event.isEnd()) {
           value = event;
         }
@@ -1647,116 +1653,116 @@
   };
 
   Dispatcher = (function() {
-    function Dispatcher(subscribe, handleEvent) {
-      var ended, prevError, pushIt, pushing, queue, removeSub, subscriptions, unsubscribeFromSource;
-      if (subscribe == null) {
-        subscribe = function() {
-          return nop;
-        };
-      }
-      subscriptions = [];
-      queue = [];
-      pushing = false;
-      ended = false;
-      this.hasSubscribers = function() {
-        return subscriptions.length > 0;
-      };
-      prevError = void 0;
-      unsubscribeFromSource = nop;
-      removeSub = function(subscription) {
-        return subscriptions = _.without(subscription, subscriptions);
-      };
-      pushIt = function(event) {
-        var reply, sub, success, tmp, _i, _len;
-        if (!pushing) {
-          if (event === prevError) {
-            return;
-          }
-          if (event.isError()) {
-            prevError = event;
-          }
-          success = false;
-          try {
-            pushing = true;
-            tmp = subscriptions;
-            for (_i = 0, _len = tmp.length; _i < _len; _i++) {
-              sub = tmp[_i];
-              reply = sub.sink(event);
-              if (reply === Bacon.noMore || event.isEnd()) {
-                removeSub(sub);
-              }
-            }
-            success = true;
-          } finally {
-            pushing = false;
-            if (!success) {
-              queue = [];
+    function Dispatcher(_subscribe, _handleEvent) {
+      this._subscribe = _subscribe;
+      this._handleEvent = _handleEvent;
+      this.subscribe = __bind(this.subscribe, this);
+      this.handleEvent = __bind(this.handleEvent, this);
+      this.removeSub = __bind(this.removeSub, this);
+      this.subscriptions = [];
+      this.queue = [];
+      this.pushing = false;
+      this.ended = false;
+      this.prevError = void 0;
+      this.unsubscribeFromSource = nop;
+    }
+
+    Dispatcher.prototype.hasSubscribers = function() {
+      return this.subscriptions.length > 0;
+    };
+
+    Dispatcher.prototype.removeSub = function(subscription) {
+      return this.subscriptions = _.without(subscription, this.subscriptions);
+    };
+
+    Dispatcher.prototype.push = function(event) {
+      return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
+    };
+
+    Dispatcher.prototype.pushIt = function(event) {
+      var reply, sub, success, tmp, _i, _len;
+      if (!this.pushing) {
+        if (event === this.prevError) {
+          return;
+        }
+        if (event.isError()) {
+          this.prevError = event;
+        }
+        success = false;
+        try {
+          this.pushing = true;
+          tmp = this.subscriptions;
+          for (_i = 0, _len = tmp.length; _i < _len; _i++) {
+            sub = tmp[_i];
+            reply = sub.sink(event);
+            if (reply === Bacon.noMore || event.isEnd()) {
+              this.removeSub(sub);
             }
           }
           success = true;
-          while (queue.length) {
-            event = queue.shift();
-            this.push(event);
+        } finally {
+          this.pushing = false;
+          if (!success) {
+            this.queue = [];
           }
-          if (this.hasSubscribers()) {
-            return Bacon.more;
-          } else {
-            unsubscribeFromSource();
-            return Bacon.noMore;
-          }
-        } else {
-          queue.push(event);
-          return Bacon.more;
         }
-      };
-      this.push = (function(_this) {
-        return function(event) {
-          return UpdateBarrier.inTransaction(event, _this, pushIt, [event]);
-        };
-      })(this);
-      if (handleEvent == null) {
-        handleEvent = function(event) {
-          return this.push(event);
-        };
+        success = true;
+        while (this.queue.length) {
+          event = this.queue.shift();
+          this.push(event);
+        }
+        if (this.hasSubscribers()) {
+          return Bacon.more;
+        } else {
+          this.unsubscribeFromSource();
+          return Bacon.noMore;
+        }
+      } else {
+        this.queue.push(event);
+        return Bacon.more;
       }
-      this.handleEvent = (function(_this) {
-        return function(event) {
-          if (event.isEnd()) {
-            ended = true;
-          }
-          return handleEvent.apply(_this, [event]);
+    };
+
+    Dispatcher.prototype.handleEvent = function(event) {
+      if (event.isEnd()) {
+        this.ended = true;
+      }
+      if (this._handleEvent) {
+        return this._handleEvent(event);
+      } else {
+        return this.push(event);
+      }
+    };
+
+    Dispatcher.prototype.subscribe = function(sink) {
+      var subscription, unsubSrc;
+      if (this.ended) {
+        sink(end());
+        return nop;
+      } else {
+        assertFunction(sink);
+        subscription = {
+          sink: sink
         };
-      })(this);
-      this.subscribe = (function(_this) {
-        return function(sink) {
-          var subscription, unsubSrc;
-          if (ended) {
-            sink(end());
-            return nop;
-          } else {
-            assertFunction(sink);
-            subscription = {
-              sink: sink
-            };
-            subscriptions.push(subscription);
-            if (subscriptions.length === 1) {
-              unsubSrc = subscribe(_this.handleEvent);
-              unsubscribeFromSource = function() {
-                unsubSrc();
-                return unsubscribeFromSource = nop;
-              };
+        this.subscriptions.push(subscription);
+        if (this.subscriptions.length === 1) {
+          unsubSrc = this._subscribe(this.handleEvent);
+          this.unsubscribeFromSource = function() {
+            unsubSrc();
+            return this.unsubscribeFromSource = nop;
+          };
+        }
+        assertFunction(this.unsubscribeFromSource);
+        return (function(_this) {
+          return function() {
+            _this.removeSub(subscription);
+            if (!_this.hasSubscribers()) {
+              return _this.unsubscribeFromSource();
             }
-            assertFunction(unsubscribeFromSource);
-            return function() {
-              removeSub(subscription);
-              if (!_this.hasSubscribers()) {
-                return unsubscribeFromSource();
-              }
-            };
-          }
-        };
-      })(this);
-    }
+          };
+        })(this);
+      }
+    };
 
     return Dispatcher;
 
@@ -1765,63 +1771,69 @@
   PropertyDispatcher = (function(_super) {
     __extends(PropertyDispatcher, _super);
 
-    function PropertyDispatcher(p, subscribe, handleEvent) {
-      var current, currentValueRootId, ended, push;
+    function PropertyDispatcher(property, subscribe, handleEvent) {
+      this.property = property;
+      this.subscribe = __bind(this.subscribe, this);
       PropertyDispatcher.__super__.constructor.call(this, subscribe, handleEvent);
-      current = None;
-      currentValueRootId = void 0;
-      push = this.push;
-      subscribe = this.subscribe;
-      ended = false;
-      this.push = (function(_this) {
-        return function(event) {
-          if (event.isEnd()) {
-            ended = true;
-          }
-          if (event.hasValue()) {
-            current = new Some(event);
-            currentValueRootId = UpdateBarrier.currentEventId();
-          }
-          return push.apply(_this, [event]);
-        };
-      })(this);
-      this.subscribe = (function(_this) {
-        return function(sink) {
-          var dispatchingId, initSent, maybeSubSource, reply, valId;
-          initSent = false;
-          reply = Bacon.more;
-          maybeSubSource = function() {
-            if (reply === Bacon.noMore) {
-              return nop;
-            } else if (ended) {
-              sink(end());
-              return nop;
-            } else {
-              return subscribe.apply(this, [sink]);
-            }
-          };
-          if (current.isDefined && (_this.hasSubscribers() || ended)) {
-            dispatchingId = UpdateBarrier.currentEventId();
-            valId = currentValueRootId;
-            if (!ended && valId && dispatchingId && dispatchingId !== valId) {
-              UpdateBarrier.whenDoneWith(p, function() {
-                if (currentValueRootId === valId) {
-                  return sink(initial(current.get().value()));
-                }
-              });
-              return maybeSubSource();
-            } else {
-              UpdateBarrier.inTransaction(void 0, _this, (function() {
-                return reply = sink(initial(current.get().value()));
-              }), []);
-              return maybeSubSource();
-            }
-          } else {
-            return maybeSubSource();
-          }
-        };
-      })(this);
+      this.current = None;
+      this.currentValueRootId = void 0;
+      this.propertyEnded = false;
     }
+
+    PropertyDispatcher.prototype.push = function(event) {
+      if (event.isEnd()) {
+        this.propertyEnded = true;
+      }
+      if (event.hasValue()) {
+        this.current = new Some(event);
+        this.currentValueRootId = UpdateBarrier.currentEventId();
+      }
+      return PropertyDispatcher.__super__.push.call(this, event);
+    };
+
+    PropertyDispatcher.prototype.maybeSubSource = function(sink, reply) {
+      if (reply === Bacon.noMore) {
+        return nop;
+      } else if (this.propertyEnded) {
+        sink(end());
+        return nop;
+      } else {
+        return Dispatcher.prototype.subscribe.call(this, sink);
+      }
+    };
+
+    PropertyDispatcher.prototype.subscribe = function(sink) {
+      var dispatchingId, initSent, reply, valId;
+      initSent = false;
+      reply = Bacon.more;
+      if (this.current.isDefined && (this.hasSubscribers() || this.propertyEnded)) {
+        dispatchingId = UpdateBarrier.currentEventId();
+        valId = this.currentValueRootId;
+        if (!this.propertyEnded && valId && dispatchingId && dispatchingId !== valId) {
+          UpdateBarrier.whenDoneWith(this.property, (function(_this) {
+            return function() {
+              if (_this.currentValueRootId === valId) {
+                return sink(initial(_this.current.get().value()));
+              }
+            };
+          })(this));
+          return this.maybeSubSource(sink, reply);
+        } else {
+          UpdateBarrier.inTransaction(void 0, this, (function() {
+            return reply = (function() {
+              try {
+                return sink(initial(this.current.get().value()));
+              } catch (_error) {
+                return Bacon.more;
+              }
+            }).call(this);
+          }), []);
+          return this.maybeSubSource(sink, reply);
+        }
+      } else {
+        return this.maybeSubSource(sink, reply);
+      }
+    };
 
     return PropertyDispatcher;
 
@@ -1831,101 +1843,118 @@
     __extends(Bus, _super);
 
     function Bus() {
-      var ended, guardedSink, sink, subscribeAll, subscribeInput, subscriptions, unsubAll, unsubscribeInput;
-      sink = void 0;
-      subscriptions = [];
-      ended = false;
-      guardedSink = function(input) {
+      this.guardedSink = __bind(this.guardedSink, this);
+      this.subscribeAll = __bind(this.subscribeAll, this);
+      this.unsubAll = __bind(this.unsubAll, this);
+      this.sink = void 0;
+      this.subscriptions = [];
+      this.ended = false;
+      Bus.__super__.constructor.call(this, describe(Bacon, "Bus"), this.subscribeAll);
+    }
+
+    Bus.prototype.unsubAll = function() {
+      var sub, _i, _len, _ref1;
+      _ref1 = this.subscriptions;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        sub = _ref1[_i];
+        if (typeof sub.unsub === "function") {
+          sub.unsub();
+        }
+      }
+      return void 0;
+    };
+
+    Bus.prototype.subscribeAll = function(newSink) {
+      var subscription, _i, _len, _ref1;
+      this.sink = newSink;
+      _ref1 = cloneArray(this.subscriptions);
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        subscription = _ref1[_i];
+        this.subscribeInput(subscription);
+      }
+      return this.unsubAll;
+    };
+
+    Bus.prototype.guardedSink = function(input) {
+      return (function(_this) {
         return function(event) {
           if (event.isEnd()) {
-            unsubscribeInput(input);
+            _this.unsubscribeInput(input);
             return Bacon.noMore;
           } else {
-            return sink(event);
+            return _this.sink(event);
           }
         };
-      };
-      unsubAll = function() {
-        var sub, _i, _len;
-        for (_i = 0, _len = subscriptions.length; _i < _len; _i++) {
-          sub = subscriptions[_i];
+      })(this);
+    };
+
+    Bus.prototype.subscribeInput = function(subscription) {
+      return subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+    };
+
+    Bus.prototype.unsubscribeInput = function(input) {
+      var i, sub, _i, _len, _ref1;
+      _ref1 = this.subscriptions;
+      for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+        sub = _ref1[i];
+        if (sub.input === input) {
           if (typeof sub.unsub === "function") {
             sub.unsub();
           }
-        }
-        return void 0;
-      };
-      subscribeInput = function(subscription) {
-        return subscription.unsub = subscription.input.subscribeInternal(guardedSink(subscription.input));
-      };
-      unsubscribeInput = function(input) {
-        var i, sub, _i, _len;
-        for (i = _i = 0, _len = subscriptions.length; _i < _len; i = ++_i) {
-          sub = subscriptions[i];
-          if (sub.input === input) {
-            if (typeof sub.unsub === "function") {
-              sub.unsub();
-            }
-            subscriptions.splice(i, 1);
-            return;
-          }
-        }
-      };
-      subscribeAll = function(newSink) {
-        var subscription, _i, _len, _ref1;
-        sink = newSink;
-        _ref1 = cloneArray(subscriptions);
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          subscription = _ref1[_i];
-          subscribeInput(subscription);
-        }
-        return unsubAll;
-      };
-      Bus.__super__.constructor.call(this, describe(Bacon, "Bus"), subscribeAll);
-      this.plug = function(input) {
-        var sub;
-        if (ended) {
+          this.subscriptions.splice(i, 1);
           return;
         }
-        sub = {
-          input: input
-        };
-        subscriptions.push(sub);
-        if ((sink != null)) {
-          subscribeInput(sub);
-        }
+      }
+    };
+
+    Bus.prototype.plug = function(input) {
+      var sub;
+      if (this.ended) {
+        return;
+      }
+      sub = {
+        input: input
+      };
+      this.subscriptions.push(sub);
+      if ((this.sink != null)) {
+        this.subscribeInput(sub);
+      }
+      return (function(_this) {
         return function() {
-          return unsubscribeInput(input);
+          return _this.unsubscribeInput(input);
         };
-      };
-      this.push = function(value) {
-        return typeof sink === "function" ? sink(next(value)) : void 0;
-      };
-      this.error = function(error) {
-        return typeof sink === "function" ? sink(new Error(error)) : void 0;
-      };
-      this.end = function() {
-        ended = true;
-        unsubAll();
-        return typeof sink === "function" ? sink(end()) : void 0;
-      };
-    }
+      })(this);
+    };
+
+    Bus.prototype.end = function() {
+      this.ended = true;
+      this.unsubAll();
+      return typeof this.sink === "function" ? this.sink(end()) : void 0;
+    };
+
+    Bus.prototype.push = function(value) {
+      return typeof this.sink === "function" ? this.sink(next(value)) : void 0;
+    };
+
+    Bus.prototype.error = function(error) {
+      return typeof this.sink === "function" ? this.sink(new Error(error)) : void 0;
+    };
 
     return Bus;
 
   })(EventStream);
 
   Source = (function() {
-    function Source(obs, sync, subscribe, lazy) {
+    function Source(obs, sync, lazy) {
       this.obs = obs;
       this.sync = sync;
-      this.subscribe = subscribe;
       this.lazy = lazy != null ? lazy : false;
       this.queue = [];
-      if (this.subscribe == null) {
-        this.subscribe = this.obs.subscribeInternal;
-      }
     }
+
+    Source.prototype.subscribe = function(sink) {
+      return this.obs.dispatcher.subscribe(sink);
+    };
 
     Source.prototype.toString = function() {
       return this.obs.toString.call(this);
@@ -1994,8 +2023,7 @@
     __extends(BufferingSource, _super);
 
     function BufferingSource(obs) {
-      this.obs = obs;
-      BufferingSource.__super__.constructor.call(this, this.obs, true, this.obs.subscribeInternal);
+      BufferingSource.__super__.constructor.call(this, obs, true);
     }
 
     BufferingSource.prototype.consume = function() {
@@ -2092,19 +2120,21 @@
 
   Bacon.when = function() {
     var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref1;
-    patterns = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    if (patterns.length === 0) {
+    if (arguments.length === 0) {
       return Bacon.never();
     }
-    len = patterns.length;
+    len = arguments.length;
     usage = "when: expecting arguments in the form (Observable+,function)+";
     assert(usage, len % 2 === 0);
     sources = [];
     pats = [];
     i = 0;
+    patterns = [];
     while (i < len) {
-      patSources = _.toArray(patterns[i]);
-      f = patterns[i + 1];
+      patterns[i] = arguments[i];
+      patterns[i + 1] = arguments[i + 1];
+      patSources = _.toArray(arguments[i]);
+      f = arguments[i + 1];
       pat = {
         f: (isFunction(f) ? f : (function() {
           return f;
@@ -2564,18 +2594,15 @@
         return f.apply(context, args);
       } else {
         rootEvent = event;
-        try {
-          result = f.apply(context, args);
-          flush();
-        } finally {
-          rootEvent = void 0;
-          while (afters.length) {
-            theseAfters = afters;
-            afters = [];
-            for (_i = 0, _len = theseAfters.length; _i < _len; _i++) {
-              f = theseAfters[_i];
-              f();
-            }
+        result = f.apply(context, args);
+        flush();
+        rootEvent = void 0;
+        while (afters.length) {
+          theseAfters = afters;
+          afters = [];
+          for (_i = 0, _len = theseAfters.length; _i < _len; _i++) {
+            f = theseAfters[_i];
+            f();
           }
         }
         return result;
@@ -2588,28 +2615,26 @@
         return void 0;
       }
     };
-    wrappedSubscribe = function(obs) {
-      return function(sink) {
-        var doUnsub, unsub, unsubd;
-        unsubd = false;
-        doUnsub = function() {};
-        unsub = function() {
-          unsubd = true;
-          return doUnsub();
-        };
-        doUnsub = obs.subscribeInternal(function(event) {
-          return afterTransaction(function() {
-            var reply;
-            if (!unsubd) {
-              reply = sink(event);
-              if (reply === Bacon.noMore) {
-                return unsub();
-              }
-            }
-          });
-        });
-        return unsub;
+    wrappedSubscribe = function(obs, sink) {
+      var doUnsub, unsub, unsubd;
+      unsubd = false;
+      doUnsub = function() {};
+      unsub = function() {
+        unsubd = true;
+        return doUnsub();
       };
+      doUnsub = obs.dispatcher.subscribe(function(event) {
+        return afterTransaction(function() {
+          var reply;
+          if (!unsubd) {
+            reply = sink(event);
+            if (reply === Bacon.noMore) {
+              return unsub();
+            }
+          }
+        });
+      });
+      return unsub;
     };
     hasWaiters = function() {
       return waiterObs.length > 0;
