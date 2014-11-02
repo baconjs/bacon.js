@@ -187,7 +187,7 @@ Bacon.mergeAll = (streams...) ->
   if streams.length
     new EventStream describe(Bacon, "mergeAll", streams...), (sink) ->
       ends = 0
-      smartSink = (obs) -> (unsubBoth) -> obs.subscribeInternal (event) ->
+      smartSink = (obs) -> (unsubBoth) -> obs.dispatcher.subscribe (event) ->
         if event.isEnd()
           ends++
           if ends == streams.length
@@ -353,9 +353,6 @@ class Observable
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
 
-  subscribeInternal: (sink) ->
-    @dispatcher.subscribe(sink)
-
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
@@ -505,7 +502,7 @@ class Observable
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
-      unsub = @subscribeInternal (event) ->
+      unsub = @dispatcher.subscribe (event) ->
         if (event.hasValue())
           if (initSent and event.isInitial())
             Bacon.more # init already sent, skip this one
@@ -626,7 +623,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
     spawn = (event) ->
       child = makeObservable(f event.value())
       childDeps.push(child)
-      composite.add (unsubAll, unsubMe) -> child.subscribeInternal (event) ->
+      composite.add (unsubAll, unsubMe) -> child.dispatcher.subscribe (event) ->
         if event.isEnd()
           _.remove(child, childDeps)
           checkQueue()
@@ -645,7 +642,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
     checkEnd = (unsub) ->
       unsub()
       sink end() if composite.empty()
-    composite.add (__, unsubRoot) -> root.subscribeInternal (event) ->
+    composite.add (__, unsubRoot) -> root.dispatcher.subscribe (event) ->
       if event.isEnd()
         checkEnd(unsubRoot)
       else if event.isError()
@@ -758,9 +755,9 @@ class EventStream extends Observable
     left = this
     new EventStream describe(left, "concat", right), (sink) ->
       unsubRight = nop
-      unsubLeft = left.subscribeInternal (e) ->
+      unsubLeft = left.dispatcher.subscribe (e) ->
         if e.isEnd()
-          unsubRight = right.subscribeInternal sink
+          unsubRight = right.dispatcher.subscribe sink
         else
           sink(e)
       -> unsubLeft() ; unsubRight()
@@ -848,7 +845,7 @@ class Property extends Observable
       @sampledBy Bacon.interval(interval, {}))
 
   changes: -> new EventStream describe(this, "changes"), (sink) =>
-    @subscribeInternal (event) ->
+    @dispatcher.subscribe (event) ->
       #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
 
@@ -861,7 +858,7 @@ class Property extends Observable
 
   toEventStream: ->
     new EventStream describe(this, "toEventStream"), (sink) =>
-      @subscribeInternal (event) ->
+      @dispatcher.subscribe (event) ->
         event = event.toNext() if event.isInitial()
         sink event
 
@@ -903,7 +900,7 @@ convertArgsToFunction = (obs, f, args, method) ->
 addPropertyInitValueToStream = (property, stream) ->
   justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->
     value = undefined
-    unsub = property.subscribeInternal (event) ->
+    unsub = property.dispatcher.subscribe (event) ->
       if !event.isEnd()
         value = event
       Bacon.noMore
@@ -1069,7 +1066,7 @@ class Bus extends EventStream
       @sink event
 
   subscribeInput: (subscription) ->
-    subscription.unsub = (subscription.input.subscribeInternal(@guardedSink(subscription.input)))
+    subscription.unsub = (subscription.input.dispatcher.subscribe(@guardedSink(subscription.input)))
 
   unsubscribeInput: (input) ->
     for sub, i in @subscriptions
@@ -1099,7 +1096,7 @@ class Bus extends EventStream
 class Source
   constructor: (@obs, @sync, @lazy = false) ->
     @queue = []
-  subscribe: (sink) -> @obs.subscribeInternal(sink)
+  subscribe: (sink) -> @obs.dispatcher.subscribe(sink)
   toString: -> @obs.toString.call(this)
   markEnded: -> @ended = true
   consume: ->
@@ -1444,7 +1441,7 @@ UpdateBarrier = (->
     unsub = ->
       unsubd = true
       doUnsub()
-    doUnsub = obs.subscribeInternal (event) ->
+    doUnsub = obs.dispatcher.subscribe (event) ->
       afterTransaction ->
         unless unsubd
           reply = sink event
