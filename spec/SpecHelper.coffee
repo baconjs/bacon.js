@@ -246,7 +246,7 @@ verifyFinalState = (property, value) ->
 
 verifyCleanup = @verifyCleanup = ->
   for seq in seqs
-    expect(seq.source.hasSubscribers()).to.deep.equal(false)
+    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
   seqs = []
 
 toValues = (xs) ->

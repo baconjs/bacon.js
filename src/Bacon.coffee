@@ -349,6 +349,12 @@ class Observable
     @id = ++idCounter
     withDescription(desc, this)
     @initialDesc = @desc
+  
+  subscribe: (sink) ->
+    UpdateBarrier.wrappedSubscribe(this, sink)
+
+  subscribeInternal: (sink) ->
+    @dispatcher.subscribe(sink)
 
   onValue: ->
     f = makeFunctionArgs(arguments)
@@ -666,15 +672,6 @@ class EventStream extends Observable
     @dispatcher = new Dispatcher(subscribe)
     registerObs(this)
 
-  subscribeInternal: (sink) ->
-    @dispatcher.subscribe(sink)
-
-  hasSubscribers: ->
-    @dispatcher.hasSubscribers()
-
-  subscribe: (sink) ->
-    UpdateBarrier.wrappedSubscribe(this, sink)
-
   delay: (delay) ->
     withDescription(this, "delay", delay, @flatMap (value) ->
       Bacon.later delay, value)
@@ -832,14 +829,7 @@ class Property extends Observable
     super(desc)
     assertFunction(subscribe)
     @dispatcher = new PropertyDispatcher(this, subscribe, handler)
-
     registerObs(this)
-
-  subscribeInternal: (sink) ->
-    @dispatcher.subscribe(sink)
-
-  subscribe: (sink) ->
-    UpdateBarrier.wrappedSubscribe(this, sink)
 
   sampledBy: (sampler, combinator) ->
     if combinator?
