@@ -303,7 +303,7 @@ If none of the factory methods above apply, you may of course roll your own Even
 """
 
 doc.fn "Bacon.fromBinder(subscribe)", """
-The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subcribe` funtion can "push" events to.
+The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subscribe` funtion can "push" events to.
 
 For example:
 
@@ -341,7 +341,7 @@ return undefined or anything else. Iff it returns `Bacon.noMore`, the subscriber
 must be cleaned up just like in case of calling the `unsubscribe` function.
 
 The EventStream will wrap your `subscribe` function so that it will
-only be called when the first stream listener is added, and the `unsubscibe`
+only be called when the first stream listener is added, and the `unsubscribe`
 function is called only after the last listener has been removed.
 The subscribe-unsubscribe cycle may of course be repeated indefinitely,
 so prepare for multiple calls to the subscribe function.
@@ -1362,7 +1362,7 @@ doc.fn "event.isEnd()", "true for End events"
 doc.subsection "Errors"
 doc.text """
 `Bacon.Error` events are always passed through all stream combinators. So, even
-if you filter all values out, the error events will pass though. If you
+if you filter all values out, the error events will pass through. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.
 
@@ -1742,7 +1742,7 @@ Run browser (without testem):
 
 Run performance tests:
 
-    coffee performance/PerformanceTest.coffe
+    coffee performance/PerformanceTest.coffee
 
 Run memory usage tests:
 
