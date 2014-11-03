@@ -918,7 +918,7 @@ class Dispatcher
     @pushing = false
     @ended = false
     @prevError = undefined
-    @unsubscribeFromSource = nop
+    @unsubSrc = undefined
 
   hasSubscribers: ->
     @subscriptions.length > 0
@@ -966,6 +966,10 @@ class Dispatcher
     else
       @push event
 
+  unsubscribeFromSource: ->
+    @unsubSrc() if @unsubSrc
+    @unsubSrc = undefined
+
   subscribe: (sink) =>
     if @ended
       sink end()
@@ -975,11 +979,8 @@ class Dispatcher
       subscription = { sink: sink }
       @subscriptions.push(subscription)
       if @subscriptions.length == 1
-        unsubSrc = @_subscribe @handleEvent
-        @unsubscribeFromSource = ->
-          unsubSrc()
-          @unsubscribeFromSource = nop
-      assertFunction @unsubscribeFromSource
+        @unsubSrc = @_subscribe @handleEvent
+        assertFunction @unsubSrc
       =>
         @removeSub subscription
         @unsubscribeFromSource() unless @hasSubscribers()
