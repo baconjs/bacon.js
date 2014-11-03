@@ -1297,7 +1297,7 @@ Errors
 ------
 
 [`Bacon.Error`](#bacon-error) events are always passed through all stream combinators. So, even
-if you filter all values out, the error events will pass though. If you
+if you filter all values out, the error events will pass through. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.
 
