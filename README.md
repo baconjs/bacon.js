@@ -363,7 +363,7 @@ return undefined or anything else. Iff it returns [`Bacon.noMore`](#bacon-nomore
 must be cleaned up just like in case of calling the `unsubscribe` function.
 
 The EventStream will wrap your `subscribe` function so that it will
-only be called when the first stream listener is added, and the `unsubscibe`
+only be called when the first stream listener is added, and the `unsubscribe`
 function is called only after the last listener has been removed.
 The subscribe-unsubscribe cycle may of course be repeated indefinitely,
 so prepare for multiple calls to the subscribe function.
