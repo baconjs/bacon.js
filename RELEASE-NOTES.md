@@ -1,3 +1,7 @@
+## 0.7.29
+
+- Performance and memory footprint improvements (#457)
+
 ## 0.7.28
 
 - Performance and memory footprint improvements (#450)
