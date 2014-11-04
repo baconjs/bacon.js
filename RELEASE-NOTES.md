@@ -1,3 +1,7 @@
+## 0.7.30
+
+- Fix Source::toString
+
 ## 0.7.29
 
 - Performance and memory footprint improvements (#457)
