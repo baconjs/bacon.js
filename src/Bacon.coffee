@@ -353,6 +353,10 @@ class Observable
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
 
+  subscribeInternal: (sink) ->
+    # For backward compatibility. To be removed in 0.8
+    @dispatcher.subscribe(sink)
+
   onValue: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
