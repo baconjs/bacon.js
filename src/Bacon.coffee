@@ -553,7 +553,7 @@ class Observable
     withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
       makeObservable(f(value)).takeUntil(stream))
 
-  flatMapError: (fn) =>
+  flatMapError: (fn) ->
     withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->
       if x instanceof Error
         fn(x.error)
@@ -923,7 +923,7 @@ class Dispatcher
   hasSubscribers: ->
     @subscriptions.length > 0
 
-  removeSub: (subscription) =>
+  removeSub: (subscription) ->
     @subscriptions = _.without(subscription, @subscriptions)
 
   push: (event) ->
