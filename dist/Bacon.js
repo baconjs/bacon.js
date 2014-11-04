@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.29';
+  Bacon.version = '0.7.30';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1962,7 +1962,7 @@
     };
 
     Source.prototype.toString = function() {
-      return this.obs.toString.call(this);
+      return this.obs.toString();
     };
 
     Source.prototype.markEnded = function() {
