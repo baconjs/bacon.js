@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.30';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2804,7 +2804,7 @@
 
   toFieldExtractor = function(f, args) {
     var partFuncs, parts;
-    parts = f.slice(1).split(".");
+    parts = f.slice(1).replace(/\[(\w+)\]/g, ".$1").split(".");
     partFuncs = _.map(toSimpleExtractor(args), parts);
     return function(value) {
       var _i, _len;

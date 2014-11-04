@@ -238,9 +238,9 @@ describe "Bacon.fromCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
@@ -274,9 +274,9 @@ describe "Bacon.fromNodeCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(null, param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
@@ -422,6 +422,16 @@ describe "EventStream.map", ->
     o = { lol : { wut : "wat" } }
     expectStreamEvents(
       -> Bacon.once(o).map(".lol.wut")
+      ["wat"])
+  describe "extracts a nested property also using square brackets", ->
+    o = { lol : { wut : "wat" } }
+    expectStreamEvents(
+      -> Bacon.once(o).map(".lol[wut]")
+      ["wat"])
+  describe "extracts an array item using the square brackets", ->
+    o = { lol : ["wat"] }
+    expectStreamEvents(
+      -> Bacon.once(o).map(".lol[0]")
       ["wat"])
   describe "in case of a function property, calls the function with no args", ->
     expectStreamEvents(
@@ -648,7 +658,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> Bacon.fromArray([1, 2, 2, 3, 1]).skipDuplicates()
     [1, 2, 3, 1], unstable)
-  
+
   it "toString", ->
     expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")
 
@@ -806,7 +816,7 @@ describe "Property.flatMap", ->
       [0, 1, 2], unstable)
   describe "works in a complex scenario #338", ->
     expectStreamEvents(
-      -> 
+      ->
         a = activate(series(2, ["a", "A"]))
         b = activate(series(2, ["b", "B"])).delay(1).toProperty()
         a.flatMapLatest((a) -> b.map((b) -> a + b))
@@ -1216,12 +1226,12 @@ describe "EventStream.awaiting(other)", ->
       [false, true, false, true])
   describe "supports simultaneouts events", ->
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.awaiting(src.map(->))
       [false])
     expectPropertyEvents(
-      -> 
+      ->
         src = Bacon.later(1, 1)
         src.map(->).awaiting(src)
       [false])
@@ -1768,14 +1778,14 @@ describe "EventStream.combine", ->
 describe "Bacon.groupSimultaneous", ->
   describe "groups simultaneous values in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         Bacon.groupSimultaneous(stream)
       [[[1, 2]], [[2,4]]])
   describe "groups simultaneous values from multiple sources in to arrays", ->
     expectStreamEvents(
-      -> 
+      ->
         src = series(1, [1,2])
         stream = src.merge(src.map((x) -> x * 2))
         stream2 = src.map (x) -> x * 4
@@ -1974,7 +1984,7 @@ describe "when subscribing while dispatching", ->
         [0, 1])
   describe "delayed bounce in case Property ended (bug fix)", ->
     expectStreamEvents(
-      -> 
+      ->
         bus = new Bacon.Bus()
         root = Bacon.once(0).toProperty()
         root.onValue ->
@@ -2060,7 +2070,7 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon
           .once(123)
           .flatMap ->
@@ -3224,10 +3234,10 @@ describe "Bacon.fromBinder", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
 describe "String presentations", ->
-  describe "Initial(1).toString", -> 
+  describe "Initial(1).toString", ->
     it "is 1", ->
       expect(new Bacon.Initial(1).toString()).to.equal("1")
-  describe "Next({a:1i}).toString", -> 
+  describe "Next({a:1i}).toString", ->
     it "is {a:1}", ->
       expect(new Bacon.Next({a:1}).toString()).to.equal("{a:1}")
   describe "Error({a:1}).toString", ->
@@ -3263,7 +3273,7 @@ describe "Observable.withDescription", ->
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> 
+    spy = (obs) ->
       obs.toString()
       calls++
     Bacon.spy spy
@@ -3324,7 +3334,7 @@ lessThan = (limit) ->
 times = (x, y) -> x * y
 add = (x, y) -> x + y
 id = (x) -> x
-activate = (obs) -> 
+activate = (obs) ->
   obs.onValue(->)
   obs
 
