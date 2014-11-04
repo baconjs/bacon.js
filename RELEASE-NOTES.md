@@ -1,6 +1,7 @@
 ## 0.7.29
 
 - Performance and memory footprint improvements (#457)
+- Restore Observable::subscribeInternal for backward compat (to be removed in 0.8)
 
 ## 0.7.28
 
