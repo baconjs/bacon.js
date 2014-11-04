@@ -1102,7 +1102,7 @@ class Source
   constructor: (@obs, @sync, @lazy = false) ->
     @queue = []
   subscribe: (sink) -> @obs.dispatcher.subscribe(sink)
-  toString: -> @obs.toString.call(this)
+  toString: -> @obs.toString()
   markEnded: -> @ended = true
   consume: ->
     if @lazy
