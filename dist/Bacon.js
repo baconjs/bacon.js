@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.28';
+  Bacon.version = '0.7.29';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -701,7 +701,6 @@
 
   Observable = (function() {
     function Observable(desc) {
-      this.flatMapError = __bind(this.flatMapError, this);
       this.id = ++idCounter;
       withDescription(desc, this);
       this.initialDesc = this.desc;
@@ -709,6 +708,10 @@
 
     Observable.prototype.subscribe = function(sink) {
       return UpdateBarrier.wrappedSubscribe(this, sink);
+    };
+
+    Observable.prototype.subscribeInternal = function(sink) {
+      return this.dispatcher.subscribe(sink);
     };
 
     Observable.prototype.onValue = function() {
@@ -1658,13 +1661,12 @@
       this._handleEvent = _handleEvent;
       this.subscribe = __bind(this.subscribe, this);
       this.handleEvent = __bind(this.handleEvent, this);
-      this.removeSub = __bind(this.removeSub, this);
       this.subscriptions = [];
       this.queue = [];
       this.pushing = false;
       this.ended = false;
       this.prevError = void 0;
-      this.unsubscribeFromSource = nop;
+      this.unsubSrc = void 0;
     }
 
     Dispatcher.prototype.hasSubscribers = function() {
@@ -1734,8 +1736,15 @@
       }
     };
 
+    Dispatcher.prototype.unsubscribeFromSource = function() {
+      if (this.unsubSrc) {
+        this.unsubSrc();
+      }
+      return this.unsubSrc = void 0;
+    };
+
     Dispatcher.prototype.subscribe = function(sink) {
-      var subscription, unsubSrc;
+      var subscription;
       if (this.ended) {
         sink(end());
         return nop;
@@ -1746,13 +1755,9 @@
         };
         this.subscriptions.push(subscription);
         if (this.subscriptions.length === 1) {
-          unsubSrc = this._subscribe(this.handleEvent);
-          this.unsubscribeFromSource = function() {
-            unsubSrc();
-            return this.unsubscribeFromSource = nop;
-          };
+          this.unsubSrc = this._subscribe(this.handleEvent);
+          assertFunction(this.unsubSrc);
         }
-        assertFunction(this.unsubscribeFromSource);
         return (function(_this) {
           return function() {
             _this.removeSub(subscription);
