@@ -1513,10 +1513,10 @@ makeObservable = (x) ->
   else
     Bacon.once(x)
 isFieldKey = (f) ->
-  (typeof f == "string") and f.length > 1 and f.charAt(0) == "."
+  (typeof f == "string") and f.length > 1 and /\.|\[/g.test(f.charAt(0))
 Bacon.isFieldKey = isFieldKey
 toFieldExtractor = (f, args) ->
-  parts = f.slice(1).replace(/\[(\w+)\]/g, ".$1").split(".")
+  parts = f.replace(/\[(\w+)\]/g, ".$1").slice(1).split(".")
   partFuncs = _.map(toSimpleExtractor(args), parts)
   (value) ->
     for f in partFuncs

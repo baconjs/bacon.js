@@ -423,15 +423,20 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> Bacon.once(o).map(".lol.wut")
       ["wat"])
-  describe "extracts a nested property also using square brackets", ->
+  describe "extracts a nested property also using the square brackets", ->
     o = { lol : { wut : "wat" } }
     expectStreamEvents(
       -> Bacon.once(o).map(".lol[wut]")
       ["wat"])
-  describe "extracts an array item using the square brackets", ->
+  describe "extracts a nested array item using the square brackets", ->
     o = { lol : ["wat"] }
     expectStreamEvents(
       -> Bacon.once(o).map(".lol[0]")
+      ["wat"])
+  describe "extracts an array item using the square brackets", ->
+    arr = ["wat"]
+    expectStreamEvents(
+      -> Bacon.once(arr).map("[0]")
       ["wat"])
   describe "in case of a function property, calls the function with no args", ->
     expectStreamEvents(
