@@ -423,7 +423,7 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> Bacon.once(o).map(".lol.wut")
       ["wat"])
-  describe "extracts a nested property also using square brackets", ->
+  describe "extracts a nested property also using the square brackets", ->
     o = { lol : { wut : "wat" } }
     expectStreamEvents(
       -> Bacon.once(o).map(".lol[wut]")
