@@ -3251,7 +3251,9 @@ describe "Observable.withDescription", ->
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> calls++
+    spy = (obs) -> 
+      obs.toString()
+      calls++
     Bacon.spy spy
     f()
     expect(calls).to.equal(expectedCount)
