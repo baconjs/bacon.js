@@ -1,3 +1,36 @@
+## 0.7.30
+
+- Fix Source::toString
+
+## 0.7.29
+
+- Performance and memory footprint improvements (#457)
+- Restore Observable::subscribeInternal for backward compat (to be removed in 0.8)
+
+## 0.7.28
+
+- Performance and memory footprint improvements (#450)
+
+## 0.7.27
+
+- Merge #413: preserve "this" context in eventTransformer of fromBinder etc
+
+## 0.7.26
+
+- Fix #447: issue with Property::takeUntil error handling
+
+## 0.7.25
+
+- Fix #441: check for module.exports
+
+## 0.7.24
+
+- Changed dispatching of delayed events for improved memory performance
+
+## 0.7.23
+
+- Fix fromArray.toString (#436)
+
 ## 0.7.22
 
 - Throw Errors instead of strings in asserts (fix #414)

@@ -10,3 +10,10 @@ after_install:
 
 before_script:
   - phantomjs --version
+
+notifications:
+  flowdock: 3853ef33f6943539cbbed913648575be
+
+branches:
+  only:
+    - master

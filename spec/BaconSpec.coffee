@@ -1291,6 +1291,13 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once(error())
       [error()])
+  it "Responds synchronously", ->
+    values = []
+    s = Bacon.once(1)
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
 
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
@@ -1309,6 +1316,14 @@ describe "Bacon.fromArray", ->
     expectStreamEvents(
       -> Bacon.fromArray([error(), 1])
       [error(), 1])
+  it "toString", ->
+    expect(Bacon.fromArray([1,2]).toString()).to.equal("Bacon.fromArray([1,2])")
+  it "doesn't mutate the given array, toString works after subscribe (bug fix)", ->
+    array = [1,2]
+    s = Bacon.fromArray(array)
+    s.onValue(->)
+    expect(s.toString()).to.equal("Bacon.fromArray([1,2])")
+    expect(array).to.deep.equal([1,2])
 
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
@@ -1578,6 +1593,12 @@ describe "Property.takeUntil", ->
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
       [0, 1, error()])
+  it "works with synchronous error (fix #447)", ->
+    errors = []
+    Bacon.once(new Bacon.Error("fail")).toProperty()
+      .takeUntil(Bacon.never())
+      .onError((e) -> errors.push(e))
+    expect(errors).to.deep.equal(["fail"])
   it "toString", ->
     expect(Bacon.constant(1).takeUntil(Bacon.never()).toString()).to.equal("Bacon.constant(1).takeUntil(Bacon.never())")
 
@@ -1867,7 +1888,7 @@ describe "Side effects of source observables are observed before the ones of dep
     id = (v) -> v
     latter = (a, b) -> b
     s = new Bacon.Bus
-    a = s.map id
+    a = s.map(id).toProperty()
     b = s.map id
     c = Bacon.combineWith latter, a, b
     d = Bacon.combineWith latter, a, c
@@ -3098,10 +3119,10 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     input = new Bacon.Bus()
     # override subscribe to increase the subscribed-count
-    inputSubscribe = input.subscribeInternal
-    input.subscribeInternal = (sink) ->
+    inputSubscribe = input.dispatcher.subscribe
+    input.dispatcher.subscribe = (sink) ->
       subscribed++
-      inputSubscribe(sink)
+      inputSubscribe.call(input, sink)
     bus.plug(input)
     dispose = bus.onValue(=>)
     input.end()
@@ -3137,12 +3158,10 @@ describe "Bacon.Bus", ->
         s.push "pullMe"
         soon ->
           s.push "pushMe"
-          # test that it works regardless of "this"
-          s.push.call(null, "pushSomeMore")
           s.error()
           s.end()
         s
-      ["pushMe", "pushSomeMore", error()])
+      ["pushMe", error()])
 
   it "does not deliver pushed events after end() call", ->
     called = false
@@ -3294,17 +3313,12 @@ describe "Observable.withDescription", ->
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
 
-  it "doesn't affect dependency checking", ->
-    src = Bacon.once(1)
-    bogus = Bacon.once("bogus")
-    stream = src.map(->).withDescription("Just kidding", bogus)
-    expect(stream.dependsOn(src)).to.equal(true)
-    expect(stream.dependsOn(bogus)).to.equal(undefined)
-
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> calls++
+    spy = (obs) -> 
+      obs.toString()
+      calls++
     Bacon.spy spy
     f()
     expect(calls).to.equal(expectedCount)

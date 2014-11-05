@@ -1,0 +1,52 @@
+{
+    "arrow_spacing": {
+        "level": "error"
+    },
+    "colon_assignment_spacing": {
+        "level": "error",
+        "spacing": {
+            "left": 0,
+            "right": 1
+        }
+    },
+    "empty_constructor_needs_parens": {
+        "level": "error"
+    },
+    "line_endings": {
+        "level": "error",
+        "value": "unix"
+    },
+    "max_line_length": {
+        "value": 130,
+        "level": "warn",
+        "limitComments": true
+    },
+    "missing_fat_arrows": {
+        "level": "ignore"
+    },
+    "newlines_after_classes": {
+        "value": 3,
+        "level": "error"
+    },
+    "no_empty_param_list": {
+        "level": "error"
+    },
+    "no_implicit_braces": {
+        "level": "error",
+        "strict": true
+    },
+    "no_implicit_parens": {
+        "strict": true,
+        "level": "ignore"
+    },
+    "no_interpolation_in_single_quotes": {
+        "level": "warn"
+    },
+    "no_stand_alone_at": {
+        "level": "error"
+    },
+    "space_operators": {
+        "level": "error"
+    }
+}
+
