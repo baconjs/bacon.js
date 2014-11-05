@@ -35,8 +35,8 @@ stddev = (xs) ->
 processResults = (results, i) ->
   values = (x[i] for x in results)
 
-  mean: mean(values)
-  stddev: stddev(values)
+  mean: mean(values[2..])
+  stddev: stddev(values[2..])
 
 printResult = (label, result, forcePrefix = false) ->
   prefix = if prefix && result.mean > 0 then '+' else ''

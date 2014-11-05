@@ -63,14 +63,26 @@ if grep
 
 verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
   verifyPropertyWith "(single subscriber)", srcF, expectedEvents, ((src, events, done) ->
-    src.subscribe (event) -> 
+    gotInitial = false
+    gotNext = false
+    sync = true
+    src.subscribe (event) ->
       if event.isEnd()
         done()
       else
-        events.push(toValue(event))), extraCheck
+        if event.isInitial()
+          if gotInitial then done(new Error "got more than one Initial event: " + toValue(event))
+          if gotNext then done(new Error "got Initial event after the Next one: " + toValue(event))
+          unless sync then done(new Error "got async Initial event: " + toValue(event))
+          gotInitial = true
+        else if event.hasValue()
+          gotNext = true
+        events.push(toValue(event))
+    sync = false
+  ), extraCheck
 
 verifyPLateEval = (srcF, expectedEvents) ->
-  verifyPropertyWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
+  verifyPropertyWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) -> 
       if event.isEnd()
         done()
@@ -234,7 +246,7 @@ verifyFinalState = (property, value) ->
 
 verifyCleanup = @verifyCleanup = ->
   for seq in seqs
-    expect(seq.source.hasSubscribers()).to.deep.equal(false)
+    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
   seqs = []
 
 toValues = (xs) ->

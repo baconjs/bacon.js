@@ -85,16 +85,6 @@ Table of contents
 Install
 =======
 
-You can download the latest [generated javascript](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
-
-Version 0.7.12 can also be found from cdnjs hosting:
-
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.js
-    http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.12/bacon.min.js
-
-Visual Studio users can obtain version 0.7.16 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.16
-
 If you're targeting to [node.js](http://nodejs.org/), you can
 
     npm install baconjs
@@ -102,6 +92,14 @@ If you're targeting to [node.js](http://nodejs.org/), you can
 For [bower](https://github.com/twitter/bower) users:
 
     bower install bacon
+
+Both minified and unminified versions available on [cdnjs](https://cdnjs.com/libraries/bacon.js).
+
+Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
+
+Visual Studio users can obtain version 0.7.16 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.16
+
 
 Intro
 =====
@@ -1722,7 +1720,7 @@ Run browser (without testem):
 
 Run performance tests:
 
-    coffee performance/PerformanceTest.coffe
+    coffee performance/PerformanceTest.coffee
 
 Run memory usage tests:
 
