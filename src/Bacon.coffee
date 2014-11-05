@@ -1070,7 +1070,7 @@ class Bus extends EventStream
       @subscribeInput(subscription)
     @unsubAll
 
-  guardedSink: (input) => (event) =>
+  guardedSink: (input) -> (event) =>
     if (event.isEnd())
       @unsubscribeInput(input)
       Bacon.noMore
