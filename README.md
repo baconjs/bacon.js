@@ -1605,7 +1605,7 @@ state like `a1+b1 -> a2+b1 -> a2+b2`
 Atomic updates are limited to Properties only, meaning that simultaneous
 events in EventStreams will not be recognized as simultaneous and may
 cause extra transitional states to Properties. But as long as you're
-just combining Properties, you'll updates will be atomic.
+just combining Properties, updates will be atomic.
 
 For RxJs Users
 --------------
