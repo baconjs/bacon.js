@@ -1379,14 +1379,18 @@ process a tick.
 Order is important here. If the [tick] patterns had been written
 first, this would have been tried first, and preferred at each tick.
 
-Join patterns are indeed a generalization of zip, and zip is
-equivalent to a single-rule join pattern. The following observables
-have the same output.
+For for EventStreams join patterns are indeed a generalization of zip, and zip
+is equivalent to a single-rule join pattern. The following observables have
+the same output.
 
 ```js
-Bacon.zipWith(a,b,c, combine)
-Bacon.when([a,b,c], combine)
+Bacon.zipWith(stream_a, stream_b, stream_c, combine)
+Bacon.when([stream_a, stream_b, stream_c], combine)
 ```
+
+The difference is that `zip` treats Properties as EventStreams and synchronizes
+each change of property with events from other streams, while `when` just
+takes current value.
 
 <a name="bacon-update"></a>
 [`Bacon.update`](#bacon-update "Bacon.update") creates a Property from an initial value and updates the value based on multiple inputs.
