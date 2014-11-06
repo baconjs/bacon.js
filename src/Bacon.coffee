@@ -669,7 +669,7 @@ class EventStream extends Observable
       subscribe = desc
       desc = []
     super(desc)
-    assertFunction subscribe
+    #assertFunction subscribe
     @dispatcher = new Dispatcher(subscribe)
     registerObs(this)
 
@@ -818,8 +818,8 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@dispatcher.subscribe, handler)
-    new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
+    dispatcher = new Dispatcher(@dispatcher, handler)
+    new EventStream describe(this, "withHandler", handler), dispatcher
 
 class Property extends Observable
   constructor: (desc, subscribe, handler) ->
@@ -828,7 +828,7 @@ class Property extends Observable
       subscribe = desc
       desc = []
     super(desc)
-    assertFunction(subscribe)
+    #assertFunction(subscribe)
     @dispatcher = new PropertyDispatcher(this, subscribe, handler)
     registerObs(this)
 
@@ -854,7 +854,7 @@ class Property extends Observable
       sink event unless event.isInitial()
 
   withHandler: (handler) ->
-    new Property describe(this, "withHandler", handler), @dispatcher.subscribe, handler
+    new Property describe(this, "withHandler", handler), @dispatcher, handler
 
   toProperty: ->
     assertNoArguments(arguments)
@@ -915,6 +915,13 @@ addPropertyInitValueToStream = (property, stream) ->
     unsub
   justInitValue.concat(stream).toProperty()
 
+class Sink
+  constructor: (@sink) ->
+    assertFunction(@sink)
+
+  handleEvent: (event) ->
+    @sink event
+
 class Dispatcher
   constructor: (@_subscribe, @_handleEvent) ->
     @subscriptions = []
@@ -942,7 +949,7 @@ class Dispatcher
         @pushing = true
         tmp = @subscriptions
         for sub in tmp
-          reply = sub.sink event
+          reply = sub.handleEvent event
           @removeSub sub if reply == Bacon.noMore or event.isEnd()
         success = true
       finally
@@ -974,16 +981,25 @@ class Dispatcher
     @unsubSrc() if @unsubSrc
     @unsubSrc = undefined
 
-  subscribe: (sink) =>
+  subscribeToSource: ->
+    @unsubSrc = if @_subscribe instanceof Dispatcher
+      @_subscribe.subscribe @handleEvent
+    else
+      @_subscribe @handleEvent
+
+  subscribe: (sink) ->
     if @ended
       sink end()
       nop
     else
-      assertFunction sink
-      subscription = { sink: sink }
+      #assertFunction sink
+      subscription = if sink instanceof Dispatcher
+        sink
+      else
+        {handleEvent: sink}
       @subscriptions.push(subscription)
       if @subscriptions.length == 1
-        @unsubSrc = @_subscribe @handleEvent
+        @subscribeToSource()
         assertFunction @unsubSrc
       =>
         @removeSub subscription
@@ -1013,7 +1029,7 @@ class PropertyDispatcher extends Dispatcher
     else
       Dispatcher::subscribe.call(this, sink)
 
-  subscribe: (sink) =>
+  subscribe: (sink) ->
     initSent = false
     # init value is "bounced" here because the base Dispatcher class
     # won't add more than one subscription to the underlying observable.
