@@ -1389,7 +1389,8 @@ Bacon.when([stream_a, stream_b, stream_c], combine)
 ```
 
 The difference is that `zip` treats Properties as EventStreams and synchronizes
-each change of property with other events, while `when` just takes current value.
+each change of property with events from other streams, while `when` just
+takes current value.
 
 <a name="bacon-update"></a>
 [`Bacon.update`](#bacon-update "Bacon.update") creates a Property from an initial value and updates the value based on multiple inputs.
