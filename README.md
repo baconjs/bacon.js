@@ -1238,6 +1238,12 @@ which means that it will actually produce the value of `getCurrentValueFromUI` a
 instead of at the time of the original `click` event.
 
 To force evaluation at the time of original event, you can just use [`flatMap`](#observable-flatmap) instead of [`map`](#observable-map).
+As in here.
+
+```javascript
+var items = clicks.flatMap(getCurrentValueFromUI).toProperty()
+```
+
 
 Latest value of Property or EventStream
 ---------------------------------------
