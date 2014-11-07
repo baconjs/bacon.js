@@ -171,7 +171,8 @@ Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/ma
 
 doc.fn "Bacon.fromEventTarget(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream", """
 creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object. You can also pass an optional function that transforms the emitted
+on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods. 
+You can also pass an optional function that transforms the emitted
 events' parameters.
 
 ```js
