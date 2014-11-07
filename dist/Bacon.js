@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.30';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2797,14 +2797,14 @@
   };
 
   isFieldKey = function(f) {
-    return (typeof f === "string") && f.length > 1 && f.charAt(0) === ".";
+    return (typeof f === "string") && f.length > 1 && /\.|\[/g.test(f.charAt(0));
   };
 
   Bacon.isFieldKey = isFieldKey;
 
   toFieldExtractor = function(f, args) {
     var partFuncs, parts;
-    parts = f.slice(1).split(".");
+    parts = f.replace(/\[(\w+)\]/g, ".$1").slice(1).split(".");
     partFuncs = _.map(toSimpleExtractor(args), parts);
     return function(value) {
       var _i, _len;
