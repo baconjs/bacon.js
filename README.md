@@ -425,7 +425,7 @@ value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
 contain the values returned by the function.
 The [Function Construction rules](#function-construction-rules) below apply here.
-The [`map`](#observable-map) method, among many others, uses [Lazy Evaluation](#lazy-evaluation).
+The [`map`](#observable-map) method, among many others, uses [lazy evaluation](#lazy-evaluation).
 
 <a name="stream-map"></a>
 [`stream.map(property)`](#stream-map "stream.map(property)") maps the stream events to the current value of

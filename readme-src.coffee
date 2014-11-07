@@ -403,7 +403,7 @@ value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
 contain the values returned by the function.
 The [Function Construction rules](#function-construction-rules) below apply here.
-The `map` method, among many others, uses [Lazy Evaluation](#lazy-evaluation).
+The `map` method, among many others, uses [lazy evaluation](#lazy-evaluation).
 """
 
 doc.fn "stream.map(property)", """
