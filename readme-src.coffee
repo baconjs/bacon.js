@@ -403,6 +403,7 @@ value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
 contain the values returned by the function.
 The [Function Construction rules](#function-construction-rules) below apply here.
+The `map` method, among many others, uses [Lazy Evaluation].
 """
 
 doc.fn "stream.map(property)", """
@@ -565,8 +566,7 @@ returns a stream/property that inverts boolean values
 doc.fn "observable.flatMap(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]", """
 for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
-streams into the result `EventStream`. This is very similar to selectMany in
-RxJs. Note that instead of a function, you can provide a
+streams into the result `EventStream`. Note that instead of a function, you can provide a
 stream/property too. Also, the return value of function `f` can be either an
 `Observable` (stream/property) or a constant value. The result of
 `flatMap` is always an `EventStream`.
@@ -1274,6 +1274,34 @@ object `{ isMouseClick: true }`
 
 Methods that support function construction include
 at least [`onValue`](#observable-onvalue), `onError`, `onEnd`, [`map`](#observable-map), `filter`, `assign`, `takeWhile`, `mapError` and `doAction`.
+"""
+
+doc.subsection "Lazy evaluation"
+doc.text """
+Methods such as `map` and the `combine` use lazy evaluation to avoid evaluating
+values that aren't actually needed. This can be generally considered a Good Thing,
+but it has it's pitfalls. 
+
+If you pass a function that referentially transparent, you'll
+be fine. This means that your function should return the same value regardless of
+when it's called.
+
+On the other hand, if you pass a function that returns a value depending on time,
+you may have problems. Consider a property `contents` that's derived from events
+like below.
+
+```javascript
+var items = clicks.map(getCurrentValueFromUI).toProperty()
+var submittedItems = items.sampledBy(submitClick)
+```
+
+Now the `submittedItems` stream will produce the current value of the `items` property
+when an event occurs in the `submitClick` stream. Or so you'd think. In fact, the value
+of `submittedItems` is evaluated at the time of the event in the `submitClick` stream,
+which means that it will actually produce the value of `getCurrentValueFromUI` at that time,
+instead of at the time of the original `click` event.
+
+To force evaluation at the time of original event, you can just use `flatMap` instead of `map`.
 """
 
 doc.subsection "Latest value of Property or EventStream"

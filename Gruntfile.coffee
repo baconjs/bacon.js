@@ -42,7 +42,9 @@ module.exports = (grunt) ->
       coffee:
         files: 'src/*.coffee'
         tasks: 'build'
-
+      readme:
+        files: 'readme-src.coffee'
+        tasks: 'readme'
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-clean'
