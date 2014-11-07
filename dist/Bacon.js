@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, SamplerSource, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, sampledBy_, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.30';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -411,6 +411,80 @@
     return withDescription.apply(null, [Bacon, "combineWith", f].concat(__slice.call(streams), [Bacon.combineAsArray(streams).map(function(values) {
       return f.apply(null, values);
     })]));
+  };
+
+  Bacon.sampledBy = function(values, samplers, combinator) {
+    assertFunction(combinator);
+    return withDescription(Bacon, "sampledBy", values, samplers, combinator, sampledBy_(values, samplers, combinator, false, false));
+  };
+
+  Bacon.sampleByAsArray = function(values, samplers) {
+    return withDescription(Bacon, "sampleByAsArray", values, samplers, sampledBy_(values, samplers, null, false, false));
+  };
+
+  sampledBy_ = function(values, samplers, combinator, needsSamplerValues, allowPropertyResult) {
+    var f, hasSamplerProperties, numValues, result, sampler, samplerSources, slice, sources, value, valueSources;
+    if (!samplers.length) {
+      return Bacon.never();
+    }
+    hasSamplerProperties = false;
+    samplerSources = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = samplers.length; _i < _len; _i++) {
+        sampler = samplers[_i];
+        assert("sampler is not an Observable: " + sampler, isObservable(sampler));
+        if (sampler instanceof Property) {
+          hasSamplerProperties = true;
+        }
+        if (needsSamplerValues) {
+          _results.push(new Source(sampler, true));
+        } else {
+          _results.push(new SamplerSource(sampler));
+        }
+      }
+      return _results;
+    })();
+    valueSources = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = values.length; _i < _len; _i++) {
+        value = values[_i];
+        if (!isObservable(value)) {
+          value = Bacon.constant(value);
+        }
+        _results.push(new Source(value, false));
+      }
+      return _results;
+    })();
+    sources = valueSources.concat(samplerSources);
+    f = needsSamplerValues ? combinator != null ? combinator : function() {
+      var vals;
+      vals = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return vals;
+    } : (numValues = values.length, slice = Array.prototype.slice, function() {
+      var vals;
+      vals = slice.call(arguments, 0, numValues);
+      if (combinator != null) {
+        return combinator.apply(null, vals);
+      } else {
+        return vals;
+      }
+    });
+    result = Bacon.when(sources, f);
+    if (hasSamplerProperties) {
+      if (allowPropertyResult) {
+        return result.toProperty();
+      } else {
+        return new EventStream(function(sink) {
+          return result.subscribeInternal(function(event) {
+            return sink(event.isInitial() ? event.toNext() : event);
+          });
+        });
+      }
+    } else {
+      return result;
+    }
   };
 
   Bacon.combineTemplate = function(template) {
@@ -863,6 +937,13 @@
           return this.push(event);
         }
       }));
+    };
+
+    Observable.prototype.sampledBy = function(sampler, combinator) {
+      var needsSamplerValue;
+      needsSamplerValue = combinator != null;
+      combinator = combinator != null ? toCombinator(combinator) : _.id;
+      return withDescription(this, "sampledBy", sampler, combinator, sampledBy_([this], [sampler], combinator, needsSamplerValue, true));
     };
 
     Observable.prototype.doAction = function() {
@@ -1374,10 +1455,6 @@
       return this;
     };
 
-    EventStream.prototype.sampledBy = function(sampler, combinator) {
-      return withDescription(this, "sampledBy", sampler, combinator, this.toProperty().sampledBy(sampler, combinator));
-    };
-
     EventStream.prototype.concat = function(right) {
       var left;
       left = this;
@@ -1499,23 +1576,6 @@
       this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
       registerObs(this);
     }
-
-    Property.prototype.sampledBy = function(sampler, combinator) {
-      var lazy, result, samplerSource, stream, thisSource;
-      if (combinator != null) {
-        combinator = toCombinator(combinator);
-      } else {
-        lazy = true;
-        combinator = function(f) {
-          return f();
-        };
-      }
-      thisSource = new Source(this, false, lazy);
-      samplerSource = new Source(sampler, true, lazy);
-      stream = Bacon.when([thisSource, samplerSource], combinator);
-      result = sampler instanceof Property ? stream.toProperty() : stream;
-      return withDescription(this, "sampledBy", sampler, combinator, result);
-    };
 
     Property.prototype.sample = function(interval) {
       return withDescription(this, "sample", interval, this.sampledBy(Bacon.interval(interval, {})));
@@ -1950,10 +2010,9 @@
   })(EventStream);
 
   Source = (function() {
-    function Source(obs, sync, lazy) {
+    function Source(obs, sync) {
       this.obs = obs;
       this.sync = sync;
-      this.lazy = lazy != null ? lazy : false;
       this.queue = [];
     }
 
@@ -1970,11 +2029,7 @@
     };
 
     Source.prototype.consume = function() {
-      if (this.lazy) {
-        return _.always(this.queue[0]);
-      } else {
-        return this.queue[0];
-      }
+      return this.queue[0];
     };
 
     Source.prototype.push = function(x) {
@@ -2049,6 +2104,20 @@
     };
 
     return BufferingSource;
+
+  })(Source);
+
+  SamplerSource = (function(_super) {
+    __extends(SamplerSource, _super);
+
+    function SamplerSource(obs) {
+      SamplerSource.__super__.constructor.call(this, obs, true);
+      this.queue = [nop];
+    }
+
+    SamplerSource.prototype.push = function() {};
+
+    return SamplerSource;
 
   })(Source);
 
@@ -2185,8 +2254,9 @@
       return s.obs;
     }), sources)));
     return resultStream = new EventStream(describe.apply(null, [Bacon, "when"].concat(__slice.call(patterns))), function(sink) {
-      var cannotMatch, cannotSync, ends, match, nonFlattened, part, triggers;
+      var cannotMatch, cannotSync, ends, initSent, match, nonFlattened, part, triggers;
       triggers = [];
+      initSent = false;
       ends = false;
       match = function(p) {
         var _k, _len2, _ref2;
@@ -2222,13 +2292,21 @@
             return UpdateBarrier.whenDoneWith(resultStream, flush);
           };
           flushWhileTriggers = function() {
-            var functions, p, reply, trigger, _k, _len2;
+            var functions, isInitial, p, reply, trigger, _k, _len2;
             if (triggers.length > 0) {
               reply = Bacon.more;
               trigger = triggers.pop();
+              if (isInitial = trigger.e.isInitial()) {
+                if (initSent) {
+                  return flushWhileTriggers();
+                }
+              }
               for (_k = 0, _len2 = pats.length; _k < _len2; _k++) {
                 p = pats[_k];
                 if (match(p)) {
+                  if (isInitial) {
+                    initSent = true;
+                  }
                   functions = (function() {
                     var _l, _len3, _ref2, _results;
                     _ref2 = p.ixs;
