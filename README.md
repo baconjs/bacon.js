@@ -384,7 +384,7 @@ The former version is safe only when you know that the actual value in
 the stream is not a function.
 
 The idea in using a function instead of a plain value is that the internals on Bacon.js take
-advantage of lazy evaluation by deferring the evaluations of values
+advantage of [lazy evaluation](#lazy-evaluation) by deferring the evaluations of values
 created by [`map`](#observable-map), [`combine`](#combining-multiple-streams-and-properties).
 
 <a name="bacon-nomore"></a>
@@ -425,7 +425,7 @@ value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
 contain the values returned by the function.
 The [Function Construction rules](#function-construction-rules) below apply here.
-The [`map`](#observable-map) method, among many others, uses [Lazy Evaluation].
+The [`map`](#observable-map) method, among many others, uses [Lazy Evaluation](#lazy-evaluation).
 
 <a name="stream-map"></a>
 [`stream.map(property)`](#stream-map "stream.map(property)") maps the stream events to the current value of
@@ -1408,18 +1408,14 @@ process a tick.
 Order is important here. If the [tick] patterns had been written
 first, this would have been tried first, and preferred at each tick.
 
-For for EventStreams join patterns are indeed a generalization of zip, and zip
-is equivalent to a single-rule join pattern. The following observables have
-the same output.
+Join patterns are indeed a generalization of zip, and zip is
+equivalent to a single-rule join pattern. The following observables
+have the same output.
 
 ```js
-Bacon.zipWith(stream_a, stream_b, stream_c, combine)
-Bacon.when([stream_a, stream_b, stream_c], combine)
+Bacon.zipWith(a,b,c, combine)
+Bacon.when([a,b,c], combine)
 ```
-
-The difference is that `zip` treats Properties as EventStreams and synchronizes
-each change of property with events from other streams, while `when` just
-takes current value.
 
 <a name="bacon-update"></a>
 [`Bacon.update`](#bacon-update "Bacon.update") creates a Property from an initial value and updates the value based on multiple inputs.
@@ -1634,7 +1630,7 @@ state like `a1+b1 -> a2+b1 -> a2+b2`
 Atomic updates are limited to Properties only, meaning that simultaneous
 events in EventStreams will not be recognized as simultaneous and may
 cause extra transitional states to Properties. But as long as you're
-just combining Properties, updates will be atomic.
+just combining Properties, you'll updates will be atomic.
 
 For RxJs Users
 --------------
