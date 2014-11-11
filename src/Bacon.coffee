@@ -59,8 +59,8 @@ Bacon.$.asEventStream = (eventName, selector, eventTransformer) ->
 #
 # Returns EventStream
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
-  sub = target.addEventListener ? (target.addListener ? target.bind)
-  unsub = target.removeEventListener ? (target.removeListener ? target.unbind)
+  sub = target.addEventListener ? target.addListener ? target.bind ? target.on
+  unsub = target.removeEventListener ? target.removeListener ? target.unbind ? target.off
   withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder (handler) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
@@ -94,19 +94,32 @@ Bacon.repeatedly = (delay, values) ->
   index = 0
   withDescription(Bacon, "repeatedly", delay, values, Bacon.fromPoll(delay, -> values[index++ % values.length]))
 
-Bacon.spy = (spy) -> spys.push(spy)
+spys = undefined
 
-spys = []
-registerObs = (obs) ->
-  if spys.length
-    unless registerObs.running
-      try
-        registerObs.running = true
-        for spy in spys
-          spy(obs)
-      finally
-        delete registerObs.running
-  undefined
+class NoSpys
+  addSpy: (spy) ->
+    spys = new Spys()
+    spys.addSpy(spy)
+  newObs: ->
+  newEvent: (obs, event) ->
+
+class Spys extends NoSpys
+  addSpy: (spy) -> @spys.push(spy)
+  spys: []
+  newObs: (obs) ->
+    for spy in @spys
+      spy.newObservable(obs)
+    undefined
+  newEvent: (obs, event) ->
+    if obs?
+      for spy in @spys
+        spy.newEvent(obs, event)
+    undefined
+
+Bacon.spy = (spy) -> spys.addSpy(spy)
+
+spys = new NoSpys()
+
 
 withMethodCallSupport = (wrapped) ->
   (f, args...) ->
@@ -670,8 +683,8 @@ class EventStream extends Observable
       desc = []
     super(desc)
     assertFunction subscribe
-    @dispatcher = new Dispatcher(subscribe)
-    registerObs(this)
+    @dispatcher = new Dispatcher(this, subscribe)
+    spys.newObs(this)
 
   delay: (delay) ->
     withDescription(this, "delay", delay, @flatMap (value) ->
@@ -818,7 +831,8 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@dispatcher.subscribe, handler)
+    # TODO: maybe eliminate this extra dispatcher
+    dispatcher = new Dispatcher(null, @dispatcher.subscribe, handler)
     new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
 
 class Property extends Observable
@@ -830,7 +844,7 @@ class Property extends Observable
     super(desc)
     assertFunction(subscribe)
     @dispatcher = new PropertyDispatcher(this, subscribe, handler)
-    registerObs(this)
+    spys.newObs(this)
 
   sampledBy: (sampler, combinator) ->
     if combinator?
@@ -916,7 +930,7 @@ addPropertyInitValueToStream = (property, stream) ->
   justInitValue.concat(stream).toProperty()
 
 class Dispatcher
-  constructor: (@_subscribe, @_handleEvent) ->
+  constructor: (@obs, @_subscribe, @_handleEvent) ->
     @subscriptions = []
     @queue = []
     @pushing = false
@@ -948,6 +962,7 @@ class Dispatcher
       finally
         @pushing = false
         @queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
+        spys.newEvent @obs, event
       success = true
       while @queue.length
         event = @queue.shift()
@@ -990,8 +1005,8 @@ class Dispatcher
         @unsubscribeFromSource() unless @hasSubscribers()
 
 class PropertyDispatcher extends Dispatcher
-  constructor: (@property, subscribe, handleEvent) ->
-    super(subscribe, handleEvent)
+  constructor: (obs, subscribe, handleEvent) ->
+    super(obs, subscribe, handleEvent)
     @current = None
     @currentValueRootId = undefined
     @propertyEnded = false
@@ -1029,7 +1044,7 @@ class PropertyDispatcher extends Dispatcher
         # when subscribing while already dispatching a value and this property hasn't been updated yet
         # we cannot bounce before this property is up to date.
         #console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
-        UpdateBarrier.whenDoneWith @property, =>
+        UpdateBarrier.whenDoneWith @obs, =>
           if @currentValueRootId == valId
             sink initial(@current.get().value())
         # the subscribing thing should be defered
@@ -1467,6 +1482,7 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
+Bacon.Event = Event
 
 nop = ->
 latterF = (_, x) -> x()

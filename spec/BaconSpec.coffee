@@ -3261,23 +3261,40 @@ describe "Observable.withDescription", ->
     expect(description.args).to.deep.equal(["mas"])
 
 describe "Bacon.spy", ->
-  testSpy = (expectedCount, f) ->
-    calls = 0
-    spy = (obs) -> 
-      obs.toString()
-      calls++
+  testSpy = (observables, events, f) ->
+    obsCalls = 0
+    eventCalls = 0
+    spy = {
+      newObservable: (obs) ->
+        obs.toString()
+        obsCalls++
+      newEvent: (obs, event) ->
+        obs.toString()
+        expect(event instanceof Bacon.Event).to.equal(true)
+        eventCalls++
+    }
     Bacon.spy spy
     f()
-    expect(calls).to.equal(expectedCount)
-  describe "calls spy function for all created Observables", ->
+    expect(obsCalls).to.equal(observables)
+    expect(eventCalls).to.equal(events)
+  describe "calls newObservable function for all created Observables", ->
     it "EventStream", ->
-      testSpy 1, -> Bacon.once(1)
+      testSpy 1, 0, -> Bacon.once(1)
     it "Property", ->
-      testSpy 1, -> Bacon.constant(1)
+      testSpy 1, 0, -> Bacon.constant(1)
     it "map", ->
-      testSpy 2, -> Bacon.once(1).map(->)
+      testSpy 2, 0, -> Bacon.once(1).map(->)
     it "combineTemplate (also called for the intermediate combineAsArray property)", ->
-      testSpy 5, -> Bacon.combineTemplate([Bacon.once(1), Bacon.constant(2)])
+      testSpy 5, 0, -> Bacon.combineTemplate([Bacon.once(1), Bacon.constant(2)])
+  describe "calls newEvent function for all dispatched Events", ->
+    it "Bacon.once", ->
+      testSpy 1, 2, -> Bacon.once(1).onValue(->)
+    it "Bacon.once.map", ->
+      testSpy 2, 4, -> Bacon.once(1).map(->).onValue(->)
+    it "Bacon.constant", ->
+      testSpy 1, 2, -> Bacon.constant(1).onValue(->)
+    it "Bacon.map", ->
+      testSpy 2, 4, -> Bacon.constant(1).map(->).onValue(->)
 
 describe "Infinite synchronous sequences", ->
   describe "Limiting length with take(n)", ->
