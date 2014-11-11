@@ -232,7 +232,11 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
 verifyExhausted = (src) ->
   events = []
   src.subscribe (event) ->
+    if (event == undefined)
+      throw new Error("got undefined event")
     events.push(event)
+  if (events.length == 0)
+    throw new Error("got zero events")
   expect(events[0].isEnd()).to.deep.equal(true)
 
 lastNonError = (events) ->
