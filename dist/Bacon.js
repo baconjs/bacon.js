@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, NoSpys, None, Observable, Property, PropertyDispatcher, Some, Source, Spys, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latterF, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.30';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -78,9 +78,9 @@
   }
 
   Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-    var sub, unsub, _ref1, _ref2, _ref3, _ref4;
-    sub = (_ref1 = target.addEventListener) != null ? _ref1 : (_ref2 = target.addListener) != null ? _ref2 : target.bind;
-    unsub = (_ref3 = target.removeEventListener) != null ? _ref3 : (_ref4 = target.removeListener) != null ? _ref4 : target.unbind;
+    var sub, unsub, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+    sub = (_ref1 = (_ref2 = (_ref3 = target.addEventListener) != null ? _ref3 : target.addListener) != null ? _ref2 : target.bind) != null ? _ref1 : target.on;
+    unsub = (_ref4 = (_ref5 = (_ref6 = target.removeEventListener) != null ? _ref6 : target.removeListener) != null ? _ref5 : target.unbind) != null ? _ref4 : target.off;
     return withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder(function(handler) {
       sub.call(target, eventName, handler);
       return function() {
@@ -138,29 +138,68 @@
     }));
   };
 
-  Bacon.spy = function(spy) {
-    return spys.push(spy);
-  };
+  spys = void 0;
 
-  spys = [];
+  NoSpys = (function() {
+    function NoSpys() {}
 
-  registerObs = function(obs) {
-    var spy, _i, _len;
-    if (spys.length) {
-      if (!registerObs.running) {
-        try {
-          registerObs.running = true;
-          for (_i = 0, _len = spys.length; _i < _len; _i++) {
-            spy = spys[_i];
-            spy(obs);
-          }
-        } finally {
-          delete registerObs.running;
+    NoSpys.prototype.addSpy = function(spy) {
+      spys = new Spys();
+      return spys.addSpy(spy);
+    };
+
+    NoSpys.prototype.newObs = function() {};
+
+    NoSpys.prototype.newEvent = function(obs, event) {};
+
+    return NoSpys;
+
+  })();
+
+  Spys = (function(_super) {
+    __extends(Spys, _super);
+
+    function Spys() {
+      return Spys.__super__.constructor.apply(this, arguments);
+    }
+
+    Spys.prototype.addSpy = function(spy) {
+      return this.spys.push(spy);
+    };
+
+    Spys.prototype.spys = [];
+
+    Spys.prototype.newObs = function(obs) {
+      var spy, _i, _len, _ref1;
+      _ref1 = this.spys;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        spy = _ref1[_i];
+        spy.newObservable(obs);
+      }
+      return void 0;
+    };
+
+    Spys.prototype.newEvent = function(obs, event) {
+      var spy, _i, _len, _ref1;
+      if (obs != null) {
+        _ref1 = this.spys;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          spy = _ref1[_i];
+          spy.newEvent(obs, event);
         }
       }
-    }
-    return void 0;
+      return void 0;
+    };
+
+    return Spys;
+
+  })(NoSpys);
+
+  Bacon.spy = function(spy) {
+    return spys.addSpy(spy);
   };
+
+  spys = new NoSpys();
 
   withMethodCallSupport = function(wrapped) {
     return function() {
@@ -1238,8 +1277,8 @@
       }
       EventStream.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
-      this.dispatcher = new Dispatcher(subscribe);
-      registerObs(this);
+      this.dispatcher = new Dispatcher(this, subscribe);
+      spys.newObs(this);
     }
 
     EventStream.prototype.delay = function(delay) {
@@ -1477,7 +1516,7 @@
 
     EventStream.prototype.withHandler = function(handler) {
       var dispatcher;
-      dispatcher = new Dispatcher(this.dispatcher.subscribe, handler);
+      dispatcher = new Dispatcher(null, this.dispatcher.subscribe, handler);
       return new EventStream(describe(this, "withHandler", handler), dispatcher.subscribe);
     };
 
@@ -1497,7 +1536,7 @@
       Property.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
       this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
-      registerObs(this);
+      spys.newObs(this);
     }
 
     Property.prototype.sampledBy = function(sampler, combinator) {
@@ -1656,7 +1695,8 @@
   };
 
   Dispatcher = (function() {
-    function Dispatcher(_subscribe, _handleEvent) {
+    function Dispatcher(obs, _subscribe, _handleEvent) {
+      this.obs = obs;
       this._subscribe = _subscribe;
       this._handleEvent = _handleEvent;
       this.subscribe = __bind(this.subscribe, this);
@@ -1707,6 +1747,7 @@
           if (!success) {
             this.queue = [];
           }
+          spys.newEvent(this.obs, event);
         }
         success = true;
         while (this.queue.length) {
@@ -1776,10 +1817,9 @@
   PropertyDispatcher = (function(_super) {
     __extends(PropertyDispatcher, _super);
 
-    function PropertyDispatcher(property, subscribe, handleEvent) {
-      this.property = property;
+    function PropertyDispatcher(obs, subscribe, handleEvent) {
       this.subscribe = __bind(this.subscribe, this);
-      PropertyDispatcher.__super__.constructor.call(this, subscribe, handleEvent);
+      PropertyDispatcher.__super__.constructor.call(this, obs, subscribe, handleEvent);
       this.current = None;
       this.currentValueRootId = void 0;
       this.propertyEnded = false;
@@ -1815,7 +1855,7 @@
         dispatchingId = UpdateBarrier.currentEventId();
         valId = this.currentValueRootId;
         if (!this.propertyEnded && valId && dispatchingId && dispatchingId !== valId) {
-          UpdateBarrier.whenDoneWith(this.property, (function(_this) {
+          UpdateBarrier.whenDoneWith(this.obs, (function(_this) {
             return function() {
               if (_this.currentValueRootId === valId) {
                 return sink(initial(_this.current.get().value()));
@@ -2668,6 +2708,8 @@
   Bacon.End = End;
 
   Bacon.Error = Error;
+
+  Bacon.Event = Event;
 
   nop = function() {};
 
