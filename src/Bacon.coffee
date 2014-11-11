@@ -664,13 +664,14 @@ flatMap_ = (root, f, firstOnly, limit) ->
   result
 
 class EventStream extends Observable
-  constructor: (desc, subscribe) ->
+  constructor: (desc, subscribe, handler) ->
     if isFunction(desc)
+      handler = subscribe
       subscribe = desc
       desc = []
     super(desc)
     assertFunction subscribe
-    @dispatcher = new Dispatcher(subscribe)
+    @dispatcher = new Dispatcher(subscribe, handler)
     registerObs(this)
 
   delay: (delay) ->
@@ -818,8 +819,7 @@ class EventStream extends Observable
       Bacon.once(seed).concat(this))
 
   withHandler: (handler) ->
-    dispatcher = new Dispatcher(@dispatcher.subscribe, handler)
-    new EventStream describe(this, "withHandler", handler), dispatcher.subscribe
+    new EventStream describe(this, "withHandler", handler), @dispatcher.subscribe, handler
 
 class Property extends Observable
   constructor: (desc, subscribe, handler) ->
@@ -931,6 +931,8 @@ class Dispatcher
     @subscriptions = _.without(subscription, @subscriptions)
 
   push: (event) ->
+    if event.isEnd()
+      @ended = true
     UpdateBarrier.inTransaction event, this, @pushIt, [event]
 
   pushIt: (event) ->
@@ -962,9 +964,6 @@ class Dispatcher
       Bacon.more
 
   handleEvent: (event) =>
-    if event.isEnd()
-      @ended = true
-
     if @_handleEvent
       @_handleEvent(event)
     else
