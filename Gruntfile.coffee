@@ -55,7 +55,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-coffeelint';
 
   grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
-  grunt.registerTask 'default', ['build']
+  grunt.registerTask 'default', ['build','readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
     fs = require 'fs'
