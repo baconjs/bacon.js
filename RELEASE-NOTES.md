@@ -1,3 +1,7 @@
+## 0.7.31
+
+- Eliminate extra Dispatcher object (#463)
+
 ## 0.7.30
 
 - Fix Source::toString
