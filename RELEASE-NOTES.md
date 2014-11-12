@@ -1,3 +1,7 @@
+## 0.7.32
+
+- Support "on/off" events in Bacon.fromEventTarget (#461)
+
 ## 0.7.31
 
 - Eliminate extra Dispatcher object (#463)
