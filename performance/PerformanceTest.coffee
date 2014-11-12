@@ -2,21 +2,25 @@ Benchmark = require('benchmark')
 Bacon = (require "../src/Bacon").Bacon
 
 _ = Bacon._
+
+class Generator
+  constructor: ->
+    @streams = []
+
+  stream: ->
+    bus = new Bacon.Bus()
+    bus.counter = 0
+    @streams.push(bus)
+    bus
+
+  ticks: (count) ->
+    for i in [1..count]
+      for s in @streams
+        s.counter += 1
+        s.push(s.counter)
+
 f =
-  generator: ->
-    streams = []
-    {
-      stream: ->
-        counter = 0
-        bus = new Bacon.Bus()
-        bus.tick = -> @push(counter = counter + 1)
-        streams.push(bus)
-        bus
-      tick: ->
-        s.tick() for s in streams
-      ticks: (count) ->
-        @tick() for i in [1..count]
-    }
+  generator: -> new Generator()
   everyNth: (n, stream) ->
     stream.filter (x) -> x % n == 0
   withGenerator: (fun, rounds=100) ->
@@ -29,13 +33,13 @@ f =
     else
       template = {}
       for i in [1..width]
-        template[i] = f.combineTemplate gen, width, depth-1
+        template[i] = f.combineTemplate gen, width, depth - 1
       Bacon.combineTemplate(template)
   diamond: (src, width, depth) ->
     if depth == 0
       src
     else
-      branches = (f.diamond(src.map(->), width, depth-1) for s in [1..width])
+      branches = (f.diamond(src.map(->), width, depth - 1) for s in [1..width])
       Bacon.combineAsArray branches
 
   zip: (gen) ->
