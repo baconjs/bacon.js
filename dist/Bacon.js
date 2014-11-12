@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.31';
+  Bacon.version = '0.7.32';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -78,9 +78,9 @@
   }
 
   Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-    var sub, unsub, _ref1, _ref2, _ref3, _ref4;
-    sub = (_ref1 = target.addEventListener) != null ? _ref1 : (_ref2 = target.addListener) != null ? _ref2 : target.bind;
-    unsub = (_ref3 = target.removeEventListener) != null ? _ref3 : (_ref4 = target.removeListener) != null ? _ref4 : target.unbind;
+    var sub, unsub, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+    sub = (_ref1 = (_ref2 = (_ref3 = target.addEventListener) != null ? _ref3 : target.addListener) != null ? _ref2 : target.bind) != null ? _ref1 : target.on;
+    unsub = (_ref4 = (_ref5 = (_ref6 = target.removeEventListener) != null ? _ref6 : target.removeListener) != null ? _ref5 : target.unbind) != null ? _ref4 : target.off;
     return withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder(function(handler) {
       sub.call(target, eventName, handler);
       return function() {
