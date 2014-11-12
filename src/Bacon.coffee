@@ -672,6 +672,7 @@ class EventStream extends Observable
     super(desc)
     assertFunction subscribe
     @dispatcher = new Dispatcher(subscribe, handler)
+    registerObs(this)
 
   delay: (delay) ->
     withDescription(this, "delay", delay, @flatMap (value) ->
