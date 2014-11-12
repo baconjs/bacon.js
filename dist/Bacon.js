@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.30';
+  Bacon.version = '0.7.31';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1231,14 +1231,15 @@
   EventStream = (function(_super) {
     __extends(EventStream, _super);
 
-    function EventStream(desc, subscribe) {
+    function EventStream(desc, subscribe, handler) {
       if (isFunction(desc)) {
+        handler = subscribe;
         subscribe = desc;
         desc = [];
       }
       EventStream.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
-      this.dispatcher = new Dispatcher(subscribe);
+      this.dispatcher = new Dispatcher(subscribe, handler);
       registerObs(this);
     }
 
@@ -1476,9 +1477,7 @@
     };
 
     EventStream.prototype.withHandler = function(handler) {
-      var dispatcher;
-      dispatcher = new Dispatcher(this.dispatcher.subscribe, handler);
-      return new EventStream(describe(this, "withHandler", handler), dispatcher.subscribe);
+      return new EventStream(describe(this, "withHandler", handler), this.dispatcher.subscribe, handler);
     };
 
     return EventStream;
@@ -1678,6 +1677,9 @@
     };
 
     Dispatcher.prototype.push = function(event) {
+      if (event.isEnd()) {
+        this.ended = true;
+      }
       return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
     };
 
@@ -1726,9 +1728,6 @@
     };
 
     Dispatcher.prototype.handleEvent = function(event) {
-      if (event.isEnd()) {
-        this.ended = true;
-      }
       if (this._handleEvent) {
         return this._handleEvent(event);
       } else {
