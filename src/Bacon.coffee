@@ -308,7 +308,7 @@ class Event
 class Next extends Event
   constructor: (valueF, eager) ->
     super()
-    if isFunction(valueF) && !eager
+    if !eager && isFunction(valueF) || valueF instanceof Initial
       @valueF = valueF
       @valueInternal = undefined
     else
@@ -316,14 +316,21 @@ class Next extends Event
       @valueInternal = valueF
   isNext: -> true
   hasValue: -> true
-  value: =>
-    if @valueF
+  value: ->
+    if @valueF instanceof Initial
+      @valueInternal = @valueF.value()
+      @valueF = undefined
+    else if @valueF
       @valueInternal = @valueF()
       @valueF = undefined
     @valueInternal
   fmap: (f) ->
-    value = @value
-    @apply(-> f(value()))
+    if @valueInternal
+      value = @valueInternal
+      @apply(-> f(value))
+    else
+      event = this
+      @apply(-> f(event.value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   toString: -> _.toString(@value())
@@ -333,11 +340,7 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> new Initial(value)
-  toNext: ->
-    if @valueInternal
-      new Next(@valueInternal, true)
-    else
-      new Next(@value)
+  toNext: -> new Next(this)
 
 class End extends Event
   isEnd: -> true
