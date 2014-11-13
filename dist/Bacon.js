@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.32';
+  Bacon.version = '0.7.33';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -571,12 +571,14 @@
   Next = (function(_super) {
     __extends(Next, _super);
 
-    function Next(valueF) {
+    function Next(valueF, eager) {
       Next.__super__.constructor.call(this);
-      if (isFunction(valueF)) {
-        this.value = _.cached(valueF);
+      if (!eager && isFunction(valueF) || valueF instanceof Initial) {
+        this.valueF = valueF;
+        this.valueInternal = void 0;
       } else {
-        this.value = _.always(valueF);
+        this.valueF = void 0;
+        this.valueInternal = valueF;
       }
     }
 
@@ -588,12 +590,30 @@
       return true;
     };
 
+    Next.prototype.value = function() {
+      if (this.valueF instanceof Initial) {
+        this.valueInternal = this.valueF.value();
+        this.valueF = void 0;
+      } else if (this.valueF) {
+        this.valueInternal = this.valueF();
+        this.valueF = void 0;
+      }
+      return this.valueInternal;
+    };
+
     Next.prototype.fmap = function(f) {
-      var value;
-      value = this.value;
-      return this.apply(function() {
-        return f(value());
-      });
+      var event, value;
+      if (this.valueInternal) {
+        value = this.valueInternal;
+        return this.apply(function() {
+          return f(value);
+        });
+      } else {
+        event = this;
+        return this.apply(function() {
+          return f(event.value());
+        });
+      }
     };
 
     Next.prototype.apply = function(value) {
@@ -636,7 +656,7 @@
     };
 
     Initial.prototype.toNext = function() {
-      return new Next(this.value);
+      return new Next(this);
     };
 
     return Initial;
@@ -980,7 +1000,9 @@
                   return void 0;
                 });
                 next = _.cached(function() {
-                  return f(prev, event.value);
+                  return f(prev, function() {
+                    return event.value();
+                  });
                 });
                 acc = new Some(next);
                 if (options.eager) {
@@ -1506,7 +1528,7 @@
       } else {
         lazy = true;
         combinator = function(f) {
-          return f();
+          return f.value();
         };
       }
       thisSource = new Source(this, false, lazy);
@@ -1970,7 +1992,9 @@
 
     Source.prototype.consume = function() {
       if (this.lazy) {
-        return _.always(this.queue[0]);
+        return {
+          value: _.always(this.queue[0])
+        };
       } else {
         return this.queue[0];
       }
@@ -2034,13 +2058,15 @@
       var values;
       values = this.queue;
       this.queue = [];
-      return function() {
-        return values;
+      return {
+        value: function() {
+          return values;
+        }
       };
     };
 
     BufferingSource.prototype.push = function(x) {
-      return this.queue.push(x());
+      return this.queue.push(x.value());
     };
 
     BufferingSource.prototype.hasAtLeast = function() {
@@ -2221,14 +2247,14 @@
             return UpdateBarrier.whenDoneWith(resultStream, flush);
           };
           flushWhileTriggers = function() {
-            var functions, p, reply, trigger, _k, _len2;
+            var events, p, reply, trigger, _k, _len2;
             if (triggers.length > 0) {
               reply = Bacon.more;
               trigger = triggers.pop();
               for (_k = 0, _len2 = pats.length; _k < _len2; _k++) {
                 p = pats[_k];
                 if (match(p)) {
-                  functions = (function() {
+                  events = (function() {
                     var _l, _len3, _ref2, _results;
                     _ref2 = p.ixs;
                     _results = [];
@@ -2239,13 +2265,13 @@
                     return _results;
                   })();
                   reply = sink(trigger.e.apply(function() {
-                    var fun, values;
+                    var event, values;
                     values = (function() {
                       var _l, _len3, _results;
                       _results = [];
-                      for (_l = 0, _len3 = functions.length; _l < _len3; _l++) {
-                        fun = functions[_l];
-                        _results.push(fun());
+                      for (_l = 0, _len3 = events.length; _l < _len3; _l++) {
+                        event = events[_l];
+                        _results.push(event.value());
                       }
                       return _results;
                     })();
@@ -2289,7 +2315,7 @@
             } else if (e.isError()) {
               reply = sink(e);
             } else {
-              source.push(e.value);
+              source.push(e);
               if (source.sync) {
                 triggers.push({
                   source: source,
@@ -2679,11 +2705,11 @@
   };
 
   initial = function(value) {
-    return new Initial(_.always(value));
+    return new Initial(value, true);
   };
 
   next = function(value) {
-    return new Next(_.always(value));
+    return new Next(value, true);
   };
 
   end = function() {
