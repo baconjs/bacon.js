@@ -1,3 +1,7 @@
+## 0.7.33
+
+- Improve performance (#467)
+
 ## 0.7.32
 
 - Support "on/off" events in Bacon.fromEventTarget (#461)
