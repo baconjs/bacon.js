@@ -306,17 +306,31 @@ class Event
   log: -> @toString()
 
 class Next extends Event
-  constructor: (valueF) ->
+  constructor: (valueF, eager) ->
     super()
-    if isFunction(valueF)
-      @value = _.cached(valueF)
+    if !eager && isFunction(valueF) || valueF instanceof Initial
+      @valueF = valueF
+      @valueInternal = undefined
     else
-      @value = _.always(valueF)
+      @valueF = undefined
+      @valueInternal = valueF
   isNext: -> true
   hasValue: -> true
+  value: ->
+    if @valueF instanceof Initial
+      @valueInternal = @valueF.value()
+      @valueF = undefined
+    else if @valueF
+      @valueInternal = @valueF()
+      @valueF = undefined
+    @valueInternal
   fmap: (f) ->
-    value = @value
-    @apply(-> f(value()))
+    if @valueInternal
+      value = @valueInternal
+      @apply(-> f(value))
+    else
+      event = this
+      @apply(-> f(event.value()))
   apply: (value) -> new Next(value)
   filter: (f) -> f(@value())
   toString: -> _.toString(@value())
@@ -326,7 +340,7 @@ class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> new Initial(value)
-  toNext: -> new Next(@value)
+  toNext: -> new Next(this)
 
 class End extends Event
   isEnd: -> true
@@ -514,7 +528,7 @@ class Observable
             sendInit() unless event.isInitial()
             initSent = true
             prev = acc.getOrElse(-> undefined)
-            next = _.cached(-> f(prev, event.value))
+            next = _.cached(-> f(prev, -> event.value()))
             acc = new Some(next)
             next() if (options.eager)
             sink (event.apply(next))
@@ -574,7 +588,7 @@ class Observable
         Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
 
   not: -> withDescription(this, "not", @map((x) -> !x))
-  
+
   log: (args...) ->
     @subscribe (event) -> console?.log?(args..., event.log())
     this
@@ -837,7 +851,7 @@ class Property extends Observable
       combinator = toCombinator combinator
     else
       lazy = true
-      combinator = (f) -> f()
+      combinator = (f) -> f.value()
     thisSource = new Source(this, false, lazy)
     samplerSource = new Source(sampler, true, lazy)
     stream = Bacon.when([thisSource, samplerSource], combinator)
@@ -1105,7 +1119,7 @@ class Source
   markEnded: -> @ended = true
   consume: ->
     if @lazy
-      _.always(@queue[0])
+      { value: _.always(@queue[0]) }
     else
       @queue[0]
   push: (x) -> @queue = [x]
@@ -1126,8 +1140,8 @@ class BufferingSource extends Source
   consume: ->
     values = @queue
     @queue = []
-    -> values
-  push: (x) -> @queue.push(x())
+    {value: -> values}
+  push: (x) -> @queue.push(x.value())
   hasAtLeast: -> true
 
 Source.isTrigger = (s) ->
@@ -1236,9 +1250,9 @@ Bacon.when = ->
           for p in pats
             if match(p)
               #console.log "match", p
-              functions = (sources[i.index].consume() for i in p.ixs)
+              events = (sources[i.index].consume() for i in p.ixs)
               reply = sink trigger.e.apply ->
-                values = (fun() for fun in functions)
+                values = (event.value() for event in events)
                 p.f(values...)
               if triggers.length
                 triggers = _.filter nonFlattened, triggers
@@ -1267,7 +1281,7 @@ Bacon.when = ->
         else if e.isError()
           reply = sink e
         else
-          source.push e.value
+          source.push e
           if source.sync
             #console.log "queuing", e.toString(), _.toString(resultStream)
             triggers.push {source: source, e: e}
@@ -1470,8 +1484,8 @@ Bacon.Error = Error
 nop = ->
 latterF = (_, x) -> x()
 former = (x, _) -> x
-initial = (value) -> new Initial(_.always(value))
-next = (value) -> new Next(_.always(value))
+initial = (value) -> new Initial(value, true)
+next = (value) -> new Next(value, true)
 end = -> new End()
 # instanceof more performant than x.?isEvent?()
 toEvent = (x) -> if x instanceof Event then x else next x
