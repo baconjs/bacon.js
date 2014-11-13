@@ -306,9 +306,9 @@ class Event
   log: -> @toString()
 
 class Next extends Event
-  constructor: (valueF) ->
+  constructor: (valueF, eager) ->
     super()
-    if isFunction(valueF)
+    if isFunction(valueF) && !eager
       @value = _.cached(valueF)
     else
       @value = _.always(valueF)
@@ -1470,8 +1470,8 @@ Bacon.Error = Error
 nop = ->
 latterF = (_, x) -> x()
 former = (x, _) -> x
-initial = (value) -> new Initial(_.always(value))
-next = (value) -> new Next(_.always(value))
+initial = (value) -> new Initial(value, true)
+next = (value) -> new Next(value, true)
 end = -> new End()
 # instanceof more performant than x.?isEvent?()
 toEvent = (x) -> if x instanceof Event then x else next x
