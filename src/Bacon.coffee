@@ -309,11 +309,18 @@ class Next extends Event
   constructor: (valueF, eager) ->
     super()
     if isFunction(valueF) && !eager
-      @value = _.cached(valueF)
+      @valueF = valueF
+      @valueInternal = undefined
     else
-      @value = _.always(valueF)
+      @valueF = undefined
+      @valueInternal = valueF
   isNext: -> true
   hasValue: -> true
+  value: =>
+    if @valueF
+      @valueInternal = @valueF()
+      @valueF = undefined
+    @valueInternal
   fmap: (f) ->
     value = @value
     @apply(-> f(value()))
