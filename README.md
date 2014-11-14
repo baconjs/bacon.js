@@ -211,7 +211,7 @@ Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/ma
 
 <a name="bacon-fromeventtarget"></a>
 [`Bacon.fromEventTarget(target, eventName [, eventTransformer])`](#bacon-fromeventtarget "Bacon.fromEventTarget(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream") creates an EventStream from events
-on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods. 
+on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
 You can also pass an optional function that transforms the emitted
 events' parameters.
 
@@ -1217,7 +1217,7 @@ Lazy evaluation
 
 Methods such as [`map`](#observable-map) and the [`combine`](#observable-combine) use lazy evaluation to avoid evaluating
 values that aren't actually needed. This can be generally considered a Good Thing,
-but it has it's pitfalls. 
+but it has it's pitfalls.
 
 If you pass a function that referentially transparent, you'll
 be fine. This means that your function should return the same value regardless of
@@ -1438,7 +1438,7 @@ var result = Bacon.update(
 As input, each function above will get the previous value of the `result` Property, along with values from the listed Observables.
 The value returned by the function will be used as the next value of `result`.
 
-Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled. 
+Just like in [`Bacon.when`](#bacon-when), only EventStreams will trigger an update, while Properties will be just sampled.
 So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
 
 Here's a simple gaming example:
