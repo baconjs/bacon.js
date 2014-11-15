@@ -1900,7 +1900,7 @@ describe "observables created while dispatching", ->
       Bacon.once(1).onValue ->
         f().onValue (value) ->
           values.push(value)
-        #expect(values).to.deep.equal(expected)
+        expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
 
     it name + " (dependent)", ->
@@ -1909,7 +1909,7 @@ describe "observables created while dispatching", ->
       src.onValue ->
         src.flatMap(f()).onValue (value) ->
           values.push(value)
-        #expect(values).to.deep.equal(expected)
+        expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
 
   verifyWhileDispatching "with combineAsArray", 

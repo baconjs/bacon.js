@@ -1451,7 +1451,9 @@ UpdateBarrier = (->
           while (afters.length)
             theseAfters = afters
             afters = []
-            for f in theseAfters
+            for f, i in theseAfters
+              if (i == theseAfters.length - 1)
+                processingAfters = false
               f()
           result
         finally
