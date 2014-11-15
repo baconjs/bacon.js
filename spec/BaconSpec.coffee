@@ -1883,6 +1883,22 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push("foo")
     expect(values).to.deep.equal(["foo"])
+  it "complex scenario (fix #470)", ->
+    values = []
+    bus1 = new Bacon.Bus()
+    bus2 = new Bacon.Bus()
+    p1 = bus1.toProperty("p1")
+    p2 = bus2.toProperty(true)
+    p2.filter(Bacon._.id).changes().onValue -> bus1.push "empty"
+    Bacon.combineAsArray(p1, p2).onValue (val) -> values.push val
+
+    bus2.push false
+    bus2.push true
+    expect(values).to.deep.equal([
+      ["p1", true],
+      ["p1", false],
+      ["p1", true],
+      ["empty", true]])
 
 describe "observables created while dispatching", ->
   verifyWhileDispatching = (name, f, expected) ->
