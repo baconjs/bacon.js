@@ -2559,11 +2559,12 @@
   };
 
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, processingAfters, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiterObs = [];
     waiters = {};
     afters = [];
+    processingAfters = false;
     afterTransaction = function(f) {
       if (rootEvent) {
         return afters.push(f);
@@ -2619,7 +2620,7 @@
       return void 0;
     };
     inTransaction = function(event, context, f, args) {
-      var result, theseAfters, _i, _len;
+      var i, result, theseAfters, _i, _len;
       if (rootEvent) {
         return f.apply(context, args);
       } else {
@@ -2627,15 +2628,25 @@
         result = f.apply(context, args);
         flush();
         rootEvent = void 0;
-        while (afters.length) {
-          theseAfters = afters;
-          afters = [];
-          for (_i = 0, _len = theseAfters.length; _i < _len; _i++) {
-            f = theseAfters[_i];
-            f();
+        if (!processingAfters) {
+          try {
+            processingAfters = true;
+            while (afters.length) {
+              theseAfters = afters;
+              afters = [];
+              for (i = _i = 0, _len = theseAfters.length; _i < _len; i = ++_i) {
+                f = theseAfters[i];
+                if (i === theseAfters.length - 1) {
+                  processingAfters = false;
+                }
+                f();
+              }
+            }
+            return result;
+          } finally {
+            processingAfters = false;
           }
         }
-        return result;
       }
     };
     currentEventId = function() {
