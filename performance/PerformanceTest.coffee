@@ -6,18 +6,20 @@ _ = Bacon._
 class Generator
   constructor: ->
     @streams = []
+    @counters = []
 
   stream: ->
     bus = new Bacon.Bus()
-    bus.counter = 0
     @streams.push(bus)
+    @counters.push(0)
     bus
 
   ticks: (count) ->
     for i in [1..count]
-      for s in @streams
-        s.counter += 1
-        s.push(s.counter)
+      for s, j in @streams
+        counter = @counters[j] += 1
+        s.push(counter)
+    null
 
 f =
   generator: -> new Generator()
