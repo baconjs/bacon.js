@@ -761,7 +761,7 @@ class EventStream extends Observable
   toProperty: (initValue_) ->
     initValue = if arguments.length == 0 then None else toOption(-> initValue_)
     disp = @dispatcher
-    new Property(describe(this, "toProperty", initValue),
+    new Property(describe(this, "toProperty", initValue_),
       (sink) ->
         initSent = false
         unsub = nop

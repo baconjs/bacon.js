@@ -1470,6 +1470,8 @@ describe "EventStream.toProperty", ->
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
     expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.once(1).toProperty(0).toString()).to.equal("Bacon.once(1).toProperty(0)")
 
 describe "Property.toEventStream", ->
   describe "creates a stream that starts with current property value", ->
