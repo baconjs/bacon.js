@@ -758,9 +758,38 @@ class EventStream extends Observable
     left = this
     withDescription(left, "merge", right, Bacon.mergeAll(this, right))
 
-  toProperty: (initValue) ->
-    initValue = None if arguments.length == 0
-    withDescription(this, "toProperty", initValue, @scan(initValue, latter))
+  toProperty: (initValue_) ->
+    initValue = if arguments.length == 0 then None else toOption(-> initValue_)
+    disp = @dispatcher
+    new Property(describe(this, "toProperty", initValue),
+      (sink) ->
+        initSent = false
+        unsub = nop
+        reply = Bacon.more
+        sendInit = ->
+          unless initSent
+            initValue.forEach (value) ->
+              initSent = true
+              reply = sink (new Initial(value))
+              if reply == Bacon.noMore
+                unsub()
+                unsub = nop
+        unsub = disp.subscribe (event) ->
+          if event.hasValue()
+            if (initSent and event.isInitial())
+              Bacon.more
+            else
+              sendInit() unless event.isInitial()
+              initSent = true
+              initValue = new Some(event.value)
+              sink event
+          else
+            if event.isEnd()
+              reply = sendInit()
+            sink event unless reply == Bacon.noMore
+        sendInit()
+        unsub
+    )
 
   toEventStream: -> this
 
