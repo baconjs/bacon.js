@@ -1417,7 +1417,6 @@ UpdateBarrier = (->
   waiterObs = []
   waiters = {}
   afters = []
-  processingAfters = false
   
   afterTransaction = (f) ->
     if rootEvent
@@ -1472,19 +1471,9 @@ UpdateBarrier = (->
       #console.log("done with tx")
       flush()
       rootEvent = undefined
-      if not processingAfters
-        try
-          processingAfters = true
-          while (afters.length)
-            theseAfters = afters
-            afters = []
-            for f, i in theseAfters
-              if (i == theseAfters.length - 1)
-                processingAfters = false
-              f()
-          result
-        finally
-          processingAfters = false
+      while (afters.length > 0)
+        afters.shift()()
+      result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
 
