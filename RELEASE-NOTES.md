@@ -1,3 +1,7 @@
+## 0.7.35
+
+- Improve side-effect processing performance by reducing array mutation
+
 ## 0.7.34
 
 - Fix #470: unexpected ordering of side effects
