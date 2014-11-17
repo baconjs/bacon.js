@@ -573,7 +573,7 @@
 
     function Next(valueF, eager) {
       Next.__super__.constructor.call(this);
-      if (!eager && isFunction(valueF) || valueF instanceof Initial) {
+      if (!eager && isFunction(valueF) || valueF instanceof Next) {
         this.valueF = valueF;
         this.valueInternal = void 0;
       } else {
@@ -591,7 +591,7 @@
     };
 
     Next.prototype.value = function() {
-      if (this.valueF instanceof Initial) {
+      if (this.valueF instanceof Next) {
         this.valueInternal = this.valueF.value();
         this.valueF = void 0;
       } else if (this.valueF) {
@@ -1403,7 +1403,7 @@
                 sendInit();
               }
               initSent = true;
-              initValue = new Some(event.value);
+              initValue = new Some(event);
               return sink(event);
             }
           } else {
