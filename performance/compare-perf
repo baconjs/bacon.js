@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+if [ -z $1 ]; then
+  echo "usage: compare-perf <revision1> [<revision2> ..]"
+  exit 1
+fi
+
+measurePerf() {
+  echo "***************" $1 "**************"
+  git checkout -q $1
+  coffee performance/PerformanceTest.coffee
+}
+
+for revision in "$@"
+do
+  measurePerf $revision
+done
