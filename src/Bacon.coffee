@@ -308,7 +308,7 @@ class Event
 class Next extends Event
   constructor: (valueF, eager) ->
     super()
-    if !eager && isFunction(valueF) || valueF instanceof Initial
+    if !eager && isFunction(valueF) || valueF instanceof Next
       @valueF = valueF
       @valueInternal = undefined
     else
@@ -317,7 +317,7 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   value: ->
-    if @valueF instanceof Initial
+    if @valueF instanceof Next
       @valueInternal = @valueF.value()
       @valueF = undefined
     else if @valueF
@@ -504,19 +504,18 @@ class Observable
           return reply
       reply)
 
-  scan: (seed, f, options = {}) ->
-    f_ = toCombinator(f)
-    f = if options.lazyF then f_ else (x,y) -> f_(x(), y())
-    acc = toOption(seed).map((x) -> _.always(x))
+  scan: (seed, f) ->
+    f = toCombinator(f)
+    acc = toOption(seed)
     subscribe = (sink) =>
       initSent = false
       unsub = nop
       reply = Bacon.more
       sendInit = ->
         unless initSent
-          acc.forEach (valueF) ->
+          acc.forEach (value) ->
             initSent = true
-            reply = sink(new Initial(valueF))
+            reply = sink(new Initial(-> value))
             if (reply == Bacon.noMore)
               unsub()
               unsub = nop
@@ -527,11 +526,10 @@ class Observable
           else
             sendInit() unless event.isInitial()
             initSent = true
-            prev = acc.getOrElse(-> undefined)
-            next = _.cached(-> f(prev, -> event.value()))
+            prev = acc.getOrElse(undefined)
+            next = f(prev, event.value())
             acc = new Some(next)
-            next() if (options.eager)
-            sink (event.apply(next))
+            sink (event.apply(-> next))
         else
           if event.isEnd()
             reply = sendInit()
@@ -540,8 +538,8 @@ class Observable
       unsub
     resultProperty = new Property describe(this, "scan", seed, f), subscribe
 
-  fold: (seed, f, options) ->
-    withDescription(this, "fold", seed, f, @scan(seed, f, options).sampledBy(@filter(false).mapEnd().toProperty()))
+  fold: (seed, f) ->
+    withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
 
   zip: (other, f = Array) ->
     withDescription(this, "zip", other,
@@ -760,9 +758,38 @@ class EventStream extends Observable
     left = this
     withDescription(left, "merge", right, Bacon.mergeAll(this, right))
 
-  toProperty: (initValue) ->
-    initValue = None if arguments.length == 0
-    withDescription(this, "toProperty", initValue, @scan(initValue, latterF, {lazyF: true}))
+  toProperty: (initValue_) ->
+    initValue = if arguments.length == 0 then None else toOption(-> initValue_)
+    disp = @dispatcher
+    new Property(describe(this, "toProperty", initValue_),
+      (sink) ->
+        initSent = false
+        unsub = nop
+        reply = Bacon.more
+        sendInit = ->
+          unless initSent
+            initValue.forEach (value) ->
+              initSent = true
+              reply = sink (new Initial(value))
+              if reply == Bacon.noMore
+                unsub()
+                unsub = nop
+        unsub = disp.subscribe (event) ->
+          if event.hasValue()
+            if (initSent and event.isInitial())
+              Bacon.more
+            else
+              sendInit() unless event.isInitial()
+              initSent = true
+              initValue = new Some(event)
+              sink event
+          else
+            if event.isEnd()
+              reply = sendInit()
+            sink event unless reply == Bacon.noMore
+        sendInit()
+        unsub
+    )
 
   toEventStream: -> this
 
@@ -826,7 +853,7 @@ class EventStream extends Observable
         unless shouldHold
           @takeUntil(putToHold)
         else
-          @scan([], ((xs,x) -> xs.concat(x)), {eager: true}).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+          @scan([], ((xs,x) -> xs.concat(x))).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,
@@ -1444,11 +1471,8 @@ UpdateBarrier = (->
       #console.log("done with tx")
       flush()
       rootEvent = undefined
-      while (afters.length)
-        theseAfters = afters
-        afters = []
-        for f in theseAfters
-          f()
+      while (afters.length > 0)
+        afters.shift()()
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
@@ -1482,7 +1506,7 @@ Bacon.End = End
 Bacon.Error = Error
 
 nop = ->
-latterF = (_, x) -> x()
+latter = (_, x) -> x
 former = (x, _) -> x
 initial = (value) -> new Initial(value, true)
 next = (value) -> new Next(value, true)

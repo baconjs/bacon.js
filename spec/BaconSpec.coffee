@@ -175,7 +175,7 @@ describe "Bacon.sequentially", ->
         s.onValue (value) ->
           throw "testing"
         s
-      [], unstable)
+      ["lol", "wut"], unstable)
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
 
@@ -520,7 +520,7 @@ describe "EventStream.take", ->
         s.onValue (value) ->
           throw "testing" if value == "lol"
         s
-      ["wut"], unstable)
+      ["lol", "wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> Bacon.fromArray([1,2,3,4]).take(2)
@@ -1479,6 +1479,8 @@ describe "EventStream.toProperty", ->
       x
     Bacon.fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
     expect(calls).to.equal(1)
+  it "toString", ->
+    expect(Bacon.once(1).toProperty(0).toString()).to.equal("Bacon.once(1).toProperty(0)")
 
 describe "Property.toEventStream", ->
   describe "creates a stream that starts with current property value", ->
@@ -1647,6 +1649,16 @@ describe "Property.debounce", ->
     expectPropertyEvents(
       -> Bacon.constant(1).debounce(1)
       [1])
+  it "works with Bacon.combine (bug fix)", ->
+    values = []
+    p1 = Bacon.once(true).toProperty()
+    p2 = Bacon.once(true).toProperty()
+
+    visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
+
+    visibleP.debounce(500).onValue (val)  ->
+      values.push(val)
+
   it "toString", ->
     expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
 describe "Property.throttle", ->
@@ -1883,7 +1895,7 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push "a"
     bus.push "b"
-    expect(values).to.deep.equal(["A", "B", "A", "B", "a", "b"])
+    expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
   it "EventStream.take(1) works correctly (bug fix)", ->
     bus = new Bacon.Bus
     values = []
@@ -1892,6 +1904,22 @@ describe "When an Event triggers another one in the same stream, while dispatchi
       values.push(v)
     bus.push("foo")
     expect(values).to.deep.equal(["foo"])
+  it "complex scenario (fix #470)", ->
+    values = []
+    bus1 = new Bacon.Bus()
+    bus2 = new Bacon.Bus()
+    p1 = bus1.toProperty("p1")
+    p2 = bus2.toProperty(true)
+    p2.filter(Bacon._.id).changes().onValue -> bus1.push "empty"
+    Bacon.combineAsArray(p1, p2).onValue (val) -> values.push val
+
+    bus2.push false
+    bus2.push true
+    expect(values).to.deep.equal([
+      ["p1", true],
+      ["p1", false],
+      ["p1", true],
+      ["empty", true]])
 
 describe "observables created while dispatching", ->
   verifyWhileDispatching = (name, f, expected) ->
@@ -1912,14 +1940,22 @@ describe "observables created while dispatching", ->
         expect(values).to.deep.equal(expected)
       expect(values).to.deep.equal(expected)
 
-  verifyWhileDispatching "with combineAsArray", (-> Bacon.combineAsArray([Bacon.constant(1)])), [[1]]
-  verifyWhileDispatching "with combineAsArray.startWith", (->
+  verifyWhileDispatching "with combineAsArray", 
+    (-> Bacon.combineAsArray([Bacon.constant(1)])),
+    [[1]]
+  verifyWhileDispatching "with combineAsArray.startWith", 
+      (->
+        a = Bacon.constant("lolbal")
+        Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), 
+      ["right"]
+  verifyWhileDispatching "with stream.startWith", 
+    (-> Bacon.later(1).startWith(0)), 
+    [0]
+  verifyWhileDispatching "with combineAsArray.changes.startWith", 
+    (->
       a = Bacon.constant("lolbal")
-      Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), ["right"]
-  verifyWhileDispatching "with stream.startWith", (-> Bacon.later(1).startWith(0)), [0]
-  verifyWhileDispatching "with combineAsArray.changes.startWith", (->
-      a = Bacon.constant("lolbal")
-      Bacon.combineAsArray([a, a]).changes().startWith("right")), ["right"]
+      Bacon.combineAsArray([a, a]).changes().startWith("right")), 
+    ["right"]
   verifyWhileDispatching "with flatMap", (->
       a = Bacon.constant("lolbal")
       a.flatMap((x) -> Bacon.once(x))), ["lolbal"]
