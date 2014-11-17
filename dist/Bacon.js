@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.34';
+  Bacon.version = '0.7.35';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2584,11 +2584,12 @@
   };
 
   UpdateBarrier = (function() {
-    var afterTransaction, afters, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
+    var afterTransaction, afters, aftersIndex, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
     rootEvent = void 0;
     waiterObs = [];
     waiters = {};
     afters = [];
+    aftersIndex = 0;
     afterTransaction = function(f) {
       if (rootEvent) {
         return afters.push(f);
@@ -2644,7 +2645,7 @@
       return void 0;
     };
     inTransaction = function(event, context, f, args) {
-      var result;
+      var after, result;
       if (rootEvent) {
         return f.apply(context, args);
       } else {
@@ -2652,9 +2653,13 @@
         result = f.apply(context, args);
         flush();
         rootEvent = void 0;
-        while (afters.length > 0) {
-          afters.shift()();
+        while (aftersIndex < afters.length) {
+          after = afters[aftersIndex];
+          aftersIndex++;
+          after();
         }
+        aftersIndex = 0;
+        afters = [];
         return result;
       }
     };
