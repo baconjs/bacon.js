@@ -1640,6 +1640,16 @@ describe "Property.debounce", ->
     expectPropertyEvents(
       -> Bacon.constant(1).debounce(1)
       [1])
+  it "works with Bacon.combine (bug fix)", ->
+    values = []
+    p1 = Bacon.once(true).toProperty()
+    p2 = Bacon.once(true).toProperty()
+
+    visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
+
+    visibleP.debounce(500).onValue (val)  ->
+      values.push(val)
+
   it "toString", ->
     expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
 describe "Property.throttle", ->

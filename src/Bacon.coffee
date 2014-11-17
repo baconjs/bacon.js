@@ -308,7 +308,7 @@ class Event
 class Next extends Event
   constructor: (valueF, eager) ->
     super()
-    if !eager && isFunction(valueF) || valueF instanceof Initial
+    if !eager && isFunction(valueF) || valueF instanceof Next
       @valueF = valueF
       @valueInternal = undefined
     else
@@ -317,7 +317,7 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   value: ->
-    if @valueF instanceof Initial
+    if @valueF instanceof Next
       @valueInternal = @valueF.value()
       @valueF = undefined
     else if @valueF
@@ -781,7 +781,7 @@ class EventStream extends Observable
             else
               sendInit() unless event.isInitial()
               initSent = true
-              initValue = new Some(event.value)
+              initValue = new Some(event)
               sink event
           else
             if event.isEnd()
