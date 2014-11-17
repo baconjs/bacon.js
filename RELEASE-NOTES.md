@@ -1,3 +1,8 @@
+## 0.7.34
+
+- Fix #470: unexpected ordering of side effects
+- Make `scan` use eager evaluation
+
 ## 0.7.33
 
 - Improve performance (#467)
