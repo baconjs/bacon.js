@@ -959,6 +959,7 @@ addPropertyInitValueToStream = (property, stream) ->
 class Dispatcher
   constructor: (@_subscribe, @_handleEvent) ->
     @subscriptions = []
+    @subscriptionsWithSideEffects = []
     @queue = []
     @pushing = false
     @ended = false
@@ -966,10 +967,13 @@ class Dispatcher
     @unsubSrc = undefined
 
   hasSubscribers: ->
-    @subscriptions.length > 0
+    @subscriptions.length + @subscriptionsWithSideEffects.length > 0
 
   removeSub: (subscription) ->
-    @subscriptions = _.without(subscription, @subscriptions)
+    if subscription.isSideEffect
+      @subscriptionsWithSideEffects = _.without(subscription, @subscriptionsWithSideEffects)
+    else
+      @subscriptions = _.without(subscription, @subscriptions)
 
   push: (event) ->
     if event.isEnd()
@@ -983,8 +987,10 @@ class Dispatcher
       success = false
       try
         @pushing = true
-        tmp = @subscriptions
-        for sub in tmp
+        for sub in (tmp = @subscriptionsWithSideEffects)
+          reply = sub.sink event
+          @removeSub sub if reply == Bacon.noMore or event.isEnd()
+        for sub in (tmp = @subscriptions)
           reply = sub.sink event
           @removeSub sub if reply == Bacon.noMore or event.isEnd()
         success = true
@@ -1014,15 +1020,16 @@ class Dispatcher
     @unsubSrc() if @unsubSrc
     @unsubSrc = undefined
 
-  subscribe: (sink) =>
+  subscribe: (sink, isSideEffect) =>
     if @ended
       sink end()
       nop
     else
       assertFunction sink
-      subscription = { sink: sink }
-      @subscriptions.push(subscription)
-      if @subscriptions.length == 1
+      subscription = { sink: sink, isSideEffect: !!isSideEffect }
+      targetList = if isSideEffect then @subscriptionsWithSideEffects else @subscriptions
+      targetList.push(subscription)
+      if @subscriptions.length + @subscriptionsWithSideEffects.length == 1
         @unsubSrc = @_subscribe @handleEvent
         assertFunction @unsubSrc
       =>
@@ -1044,16 +1051,16 @@ class PropertyDispatcher extends Dispatcher
       @currentValueRootId = UpdateBarrier.currentEventId()
     super(event)
 
-  maybeSubSource: (sink, reply) ->
+  maybeSubSource: (sink, reply, isSideEffect) ->
     if reply == Bacon.noMore
       nop
     else if @propertyEnded
       sink end()
       nop
     else
-      Dispatcher::subscribe.call(this, sink)
+      Dispatcher::subscribe.call(this, sink, isSideEffect)
 
-  subscribe: (sink) =>
+  subscribe: (sink, isSideEffect) =>
     initSent = false
     # init value is "bounced" here because the base Dispatcher class
     # won't add more than one subscription to the underlying observable.
@@ -1073,7 +1080,7 @@ class PropertyDispatcher extends Dispatcher
           if @currentValueRootId == valId
             sink initial(@current.get().value())
         # the subscribing thing should be defered
-        @maybeSubSource(sink, reply)
+        @maybeSubSource(sink, reply, isSideEffect)
       else
         #console.log "bouncing value immediately"
         UpdateBarrier.inTransaction(undefined, this, (->
@@ -1082,9 +1089,9 @@ class PropertyDispatcher extends Dispatcher
           catch
             Bacon.more
         ), [])
-        @maybeSubSource(sink, reply)
+        @maybeSubSource(sink, reply, isSideEffect)
     else
-      @maybeSubSource(sink, reply)
+      @maybeSubSource(sink, reply, isSideEffect)
 
 class Bus extends EventStream
   constructor: ->
@@ -1103,7 +1110,7 @@ class Bus extends EventStream
       @subscribeInput(subscription)
     @unsubAll
 
-  guardedSink: (input) => (event) =>
+  guardedSink: (input) -> (event) =>
     if (event.isEnd())
       @unsubscribeInput(input)
       Bacon.noMore
@@ -1488,12 +1495,13 @@ UpdateBarrier = (->
     unsub = ->
       unsubd = true
       doUnsub()
-    doUnsub = obs.dispatcher.subscribe (event) ->
+    doUnsub = obs.dispatcher.subscribe ((event) ->
       afterTransaction ->
         unless unsubd
           reply = sink event
           if reply == Bacon.noMore
             unsub()
+    ), true
     unsub
 
   hasWaiters = -> waiterObs.length > 0
