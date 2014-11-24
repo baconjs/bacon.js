@@ -976,22 +976,24 @@ class Dispatcher
       @ended = true
     UpdateBarrier.inTransaction event, this, @pushIt, [event]
 
+  pushToSubscriptions: (event) ->
+    try
+      tmp = @subscriptions
+      for sub in tmp
+        reply = sub.sink event
+        @removeSub sub if reply == Bacon.noMore or event.isEnd()
+      true
+    catch
+      @queue = [] # ditch queue in case of exception to avoid unexpected behavior
+      false
+
   pushIt: (event) ->
     unless @pushing
       return if event == @prevError
       @prevError = event if event.isError()
-      success = false
-      try
-        @pushing = true
-        tmp = @subscriptions
-        for sub in tmp
-          reply = sub.sink event
-          @removeSub sub if reply == Bacon.noMore or event.isEnd()
-        success = true
-      finally
-        @pushing = false
-        @queue = [] unless success # ditch queue in case of exception to avoid unexpected behavior
-      success = true
+      @pushing = true
+      @pushToSubscriptions(event)
+      @pushing = false
       while @queue.length
         event = @queue.shift()
         @push event
