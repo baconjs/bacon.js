@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.35';
+  Bacon.version = '0.7.36';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1730,8 +1730,25 @@
       return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
     };
 
+    Dispatcher.prototype.pushToSubscriptions = function(event) {
+      var reply, sub, tmp, _i, _len;
+      try {
+        tmp = this.subscriptions;
+        for (_i = 0, _len = tmp.length; _i < _len; _i++) {
+          sub = tmp[_i];
+          reply = sub.sink(event);
+          if (reply === Bacon.noMore || event.isEnd()) {
+            this.removeSub(sub);
+          }
+        }
+        return true;
+      } catch (_error) {
+        this.queue = [];
+        return false;
+      }
+    };
+
     Dispatcher.prototype.pushIt = function(event) {
-      var reply, sub, success, tmp, _i, _len;
       if (!this.pushing) {
         if (event === this.prevError) {
           return;
@@ -1739,25 +1756,9 @@
         if (event.isError()) {
           this.prevError = event;
         }
-        success = false;
-        try {
-          this.pushing = true;
-          tmp = this.subscriptions;
-          for (_i = 0, _len = tmp.length; _i < _len; _i++) {
-            sub = tmp[_i];
-            reply = sub.sink(event);
-            if (reply === Bacon.noMore || event.isEnd()) {
-              this.removeSub(sub);
-            }
-          }
-          success = true;
-        } finally {
-          this.pushing = false;
-          if (!success) {
-            this.queue = [];
-          }
-        }
-        success = true;
+        this.pushing = true;
+        this.pushToSubscriptions(event);
+        this.pushing = false;
         while (this.queue.length) {
           event = this.queue.shift();
           this.push(event);
