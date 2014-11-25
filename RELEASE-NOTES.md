@@ -1,3 +1,7 @@
+## 0.7.36
+
+- Improve Dispatcher performance (#473)
+
 ## 0.7.35
 
 - Improve side-effect processing performance by reducing array mutation
