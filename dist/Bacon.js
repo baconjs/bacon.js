@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.36';
+  Bacon.version = '0.7.37';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
