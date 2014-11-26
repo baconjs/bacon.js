@@ -22,3 +22,6 @@ test
 testem.json
 update-cdnjs
 version
+node_modules_good
+coffeelint.json
+testing
