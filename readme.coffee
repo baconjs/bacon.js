@@ -237,7 +237,7 @@ when there are subscribers to the stream. Polling ends permanently when
 doc.fn "Bacon.once(value : Event[A] | A) : EventStream[A]", """
 creates an EventStream that delivers the given
 single value for the first subscriber. The stream will end immediately
-after this value. You can also send send an `Bacon.Error` event instead of a
+after this value. You can also send an `Bacon.Error` event instead of a
 value: `Bacon.once(new Bacon.Error("fail"))`.
 """
 
