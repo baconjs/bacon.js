@@ -1408,7 +1408,7 @@ process a tick.
 
 ```js
   Bacon.when(
-    [tick, keyEvent], function(_, k) { handleKeyEvent(k); handleTick(); },
+    [tick, keyEvent], function(_, k) { handleKeyEvent(k); return handleTick(); },
     [tick], handleTick)
 ```
 
