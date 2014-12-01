@@ -249,7 +249,7 @@ creates an EventStream that delivers the given
 series of values (given as array) to the first subscriber. The stream ends after these
 values have been delivered. You can also send `Bacon.Error` events, or
 any combination of pure values and error events like this:
-`Bacon.fromArray([1, new Bacon.Error()])
+`Bacon.fromArray([1, new Bacon.Error()])`
 """
 
 doc.fn "Bacon.interval(interval : Number, value : A) : EventStream[A]", """
@@ -338,7 +338,7 @@ The subscribe function must return a function. Let's call that function
 unsubscribe and it should release all resources that the subscribe function reserved.
 
 The `sink` function may return `Bacon.more` or `Bacon.noMore`. It may also
-return undefined or anything else. Iff it returns `Bacon.noMore`, the subscriber
+return undefined or anything else. If it returns `Bacon.noMore`, the subscriber
 must be cleaned up just like in case of calling the `unsubscribe` function.
 
 The EventStream will wrap your `subscribe` function so that it will
@@ -445,7 +445,7 @@ property extractor string (like ".isValuable") instead. Just like with
 
 doc.fnOverload "observable.filter(property)", "property", """
 filters values based on the value of a
-property. Event will be included in output iff the property holds `true`
+property. Event will be included in output if the property holds `true`
 at the time of the event.
 """
 
@@ -460,7 +460,7 @@ property holds `true`.
 """
 
 doc.fn "observable.take(@ : Observable[A], n : Number) : Observable[A]", """
-`observable.take(n)` takes at most n elements from the stream. Equals to
+takes at most n elements from the stream. Equals to
 `Bacon.never()` if `n <= 0`.
 """
 
@@ -534,9 +534,9 @@ source.debounceImmediate(2): a-d-----a-d-----
 """
 
 doc.fn "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]", """
-throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+throttles the observable using a buffer so that at most one value event in `minimumInterval` is issued.
 Unlike `throttle`, it doesn't discard the excessive events but buffers them instead, outputing
-them with a rate of at most one value per minimumInterval.
+them with a rate of at most one value per `minimumInterval`.
 
 Example:
 
@@ -882,7 +882,7 @@ doc.fn "stream.skipDuplicates([isEqual])", """
 drops consecutive equal elements. So,
 from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
 checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+isEqual(oldValue, newValue). For instance, to do a deep comparison, you can
 use the isEqual function from [underscore.js](http://underscorejs.org/)
 like `stream.skipDuplicates(_.isEqual)`.
 """
