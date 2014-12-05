@@ -331,15 +331,18 @@ As shown in the example, you can push
 stream end).
 - An array of event objects at once
 
-See another [example](http://jsfiddle.net/PG4c4/).
+Other examples can be found on [JSFiddle](http://jsfiddle.net/PG4c4/) and the
+[Bacon.js blog](http://baconjs.blogspot.fi/2013/12/wrapping-things-in-bacon.html).
 
-The subscribe function must return a function. Let's call that function
-`unsubscribe`. The returned function can be used by the subscriber to
-unsubscribe and it should release all resources that the subscribe function reserved.
+The `subscribe` function must return a function. Let's call that function
+`unsubscribe`. The returned function can be used by the subscriber (directly or indirectly) to
+unsubscribe from the EventStream. It should release all resources that the subscribe function reserved.
 
-The `sink` function may return `Bacon.more` or `Bacon.noMore`. It may also
-return undefined or anything else. Iff it returns `Bacon.noMore`, the subscriber
-must be cleaned up just like in case of calling the `unsubscribe` function.
+The `sink` function may return [`Bacon.noMore`](#bacon-nomore) (as well as [`Bacon.more`](#bacon-more)
+or any other value). If it returns [`Bacon.noMore`](#bacon-nomore), no further events will be consumed
+by the subscriber. The `subscribe` function may choose to clean up all resources at this point (e.g.,
+by calling `unsubscribe`). This is usually not necessary, because further calls to `sink` are ignored,
+but doing so can increase performance in [rare cases](https://github.com/baconjs/bacon.js/issues/484).
 
 The EventStream will wrap your `subscribe` function so that it will
 only be called when the first stream listener is added, and the `unsubscribe`
