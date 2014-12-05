@@ -10,5 +10,3 @@ browsertest/bundle.js
 src/Testing*
 testing
 performance/performance.js
-ie8*
-performance/performance.js

@@ -7,6 +7,6 @@ ExpectToAssert
     "../spec/PromiseSpec.coffee"
     "../spec/SpecHelper.coffee"
     "../spec/TickScheduler.coffee"
-    "./jquery-tests.coffee"
+    "../browsertest/jquery-tests.coffee"
   ]
-  destDir: "../ie8"
+  destDir: "."
