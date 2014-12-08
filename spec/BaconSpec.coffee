@@ -3343,6 +3343,12 @@ describe "Infinite synchronous sequences", ->
       -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
       [1,1], unstable)
 
+describe "Exceptions", ->
+  it "are thrown through the stack", ->
+    b = new Bacon.Bus()
+    b.flatMap(-> throw "testing testing").onValue(->)
+    expect(-> b.push()).to.throw("testing testing")
+
 endlessly = (values...) ->
   index = 0
   Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
