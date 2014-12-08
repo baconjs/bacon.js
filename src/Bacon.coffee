@@ -983,9 +983,9 @@ class Dispatcher
         reply = sub.sink event
         @removeSub sub if reply == Bacon.noMore or event.isEnd()
       true
-    catch
+    catch e
       @queue = [] # ditch queue in case of exception to avoid unexpected behavior
-      false
+      throw e
 
   pushIt: (event) ->
     unless @pushing
@@ -1079,10 +1079,7 @@ class PropertyDispatcher extends Dispatcher
       else
         #console.log "bouncing value immediately"
         UpdateBarrier.inTransaction(undefined, this, (->
-          reply = try
-            sink initial(@current.get().value())
-          catch
-            Bacon.more
+          reply = sink initial(@current.get().value())
         ), [])
         @maybeSubSource(sink, reply)
     else
@@ -1470,16 +1467,18 @@ UpdateBarrier = (->
     else
       #console.log "start tx"
       rootEvent = event
-      result = f.apply(context, args)
-      #console.log("done with tx")
-      flush()
-      rootEvent = undefined
-      while (aftersIndex < afters.length)
-        after = afters[aftersIndex]
-        aftersIndex++
-        after()
-      aftersIndex = 0
-      afters = []
+      try
+        result = f.apply(context, args)
+        #console.log("done with tx")
+        flush()
+      finally
+        rootEvent = undefined
+        while (aftersIndex < afters.length)
+          after = afters[aftersIndex]
+          aftersIndex++
+          after()
+        aftersIndex = 0
+        afters = []
       result
 
   currentEventId = -> if rootEvent then rootEvent.id else undefined
