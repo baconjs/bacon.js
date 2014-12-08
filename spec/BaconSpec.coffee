@@ -3346,8 +3346,12 @@ describe "Infinite synchronous sequences", ->
 describe "Exceptions", ->
   it "are thrown through the stack", ->
     b = new Bacon.Bus()
-    b.flatMap(-> throw "testing testing").onValue(->)
+    b.take(1).flatMap(-> throw "testing testing").onValue(->)
     expect(-> b.push()).to.throw("testing testing")
+    values = []
+    b.take(1).onValue((x) -> values.push(x))
+    b.push()
+    expect(values).to.deep.equal([1])
 
 endlessly = (values...) ->
   index = 0
