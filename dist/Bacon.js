@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.37';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1731,7 +1731,7 @@
     };
 
     Dispatcher.prototype.pushToSubscriptions = function(event) {
-      var reply, sub, tmp, _i, _len;
+      var e, reply, sub, tmp, _i, _len;
       try {
         tmp = this.subscriptions;
         for (_i = 0, _len = tmp.length; _i < _len; _i++) {
@@ -1743,8 +1743,9 @@
         }
         return true;
       } catch (_error) {
+        e = _error;
         this.queue = [];
-        return false;
+        throw e;
       }
     };
 
@@ -1872,13 +1873,7 @@
           return this.maybeSubSource(sink, reply);
         } else {
           UpdateBarrier.inTransaction(void 0, this, (function() {
-            return reply = (function() {
-              try {
-                return sink(initial(this.current.get().value()));
-              } catch (_error) {
-                return Bacon.more;
-              }
-            }).call(this);
+            return reply = sink(initial(this.current.get().value()));
           }), []);
           return this.maybeSubSource(sink, reply);
         }
@@ -2651,16 +2646,19 @@
         return f.apply(context, args);
       } else {
         rootEvent = event;
-        result = f.apply(context, args);
-        flush();
-        rootEvent = void 0;
-        while (aftersIndex < afters.length) {
-          after = afters[aftersIndex];
-          aftersIndex++;
-          after();
+        try {
+          result = f.apply(context, args);
+          flush();
+        } finally {
+          rootEvent = void 0;
+          while (aftersIndex < afters.length) {
+            after = afters[aftersIndex];
+            aftersIndex++;
+            after();
+          }
+          aftersIndex = 0;
+          afters = [];
         }
-        aftersIndex = 0;
-        afters = [];
         return result;
       }
     };
