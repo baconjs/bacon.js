@@ -3350,8 +3350,8 @@ describe "Exceptions", ->
     expect(-> b.push()).to.throw("testing testing")
     values = []
     b.take(1).onValue((x) -> values.push(x))
-    b.push()
-    expect(values).to.deep.equal([1])
+    b.push("after exception")
+    expect(values).to.deep.equal(["after exception"])
 
 endlessly = (values...) ->
   index = 0

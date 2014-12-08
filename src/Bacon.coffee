@@ -984,6 +984,7 @@ class Dispatcher
         @removeSub sub if reply == Bacon.noMore or event.isEnd()
       true
     catch e
+      @pushing = false
       @queue = [] # ditch queue in case of exception to avoid unexpected behavior
       throw e
 
