@@ -1744,6 +1744,7 @@
         return true;
       } catch (_error) {
         e = _error;
+        this.pushing = false;
         this.queue = [];
         throw e;
       }
