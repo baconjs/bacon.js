@@ -762,7 +762,7 @@ Bacon.fromArray([1,2,3])
 <a name="observable-decode"></a>
 [`observable.decode(mapping)`](#observable-decode "observable.decode(mapping)") decodes input using the given mapping. Is a
 bit like a switch-case or the decode function in Oracle SQL. For
-example, the following would map the value 1 into the the string "mike"
+example, the following would map the value 1 into the string "mike"
 and the value 2 into the value of the `who` property.
 
 ```js
