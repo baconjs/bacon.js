@@ -1,3 +1,7 @@
+## 0.7.38
+
+- Fix #488: exceptions catched and hidden
+
 ## 0.7.36
 
 - Improve Dispatcher performance (#473)
