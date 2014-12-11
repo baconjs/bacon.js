@@ -2755,8 +2755,8 @@ describe "Bacon.when", ->
       ["cc"])
   describe "accepts constants instead of functions too", ->
     expectStreamEvents(
-      -> Bacon.when(Bacon.once(1), 2)
-      [2])
+      -> Bacon.when(Bacon.once(1), 2, Bacon.once(2), 3)
+      [2, 3])
   describe "works with synchronous sources", ->
     expectStreamEvents(
       ->
