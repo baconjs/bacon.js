@@ -11,9 +11,6 @@ module.exports = (grunt) ->
       ]
   )
 
-
-
-
   grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build','readme']
 
