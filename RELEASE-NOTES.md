@@ -1,3 +1,7 @@
+## 0.7.39
+
+- Fix wrapping constants as functions in Bacon.when
+
 ## 0.7.38
 
 - Fix #488: exceptions catched and hidden

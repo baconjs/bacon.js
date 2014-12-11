@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.38';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2186,11 +2186,9 @@
       patterns[i] = arguments[i];
       patterns[i + 1] = arguments[i + 1];
       patSources = _.toArray(arguments[i]);
-      f = arguments[i + 1];
+      f = constantToFunction(arguments[i + 1]);
       pat = {
-        f: (isFunction(f) ? f : (function() {
-          return f;
-        })),
+        f: f,
         ixs: []
       };
       triggerFound = false;
@@ -2836,6 +2834,14 @@
 
   makeFunction = function(f, args) {
     return makeFunction_.apply(null, [f].concat(__slice.call(args)));
+  };
+
+  constantToFunction = function(f) {
+    if (isFunction(f)) {
+      return f;
+    } else {
+      return _.always(f);
+    }
   };
 
   makeObservable = function(x) {

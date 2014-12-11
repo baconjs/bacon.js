@@ -1229,8 +1229,8 @@ Bacon.when = ->
     patterns[i] = arguments[i]
     patterns[i + 1] = arguments[i + 1]
     patSources = _.toArray arguments[i]
-    f = arguments[i + 1]
-    pat = {f: (if isFunction(f) then f else (-> f)), ixs: []}
+    f = constantToFunction(arguments[i + 1])
+    pat = {f, ixs: []}
     triggerFound = false
     for s in patSources
       index = _.indexOf(sources, s)
@@ -1550,6 +1550,12 @@ makeFunction_ = withMethodCallSupport (f, args...) ->
 
 makeFunction = (f, args) ->
   makeFunction_(f, args...)
+
+constantToFunction = (f) ->
+  if isFunction f
+    f
+  else
+    _.always(f)
 
 makeObservable = (x) ->
   if (isObservable(x))
