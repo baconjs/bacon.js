@@ -1,3 +1,7 @@
+## 0.7.40
+
+- Fix #491: takeUntil/flatMapLatest issues with sync sources
+
 ## 0.7.39
 
 - Fix wrapping constants as functions in Bacon.when
