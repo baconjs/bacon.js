@@ -858,6 +858,16 @@ describe "EventStream.flatMapLatest", ->
         Bacon.combineAsArray(f, b).map(".0")
       ["f0,0","f1,1"])
 
+  it "Works with flatMap source spawning fromArrays", ->
+    result = []
+    array = [1,2,3]
+    Bacon.fromArray(array)
+      .map(array)
+      .flatMap(Bacon.fromArray)
+      .flatMapLatest(Bacon._.id)
+      .onValue (v) -> result.push v
+    expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
+
 describe "Property.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
