@@ -1,6 +1,8 @@
 Bacon.js
 ========
 
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/baconjs/bacon.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 <img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />
 
 A small functional reactive programming lib for JavaScript.
