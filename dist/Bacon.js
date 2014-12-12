@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.38';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -263,18 +263,23 @@
     assertArray(values);
     i = 0;
     return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-      var reply, unsubd, value;
+      var push, reply, unsubd;
       unsubd = false;
       reply = Bacon.more;
-      while ((reply !== Bacon.noMore) && !unsubd) {
-        if (i >= values.length) {
-          sink(end());
-          reply = Bacon.noMore;
-        } else {
-          value = values[i++];
-          reply = sink(toEvent(value));
+      push = function() {
+        var value;
+        if ((reply !== Bacon.noMore) && !unsubd) {
+          if (i >= values.length) {
+            sink(end());
+            return reply = Bacon.noMore;
+          } else {
+            value = values[i++];
+            reply = sink(toEvent(value));
+            return UpdateBarrier.afterTransaction(push);
+          }
         }
-      }
+      };
+      push();
       return function() {
         return unsubd = true;
       };
@@ -2699,7 +2704,8 @@
       hasWaiters: hasWaiters,
       inTransaction: inTransaction,
       currentEventId: currentEventId,
-      wrappedSubscribe: wrappedSubscribe
+      wrappedSubscribe: wrappedSubscribe,
+      afterTransaction: afterTransaction
     };
   })();
 
