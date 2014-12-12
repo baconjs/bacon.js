@@ -172,13 +172,16 @@ Bacon.fromArray = (values) ->
   new EventStream describe(Bacon, "fromArray", values), (sink) ->
     unsubd = false
     reply = Bacon.more
-    while (reply != Bacon.noMore) and !unsubd
-      if i >= values.length
-        sink(end())
-        reply = Bacon.noMore
-      else
-        value = values[i++]
-        reply = sink(toEvent(value))
+    push = ->
+      if (reply != Bacon.noMore) and !unsubd
+        if i >= values.length
+          sink(end())
+          reply = Bacon.noMore
+        else
+          value = values[i++]
+          reply = sink(toEvent(value))
+          UpdateBarrier.afterTransaction push
+    push()
     -> unsubd = true
 
 Bacon.mergeAll = (streams...) ->
@@ -817,6 +820,7 @@ class EventStream extends Observable
         else
           [data, stopper] = event.value()
           if stopper.length
+#            console.log(_.toString(data), "stopped by", _.toString(stopper))
             @push end()
           else
             reply = Bacon.more
@@ -1500,7 +1504,7 @@ UpdateBarrier = (->
 
   hasWaiters = -> waiterObs.length > 0
 
-  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe }
+  { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction }
 )()
 
 Bacon.EventStream = EventStream
