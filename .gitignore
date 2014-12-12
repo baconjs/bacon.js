@@ -7,6 +7,7 @@ npm-debug.log
 *.exe
 *.nupkg
 browsertest/bundle.js
+tmp
 src/Testing*
 testing
 performance/performance.js
