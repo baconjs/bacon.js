@@ -1128,6 +1128,7 @@ class Bus extends EventStream
         return
 
   plug: (input) ->
+    assertObservable input
     return if @ended
     sub = { input: input }
     @subscriptions.push(sub)
@@ -1530,6 +1531,7 @@ toEvent = (x) -> if x instanceof Event then x else next x
 cloneArray = (xs) -> xs.slice(0)
 assert = (message, condition) -> throw new Exception(message) unless condition
 assertEventStream = (event) -> throw new Exception("not an EventStream : " + event) unless event instanceof EventStream
+assertObservable = (event) -> throw new Exception("not an Observable : " + event) unless event instanceof Observable
 assertFunction = (f) -> assert "not a function : " + f, isFunction(f)
 isFunction = (f) -> typeof f == "function"
 isArray = (xs) -> xs instanceof Array

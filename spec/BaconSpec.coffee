@@ -3153,6 +3153,9 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     bus.end()
 
+  it "throws if a non-observable is plugged", ->
+    expect(-> new Bacon.Bus().plug(undefined)).to.throw()
+
   describe "delivers pushed events and errors", ->
     expectStreamEvents(
       ->
