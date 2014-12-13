@@ -31,6 +31,7 @@ module.exports = (grunt, options) =>
               quotes: "double"
           #aggressiveOptimizations: false
           removeUseStricts: false
+          prefixMode: "camelCase"
           # wrap the output in a UMD (Universal Module Definition) pattern
           wrap:
             start: startFrag

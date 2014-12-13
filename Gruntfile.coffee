@@ -12,7 +12,7 @@ module.exports = (grunt) ->
   )
 
   grunt.registerTask "build", ["clean:dist", "copy", "replace:asserts", "coffee", "uglify", "clean:coffee"]
-  grunt.registerTask "next", ["6to5","requirejs","clean:tmp","jsbeautifier"]
+  grunt.registerTask "next", ["6to5","requirejs","jsbeautifier"]
   grunt.registerTask "default", ["build","readme"]
 
   grunt.registerTask "readme", "Generate README.md", ->
