@@ -261,24 +261,34 @@
   Bacon.fromArray = function(values) {
     var i;
     assertArray(values);
-    i = 0;
-    return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-      var reply, unsubd, value;
-      unsubd = false;
-      reply = Bacon.more;
-      while ((reply !== Bacon.noMore) && !unsubd) {
-        if (i >= values.length) {
-          sink(end());
-          reply = Bacon.noMore;
-        } else {
-          value = values[i++];
-          reply = sink(toEvent(value));
-        }
-      }
-      return function() {
-        return unsubd = true;
-      };
-    });
+    if (!values.length) {
+      return withDescription(Bacon, "fromArray", values, Bacon.never());
+    } else {
+      i = 0;
+      return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
+        var push, reply, unsubd;
+        unsubd = false;
+        reply = Bacon.more;
+        push = function() {
+          var value;
+          if ((reply !== Bacon.noMore) && !unsubd) {
+            value = values[i++];
+            reply = sink(toEvent(value));
+            if (reply !== Bacon.noMore) {
+              if (i === values.length) {
+                return sink(end());
+              } else {
+                return UpdateBarrier.afterTransaction(push);
+              }
+            }
+          }
+        };
+        push();
+        return function() {
+          return unsubd = true;
+        };
+      });
+    }
   };
 
   Bacon.mergeAll = function() {
@@ -2697,7 +2707,8 @@
       hasWaiters: hasWaiters,
       inTransaction: inTransaction,
       currentEventId: currentEventId,
-      wrappedSubscribe: wrappedSubscribe
+      wrappedSubscribe: wrappedSubscribe,
+      afterTransaction: afterTransaction
     };
   })();
 
