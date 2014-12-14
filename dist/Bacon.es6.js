@@ -13,7 +13,64 @@
   }
 }(this, function(exports) {
   "use strict";
-  var helpersHasProp, helpersIsArray, helpersIsFunction, helpersToString, helpersMap, helpersHelpers, Bacon;
+  (function(global) {
+    var polyfill = global.polyfill = {};
+    polyfill.extends = function(child, parent) {
+      child.prototype = Object.create(parent.prototype, {
+        constructor: {
+          value: child,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
+      child.__proto__ = parent;
+    };
+
+    polyfill.classProps = function(child, staticProps, instanceProps) {
+      if (staticProps) Object.defineProperties(child, staticProps);
+      if (instanceProps) Object.defineProperties(child.prototype, instanceProps);
+    };
+
+    polyfill.applyConstructor = function(Constructor, args) {
+      var instance = Object.create(Constructor.prototype);
+
+      var result = Constructor.apply(instance, args);
+
+      return result != null && (typeof result == "object" || typeof result == "function") ? result : instance;
+    };
+
+    polyfill.taggedTemplateLiteral = function(strings, raw) {
+      return Object.defineProperties(strings, {
+        raw: {
+          value: raw
+        }
+      });
+    };
+
+    polyfill.interopRequire = function(obj) {
+      return obj && (obj["default"] || obj);
+    };
+
+    polyfill.toArray = function(arr) {
+      return Array.isArray(arr) ? arr : Array.from(arr);
+    };
+
+    polyfill.objectSpread = function(obj, keys) {
+      var target = {};
+      for (var i in obj) {
+        if (keys.indexOf(i) >= 0) continue;
+        if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+        target[i] = obj[i];
+      }
+
+      return target;
+    };
+
+    polyfill.hasOwn = Object.prototype.hasOwnProperty;
+    polyfill.slice = Array.prototype.slice;
+  })(typeof global === "undefined" ? self : global);
+  var helpersHasProp, helpersIsArray, helpersIsFunction, helpersToString, helpersMap, helpersHelpers, classesObservable, classesEventStream, Bacon;
   helpersHasProp = function(exports) {
     exports["default"] = Object.prototype.hasOwnProperty;
     return exports;
@@ -106,7 +163,32 @@
     exports.toString = toString;
     return exports;
   }({}, helpersToString, helpersMap);
-  Bacon = function(exports, _helpersHelpers) {
+  classesObservable = function(exports) {
+    var idCounter = 0;
+    var Observable = function Observable() {
+      this.id = ++idCounter;
+      /*    withDescription(desc, this)
+                                  @initialDesc = @desc*/
+    };
+    exports["default"] = Observable;
+    return exports;
+  }({});
+  classesEventStream = function(exports, _Observable) {
+    var Observable = _Observable["default"];
+    var idCounter = 0;
+    var EventStream = function(Observable) {
+      var EventStream = function EventStream() {
+        this.id = ++idCounter;
+        /*    withDescription(desc, this)
+                                      @initialDesc = @desc*/
+      };
+      polyfill["extends"](EventStream, Observable);
+      return EventStream;
+    }(Observable);
+    exports.EventStream = EventStream;
+    return exports;
+  }({}, classesObservable);
+  Bacon = function(exports, _helpersHelpers, _classesEventStream) {
     var _ = _helpersHelpers;
     var version = "<version>",
       toString = "Bacon";
@@ -114,6 +196,6 @@
     exports.toString = toString;
     exports._ = _;
     return exports;
-  }({}, helpersHelpers);
+  }({}, helpersHelpers, classesEventStream);
   exports.Bacon = Bacon;
 }));

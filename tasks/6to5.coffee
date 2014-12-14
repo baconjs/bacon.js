@@ -16,6 +16,7 @@ module.exports = (grunt) ->
     blacklist: ["useStrict"]
     modules: "amd"
     amdModuleIds: true
+    runtime: "polyfill"
   compile:
     files:[
       expand: true

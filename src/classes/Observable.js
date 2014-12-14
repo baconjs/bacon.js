@@ -1,6 +1,6 @@
 var idCounter = 0;
 
-export class Observable {
+export default class Observable {
   constructor() {
   	this.id = ++idCounter;
 /*    withDescription(desc, this)

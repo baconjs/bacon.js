@@ -1,4 +1,4 @@
-import Observable from "./classes/Observable";
+import Observable from "./Observable";
 
 var idCounter = 0;
 

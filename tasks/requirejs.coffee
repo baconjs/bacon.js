@@ -1,5 +1,6 @@
 # nodejs modules
 fs = require("fs")
+to5 = require("6to5")
 amdclean = require("amdclean");
 
 module.exports = (grunt, options) =>
@@ -8,6 +9,7 @@ module.exports = (grunt, options) =>
   mainFile = "Bacon";
   # Get the script intro and outro strings
   startFrag = fs.readFileSync("src/frags/start.frag","utf8")
+  to5Runtime = to5.runtime("polyfill")
   endFrag = fs.readFileSync("src/frags/end.frag","utf8")
 
   # common build options
@@ -33,8 +35,9 @@ module.exports = (grunt, options) =>
           removeUseStricts: false
           prefixMode: "camelCase"
           # wrap the output in a UMD (Universal Module Definition) pattern
+          # adding the 6to5 polyfills
           wrap:
-            start: startFrag
+            start: startFrag + to5Runtime
             end: endFrag
         )
   # expanded release
