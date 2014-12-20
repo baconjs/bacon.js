@@ -1,0 +1,1 @@
+export default (global ? global : this).Error;

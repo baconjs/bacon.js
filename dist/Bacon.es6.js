@@ -70,7 +70,7 @@
     polyfill.hasOwn = Object.prototype.hasOwnProperty;
     polyfill.slice = Array.prototype.slice;
   })(typeof global === "undefined" ? self : global);
-  var helpersHasProp, helpersIsArray, helpersIsFunction, helpersToString, helpersMap, helpersHelpers, classesObservable, classesEventStream, Bacon;
+  var helpersHasProp, helpersIsArray, helpersIsFunction, helpersToString, helpersMap, helpersHelpers, classesObservable, classesEventStream, classesProperty, classesBus, classesEvent, classesNext, classesInitial, classesEnd, classesError, Bacon;
   helpersHasProp = function(exports) {
     exports["default"] = Object.prototype.hasOwnProperty;
     return exports;
@@ -188,14 +188,185 @@
     exports.EventStream = EventStream;
     return exports;
   }({}, classesObservable);
-  Bacon = function(exports, _helpersHelpers, _classesEventStream) {
-    var _ = _helpersHelpers;
+  classesProperty = function(exports) {
+    var Property = function Property() {};
+    exports.Property = Property;
+    return exports;
+  }({});
+  classesBus = function(exports) {
+    var Bus = function Bus() {};
+    exports.Bus = Bus;
+    return exports;
+  }({});
+  classesEvent = function(exports) {
+    var idCounter = 0;
+    var Event = function() {
+      var Event = function Event() {
+        this.id = ++idCounter;
+      };
+      Event.prototype.isEvent = function() {
+        return true;
+      };
+      Event.prototype.isEnd = function() {
+        return false;
+      };
+      Event.prototype.isInitial = function() {
+        return false;
+      };
+      Event.prototype.isNext = function() {
+        return false;
+      };
+      Event.prototype.isError = function() {
+        return false;
+      };
+      Event.prototype.hasValue = function() {
+        return false;
+      };
+      Event.prototype.filter = function() {
+        return true;
+      };
+      Event.prototype.inspect = function() {
+        return this.toString();
+      };
+      Event.prototype.log = function() {
+        return this.toString();
+      };
+      return Event;
+    }();
+    exports.Event = Event;
+    return exports;
+  }({});
+  classesNext = function(exports, _Event, _Next, _helpersIsFunction, _helpersToString) {
+    var Event = _Event["default"];
+    var Next = _Next["default"];
+    var isFunction = _helpersIsFunction["default"];
+    var toString = _helpersToString["default"];
+    var Next = function(Event) {
+      var Next = function Next(valueF, eager) {
+        Event.call(this);
+        if (!eager && isFunction(valueF) || valueF instanceof Next) {
+          this.valueF = valueF;
+        } else {
+          this.valueInternal = valueF;
+        }
+      };
+      polyfill["extends"](Next, Event);
+      Next.prototype.isNext = function() {
+        return true;
+      };
+      Next.prototype.hasValue = function() {
+        return true;
+      };
+      Next.prototype.value = function() {
+        if (this.valueF instanceof Next) {
+          this.valueInternal = this.valueF.value();
+        } else if (this.valueF) {
+          this.valueInternal = this.valueF();
+        }
+        return this.valueInternal;
+      };
+      Next.prototype.apply = function(value) {
+        return new Next(value);
+      };
+      Next.prototype.filter = function(f) {
+        return f(this.value());
+      };
+      Next.prototype.toString = function() {
+        return toString(this.value());
+      };
+      Next.prototype.log = function() {
+        return this.value();
+      };
+      return Next;
+    }(Event);
+    exports.Next = Next;
+    return exports;
+  }({}, classesEvent, classesNext, helpersIsFunction, helpersToString);
+  classesInitial = function(exports, _Next) {
+    var Next = _Next["default"];
+    var Initial = function(Next) {
+      var Initial = function Initial() {};
+      polyfill["extends"](Initial, Next);
+      Initial.prototype.isInitial = function() {
+        return true;
+      };
+      Initial.prototype.isNext = function() {
+        return false;
+      };
+      Initial.prototype.apply = function(value) {
+        return new Initial(value);
+      };
+      Initial.prototype.toNext = function() {
+        return new Next(this);
+      };
+      return Initial;
+    }(Next);
+    exports.Initial = Initial;
+    return exports;
+  }({}, classesNext);
+  classesEnd = function(exports, _Event) {
+    var Event = _Event["default"];
+    var End = function(Event) {
+      var End = function End() {};
+      polyfill["extends"](End, Event);
+      End.prototype.isEnd = function() {
+        return true;
+      };
+      End.prototype.fmap = function() {
+        return this;
+      };
+      End.prototype.apply = function() {
+        return this;
+      };
+      End.prototype.toString = function() {
+        return "<end>";
+      };
+      return End;
+    }(Event);
+    exports.End = End;
+    return exports;
+  }({}, classesEvent);
+  classesError = function(exports, _Event, _helpersToString) {
+    var Event = _Event["default"];
+    var toString = _helpersToString["default"];
+    var Error = function(Event) {
+      var Error = function Error(error) {
+        this.error = error;
+      };
+      polyfill["extends"](Error, Event);
+      Error.prototype.isError = function() {
+        return true;
+      };
+      Error.prototype.fmap = function() {
+        return this;
+      };
+      Error.prototype.apply = function() {
+        return this;
+      };
+      Error.prototype.toString = function() {
+        return "<error> " + toString(this.error);
+      };
+      return Error;
+    }(Event);
+    exports.Error = Error;
+    return exports;
+  }({}, classesEvent, helpersToString);
+  Bacon = function(exports, _helpersHelpers, _classesEventStream, _classesProperty, _classesObservable, _classesBus, _classesInitial, _classesEnd, _classesError) {
+    var _ = _helpersHelpers["default"];
     var version = "<version>",
       toString = "Bacon";
+    exports.EventStream = EventStream;
+    exports.Property = Property;
+    exports.Observable = Observable;
+    exports.Bus = Bus;
+    exports.Initial = Initial;
+    exports.Next = Next;
+    exports.End = End;
+    exports.Error = Error;
     exports.version = version;
     exports.toString = toString;
     exports._ = _;
     return exports;
-  }({}, helpersHelpers, classesEventStream);
+  }({}, helpersHelpers, classesEventStream, classesProperty, classesObservable, classesBus, classesInitial, classesEnd, classesError);
   exports.Bacon = Bacon;
 }));

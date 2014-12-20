@@ -2,9 +2,9 @@ var idCounter = 0;
 
 export default class Observable {
   constructor() {
-  	this.id = ++idCounter;
-/*    withDescription(desc, this)
-    @initialDesc = @desc*/
+    this.id = ++idCounter;
+    /*    withDescription(desc, this)
+        @initialDesc = @desc*/
   }
 }
 

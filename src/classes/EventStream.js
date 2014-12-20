@@ -1,284 +1,283 @@
 import Observable from "./Observable";
+import isFunction from "../helpers/isFunction";
+import assertFunction from "../helpers/assertFunction";
+import assertEventStream from "../helpers/assertEventStream";
+import withDescription from "../helpers/withDescription";
+import convertArgsToFunction from "../helpers/convertArgsToFunction";
+import id from "../helpers/id";
+import nop from "../helpers/nop";
 
 var idCounter = 0;
 
 export class EventStream extends Observable {
-  constructor() {
-  	this.id = ++idCounter;
-/*    withDescription(desc, this)
-    @initialDesc = @desc*/
+  constructor(desc, subscribe, handler) {
+    if (isFunction(desc)) {
+      handler = subscribe;
+      subscribe = desc;
+      desc = [];
+    }
+
+    super(desc);
+    assertFunction(subscribe);
+    this.dispatcher = new Dispatcher(subscribe, handler);
+    registerObs(this);
   }
+  delay(delay) {
+    return withDescription(this, "delay", delay, this.flatMap(function(value) {
+      return Bacon.later(delay, value);
+    }));
+  }
+  debounce(delay) {
+    return withDescription(this, "debounce", delay, this.flatMapLatest(function(value) {
+      return Bacon.later(delay, value);
+    }));
+  }
+  debounceImmediate(delay) {
+    return withDescription(this, "debounceImmediate", delay, this.flatMapFirst(function(value) {
+      return Bacon.once(value).concat(Bacon.later(delay).filter(false));
+    }));
+  }
+  throttle(delay) {
+    return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map(function(values) {
+      return values[values.length - 1];
+    }));
+  }
+  bufferWithTime(delay) {
+    return withDescription(this, "bufferWithTime", delay, this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
+  }
+  bufferWithCount(count) {
+    return withDescription(this, "bufferWithCount", count, this.bufferWithTimeOrCount(void 0, count));
+  }
+  bufferWithTimeOrCount(delay, count) {
+    var flushOrSchedule;
+    flushOrSchedule = function(buffer) {
+      if (buffer.values.length === count) {
+        return buffer.flush();
+      } else if (delay !== void 0) {
+        return buffer.schedule();
+      }
+    };
+    return withDescription(this, "bufferWithTimeOrCount", delay, count, this.buffer(delay, flushOrSchedule, flushOrSchedule));
+  }
+  buffer(delay, onInput = nop, onFlush = nop) {
+    var buffer, delayMs, reply;
+    if (!onInput) {
+      onInput = nop;
+    }
+    if (!onFlush) {
+      onFlush = nop;
+    }
+    buffer = {
+      scheduled: false,
+      end: void 0,
+      values: [],
+      flush: function() {
+        var reply;
+        this.scheduled = false;
+        if (this.values.length > 0) {
+          reply = this.push(next(this.values));
+          this.values = [];
+          if (this.end) {
+            return this.push(this.end);
+          } else if (reply !== Bacon.noMore) {
+            return onFlush(this);
+          }
+        } else {
+          if (this.end) {
+            return this.push(this.end);
+          }
+        }
+      },
+      schedule: function() {
+        if (!this.scheduled) {
+          this.scheduled = true;
+          return delay((function(_this) {
+            return function() {
+              return _this.flush();
+            };
+          })(this));
+        }
+      }
+    };
+    reply = Bacon.more;
+    if (!isFunction(delay)) {
+      delayMs = delay;
+      delay = function(f) {
+        return Bacon.scheduler.setTimeout(f, delayMs);
+      };
+    }
+    return withDescription(this, "buffer", this.withHandler(function(event) {
+      buffer.push = (function(_this) {
+        return function(event) {
+          return _this.push(event);
+        };
+      })(this);
+      if (event.isError()) {
+        reply = this.push(event);
+      } else if (event.isEnd()) {
+        buffer.end = event;
+        if (!buffer.scheduled) {
+          buffer.flush();
+        }
+      } else {
+        buffer.values.push(event.value());
+        onInput(buffer);
+      }
+      return reply;
+    }));
+  }
+  merge(right) {
+    var left;
+    assertEventStream(right);
+    left = this;
+    return withDescription(left, "merge", right, Bacon.mergeAll(this, right));
+  }
+  toProperty(initValue_) {
+    var disp, initValue;
+    initValue = arguments.length === 0 ? None : toOption(function() {
+      return initValue_;
+    });
+    disp = this.dispatcher;
+    return new Property(describe(this, "toProperty", initValue_), function(sink) {
+      var initSent, reply, sendInit, unsub;
+      initSent = false;
+      unsub = nop;
+      reply = Bacon.more;
+      sendInit = function() {
+        if (!initSent) {
+          return initValue.forEach(function(value) {
+            initSent = true;
+            reply = sink(new Initial(value));
+            if (reply === Bacon.noMore) {
+              unsub();
+              return unsub = nop;
+            }
+          });
+        }
+      };
+      unsub = disp.subscribe(function(event) {
+        if (event.hasValue()) {
+          if (initSent && event.isInitial()) {
+            return Bacon.more;
+          } else {
+            if (!event.isInitial()) {
+              sendInit();
+            }
+            initSent = true;
+            initValue = new Some(event);
+            return sink(event);
+          }
+        } else {
+          if (event.isEnd()) {
+            reply = sendInit();
+          }
+          if (reply !== Bacon.noMore) {
+            return sink(event);
+          }
+        }
+      });
+      sendInit();
+      return unsub;
+    });
+  }
+  toEventStream() {
+    return this;
+  }
+  sampledBy(sampler, combinator) {
+    return withDescription(this, "sampledBy", sampler, combinator, this.toProperty().sampledBy(sampler, combinator));
+  }
+  concat(right) {
+    var left;
+    left = this;
+    return new EventStream(describe(left, "concat", right), function(sink) {
+      var unsubLeft, unsubRight;
+      unsubRight = nop;
+      unsubLeft = left.dispatcher.subscribe(function(e) {
+        if (e.isEnd()) {
+          return right.dispatcher.subscribe(sink);
+        } else {
+          return sink(e);
+        }
+      });
+      return function() {
+        unsubLeft();
+        return unsubRight();
+      };
+    });
+  }
+  takeUntil(stopper) {
+    var endMarker;
+    endMarker = {};
+    return withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function(event) {
+      var data, reply, value, _i, _len, _ref1;
+      if (!event.hasValue()) {
+        return this.push(event);
+      } else {
+        _ref1 = event.value();
+        data = _ref1[0];
+        stopper = _ref1[1];
+        if (stopper.length) {
+          return this.push(end());
+        } else {
+          reply = Bacon.more;
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            value = data[_i];
+            if (value === endMarker) {
+              reply = this.push(end());
+            } else {
+              reply = this.push(next(value));
+            }
+          }
+          return reply;
+        }
+      }
+    }));
+  }
+  skipUntil(starter) {
+    var started;
+    started = starter.take(1).map(true).toProperty(false);
+    return withDescription(this, "skipUntil", starter, this.filter(started));
+  }
+  skipWhile(f, ...args) {
+    var ok;
+    ok = false;
+    return convertArgsToFunction(this, f, args, function(f) {
+      return withDescription(this, "skipWhile", f, this.withHandler(function(event) {
+        if (ok || !event.hasValue() || !f(event.value())) {
+          if (event.hasValue()) {
+            ok = true;
+          }
+          return this.push(event);
+        } else {
+          return Bacon.more;
+        }
+      }));
+    });
+  }
+  holdWhen(valve) {
+    var putToHold, releaseHold, valve_;
+    valve_ = valve.startWith(false);
+    releaseHold = valve_.filter(function(x) {
+      return !x;
+    });
+    putToHold = valve_.filter(_.id);
+    return withDescription(this, "holdWhen", valve, this.filter(false).merge(valve_.flatMapConcat((function(_this) {
+      return function(shouldHold) {
+        if (!shouldHold) {
+          return _this.takeUntil(putToHold);
+        } else {
+          return _this.scan([], (function(xs, x) {
+            return xs.concat(x);
+          })).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
+        }
+      };
+    })(this))));
+  }
+  startWith: (seed) - >
+    withDescription(this, "startWith", seed,
+      Bacon.once(seed).concat(this))
+
+  withHandler: (handler) - >
+    new EventStream describe(this, "withHandler", handler), @dispatcher.subscribe, handler
+
 }
-
-/*
-constructor: (desc) ->
-    @id = ++idCounter
-    withDescription(desc, this)
-    @initialDesc = @desc
-
-  subscribe: (sink) ->
-    UpdateBarrier.wrappedSubscribe(this, sink)
-
-  subscribeInternal: (sink) ->
-    # For backward compatibility. To be removed in 0.8
-    @dispatcher.subscribe(sink)
-
-  onValue: ->
-    f = makeFunctionArgs(arguments)
-    @subscribe (event) ->
-      f event.value() if event.hasValue()
-
-  onValues: (f) ->
-    @onValue (args) -> f(args...)
-
-  onError: ->
-    f = makeFunctionArgs(arguments)
-    @subscribe (event) ->
-      f event.error if event.isError()
-
-  onEnd: ->
-    f = makeFunctionArgs(arguments)
-    @subscribe (event) ->
-      f() if event.isEnd()
-
-  errors: -> withDescription(this, "errors", @filter(-> false))
-
-  filter: (f, args...) ->
-    convertArgsToFunction this, f, args, (f) ->
-      withDescription(this, "filter", f, @withHandler (event) ->
-        if event.filter(f)
-          @push event
-        else
-          Bacon.more)
-
-  takeWhile: (f, args...) ->
-    convertArgsToFunction this, f, args, (f) ->
-      withDescription(this, "takeWhile", f, @withHandler (event) ->
-        if event.filter(f)
-          @push event
-        else
-          @push end()
-          Bacon.noMore)
-
-  endOnError: (f, args...) ->
-    f = true unless f?
-    convertArgsToFunction this, f, args, (f) ->
-      withDescription(this, "endOnError", @withHandler (event) ->
-        if event.isError() and f(event.error)
-          @push event
-          @push end()
-        else
-          @push event)
-
-  take: (count) ->
-    return Bacon.never() if count <= 0
-    withDescription(this, "take", count, @withHandler (event) ->
-      unless event.hasValue()
-        @push event
-      else
-        count--
-        if count > 0
-          @push event
-        else
-          @push event if count == 0
-          @push end()
-          Bacon.noMore)
-
-  map: (p, args...) ->
-    if (p instanceof Property)
-      p.sampledBy(this, former)
-    else
-      convertArgsToFunction this, p, args, (f) ->
-        withDescription(this, "map", f, @withHandler (event) ->
-          @push event.fmap(f))
-
-  mapError: ->
-    f = makeFunctionArgs(arguments)
-    withDescription(this, "mapError", f, @withHandler (event) ->
-      if event.isError()
-        @push next (f event.error)
-      else
-        @push event)
-
-  mapEnd: ->
-    f = makeFunctionArgs(arguments)
-    withDescription(this, "mapEnd", f, @withHandler (event) ->
-      if (event.isEnd())
-        @push next(f(event))
-        @push end()
-        Bacon.noMore
-      else
-        @push event)
-
-  doAction: ->
-    f = makeFunctionArgs(arguments)
-    withDescription(this, "doAction", f, @withHandler (event) ->
-      f(event.value()) if event.hasValue()
-      @push event)
-
-  skip: (count) ->
-    withDescription(this, "skip", count, @withHandler (event) ->
-      unless event.hasValue()
-        @push event
-      else if (count > 0)
-        count--
-        Bacon.more
-      else
-        @push event)
-
-  skipDuplicates: (isEqual = (a, b) -> a == b) ->
-    withDescription(this, "skipDuplicates",
-      @withStateMachine None, (prev, event) ->
-        unless event.hasValue()
-          [prev, [event]]
-        else if event.isInitial() or prev == None or !isEqual(prev.get(), event.value())
-          [new Some(event.value()), [event]]
-        else
-          [prev, []])
-
-  skipErrors: ->
-    withDescription(this, "skipErrors", @withHandler (event) ->
-      if event.isError()
-        Bacon.more
-      else
-        @push event)
-
-  withStateMachine: (initState, f) ->
-    state = initState
-    withDescription(this, "withStateMachine", initState, f, @withHandler (event) ->
-      fromF = f(state, event)
-      [newState, outputs] = fromF
-      state = newState
-      reply = Bacon.more
-      for output in outputs
-        reply = @push output
-        if reply == Bacon.noMore
-          return reply
-      reply)
-
-  scan: (seed, f) ->
-    f = toCombinator(f)
-    acc = toOption(seed)
-    subscribe = (sink) =>
-      initSent = false
-      unsub = nop
-      reply = Bacon.more
-      sendInit = ->
-        unless initSent
-          acc.forEach (value) ->
-            initSent = true
-            reply = sink(new Initial(-> value))
-            if (reply == Bacon.noMore)
-              unsub()
-              unsub = nop
-      unsub = @dispatcher.subscribe (event) ->
-        if (event.hasValue())
-          if (initSent and event.isInitial())
-            Bacon.more # init already sent, skip this one
-          else
-            sendInit() unless event.isInitial()
-            initSent = true
-            prev = acc.getOrElse(undefined)
-            next = f(prev, event.value())
-            acc = new Some(next)
-            sink (event.apply(-> next))
-        else
-          if event.isEnd()
-            reply = sendInit()
-          sink event unless reply == Bacon.noMore
-      UpdateBarrier.whenDoneWith resultProperty, sendInit
-      unsub
-    resultProperty = new Property describe(this, "scan", seed, f), subscribe
-
-  fold: (seed, f) ->
-    withDescription(this, "fold", seed, f, @scan(seed, f).sampledBy(@filter(false).mapEnd().toProperty()))
-
-  zip: (other, f = Array) ->
-    withDescription(this, "zip", other,
-      Bacon.zipWith([this,other], f))
-
-  diff: (start, f) ->
-    f = toCombinator(f)
-    withDescription(this, "diff", start, f,
-      @scan([start], (prevTuple, next) ->
-        [next, f(prevTuple[0], next)])
-      .filter((tuple) -> tuple.length == 2)
-      .map((tuple) -> tuple[1]))
-
-  flatMap: ->
-    flatMap_ this, makeSpawner(arguments)
-
-  flatMapFirst: ->
-    flatMap_ this, makeSpawner(arguments), true
-
-  flatMapWithConcurrencyLimit: (limit, args...) ->
-    withDescription(this, "flatMapWithConcurrencyLimit", limit, args...,
-      flatMap_ this, makeSpawner(args), false, limit)
-
-  flatMapLatest: ->
-    f = makeSpawner(arguments)
-    stream = @toEventStream()
-    withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
-      makeObservable(f(value)).takeUntil(stream))
-
-  flatMapError: (fn) ->
-    withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->
-      if x instanceof Error
-        fn(x.error)
-      else
-        Bacon.once(x))
-
-  flatMapConcat: ->
-    withDescription(this, "flatMapConcat", arguments...,
-      @flatMapWithConcurrencyLimit 1, arguments...)
-
-  bufferingThrottle: (minimumInterval) ->
-    withDescription(this, "bufferingThrottle", minimumInterval,
-      @flatMapConcat (x) ->
-        Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
-
-  not: -> withDescription(this, "not", @map((x) -> !x))
-
-  log: (args...) ->
-    @subscribe (event) -> console?.log?(args..., event.log())
-    this
-
-  slidingWindow: (n, minValues = 0) ->
-    withDescription(this, "slidingWindow", n, minValues, @scan([], ((window, value) -> window.concat([value]).slice(-n)))
-          .filter(((values) -> values.length >= minValues)))
-
-  combine: (other, f) ->
-    combinator = toCombinator(f)
-    withDescription(this, "combine", other, f,
-      Bacon.combineAsArray(this, other)
-        .map (values) ->
-          combinator(values[0], values[1]))
-
-  decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
-
-  awaiting: (other) ->
-    withDescription(this, "awaiting", other,
-      Bacon.groupSimultaneous(this, other)
-        .map(([myValues, otherValues]) -> otherValues.length == 0)
-        .toProperty(false).skipDuplicates())
-
-  name: (name) ->
-    @_name = name
-    this
-
-  withDescription: ->
-    describe(arguments...).apply(this)
-
-  toString: ->
-    if @_name
-      @_name
-    else
-      @desc.toString()
-
-  internalDeps: ->
-    @initialDesc.deps()
-
-Observable :: reduce = Observable :: fold
-Observable :: assign = Observable :: onValue
-Observable :: inspect = Observable :: toString
- */
