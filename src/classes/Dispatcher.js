@@ -1,12 +1,15 @@
 import without from "../helpers/without";
-import UpdateBarrier from "../helpers/UpdateBarrier";
+import assertFunction from "../helpers/assertFunction";
+import end from "../helpers/end";
+import nop from "../helpers/nop";
+import UpdateBarrier from "../globals/UpdateBarrier";
 
 export class Dispatcher {
   constructor(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;
-    this.subscribe = subscribe.call(this);
-    this.handleEvent = handleEvent.call(this);
+    this.subscribe = _subscribe.call(this);
+    this.handleEvent = _handleEvent.call(this);
     this.subscriptions = [];
     this.queue = [];
     this.pushing = false;

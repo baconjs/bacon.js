@@ -1,4 +1,4 @@
-import slice from "./helpers/slice";
+import slice from "./slice";
 
 export default function withDescription() {
   var desc, obs, _i;

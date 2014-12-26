@@ -84,5 +84,7 @@
 
     // Custom Globals
     // additional predefined global variables
-    "globals"       : {}
+    "globals"       : {
+        "Bacon":true
+    }
 }

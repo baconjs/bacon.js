@@ -1,4 +1,6 @@
 import Observable from "./Observable";
+import Dispatcher from "./Dispatcher";
+import registerObs from "../helpers/registerObs";
 import isFunction from "../helpers/isFunction";
 import assertFunction from "../helpers/assertFunction";
 import assertEventStream from "../helpers/assertEventStream";
@@ -6,6 +8,7 @@ import withDescription from "../helpers/withDescription";
 import convertArgsToFunction from "../helpers/convertArgsToFunction";
 import id from "../helpers/id";
 import nop from "../helpers/nop";
+import next from "../helpers/next";
 
 var idCounter = 0;
 
@@ -273,11 +276,11 @@ export class EventStream extends Observable {
       };
     })(this))));
   }
-  startWith: (seed) - >
-    withDescription(this, "startWith", seed,
-      Bacon.once(seed).concat(this))
+  startWith(seed) {
+    withDescription(this, "startWith", seed, Bacon.once(seed).concat(this));
+  }
 
-  withHandler: (handler) - >
-    new EventStream describe(this, "withHandler", handler), @dispatcher.subscribe, handler
-
+  withHandler(handler) {
+    new EventStream(describe(this, "withHandler", handler), this.dispatcher.subscribe, handler);
+  }
 }
