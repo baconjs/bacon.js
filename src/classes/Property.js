@@ -1,3 +1,3 @@
-export class Property {
+export default class Property {
   constructor() {}
 }

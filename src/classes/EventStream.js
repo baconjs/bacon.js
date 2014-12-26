@@ -12,7 +12,7 @@ import next from "../helpers/next";
 
 var idCounter = 0;
 
-export class EventStream extends Observable {
+export default class EventStream extends Observable {
   constructor(desc, subscribe, handler) {
     if (isFunction(desc)) {
       handler = subscribe;

@@ -1,3 +1,3 @@
-export class Bus {
+export default class Bus {
   constructor() {}
 }

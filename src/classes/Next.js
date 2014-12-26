@@ -3,7 +3,7 @@ import Next from "./Next";
 import isFunction from "../helpers/isFunction";
 import toString from "../helpers/toString";
 
-export class Next extends Event {
+export default class Next extends Event {
   constructor(valueF, eager) {
     super();
     if (!eager && isFunction(valueF) || valueF instanceof Next) {

@@ -1,5 +1,5 @@
 expect = require("chai").expect
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 _ = Bacon._
 
 t = @t = (time) -> time
@@ -40,7 +40,7 @@ if grep
   srcWithRelativeTime = () ->
     now = Bacon.scheduler.now
     t0 = now()
-    relativeTime = () -> 
+    relativeTime = () ->
       Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
     src().flatMap(withRelativeTime)
@@ -83,7 +83,7 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
 
 verifyPLateEval = (srcF, expectedEvents) ->
   verifyPropertyWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
-    src.subscribe (event) -> 
+    src.subscribe (event) ->
       if event.isEnd()
         done()
       else
@@ -91,7 +91,7 @@ verifyPLateEval = (srcF, expectedEvents) ->
 
 verifyPSwitching = (srcF, expectedEvents) ->
   verifyPropertyWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
-    src.subscribe (event) -> 
+    src.subscribe (event) ->
       if event.isEnd()
         done()
       else
@@ -105,7 +105,7 @@ verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) -
   describe description, ->
     src = null
     events = []
-    before -> 
+    before ->
       src = srcF()
     before (done) ->
       collectF(src, events, done)
@@ -121,7 +121,7 @@ verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) -
 
 verifyLateEval = (srcF, expectedEvents) ->
   verifyStreamWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
-    src.subscribe (event) -> 
+    src.subscribe (event) ->
       if event.isEnd()
         done()
       else
@@ -131,7 +131,7 @@ verifyLateEval = (srcF, expectedEvents) ->
 
 verifySingleSubscriber = (srcF, expectedEvents) ->
   verifyStreamWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
-    src.subscribe (event) -> 
+    src.subscribe (event) ->
       if event.isEnd()
         done()
       else
@@ -141,7 +141,7 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
 # get each event with new subscriber
 verifySwitching = (srcF, expectedEvents, done) ->
   verifyStreamWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
-    newSink = -> 
+    newSink = ->
       (event) ->
         if event.isEnd()
           done()
@@ -159,7 +159,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
     globalEnded = false
     subNext = ->
       unsub = null
-      newSink = -> 
+      newSink = ->
         ended = false
         noMoreExpected = false
         usedUnsub = false
@@ -192,7 +192,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
   describe description, ->
     src = null
     events = []
-    before -> 
+    before ->
       src = srcF()
       expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
@@ -207,11 +207,11 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
   describe "(switching aggressively)", ->
     src = null
     events = []
-    before -> 
+    before ->
       src = srcF()
       expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
-      newSink = -> 
+      newSink = ->
         unsub = null
         (event) ->
           if event.isEnd()
@@ -277,6 +277,6 @@ Bacon.Observable.prototype.onUnsub = (f) ->
   ended = false
   return new Bacon.EventStream (sink) ->
     unsub = self.subscribe sink
-    -> 
+    ->
       f()
       unsub()

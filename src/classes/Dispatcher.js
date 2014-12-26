@@ -4,7 +4,7 @@ import end from "../helpers/end";
 import nop from "../helpers/nop";
 import UpdateBarrier from "../globals/UpdateBarrier";
 
-export class Dispatcher {
+export default class Dispatcher {
   constructor(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;

@@ -1,4 +1,4 @@
-export default UpdateBarrier = (function() {
+export default (function() {
 
   var rootEvent,
     waiterObs = [],

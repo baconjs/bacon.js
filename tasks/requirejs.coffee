@@ -43,13 +43,13 @@ module.exports = (grunt, options) =>
   # expanded release
   expanded:
     options: grunt.util._.extend({
-        out: "dist/Bacon.es6.js"
+        out: "dist/Bacon.js"
         optimize: "none"
       }, requirejsOptions)
   # minified release
   min:
     options:
       grunt.util._.extend({
-        out: "dist/Bacon.es6.min.js"
+        out: "dist/Bacon.min.js"
         optimize: "uglify2"
       }, requirejsOptions)

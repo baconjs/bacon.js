@@ -1,6 +1,6 @@
 import Event from "./Event";
 
-export class End extends Event {
+export default class End extends Event {
   constructor() {}
   isEnd() {
     return true;

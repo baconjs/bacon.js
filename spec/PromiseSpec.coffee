@@ -1,5 +1,5 @@
 expect = require("chai").expect
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 
 success = undefined
 fail = undefined
@@ -41,7 +41,7 @@ describe "Bacon.fromPromise", ->
     dispose()
     delete promise.abort
     expect(isAborted).to.deep.equal(true)
-  
+
   it "should not abort ajax promise on unsub, if abort flag is not set", ->
     isAborted = false
     promise.abort = ->

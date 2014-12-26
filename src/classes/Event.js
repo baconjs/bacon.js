@@ -1,6 +1,6 @@
 var idCounter = 0;
 
-export class Event {
+export default class Event {
   constructor() {
     this.id = ++idCounter;
   }

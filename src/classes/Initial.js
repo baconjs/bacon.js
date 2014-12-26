@@ -1,6 +1,6 @@
 import Next from "./Next";
 
-export class Initial extends Next {
+export default class Initial extends Next {
   constructor() {}
   isInitial() {
     return true;
