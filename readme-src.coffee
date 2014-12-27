@@ -1454,7 +1454,7 @@ ajaxResult = source.flatMap(function(url) {
         // function to call when trying, should return an EventStream
         source: function() { return ajaxCall(url) },
         retries: 5, // nr of times to retry before giving up
-        delay: 100 // delay in ms between retries
+        delay: function() { return 100; } // delay in ms between retries
     })
 })
 ```
