@@ -56,3 +56,36 @@ describe "Bacon.fromPromise", ->
     dispose = Bacon.fromPromise(promise).subscribe(nop)
     dispose()
     expect(isAborted).to.deep.equal(false)
+
+
+  describe 'with kind of promise-chain that ends with .done()', ->
+    stream = null
+    chainEnd = false
+    beforeEach ->
+      chainEnd = false
+      # this promise tries to mimick the behaviour of kriskowal/q, where
+      # not calling .done() at the end of the chain will result in
+      # exceptions going nowhere.
+      promise = {
+        then: (s, f) ->
+          fail = (v) ->
+            try
+              f(v)
+            catch err
+              throw err if chainEnd
+          success = (v) ->
+            try
+              s(v)
+            catch err
+              if chainEnd then throw err else fail(err)
+          done: -> chainEnd = true
+      }
+      stream = Bacon.fromPromise promise
+
+    it "should not swallow .onValue() errors", ->
+      stream.onValue (e) -> throw new Error("fail value")
+      expect(->success('success')).to.throw 'fail value'
+
+    it "should not swallow .onError() errors", ->
+      stream.onError (e) -> throw new Error("fail error")
+      expect(->fail('fail')).to.throw 'fail error'
