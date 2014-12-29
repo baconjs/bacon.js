@@ -327,7 +327,7 @@ Bacon.fromBinder for custom streams
 If none of the factory methods above apply, you may of course roll your own EventStream by using [`Bacon.fromBinder`](#bacon-frombinder).
 
 <a name="bacon-frombinder"></a>
-[`Bacon.fromBinder(subscribe)`](#bacon-frombinder "Bacon.fromBinder(subscribe)") The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subscribe` funtion can "push" events to.
+[`Bacon.fromBinder(subscribe)`](#bacon-frombinder "Bacon.fromBinder(subscribe)") The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subscribe` function can "push" events to.
 
 For example:
 
