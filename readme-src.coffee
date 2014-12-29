@@ -463,8 +463,8 @@ property holds `true`.
 """
 
 doc.fn "observable.take(@ : Observable[A], n : Number) : Observable[A]", """
-`observable.take(n)` takes at most n elements from the stream. Equals to
-`Bacon.never()` if `n <= 0`.
+takes at most n elements from the stream.
+Equal to `Bacon.never()` if `n <= 0`.
 """
 
 doc.fn "observable.takeUntil(@ : Observable[A], stream : EventStream[B]) : Observable[A]", """
