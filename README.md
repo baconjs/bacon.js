@@ -405,7 +405,7 @@ share a lot of methods. Common methods are listed below.
 
 <a name="observable-onvalue"></a>
 [`observable.onValue(f)`](#observable-onvalue "observable.onValue(@ : Observable[A], f : A -> void) : Unsubscriber") subscribes a given handler function to the observable. Function will be called for each new value.
-This is the simplest way to assign a side-effect to an observable. The difference
+This is the simplest way to assign a side-effect to an observable. The diference
 to the `subscribe` method is that the actual stream values are
 received, instead of [`Event`](#event) objects.
 [`stream.onValue`](#stream-onvalue) and [`property.onValue`](#property-onvalue) behave similarly, except that the latter also
@@ -463,7 +463,7 @@ property extractor string (like ".isValuable") instead. Just like with
 
 <a name="observable-filter-property"></a>
 [`observable.filter(property)`](#observable-filter-property "observable.filter(property)") filters values based on the value of a
-property. Event will be included in output iff the property holds `true`
+property. Event will be included in output if the property holds `true`
 at the time of the event.
 
 <a name="observable-takewhile"></a>
@@ -519,7 +519,7 @@ throttled: --s--f----s--f--
 [`observable.debounce(delay)`](#observable-debounce "observable.debounce(delay)") throttles stream/property by given amount
 of milliseconds, but so that event is only emitted after the given
 "quiet period". Does not affect emitting the initial value of a Property.
-The difference of [`throttle`](#observable-throttle) and [`debounce`](#observable-debounce) is the same as it is in the
+The diference of [`throttle`](#observable-throttle) and [`debounce`](#observable-debounce) is the same as it is in the
 same methods in jQuery.
 
 Example:
@@ -543,7 +543,7 @@ source.debounceImmediate(2): a-d-----a-d-----
 
 <a name="observable-bufferingthrottle"></a>
 [`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
-Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputing
+Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputting
 them with a rate of at most one value per minimumInterval.
 
 Example:
@@ -652,8 +652,8 @@ value, i.e. the value just before the observable ends. Returns a
 <a name="observable-reduce"></a>
 [`observable.reduce(seed, f)`](#observable-reduce "observable.reduce(seed,f)") synonym for [`fold`](#observable-fold).
 
-<a name="observable-diff"></a>
-[`observable.diff(start, f)`](#observable-diff "observable.diff(start, f)") returns a Property that represents the result of a comparison
+<a name="observable-dif"></a>
+[`observable.dif(start, f)`](#observable-dif "observable.dif(start, f)") returns a Property that represents the result of a comparison
 between the previous and current value of the Observable. For the initial value of the Observable,
 the previous value will be the given start.
 
@@ -661,7 +661,7 @@ Example:
 
 ```js
 var distance = function (a,b) { return Math.abs(b - a) }
-Bacon.sequentially(1, [1,2,3]).diff(0, distance)
+Bacon.sequentially(1, [1,2,3]).dif(0, distance)
 ```
 
 This would result to following elements in the result stream:
@@ -853,7 +853,7 @@ call to unsubscribe. You can also unsubscribe by returning
 <a name="stream-onvalue"></a>
 [`stream.onValue(f)`](#stream-onvalue "stream.onValue(f)") subscribes a given handler function to event
 stream. Function will be called for each new value in the stream. This
-is the simplest way to assign a side-effect to a stream. The difference
+is the simplest way to assign a side-effect to a stream. The diference
 to the `subscribe` method is that the actual stream values are
 received, instead of [`Event`](#event) objects.
 The [Function Construction rules](#function-construction-rules) below apply here.
@@ -959,7 +959,7 @@ EventStream ends. Returns a function that you call to unsubscribe.
 <a name="property-onvalue"></a>
 [`property.onValue(f)`](#property-onvalue "property.onValue(f)") similar to [`stream.onValue`](#stream-onvalue), except that also
 pushes the initial value of the property, in case there is one.
-See [Function Construction rules](#function-construction-rules) below for different forms of calling this method.
+See [Function Construction rules](#function-construction-rules) below for diferent forms of calling this method.
 Just like `subscribe`, this method returns a function for unsubscribing.
 
 <a name="property-onvalues"></a>
@@ -1155,10 +1155,10 @@ Function Construction rules
 ---------------------------
 
 Many methods in Bacon have a single function as their argument. Many of these
-actually accept a wider range of different arguments that they use for
+actually accept a wider range of diferent arguments that they use for
 constructing the function.
 
-Here are the different forms you can use, with examples. The basic form
+Here are the diferent forms you can use, with examples. The basic form
 would be
 
 [`stream.map(f)`](#stream-map) maps values using the function f(x)
@@ -1598,7 +1598,7 @@ emits them to all of its subscribers.
 4. A stream must never emit any other events after End (not even another End)
 
 The rules are deliberately redundant, explaining the constraints from
-different perspectives. The contract between an EventStream and its
+diferent perspectives. The contract between an EventStream and its
 subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
@@ -1646,7 +1646,7 @@ For RxJs Users
 --------------
 
 Bacon.js is quite similar to RxJs, so it should be pretty easy to pick up. The
-major difference is that in bacon, there are two distinct kinds of Observables:
+major diference is that in bacon, there are two distinct kinds of Observables:
 the EventStream and the Property. The former is for discrete events while the
 latter is for observable properties that have the concept of "current value".
 
@@ -1657,7 +1657,7 @@ experienced with RxJs, you've probably bumped into some wtf's related to cold
 observables and inconsistent output from streams constructed using scan and startWith.
 None of that will happen with bacon.js.
 
-Error handling is also a bit different: the Error event does not
+Error handling is also a bit diferent: the Error event does not
 terminate a stream. So, a stream may contain multiple errors. To me,
 this makes more sense than always terminating the stream on error; this
 way the application developer has more direct control over error
