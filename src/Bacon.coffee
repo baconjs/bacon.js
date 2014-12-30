@@ -59,8 +59,8 @@ Bacon.$.asEventStream = (eventName, selector, eventTransformer) ->
 #
 # Returns EventStream
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
-  sub = target.addEventListener ? target.addListener ? target.bind ? target.on
-  unsub = target.removeEventListener ? target.removeListener ? target.unbind ? target.off
+  sub = target.addEventListener ? target.addListener ? target.on ? target.bind
+  unsub = target.removeEventListener ? target.removeListener ? target.off ? target.unbind
   withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder (handler) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
