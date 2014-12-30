@@ -653,7 +653,7 @@ value, i.e. the value just before the observable ends. Returns a
 [`observable.reduce(seed, f)`](#observable-reduce "observable.reduce(seed,f)") synonym for [`fold`](#observable-fold).
 
 <a name="observable-diff"></a>
-[`observable.dif(start, f)`](#observable-dif "observable.dif(start, f)") returns a Property that represents the result of a comparison
+[`observable.diff(start, f)`](#observable-diff "observable.diff(start, f)") returns a Property that represents the result of a comparison
 between the previous and current value of the Observable. For the initial value of the Observable,
 the previous value will be the given start.
 
