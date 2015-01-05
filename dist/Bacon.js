@@ -1,17 +1,26 @@
-var _extends = function (child, parent) {
-  child.prototype = Object.create(parent.prototype, {
-    constructor: {
-      value: child,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  child.__proto__ = parent;
-};
+"use strict";
 
-(function () {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Exception, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, __slice = [].slice, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
+(function (factory) {
+  if (typeof define === "function" && define.amd) {
+    define(["exports"], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(exports);
+  }
+})(function (exports) {
+  var _slice = Array.prototype.slice;
+  var _inherits = function (child, parent) {
+    child.prototype = Object.create(parent && parent.prototype, {
+      constructor: {
+        value: child,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (parent) child.__proto__ = parent;
+  };
+
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
     for (var key in parent) {
       if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -37,7 +46,7 @@ var _extends = function (child, parent) {
 
   Bacon.version = "<version>";
 
-  Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
+  Exception = (global ? global : this).Error;
 
   Bacon.fromBinder = function (binder, eventTransformer) {
     if (eventTransformer == null) {
@@ -123,9 +132,9 @@ var _extends = function (child, parent) {
           return typeof promise.abort === "function" ? promise.abort() : void 0;
         }
       };
-    }, (function (value) {
+    }, function (value) {
       return [value, end()];
-    })));
+    }));
   };
 
   Bacon.noMore = ["<no-more>"];
@@ -219,9 +228,9 @@ var _extends = function (child, parent) {
     return Bacon.fromBinder(function (handler) {
       makeFunction(f, args)(handler);
       return nop;
-    }, (function (value) {
+    }, function (value) {
       return [value, end()];
-    }));
+    });
   });
 
   Bacon.fromNodeCallback = liftCallback("fromNodeCallback", function () {
@@ -239,13 +248,13 @@ var _extends = function (child, parent) {
   });
 
   Bacon.fromPoll = function (delay, poll) {
-    return withDescription(Bacon, "fromPoll", delay, poll, Bacon.fromBinder((function (handler) {
+    return withDescription(Bacon, "fromPoll", delay, poll, Bacon.fromBinder(function (handler) {
       var id;
       id = Bacon.scheduler.setInterval(handler, delay);
       return function () {
         return Bacon.scheduler.clearInterval(id);
       };
-    }), poll));
+    }, poll));
   };
 
   Bacon.interval = function (delay, value) {
@@ -293,7 +302,7 @@ var _extends = function (child, parent) {
         reply = Bacon.more;
         push = function () {
           var value;
-          if ((reply !== Bacon.noMore) && !unsubd) {
+          if (reply !== Bacon.noMore && !unsubd) {
             value = values[i++];
             reply = sink(toEvent(value));
             if (reply !== Bacon.noMore) {
@@ -371,9 +380,9 @@ var _extends = function (child, parent) {
     if (!isFunction(f)) {
       _ref1 = [f, streams[0]], streams = _ref1[0], f = _ref1[1];
     }
-    streams = _.map((function (s) {
+    streams = _.map(function (s) {
       return s.toEventStream();
-    }), streams);
+    }, streams);
     return withDescription.apply(null, [Bacon, "zipWith", f].concat(__slice.call(streams), [Bacon.when(streams, f)]));
   };
 
@@ -392,11 +401,11 @@ var _extends = function (child, parent) {
       }
       return _results;
     })();
-    return withDescription.apply(null, [Bacon, "groupSimultaneous"].concat(__slice.call(streams), [Bacon.when(sources, (function () {
+    return withDescription.apply(null, [Bacon, "groupSimultaneous"].concat(__slice.call(streams), [Bacon.when(sources, function () {
       var xs;
       xs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       return xs;
-    }))]));
+    })]));
   };
 
   Bacon.combineAsArray = function () {
@@ -407,7 +416,7 @@ var _extends = function (child, parent) {
     }
     for (index = _i = 0, _len = streams.length; _i < _len; index = ++_i) {
       stream = streams[index];
-      if (!(isObservable(stream))) {
+      if (!isObservable(stream)) {
         streams[index] = Bacon.constant(stream);
       }
     }
@@ -421,11 +430,11 @@ var _extends = function (child, parent) {
         }
         return _results;
       })();
-      return withDescription.apply(null, [Bacon, "combineAsArray"].concat(__slice.call(streams), [Bacon.when(sources, (function () {
+      return withDescription.apply(null, [Bacon, "combineAsArray"].concat(__slice.call(streams), [Bacon.when(sources, function () {
         var xs;
         xs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         return xs;
-      })).toProperty()]));
+      }).toProperty()]));
     } else {
       return Bacon.constant([]);
     }
@@ -555,49 +564,45 @@ var _extends = function (child, parent) {
 
   eventIdCounter = 0;
 
-  var Event = (function () {
-    var Event = function Event() {
-      this.id = ++idCounter;
-    };
+  var Event = function Event() {
+    this.id = ++idCounter;
+  };
 
-    Event.prototype.isEvent = function () {
-      return true;
-    };
+  Event.prototype.isEvent = function () {
+    return true;
+  };
 
-    Event.prototype.isEnd = function () {
-      return false;
-    };
+  Event.prototype.isEnd = function () {
+    return false;
+  };
 
-    Event.prototype.isInitial = function () {
-      return false;
-    };
+  Event.prototype.isInitial = function () {
+    return false;
+  };
 
-    Event.prototype.isNext = function () {
-      return false;
-    };
+  Event.prototype.isNext = function () {
+    return false;
+  };
 
-    Event.prototype.isError = function () {
-      return false;
-    };
+  Event.prototype.isError = function () {
+    return false;
+  };
 
-    Event.prototype.hasValue = function () {
-      return false;
-    };
+  Event.prototype.hasValue = function () {
+    return false;
+  };
 
-    Event.prototype.filter = function () {
-      return true;
-    };
+  Event.prototype.filter = function () {
+    return true;
+  };
 
-    Event.prototype.inspect = function () {
-      return this.toString();
-    };
+  Event.prototype.inspect = function () {
+    return this.toString();
+  };
 
-    Event.prototype.log = function () {
-      return this.toString();
-    };
-
-    return Event;
-  })();
+  Event.prototype.log = function () {
+    return this.toString();
+  };
 
   Next = (function (_super) {
     __extends(Next, _super);
@@ -692,10 +697,11 @@ var _extends = function (child, parent) {
     return Initial;
   })(Next);
 
-  var End = (function (Event) {
+  var End = (function () {
+    var _Event = Event;
     var End = function End() {};
 
-    _extends(End, Event);
+    _inherits(End, _Event);
 
     End.prototype.isEnd = function () {
       return true;
@@ -714,14 +720,15 @@ var _extends = function (child, parent) {
     };
 
     return End;
-  })(Event);
+  })();
 
-  var Error = (function (Event) {
+  var Error = (function () {
+    var _Event2 = Event;
     var Error = function Error(error) {
       this.error = error;
     };
 
-    _extends(Error, Event);
+    _inherits(Error, _Event2);
 
     Error.prototype.isError = function () {
       return true;
@@ -740,7 +747,7 @@ var _extends = function (child, parent) {
     };
 
     return Error;
-  })(Event);
+  })();
 
   idCounter = 0;
 
@@ -1124,11 +1131,11 @@ var _extends = function (child, parent) {
       if (minValues == null) {
         minValues = 0;
       }
-      return withDescription(this, "slidingWindow", n, minValues, this.scan([], (function (window, value) {
+      return withDescription(this, "slidingWindow", n, minValues, this.scan([], function (window, value) {
         return window.concat([value]).slice(-n);
-      })).filter((function (values) {
+      }).filter(function (values) {
         return values.length >= minValues;
-      })));
+      }));
     };
 
     Observable.prototype.combine = function (other, f) {
@@ -1535,9 +1542,9 @@ var _extends = function (child, parent) {
           if (!shouldHold) {
             return _this.takeUntil(putToHold);
           } else {
-            return _this.scan([], (function (xs, x) {
+            return _this.scan([], function (xs, x) {
               return xs.concat(x);
-            })).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
+            }).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
           }
         };
       })(this))));
@@ -1894,9 +1901,9 @@ var _extends = function (child, parent) {
           })(this));
           return this.maybeSubSource(sink, reply);
         } else {
-          UpdateBarrier.inTransaction(void 0, this, (function () {
+          UpdateBarrier.inTransaction(void 0, this, function () {
             return reply = sink(initial(this.current.get().value()));
-          }), []);
+          }, []);
           return this.maybeSubSource(sink, reply);
         }
       } else {
@@ -1985,7 +1992,7 @@ var _extends = function (child, parent) {
         input: input
       };
       this.subscriptions.push(sub);
-      if ((this.sink != null)) {
+      if (this.sink != null) {
         this.subscribeInput(sub);
       }
       return (function (_this) {
@@ -2230,7 +2237,7 @@ var _extends = function (child, parent) {
           count: 1
         });
       }
-      assert("At least one EventStream required", triggerFound || (!patSources.length));
+      assert("At least one EventStream required", triggerFound || !patSources.length);
       if (patSources.length > 0) {
         pats.push(pat);
       }
@@ -2240,11 +2247,11 @@ var _extends = function (child, parent) {
       return Bacon.never();
     }
     sources = _.map(Source.fromObservable, sources);
-    needsBarrier = (_.any(sources, function (s) {
+    needsBarrier = _.any(sources, function (s) {
       return s.flatten;
-    })) && (containsDuplicateDeps(_.map((function (s) {
+    }) && containsDuplicateDeps(_.map(function (s) {
       return s.obs;
-    }), sources)));
+    }, sources));
     return resultStream = new EventStream(describe.apply(null, [Bacon, "when"].concat(__slice.call(patterns))), function (sink) {
       var cannotMatch, cannotSync, ends, match, nonFlattened, part, triggers;
       triggers = [];
@@ -2430,9 +2437,9 @@ var _extends = function (child, parent) {
       patterns[i] = lateBindFirst(patterns[i]);
       i = i - 2;
     }
-    return withDescription.apply(null, [Bacon, "update", initial].concat(__slice.call(patterns), [Bacon.when.apply(Bacon, patterns).scan(initial, (function (x, f) {
+    return withDescription.apply(null, [Bacon, "update", initial].concat(__slice.call(patterns), [Bacon.when.apply(Bacon, patterns).scan(initial, function (x, f) {
       return f(x);
-    }))]));
+    })]));
   };
 
   compositeUnsubscribe = function () {
@@ -2487,7 +2494,7 @@ var _extends = function (child, parent) {
       if (this.unsubscribed) {
         return;
       }
-      if ((_.remove(unsub, this.subscriptions)) !== void 0) {
+      if (_.remove(unsub, this.subscriptions) !== void 0) {
         return unsub();
       }
     };
@@ -2818,8 +2825,8 @@ var _extends = function (child, parent) {
 
   partiallyApplied = function (f, applied) {
     return function () {
-      var args;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      var args = _slice.call(arguments);
+
       return f.apply(null, applied.concat(args));
     };
   };
@@ -2874,7 +2881,7 @@ var _extends = function (child, parent) {
   };
 
   isFieldKey = function (f) {
-    return (typeof f === "string") && f.length > 1 && f.charAt(0) === ".";
+    return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
   };
 
   Bacon.isFieldKey = isFieldKey;
@@ -2897,8 +2904,8 @@ var _extends = function (child, parent) {
     return function (key) {
       return function (value) {
         var fieldValue;
-        if (value == null) {
-          return void 0;
+        if (!value) {
+          return;
         } else {
           fieldValue = value[key];
           if (isFunction(fieldValue)) {
@@ -3050,9 +3057,9 @@ var _extends = function (child, parent) {
       return false;
     },
     without: function (x, xs) {
-      return _.filter((function (y) {
+      return _.filter(function (y) {
         return y !== x;
-      }), xs);
+      }, xs);
     },
     remove: function (x, xs) {
       var i;
@@ -3070,9 +3077,9 @@ var _extends = function (child, parent) {
       return seed;
     },
     flatMap: function (f, xs) {
-      return _.fold(xs, [], (function (ys, x) {
+      return _.fold(xs, [], function (ys, x) {
         return ys.concat(f(x));
-      }));
+      });
     },
     cached: function (f) {
       var value;
@@ -3098,7 +3105,7 @@ var _extends = function (child, parent) {
             return "[..]";
           }
           return "[" + _.map(_.toString, obj).toString() + "]";
-        } else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
+        } else if ((obj != null ? obj.toString : void 0) != null && obj.toString !== Object.prototype.toString) {
           return obj.toString();
         } else if (typeof obj === "object") {
           if (recursionDepth > 5) {
@@ -3150,15 +3157,6 @@ var _extends = function (child, parent) {
     }
   };
 
-  if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
-    define([], function () {
-      return Bacon;
-    });
-    this.Bacon = Bacon;
-  } else if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
-    module.exports = Bacon;
-    Bacon.Bacon = Bacon;
-  } else {
-    this.Bacon = Bacon;
-  }
-}).call(this);
+
+  exports.Bacon = Bacon;
+});
