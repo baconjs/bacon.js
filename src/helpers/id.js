@@ -1,3 +1,3 @@
-export default function id(x) {
+export default function(x) {
   return x;
 }

@@ -1,6 +1,6 @@
 import slice from "./slice";
 
-export default function withMethodCallSupport(wrapped) {
+export default function(wrapped) {
   return function(...args) {
     var context, f, methodName;
     f = arguments[0];

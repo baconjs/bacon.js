@@ -1,7 +1,7 @@
 import Property from "../classes/Property";
 import makeFunction from "./makeFunction";
 
-export default function convertArgsToFunction(obs, f, args, method) {
+export default function(obs, f, args, method) {
   var sampled;
   if (f instanceof Property) {
     sampled = f.sampledBy(obs, (p, s) => [p, s]);

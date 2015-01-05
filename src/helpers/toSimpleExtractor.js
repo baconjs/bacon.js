@@ -1,6 +1,6 @@
 import isFunction from "./isFunction";
 
-export default function toSimpleExtractor(args) {
+export default function(args) {
   return function(key) {
     return function(value) {
       var fieldValue;

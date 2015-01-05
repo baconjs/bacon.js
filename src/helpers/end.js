@@ -1,5 +1,5 @@
 import End from "../classes/End";
 
-export default function end() {
+export default function() {
   return new End();
 }

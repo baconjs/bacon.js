@@ -1,4 +1,4 @@
-export default function map(f, xs) {
+export default function(f, xs) {
   var x, _i, _len, _results;
   _results = [];
   for (_i = 0, _len = xs.length; _i < _len; _i++) {

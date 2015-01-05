@@ -1,7 +1,7 @@
 import map from "./map";
 import toSimpleExtractor from "./toSimpleExtractor";
 
-export default function toFieldExtractor(f, args) {
+export default function(f, args) {
   var partFuncs, parts;
   parts = f.slice(1).split(".");
   partFuncs = map(toSimpleExtractor(args), parts);

@@ -1,4 +1,4 @@
-export default function without(x, xs) {
+export default function(x, xs) {
   var filtered, _i, _len;
   filtered = [];
   for (_i = 0, _len = xs.length; _i < _len; _i++) {

@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "0.7.40",
+  "version": "0.7.41",
   "keywords": [
     "bacon.js",
     "bacon",
@@ -21,13 +21,11 @@
     "email": "juha.paananen@gmail.com",
     "url": "https://twitter.com/raimohanska"
   },
-  "contributors": [
-    {
-      "name": "Daniel K",
-      "email": "x.flowwolf@gmail.com",
-      "url": "https://twitter.com/xflowwolf"
-    }
-  ],
+  "contributors": [{
+    "name": "Daniel K",
+    "email": "x.flowwolf@gmail.com",
+    "url": "https://twitter.com/xflowwolf"
+  }],
   "licenses": [
     "MIT"
   ],
@@ -47,10 +45,8 @@
     "grunt-contrib-clean": "~0.6.0",
     "grunt-contrib-coffee": "~0.12.0",
     "grunt-contrib-copy": "~0.7.0",
-    "grunt-contrib-requirejs": "^0.4.4",
     "grunt-contrib-uglify": "~0.6.0",
     "grunt-contrib-watch": "~0.6",
-    "grunt-jsbeautifier": "^0.2.7",
     "grunt-text-replace": "~0.4.0",
     "jasmine-node": "~1.14.5",
     "load-grunt-configs": "^0.4.1",

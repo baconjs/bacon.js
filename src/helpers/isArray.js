@@ -1,3 +1,3 @@
-export default function isArray(xs) {
+export default function(xs) {
   return xs instanceof Array;
 }

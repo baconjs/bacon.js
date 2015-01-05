@@ -1,4 +1,4 @@
-export default function always(x) {
+export default function(x) {
   return function() {
     return x;
   };

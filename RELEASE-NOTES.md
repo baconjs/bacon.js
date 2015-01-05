@@ -1,3 +1,7 @@
+## 0.7.41
+
+- Fix #490: throw if non-observable plugged to bus
+
 ## 0.7.40
 
 - Fix #491: takeUntil/flatMapLatest issues with sync sources

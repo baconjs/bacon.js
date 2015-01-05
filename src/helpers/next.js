@@ -1,5 +1,5 @@
 import Next from "../classes/Next";
 
-export default function next() {
+export default function() {
   return new Next();
 }

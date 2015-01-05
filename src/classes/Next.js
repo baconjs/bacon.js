@@ -1,12 +1,11 @@
 import Event from "./Event";
-import Next from "./Next";
 import isFunction from "../helpers/isFunction";
 import toString from "../helpers/toString";
 
 export default class Next extends Event {
   constructor(valueF, eager) {
     super();
-    if (!eager && isFunction(valueF) || valueF instanceof Next) {
+    if (!eager && isFunction(valueF) || valueF instanceof Bacon.Next) {
       this.valueF = valueF;
     } else {
       this.valueInternal = valueF;
@@ -19,7 +18,7 @@ export default class Next extends Event {
     return true;
   }
   value() {
-    if (this.valueF instanceof Next) {
+    if (this.valueF instanceof Bacon.Next) {
       this.valueInternal = this.valueF.value();
     } else if (this.valueF) {
       this.valueInternal = this.valueF();
@@ -27,13 +26,13 @@ export default class Next extends Event {
     return this.valueInternal;
   }
   apply(value) {
-    return new Next(value);
+    return new Bacon.Next(value);
   }
   filter(f) {
     return f(this.value());
   }
   toString() {
-    return toString(this.value());
+    return _.toString(this.value());
   }
   log() {
     return this.value();

@@ -1,1 +1,1 @@
-export default function nop() {}
+export default function() {}

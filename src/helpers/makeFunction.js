@@ -6,7 +6,7 @@ import partiallyApplied from "./partiallyApplied";
 import toFieldExtractor from "./toFieldExtractor";
 import always from "./always";
 
-export default withMethodCallSupport(function() {
+export default (function() {
   var args, f;
   f = arguments[0];
   args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
