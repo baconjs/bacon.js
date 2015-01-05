@@ -426,6 +426,13 @@ subscribes a callback to stream end. The function will
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 """
 
+doc.fn "observable.toPromise(@ : Observable[A]) : Promise[A]", """
+returns a Promise which will be resolved with the first event coming from an Observable.
+The global ES6 promise implementation will be used.
+Use shim if you need to support legacy browsers or platforms.
+[caniuse promises](http://caniuse.com/#feat=promises).
+"""
+
 doc.fn "observable.map(@ : Observable[A], f : A -> B) : Observable[B]", """
 maps values using given function, returning a new
 EventStream. Instead of a function, you can also provide a constant

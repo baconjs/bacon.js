@@ -48,3 +48,4 @@
 
 // ES6 pieces:
 // build-dependencies: throttle
+// build-dependencies: topromise
