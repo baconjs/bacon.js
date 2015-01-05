@@ -12,6 +12,7 @@ module.exports = (grunt) ->
       grunt.file.write el.dest + ".map", JSON.stringify(res.map)  if res.map
 
   options:
+    blacklist: ["useStrict"]
     modules: "umd"
   compile:
     files:[

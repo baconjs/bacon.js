@@ -1,5 +1,3 @@
-"use strict";
-
 (function (factory) {
   if (typeof define === "function" && define.amd) {
     define(["exports"], factory);
@@ -19,6 +17,8 @@
     });
     if (parent) child.__proto__ = parent;
   };
+
+  "use strict";
 
   var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
     for (var key in parent) {
@@ -49,7 +49,7 @@
   Exception = (global ? global : this).Error;
 
   Bacon.fromBinder = function (binder, eventTransformer) {
-    if (eventTransformer == null) {
+    if (!eventTransformer) {
       eventTransformer = _.id;
     }
     return new EventStream(describe(Bacon, "fromBinder", binder, eventTransformer), function (sink) {
