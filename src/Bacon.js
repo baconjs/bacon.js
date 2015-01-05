@@ -26,12 +26,12 @@ Bacon = {
   }
 };
 
-Bacon.version = '<version>';
+Bacon.version = "<version>";
 
 Exception = (global ? global : this).Error;
 
 Bacon.fromBinder = function(binder, eventTransformer) {
-  if (eventTransformer == null) {
+  if (!eventTransformer) {
     eventTransformer = _.id;
   }
   return new EventStream(describe(Bacon, "fromBinder", binder, eventTransformer), function(sink) {
@@ -3086,7 +3086,6 @@ _ = {
           var _results;
           _results = [];
           for (key in obj) {
-            if (!__hasProp.call(obj, key)) continue;
             value = (function() {
               try {
                 return obj[key];
