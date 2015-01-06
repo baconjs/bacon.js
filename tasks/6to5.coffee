@@ -14,6 +14,7 @@ module.exports = (grunt) ->
   options:
     blacklist: ["useStrict"]
     modules: "umd"
+    experimental: true
   compile:
     files:[
       expand: true

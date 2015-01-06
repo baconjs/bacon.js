@@ -5,8 +5,12 @@
     factory(exports);
   }
 })(function (exports) {
-  var _slice = Array.prototype.slice;
+  "use strict";
+
   var _inherits = function (child, parent) {
+    if (typeof parent !== "function" && parent !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof parent);
+    }
     child.prototype = Object.create(parent && parent.prototype, {
       constructor: {
         value: child,
@@ -18,9 +22,7 @@
     if (parent) child.__proto__ = parent;
   };
 
-  "use strict";
-
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
     for (var key in parent) {
       if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -46,7 +48,7 @@
 
   Bacon.version = "<version>";
 
-  Exception = (global ? global : this).Error;
+  var Exception = (global ? global : this).Error;
 
   Bacon.fromBinder = function (binder, eventTransformer) {
     if (!eventTransformer) {
@@ -56,16 +58,21 @@
       var unbind, unbinder, unbound;
       unbound = false;
       unbind = function () {
-        if (typeof unbinder !== "undefined" && unbinder !== null) {
+        if (unbinder) {
           if (!unbound) {
             unbinder();
           }
-          return unbound = true;
+          unbound = true;
         }
       };
       unbinder = binder(function () {
-        var args, event, reply, value, _i, _len;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        var args = [];
+
+        for (var _key = 0; _key < arguments.length; _key++) {
+          args[_key] = arguments[_key];
+        }
+
+        var event, reply, value, _i, _len;
         value = eventTransformer.apply(this, args);
         if (!(isArray(value) && _.last(value) instanceof Event)) {
           value = [value];
@@ -75,7 +82,7 @@
           event = value[_i];
           reply = sink(event = toEvent(event));
           if (reply === Bacon.noMore || event.isEnd()) {
-            if (unbinder != null) {
+            if (unbinder) {
               unbind();
             } else {
               Bacon.scheduler.setTimeout(unbind, 0);
@@ -175,9 +182,7 @@
     return spys.push(spy);
   };
 
-  spys = [];
-
-  registerObs = function (obs) {
+  var spys = [], registerObs = function (obs) {
     var spy, _i, _len;
     if (spys.length) {
       if (!registerObs.running) {
@@ -193,9 +198,7 @@
       }
     }
     return void 0;
-  };
-
-  withMethodCallSupport = function (wrapped) {
+  }, withMethodCallSupport = function (wrapped) {
     return function () {
       var args, context, f, methodName;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -209,9 +212,7 @@
       }
       return wrapped.apply(null, [f].concat(__slice.call(args)));
     };
-  };
-
-  liftCallback = function (desc, wrapped) {
+  }, liftCallback = function (desc, wrapped) {
     return withMethodCallSupport(function () {
       var args, f, stream;
       f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -562,7 +563,7 @@
     }));
   };
 
-  eventIdCounter = 0;
+  var eventIdCounter = 0;
 
   var Event = function Event() {
     this.id = ++idCounter;
@@ -749,7 +750,7 @@
     return Error;
   })();
 
-  idCounter = 0;
+  var idCounter = 0;
 
   Observable = (function () {
     function Observable(desc) {
@@ -2825,7 +2826,11 @@
 
   partiallyApplied = function (f, applied) {
     return function () {
-      var args = _slice.call(arguments);
+      var args = [];
+
+      for (var _key2 = 0; _key2 < arguments.length; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
 
       return f.apply(null, applied.concat(args));
     };

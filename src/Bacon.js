@@ -1,6 +1,6 @@
 "use strict";
 
-var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, eventIdCounter, findDeps, flatMap_, former, idCounter, initial, isArray, isFieldKey, isFunction, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) {
@@ -30,7 +30,7 @@ Bacon = {
 
 Bacon.version = "<version>";
 
-Exception = (global ? global : this).Error;
+var Exception = (global ? global : this).Error;
 
 Bacon.fromBinder = function(binder, eventTransformer) {
   if (!eventTransformer) {
@@ -40,16 +40,15 @@ Bacon.fromBinder = function(binder, eventTransformer) {
     var unbind, unbinder, unbound;
     unbound = false;
     unbind = function() {
-      if (typeof unbinder !== "undefined" && unbinder !== null) {
+      if (unbinder) {
         if (!unbound) {
           unbinder();
         }
-        return unbound = true;
+        unbound = true;
       }
     };
-    unbinder = binder(function() {
-      var args, event, reply, value, _i, _len;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    unbinder = binder(function(...args) {
+      var event, reply, value, _i, _len;
       value = eventTransformer.apply(this, args);
       if (!(isArray(value) && _.last(value) instanceof Event)) {
         value = [value];
@@ -59,7 +58,7 @@ Bacon.fromBinder = function(binder, eventTransformer) {
         event = value[_i];
         reply = sink(event = toEvent(event));
         if (reply === Bacon.noMore || event.isEnd()) {
-          if (unbinder != null) {
+          if (unbinder) {
             unbind();
           } else {
             Bacon.scheduler.setTimeout(unbind, 0);
@@ -159,54 +158,54 @@ Bacon.spy = function(spy) {
   return spys.push(spy);
 };
 
-spys = [];
+var spys = [],
 
-registerObs = function(obs) {
-  var spy, _i, _len;
-  if (spys.length) {
-    if (!registerObs.running) {
-      try {
-        registerObs.running = true;
-        for (_i = 0, _len = spys.length; _i < _len; _i++) {
-          spy = spys[_i];
-          spy(obs);
+  registerObs = function(obs) {
+    var spy, _i, _len;
+    if (spys.length) {
+      if (!registerObs.running) {
+        try {
+          registerObs.running = true;
+          for (_i = 0, _len = spys.length; _i < _len; _i++) {
+            spy = spys[_i];
+            spy(obs);
+          }
+        } finally {
+          delete registerObs.running;
         }
-      } finally {
-        delete registerObs.running;
       }
     }
-  }
-  return void 0;
-};
+    return void 0;
+  },
 
-withMethodCallSupport = function(wrapped) {
-  return function() {
-    var args, context, f, methodName;
-    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (typeof f === "object" && args.length) {
-      context = f;
-      methodName = args[0];
-      f = function() {
-        return context[methodName].apply(context, arguments);
-      };
-      args = args.slice(1);
-    }
-    return wrapped.apply(null, [f].concat(__slice.call(args)));
+  withMethodCallSupport = function(wrapped) {
+    return function() {
+      var args, context, f, methodName;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (typeof f === "object" && args.length) {
+        context = f;
+        methodName = args[0];
+        f = function() {
+          return context[methodName].apply(context, arguments);
+        };
+        args = args.slice(1);
+      }
+      return wrapped.apply(null, [f].concat(__slice.call(args)));
+    };
+  },
+
+  liftCallback = function(desc, wrapped) {
+    return withMethodCallSupport(function() {
+      var args, f, stream;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      stream = partiallyApplied(wrapped, [
+        function(values, callback) {
+          return f.apply(null, __slice.call(values).concat([callback]));
+        }
+      ]);
+      return withDescription.apply(null, [Bacon, desc, f].concat(__slice.call(args), [Bacon.combineAsArray(args).flatMap(stream)]));
+    });
   };
-};
-
-liftCallback = function(desc, wrapped) {
-  return withMethodCallSupport(function() {
-    var args, f, stream;
-    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    stream = partiallyApplied(wrapped, [
-      function(values, callback) {
-        return f.apply(null, __slice.call(values).concat([callback]));
-      }
-    ]);
-    return withDescription.apply(null, [Bacon, desc, f].concat(__slice.call(args), [Bacon.combineAsArray(args).flatMap(stream)]));
-  });
-};
 
 Bacon.fromCallback = liftCallback("fromCallback", function() {
   var args, f;
@@ -548,7 +547,7 @@ Bacon.retry = function(options) {
   }));
 };
 
-eventIdCounter = 0;
+var eventIdCounter = 0;
 
 class Event {
   constructor() {
@@ -712,7 +711,7 @@ class Error extends Event {
   }
 }
 
-idCounter = 0;
+var idCounter = 0;
 
 Observable = (function() {
   function Observable(desc) {
