@@ -1,6 +1,6 @@
 "use strict";
 
-var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, EventStream, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
+var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, None, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) {
@@ -582,11 +582,9 @@ class Event {
   }
 }
 
-Next = (function(_super) {
-  __extends(Next, _super);
-
-  function Next(valueF, eager) {
-    Next.__super__.constructor.call(this);
+class Next extends Event {
+  constructor(valueF, eager) {
+    super();
     if (!eager && isFunction(valueF) || valueF instanceof Next) {
       this.valueF = valueF;
       this.valueInternal = void 0;
@@ -596,15 +594,15 @@ Next = (function(_super) {
     }
   }
 
-  Next.prototype.isNext = function() {
+  isNext() {
     return true;
-  };
+  }
 
-  Next.prototype.hasValue = function() {
+  hasValue() {
     return true;
-  };
+  }
 
-  Next.prototype.value = function() {
+  value() {
     if (this.valueF instanceof Next) {
       this.valueInternal = this.valueF.value();
       this.valueF = void 0;
@@ -613,9 +611,9 @@ Next = (function(_super) {
       this.valueF = void 0;
     }
     return this.valueInternal;
-  };
+  }
 
-  Next.prototype.fmap = function(f) {
+  fmap(f) {
     var event, value;
     if (this.valueInternal) {
       value = this.valueInternal;
@@ -628,54 +626,45 @@ Next = (function(_super) {
         return f(event.value());
       });
     }
-  };
-
-  Next.prototype.apply = function(value) {
-    return new Next(value);
-  };
-
-  Next.prototype.filter = function(f) {
-    return f(this.value());
-  };
-
-  Next.prototype.toString = function() {
-    return _.toString(this.value());
-  };
-
-  Next.prototype.log = function() {
-    return this.value();
-  };
-
-  return Next;
-
-})(Event);
-
-Initial = (function(_super) {
-  __extends(Initial, _super);
-
-  function Initial() {
-    return Initial.__super__.constructor.apply(this, arguments);
   }
 
-  Initial.prototype.isInitial = function() {
+  apply(value) {
+    return new Next(value);
+  }
+
+  filter(f) {
+    return f(this.value());
+  }
+
+  toString() {
+    return _.toString(this.value());
+  }
+
+  log() {
+    return this.value();
+  }
+
+}
+
+
+
+class Initial extends Next {
+  isInitial() {
     return true;
-  };
+  }
 
-  Initial.prototype.isNext = function() {
+  isNext() {
     return false;
-  };
+  }
 
-  Initial.prototype.apply = function(value) {
+  apply(value) {
     return new Initial(value);
-  };
+  }
 
-  Initial.prototype.toNext = function() {
+  toNext() {
     return new Next(this);
-  };
-
-  return Initial;
-
-})(Next);
+  }
+}
 
 class End extends Event {
   constructor() {}
@@ -713,22 +702,22 @@ class Error extends Event {
 
 var idCounter = 0;
 
-Observable = (function() {
-  function Observable(desc) {
+class Observable {
+  constructor(desc) {
     this.id = ++idCounter;
     withDescription(desc, this);
     this.initialDesc = this.desc;
   }
 
-  Observable.prototype.subscribe = function(sink) {
+  subscribe(sink) {
     return UpdateBarrier.wrappedSubscribe(this, sink);
-  };
+  }
 
-  Observable.prototype.subscribeInternal = function(sink) {
+  subscribeInternal(sink) {
     return this.dispatcher.subscribe(sink);
-  };
+  }
 
-  Observable.prototype.onValue = function() {
+  onValue() {
     var f;
     f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
@@ -736,15 +725,15 @@ Observable = (function() {
         return f(event.value());
       }
     });
-  };
+  }
 
-  Observable.prototype.onValues = function(f) {
+  onValues(f) {
     return this.onValue(function(args) {
       return f.apply(null, args);
     });
-  };
+  }
 
-  Observable.prototype.onError = function() {
+  onError() {
     var f;
     f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
@@ -752,9 +741,9 @@ Observable = (function() {
         return f(event.error);
       }
     });
-  };
+  }
 
-  Observable.prototype.onEnd = function() {
+  onEnd() {
     var f;
     f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
@@ -762,15 +751,15 @@ Observable = (function() {
         return f();
       }
     });
-  };
+  }
 
-  Observable.prototype.errors = function() {
+  errors() {
     return withDescription(this, "errors", this.filter(function() {
       return false;
     }));
-  };
+  }
 
-  Observable.prototype.filter = function() {
+  filter() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     return convertArgsToFunction(this, f, args, function(f) {
@@ -782,9 +771,9 @@ Observable = (function() {
         }
       }));
     });
-  };
+  }
 
-  Observable.prototype.takeWhile = function() {
+  takeWhile() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     return convertArgsToFunction(this, f, args, function(f) {
@@ -797,9 +786,9 @@ Observable = (function() {
         }
       }));
     });
-  };
+  }
 
-  Observable.prototype.endOnError = function() {
+  endOnError() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (f == null) {
@@ -815,9 +804,9 @@ Observable = (function() {
         }
       }));
     });
-  };
+  }
 
-  Observable.prototype.take = function(count) {
+  take(count) {
     if (count <= 0) {
       return Bacon.never();
     }
@@ -837,9 +826,9 @@ Observable = (function() {
         }
       }
     }));
-  };
+  }
 
-  Observable.prototype.map = function() {
+  map() {
     var args, p;
     p = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (p instanceof Property) {
@@ -851,9 +840,9 @@ Observable = (function() {
         }));
       });
     }
-  };
+  }
 
-  Observable.prototype.mapError = function() {
+  mapError() {
     var f;
     f = makeFunctionArgs(arguments);
     return withDescription(this, "mapError", f, this.withHandler(function(event) {
@@ -863,9 +852,9 @@ Observable = (function() {
         return this.push(event);
       }
     }));
-  };
+  }
 
-  Observable.prototype.mapEnd = function() {
+  mapEnd() {
     var f;
     f = makeFunctionArgs(arguments);
     return withDescription(this, "mapEnd", f, this.withHandler(function(event) {
@@ -879,7 +868,7 @@ Observable = (function() {
     }));
   };
 
-  Observable.prototype.doAction = function() {
+  doAction() {
     var f;
     f = makeFunctionArgs(arguments);
     return withDescription(this, "doAction", f, this.withHandler(function(event) {
@@ -888,9 +877,9 @@ Observable = (function() {
       }
       return this.push(event);
     }));
-  };
+  }
 
-  Observable.prototype.skip = function(count) {
+  skip(count) {
     return withDescription(this, "skip", count, this.withHandler(function(event) {
       if (!event.hasValue()) {
         return this.push(event);
@@ -901,9 +890,9 @@ Observable = (function() {
         return this.push(event);
       }
     }));
-  };
+  }
 
-  Observable.prototype.skipDuplicates = function(isEqual) {
+  skipDuplicates(isEqual) {
     if (isEqual == null) {
       isEqual = function(a, b) {
         return a === b;
@@ -918,9 +907,9 @@ Observable = (function() {
         return [prev, []];
       }
     }));
-  };
+  }
 
-  Observable.prototype.skipErrors = function() {
+  skipErrors() {
     return withDescription(this, "skipErrors", this.withHandler(function(event) {
       if (event.isError()) {
         return Bacon.more;
@@ -928,9 +917,9 @@ Observable = (function() {
         return this.push(event);
       }
     }));
-  };
+  }
 
-  Observable.prototype.withStateMachine = function(initState, f) {
+  withStateMachine(initState, f) {
     var state;
     state = initState;
     return withDescription(this, "withStateMachine", initState, f, this.withHandler(function(event) {
@@ -948,9 +937,9 @@ Observable = (function() {
       }
       return reply;
     }));
-  };
+  }
 
-  Observable.prototype.scan = function(seed, f) {
+  scan(seed, f) {
     var acc, resultProperty, subscribe;
     f = toCombinator(f);
     acc = toOption(seed);
@@ -1005,20 +994,20 @@ Observable = (function() {
       };
     })(this);
     return resultProperty = new Property(describe(this, "scan", seed, f), subscribe);
-  };
+  }
 
-  Observable.prototype.fold = function(seed, f) {
+  fold(seed, f) {
     return withDescription(this, "fold", seed, f, this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty()));
-  };
+  }
 
-  Observable.prototype.zip = function(other, f) {
+  zip(other, f) {
     if (f == null) {
       f = Array;
     }
     return withDescription(this, "zip", other, Bacon.zipWith([this, other], f));
-  };
+  }
 
-  Observable.prototype.diff = function(start, f) {
+  diff(start, f) {
     f = toCombinator(f);
     return withDescription(this, "diff", start, f, this.scan([start], function(prevTuple, next) {
       return [next, f(prevTuple[0], next)];
@@ -1027,32 +1016,32 @@ Observable = (function() {
     }).map(function(tuple) {
       return tuple[1];
     }));
-  };
+  }
 
-  Observable.prototype.flatMap = function() {
+  flatMap() {
     return flatMap_(this, makeSpawner(arguments));
-  };
+  }
 
-  Observable.prototype.flatMapFirst = function() {
+  flatMapFirst() {
     return flatMap_(this, makeSpawner(arguments), true);
-  };
+  }
 
-  Observable.prototype.flatMapWithConcurrencyLimit = function() {
+  flatMapWithConcurrencyLimit() {
     var args, limit;
     limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     return withDescription.apply(null, [this, "flatMapWithConcurrencyLimit", limit].concat(__slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
-  };
+  }
 
-  Observable.prototype.flatMapLatest = function() {
+  flatMapLatest() {
     var f, stream;
     f = makeSpawner(arguments);
     stream = this.toEventStream();
     return withDescription(this, "flatMapLatest", f, stream.flatMap(function(value) {
       return makeObservable(f(value)).takeUntil(stream);
     }));
-  };
+  }
 
-  Observable.prototype.flatMapError = function(fn) {
+  flatMapError(fn) {
     return withDescription(this, "flatMapError", fn, this.mapError(function(err) {
       return new Error(err);
     }).flatMap(function(x) {
@@ -1062,90 +1051,88 @@ Observable = (function() {
         return Bacon.once(x);
       }
     }));
-  };
+  }
 
-  Observable.prototype.flatMapConcat = function() {
+  flatMapConcat() {
     return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
-  };
+  }
 
-  Observable.prototype.bufferingThrottle = function(minimumInterval) {
+  bufferingThrottle(minimumInterval) {
     return withDescription(this, "bufferingThrottle", minimumInterval, this.flatMapConcat(function(x) {
       return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
     }));
-  };
+  }
 
-  Observable.prototype.not = function() {
+  not() {
     return withDescription(this, "not", this.map(function(x) {
       return !x;
     }));
-  };
+  }
 
-  Observable.prototype.log = function() {
+  log() {
     var args;
     args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     this.subscribe(function(event) {
       return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, __slice.call(args).concat([event.log()])) : void 0 : void 0;
     });
     return this;
-  };
+  }
 
-  Observable.prototype.slidingWindow = function(n, minValues) {
+  slidingWindow(n, minValues) {
     if (minValues == null) {
       minValues = 0;
     }
-    return withDescription(this, "slidingWindow", n, minValues, this.scan([], (function(window, value) {
+    return withDescription(this, "slidingWindow", n, minValues, this.scan([], function(window, value) {
       return window.concat([value]).slice(-n);
-    })).filter((function(values) {
+    }).filter(function(values) {
       return values.length >= minValues;
-    })));
-  };
+    }));
+  }
 
-  Observable.prototype.combine = function(other, f) {
+  combine(other, f) {
     var combinator;
     combinator = toCombinator(f);
     return withDescription(this, "combine", other, f, Bacon.combineAsArray(this, other).map(function(values) {
       return combinator(values[0], values[1]);
     }));
-  };
+  }
 
-  Observable.prototype.decode = function(cases) {
+  decode(cases) {
     return withDescription(this, "decode", cases, this.combine(Bacon.combineTemplate(cases), function(key, values) {
       return values[key];
     }));
-  };
+  }
 
-  Observable.prototype.awaiting = function(other) {
+  awaiting(other) {
     return withDescription(this, "awaiting", other, Bacon.groupSimultaneous(this, other).map(function(_arg) {
       var myValues, otherValues;
       myValues = _arg[0], otherValues = _arg[1];
       return otherValues.length === 0;
     }).toProperty(false).skipDuplicates());
-  };
+  }
 
-  Observable.prototype.name = function(name) {
+  name(name) {
     this._name = name;
     return this;
-  };
+  }
 
-  Observable.prototype.withDescription = function() {
+  withDescription() {
     return describe.apply(null, arguments).apply(this);
-  };
+  }
 
-  Observable.prototype.toString = function() {
+  toString() {
     if (this._name) {
       return this._name;
     } else {
       return this.desc.toString();
     }
-  };
+  }
 
-  Observable.prototype.internalDeps = function() {
+  internalDeps() {
     return this.initialDesc.deps();
-  };
+  }
 
-  return Observable;
-
-})();
+}
 
 Observable.prototype.reduce = Observable.prototype.fold;
 
@@ -1231,54 +1218,52 @@ flatMap_ = function(root, f, firstOnly, limit) {
   return result;
 };
 
-EventStream = (function(_super) {
-  __extends(EventStream, _super);
-
-  function EventStream(desc, subscribe, handler) {
+class EventStream extends Observable {
+  constructor(desc, subscribe, handler) {
     if (isFunction(desc)) {
       handler = subscribe;
       subscribe = desc;
       desc = [];
     }
-    EventStream.__super__.constructor.call(this, desc);
+    super(desc);
     assertFunction(subscribe);
     this.dispatcher = new Dispatcher(subscribe, handler);
     registerObs(this);
   }
 
-  EventStream.prototype.delay = function(delay) {
+  delay(delay) {
     return withDescription(this, "delay", delay, this.flatMap(function(value) {
       return Bacon.later(delay, value);
     }));
-  };
+  }
 
-  EventStream.prototype.debounce = function(delay) {
+  debounce(delay) {
     return withDescription(this, "debounce", delay, this.flatMapLatest(function(value) {
       return Bacon.later(delay, value);
     }));
-  };
+  }
 
-  EventStream.prototype.debounceImmediate = function(delay) {
+  debounceImmediate(delay) {
     return withDescription(this, "debounceImmediate", delay, this.flatMapFirst(function(value) {
       return Bacon.once(value).concat(Bacon.later(delay).filter(false));
     }));
-  };
+  }
 
-  EventStream.prototype.throttle = function(delay) {
+  throttle(delay) {
     return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map(function(values) {
       return values[values.length - 1];
     }));
-  };
+  }
 
-  EventStream.prototype.bufferWithTime = function(delay) {
+  bufferWithTime(delay) {
     return withDescription(this, "bufferWithTime", delay, this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
-  };
+  }
 
-  EventStream.prototype.bufferWithCount = function(count) {
+  bufferWithCount(count) {
     return withDescription(this, "bufferWithCount", count, this.bufferWithTimeOrCount(void 0, count));
-  };
+  }
 
-  EventStream.prototype.bufferWithTimeOrCount = function(delay, count) {
+  bufferWithTimeOrCount(delay, count) {
     var flushOrSchedule;
     flushOrSchedule = function(buffer) {
       if (buffer.values.length === count) {
@@ -1288,9 +1273,9 @@ EventStream = (function(_super) {
       }
     };
     return withDescription(this, "bufferWithTimeOrCount", delay, count, this.buffer(delay, flushOrSchedule, flushOrSchedule));
-  };
+  }
 
-  EventStream.prototype.buffer = function(delay, onInput, onFlush) {
+  buffer(delay, onInput, onFlush) {
     var buffer, delayMs, reply;
     if (onInput == null) {
       onInput = nop;
@@ -1356,16 +1341,16 @@ EventStream = (function(_super) {
       }
       return reply;
     }));
-  };
+  }
 
-  EventStream.prototype.merge = function(right) {
+  merge(right) {
     var left;
     assertEventStream(right);
     left = this;
     return withDescription(left, "merge", right, Bacon.mergeAll(this, right));
-  };
+  }
 
-  EventStream.prototype.toProperty = function(initValue_) {
+  toProperty(initValue_) {
     var disp, initValue;
     initValue = arguments.length === 0 ? None : toOption(function() {
       return initValue_;
@@ -1412,17 +1397,17 @@ EventStream = (function(_super) {
       sendInit();
       return unsub;
     });
-  };
+  }
 
-  EventStream.prototype.toEventStream = function() {
+  toEventStream() {
     return this;
-  };
+  }
 
-  EventStream.prototype.sampledBy = function(sampler, combinator) {
+  sampledBy(sampler, combinator) {
     return withDescription(this, "sampledBy", sampler, combinator, this.toProperty().sampledBy(sampler, combinator));
-  };
+  }
 
-  EventStream.prototype.concat = function(right) {
+  concat(right) {
     var left;
     left = this;
     return new EventStream(describe(left, "concat", right), function(sink) {
@@ -1440,9 +1425,9 @@ EventStream = (function(_super) {
         return unsubRight();
       };
     });
-  };
+  }
 
-  EventStream.prototype.takeUntil = function(stopper) {
+  takeUntil(stopper) {
     var endMarker;
     endMarker = {};
     return withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function(event) {
@@ -1467,15 +1452,15 @@ EventStream = (function(_super) {
         }
       }
     }));
-  };
+  }
 
-  EventStream.prototype.skipUntil = function(starter) {
+  skipUntil(starter) {
     var started;
     started = starter.take(1).map(true).toProperty(false);
     return withDescription(this, "skipUntil", starter, this.filter(started));
-  };
+  }
 
-  EventStream.prototype.skipWhile = function() {
+  skipWhile() {
     var args, f, ok;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     ok = false;
@@ -1491,9 +1476,9 @@ EventStream = (function(_super) {
         }
       }));
     });
-  };
+  }
 
-  EventStream.prototype.holdWhen = function(valve) {
+  holdWhen(valve) {
     var putToHold, releaseHold, valve_;
     valve_ = valve.startWith(false);
     releaseHold = valve_.filter(function(x) {
@@ -1511,36 +1496,32 @@ EventStream = (function(_super) {
         }
       };
     })(this))));
-  };
+  }
 
-  EventStream.prototype.startWith = function(seed) {
+  startWith(seed) {
     return withDescription(this, "startWith", seed, Bacon.once(seed).concat(this));
-  };
+  }
 
-  EventStream.prototype.withHandler = function(handler) {
+  withHandler(handler) {
     return new EventStream(describe(this, "withHandler", handler), this.dispatcher.subscribe, handler);
-  };
+  }
+}
 
-  return EventStream;
+class Property extends Observable {
 
-})(Observable);
-
-Property = (function(_super) {
-  __extends(Property, _super);
-
-  function Property(desc, subscribe, handler) {
+  constructor(desc, subscribe, handler) {
     if (isFunction(desc)) {
       handler = subscribe;
       subscribe = desc;
       desc = [];
     }
-    Property.__super__.constructor.call(this, desc);
+    super(desc);
     assertFunction(subscribe);
     this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
     registerObs(this);
   }
 
-  Property.prototype.sampledBy = function(sampler, combinator) {
+  sampledBy(sampler, combinator) {
     var lazy, result, samplerSource, stream, thisSource;
     if (combinator != null) {
       combinator = toCombinator(combinator);
@@ -1555,13 +1536,13 @@ Property = (function(_super) {
     stream = Bacon.when([thisSource, samplerSource], combinator);
     result = sampler instanceof Property ? stream.toProperty() : stream;
     return withDescription(this, "sampledBy", sampler, combinator, result);
-  };
+  }
 
-  Property.prototype.sample = function(interval) {
+  sample(interval) {
     return withDescription(this, "sample", interval, this.sampledBy(Bacon.interval(interval, {})));
-  };
+  }
 
-  Property.prototype.changes = function() {
+  changes() {
     return new EventStream(describe(this, "changes"), (function(_this) {
       return function(sink) {
         return _this.dispatcher.subscribe(function(event) {
@@ -1571,18 +1552,18 @@ Property = (function(_super) {
         });
       };
     })(this));
-  };
+  }
 
-  Property.prototype.withHandler = function(handler) {
+  withHandler(handler) {
     return new Property(describe(this, "withHandler", handler), this.dispatcher.subscribe, handler);
-  };
+  }
 
-  Property.prototype.toProperty = function() {
+  toProperty() {
     assertNoArguments(arguments);
     return this;
-  };
+  }
 
-  Property.prototype.toEventStream = function() {
+  toEventStream() {
     return new EventStream(describe(this, "toEventStream"), (function(_this) {
       return function(sink) {
         return _this.dispatcher.subscribe(function(event) {
@@ -1593,64 +1574,61 @@ Property = (function(_super) {
         });
       };
     })(this));
-  };
+  }
 
-  Property.prototype.and = function(other) {
+  and(other) {
     return withDescription(this, "and", other, this.combine(other, function(x, y) {
       return x && y;
     }));
-  };
+  }
 
-  Property.prototype.or = function(other) {
+  or(other) {
     return withDescription(this, "or", other, this.combine(other, function(x, y) {
       return x || y;
     }));
-  };
+  }
 
-  Property.prototype.delay = function(delay) {
+  delay(delay) {
     return this.delayChanges("delay", delay, function(changes) {
       return changes.delay(delay);
     });
-  };
+  }
 
-  Property.prototype.debounce = function(delay) {
+  debounce(delay) {
     return this.delayChanges("debounce", delay, function(changes) {
       return changes.debounce(delay);
     });
-  };
+  }
 
-  Property.prototype.throttle = function(delay) {
+  throttle(delay) {
     return this.delayChanges("throttle", delay, function(changes) {
       return changes.throttle(delay);
     });
-  };
+  }
 
-  Property.prototype.delayChanges = function() {
+  delayChanges() {
     var desc, f, _i;
     desc = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), f = arguments[_i++];
     return withDescription.apply(null, [this].concat(__slice.call(desc), [addPropertyInitValueToStream(this, f(this.changes()))]));
-  };
+  }
 
-  Property.prototype.takeUntil = function(stopper) {
+  takeUntil(stopper) {
     var changes;
     changes = this.changes().takeUntil(stopper);
     return withDescription(this, "takeUntil", stopper, addPropertyInitValueToStream(this, changes));
-  };
+  }
 
-  Property.prototype.startWith = function(value) {
+  startWith(value) {
     return withDescription(this, "startWith", value, this.scan(value, function(prev, next) {
       return next;
     }));
-  };
+  }
 
-  Property.prototype.bufferingThrottle = function() {
-    var _ref1;
-    return (_ref1 = Property.__super__.bufferingThrottle.apply(this, arguments)).bufferingThrottle.apply(_ref1, arguments).toProperty();
-  };
+  bufferingThrottle() {
+    return super.bufferingThrottle(...arguments).toProperty();
+  }
 
-  return Property;
-
-})(Observable);
+}
 
 convertArgsToFunction = function(obs, f, args, method) {
   var sampled;
