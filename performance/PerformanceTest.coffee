@@ -1,5 +1,5 @@
 Benchmark = require('benchmark')
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 
 _ = Bacon._
 
