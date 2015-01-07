@@ -58,8 +58,11 @@ function resolve(peaceName, resolving) {
     .flatten()
     .value();
 
-  return deps.concat([piece]);
+  return _.uniq(deps.concat([piece]));
 }
+
+// 16 spaces
+var padding = "                ";
 
 var main = function(options){
   options = options || {};
@@ -71,7 +74,7 @@ var main = function(options){
       if (p.deps.length === 0) {
         console.info(" ", p.name);
       } else {
-        console.info(" ", p.name, "←", p.deps.join(", "));
+        console.info(" ", p.name + padding.substr(p.name.length), "←", p.deps.join(", "));
       }
     });
   }
