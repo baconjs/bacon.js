@@ -463,7 +463,7 @@ property extractor string (like ".isValuable") instead. Just like with
 
 <a name="observable-filter-property"></a>
 [`observable.filter(property)`](#observable-filter-property "observable.filter(property)") filters values based on the value of a
-property. Event will be included in output iff the property holds `true`
+property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
 at the time of the event.
 
 <a name="observable-takewhile"></a>
@@ -543,7 +543,7 @@ source.debounceImmediate(2): a-d-----a-d-----
 
 <a name="observable-bufferingthrottle"></a>
 [`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
-Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputing
+Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputting
 them with a rate of at most one value per minimumInterval.
 
 Example:
@@ -1521,7 +1521,7 @@ and `total` such that
 
 The result functions of join patterns are allowed to push values onto
 a [`Bus`](#bus) that may in turn be in one of its patterns. For instance, an
-implementation of the dining philosphers problem can be written as
+implementation of the dining philosophers problem can be written as
 follows.  (http://en.wikipedia.org/wiki/Dining_philosophers_problem)
 
 Example:
@@ -1533,7 +1533,7 @@ var chopsticks = [new Bacon.Bus(), new Bacon.Bus(), new Bacon.Bus()]
 // hungry could be any type of observable, but we'll use bus here
 var hungry     = [new Bacon.Bus(), new Bacon.Bus(), new Bacon.Bus()]
 
-// a philospher eats for one second, then makes the chopsticks
+// a philosopher eats for one second, then makes the chopsticks
 // available again by pushing values onto their bus.
 var eat = function(i) {
   return function() {
