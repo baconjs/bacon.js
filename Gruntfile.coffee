@@ -62,3 +62,7 @@ module.exports = (grunt) ->
     readmedoc = require './readme-src.coffee'
     readmegen = require './readme/readme.coffee'
     fs.writeFileSync('README.md', readmegen readmedoc)
+
+  grunt.registerTask 'assemble', 'Generate bacon.coffee', ->
+    require('./assemble.js').main
+      output: 'dist/Bacon.coffee'
