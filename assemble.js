@@ -61,6 +61,8 @@ function resolve(peaceName, resolving) {
 }
 
 var main = function(options){
+  options = options || {};
+
   var pieces = resolve(manifest);
   if (options.verbose) {
     console.info("Linearised dependency graph:")
@@ -92,3 +94,6 @@ if (require.main === module) {
     output: "src/Bacon.coffee",
   });
 }
+
+exports.main = main;
+
