@@ -16,7 +16,8 @@ It's the `_` of Events. Too bad the symbol `~` is not allowed in JavaScript.
 Here's the stuff.
 
 - [Homepage](http://baconjs.github.io/)
-- [CoffeeScript source](https://github.com/baconjs/bacon.js/blob/master/src/Bacon.coffee)
+- [CoffeeScript source](https://github.com/baconjs/bacon.js/tree/master/src)
+- [assembled CoffeeScript source](https://github.com/baconjs/bacon.js/blob/master/dist/Bacon.coffee)
 - [Generated javascript](https://github.com/baconjs/bacon.js/blob/master/dist/)
 - [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffee)
 - [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)

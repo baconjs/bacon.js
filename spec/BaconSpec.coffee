@@ -1,5 +1,5 @@
 expect = require("chai").expect
-Bacon = require("../src/Bacon").Bacon
+Bacon = require("../dist/Bacon").Bacon
 Mocks = require( "./Mock")
 TickScheduler = require("./TickScheduler").TickScheduler
 mock = Mocks.mock

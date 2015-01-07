@@ -1,4 +1,4 @@
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 {noop, createNObservable, eventStream, title} = require "./MemTestHelper"
 
 title "new EventStream"
