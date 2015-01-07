@@ -1,6 +1,6 @@
 "use strict";
 
-var Bacon, None, Some, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
+var Bacon, none, updateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __extends = function (child, parent) {
@@ -289,7 +289,7 @@ Bacon.fromArray = function (values) {
             if (i === values.length) {
               return sink(end());
             } else {
-              return UpdateBarrier.afterTransaction(push);
+              return updateBarrier.afterTransaction(push);
             }
           }
         }
@@ -705,7 +705,7 @@ class Observable {
   }
 
   subscribe(sink) {
-    return UpdateBarrier.wrappedSubscribe(this, sink);
+    return updateBarrier.wrappedSubscribe(this, sink);
   }
 
   subscribeInternal(sink) {
@@ -893,10 +893,10 @@ class Observable {
         return a === b;
       };
     }
-    return withDescription(this, "skipDuplicates", this.withStateMachine(None, function (prev, event) {
+    return withDescription(this, "skipDuplicates", this.withStateMachine(none, function (prev, event) {
       if (!event.hasValue()) {
         return [prev, [event]];
-      } else if (event.isInitial() || prev === None || !isEqual(prev.get(), event.value())) {
+      } else if (event.isInitial() || prev === none || !isEqual(prev.get(), event.value())) {
         return [new Some(event.value()), [event]];
       } else {
         return [prev, []];
@@ -984,7 +984,7 @@ class Observable {
             }
           }
         });
-        UpdateBarrier.whenDoneWith(resultProperty, sendInit);
+        updateBarrier.whenDoneWith(resultProperty, sendInit);
         return unsub;
       };
     })(this);
@@ -1347,7 +1347,7 @@ class EventStream extends Observable {
 
   toProperty(initValue_) {
     var disp, initValue;
-    initValue = arguments.length === 0 ? None : toOption(function () {
+    initValue = arguments.length === 0 ? none : toOption(function () {
       return initValue_;
     });
     disp = this.dispatcher;
@@ -1657,7 +1657,7 @@ addPropertyInitValueToStream = function (property, stream) {
       }
       return Bacon.noMore;
     });
-    UpdateBarrier.whenDoneWith(justInitValue, function () {
+    updateBarrier.whenDoneWith(justInitValue, function () {
       if (value != null) {
         sink(value);
       }
@@ -1694,7 +1694,7 @@ class Dispatcher {
     if (event.isEnd()) {
       this.ended = true;
     }
-    return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
+    return updateBarrier.inTransaction(event, this, this.pushIt, [event]);
   }
 
   pushToSubscriptions(event) {
@@ -1793,7 +1793,7 @@ class PropertyDispatcher extends Dispatcher {
     this.property = property;
     this.subscribe = this.subscribe.bind(this);
     super(subscribe, handleEvent);
-    this.current = None;
+    this.current = none;
     this.currentValueRootId = void 0;
     this.propertyEnded = false;
   }
@@ -1804,7 +1804,7 @@ class PropertyDispatcher extends Dispatcher {
     }
     if (event.hasValue()) {
       this.current = new Some(event);
-      this.currentValueRootId = UpdateBarrier.currentEventId();
+      this.currentValueRootId = updateBarrier.currentEventId();
     }
     return super(event);
   }
@@ -1825,10 +1825,10 @@ class PropertyDispatcher extends Dispatcher {
     initSent = false;
     reply = Bacon.more;
     if (this.current.isDefined && (this.hasSubscribers() || this.propertyEnded)) {
-      dispatchingId = UpdateBarrier.currentEventId();
+      dispatchingId = updateBarrier.currentEventId();
       valId = this.currentValueRootId;
       if (!this.propertyEnded && valId && dispatchingId && dispatchingId !== valId) {
-        UpdateBarrier.whenDoneWith(this.property, (function (_this) {
+        updateBarrier.whenDoneWith(this.property, (function (_this) {
           return function () {
             if (_this.currentValueRootId === valId) {
               return sink(initial(_this.current.get().value()));
@@ -1837,7 +1837,7 @@ class PropertyDispatcher extends Dispatcher {
         })(this));
         return this.maybeSubSource(sink, reply);
       } else {
-        UpdateBarrier.inTransaction(void 0, this, (function () {
+        updateBarrier.inTransaction(void 0, this, (function () {
           return reply = sink(initial(this.current.get().value()));
         }), []);
         return this.maybeSubSource(sink, reply);
@@ -2217,7 +2217,7 @@ Bacon.when = function () {
       return function (unsubAll) {
         var flush, flushLater, flushWhileTriggers;
         flushLater = function () {
-          return UpdateBarrier.whenDoneWith(resultStream, flush);
+          return updateBarrier.whenDoneWith(resultStream, flush);
         };
         flushWhileTriggers = function () {
           var events, p, reply, trigger, _k, _len2;
@@ -2294,7 +2294,7 @@ Bacon.when = function () {
                 source: source,
                 e: e
               });
-              if (needsBarrier || UpdateBarrier.hasWaiters()) {
+              if (needsBarrier || updateBarrier.hasWaiters()) {
                 flushLater();
               } else {
                 flush();
@@ -2458,62 +2458,60 @@ class CompositeUnsubscribe {
 
 Bacon.CompositeUnsubscribe = CompositeUnsubscribe;
 
-Some = (function () {
-  function Some(value) {
+class Some {
+
+  constructor(value) {
+    this.isDefined = true;
     this.value = value;
   }
 
-  Some.prototype.getOrElse = function () {
+  getOrElse() {
     return this.value;
-  };
+  }
 
-  Some.prototype.get = function () {
+  get() {
     return this.value;
-  };
+  }
 
-  Some.prototype.filter = function (f) {
+  filter(f) {
     if (f(this.value)) {
       return new Some(this.value);
     } else {
-      return None;
+      return none;
     }
-  };
+  }
 
-  Some.prototype.map = function (f) {
+  map(f) {
     return new Some(f(this.value));
-  };
+  }
 
-  Some.prototype.forEach = function (f) {
+  forEach(f) {
     return f(this.value);
-  };
+  }
 
-  Some.prototype.isDefined = true;
-
-  Some.prototype.toArray = function () {
+  toArray() {
     return [this.value];
-  };
+  }
 
-  Some.prototype.inspect = function () {
+  inspect() {
     return "Some(" + this.value + ")";
-  };
+  }
 
-  Some.prototype.toString = function () {
+  toString() {
     return this.inspect();
-  };
+  }
 
-  return Some;
+}
 
-})();
-
-None = {
+none = {
   getOrElse: function (value) {
     return value;
   },
   filter: function () {
-    return None;
+    return none;
   },
   map: function () {
-    return None;
+    return none;
   },
   forEach: function () {},
   isDefined: false,
@@ -2521,14 +2519,14 @@ None = {
     return [];
   },
   inspect: function () {
-    return "None";
+    return "none";
   },
   toString: function () {
     return this.inspect();
   }
 };
 
-UpdateBarrier = (function () {
+updateBarrier = (function () {
   var afterTransaction, afters, aftersIndex, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
   rootEvent = void 0;
   waiterObs = [];
@@ -2864,7 +2862,7 @@ toCombinator = function (f) {
 };
 
 toOption = function (v) {
-  if (v instanceof Some || v === None) {
+  if (v instanceof Some || v === none) {
     return v;
   } else {
     return new Some(v);
@@ -3010,9 +3008,9 @@ _ = {
   },
   cached: function (f) {
     var value;
-    value = None;
+    value = none;
     return function () {
-      if (value === None) {
+      if (value === none) {
         value = f();
         f = void 0;
       }
