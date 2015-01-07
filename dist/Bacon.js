@@ -23,7 +23,7 @@
     if (parent) child.__proto__ = parent;
   };
 
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, None, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
+  var Bacon, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, None, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref, __slice = [].slice, __hasProp = ({}).hasOwnProperty, __extends = function (child, parent) {
     for (var key in parent) {
       if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -35,10 +35,6 @@
     child.prototype = new ctor();
     child.__super__ = parent.prototype;
     return child;
-  }, __bind = function (fn, me) {
-    return function () {
-      return fn.apply(me, arguments);
-    };
   };
 
   Bacon = {
@@ -1738,8 +1734,8 @@
     function Dispatcher(_subscribe, _handleEvent) {
       this._subscribe = _subscribe;
       this._handleEvent = _handleEvent;
-      this.subscribe = __bind(this.subscribe, this);
-      this.handleEvent = __bind(this.handleEvent, this);
+      this.subscribe = this.subscribe.bind(this);
+      this.handleEvent = this.handleEvent.bind(this);
       this.subscriptions = [];
       this.queue = [];
       this.pushing = false;
@@ -1859,7 +1855,7 @@
 
     function PropertyDispatcher(property, subscribe, handleEvent) {
       this.property = property;
-      this.subscribe = __bind(this.subscribe, this);
+      this.subscribe = this.subscribe.bind(this);
       PropertyDispatcher.__super__.constructor.call(this, subscribe, handleEvent);
       this.current = None;
       this.currentValueRootId = void 0;
@@ -1918,18 +1914,21 @@
     return PropertyDispatcher;
   })(Dispatcher);
 
-  Bus = (function (_super) {
-    __extends(Bus, _super);
-
-    function Bus() {
-      this.guardedSink = __bind(this.guardedSink, this);
-      this.subscribeAll = __bind(this.subscribeAll, this);
-      this.unsubAll = __bind(this.unsubAll, this);
+  var Bus = (function () {
+    var _EventStream = EventStream;
+    var Bus = function Bus() {
       this.sink = void 0;
       this.subscriptions = [];
       this.ended = false;
-      Bus.__super__.constructor.call(this, describe(Bacon, "Bus"), this.subscribeAll);
-    }
+
+      this.guardedSink = this.guardedSink.bind(this);
+      this.subscribeAll = this.subscribeAll.bind(this);
+      this.unsubAll = this.unsubAll.bind(this);
+
+      _EventStream.call(this, describe(Bacon, "Bus"), this.subscribeAll);
+    };
+
+    _inherits(Bus, _EventStream);
 
     Bus.prototype.unsubAll = function () {
       var sub, _i, _len, _ref1;
@@ -2021,7 +2020,7 @@
     };
 
     return Bus;
-  })(EventStream);
+  })();
 
   Source = (function () {
     function Source(obs, sync, lazy) {
@@ -2098,12 +2097,13 @@
     return ConsumingSource;
   })(Source);
 
-  BufferingSource = (function (_super) {
-    __extends(BufferingSource, _super);
+  var BufferingSource = (function () {
+    var _Source = Source;
+    var BufferingSource = function BufferingSource(obs) {
+      _Source.call(this, obs, true);
+    };
 
-    function BufferingSource(obs) {
-      BufferingSource.__super__.constructor.call(this, obs, true);
-    }
+    _inherits(BufferingSource, _Source);
 
     BufferingSource.prototype.consume = function () {
       var values;
@@ -2125,7 +2125,7 @@
     };
 
     return BufferingSource;
-  })(Source);
+  })();
 
   Source.isTrigger = function (s) {
     if (s instanceof Source) {
@@ -2458,7 +2458,7 @@
       if (ss == null) {
         ss = [];
       }
-      this.unsubscribe = __bind(this.unsubscribe, this);
+      this.unsubscribe = this.unsubscribe.bind(this);
       this.unsubscribed = false;
       this.subscriptions = [];
       this.starting = [];
