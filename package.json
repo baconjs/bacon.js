@@ -21,17 +21,19 @@
     "email": "juha.paananen@gmail.com",
     "url": "https://twitter.com/raimohanska"
   },
-  "contributors": [{
-    "name": "Daniel K",
-    "email": "x.flowwolf@gmail.com",
-    "url": "https://twitter.com/xflowwolf"
-  }],
+  "contributors": [
+    {
+      "name": "Daniel K",
+      "email": "x.flowwolf@gmail.com",
+      "url": "https://twitter.com/xflowwolf"
+    }
+  ],
   "licenses": [
     "MIT"
   ],
   "dependencies": {},
   "devDependencies": {
-    "6to5": "^2.6.3",
+    "6to5": "^2.7.4",
     "amdclean": "^2.4.0",
     "benchmark": "1.0.0",
     "browserify": "~8.0.3",

@@ -1,6 +1,6 @@
 "use strict";
 
-var Bacon, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, None, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
+var Bacon, None, Some, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __extends = function (child, parent) {
@@ -1668,8 +1668,8 @@ addPropertyInitValueToStream = function (property, stream) {
   return justInitValue.concat(stream).toProperty();
 };
 
-Dispatcher = (function () {
-  function Dispatcher(_subscribe, _handleEvent) {
+class Dispatcher {
+  constructor(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;
     this.subscribe = this.subscribe.bind(this);
@@ -1682,22 +1682,22 @@ Dispatcher = (function () {
     this.unsubSrc = void 0;
   }
 
-  Dispatcher.prototype.hasSubscribers = function () {
+  hasSubscribers() {
     return this.subscriptions.length > 0;
-  };
+  }
 
-  Dispatcher.prototype.removeSub = function (subscription) {
+  removeSub(subscription) {
     return this.subscriptions = _.without(subscription, this.subscriptions);
-  };
+  }
 
-  Dispatcher.prototype.push = function (event) {
+  push(event) {
     if (event.isEnd()) {
       this.ended = true;
     }
     return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
-  };
+  }
 
-  Dispatcher.prototype.pushToSubscriptions = function (event) {
+  pushToSubscriptions(event) {
     var e, reply, sub, tmp, _i, _len;
     try {
       tmp = this.subscriptions;
@@ -1715,9 +1715,9 @@ Dispatcher = (function () {
       this.queue = [];
       throw e;
     }
-  };
+  }
 
-  Dispatcher.prototype.pushIt = function (event) {
+  pushIt(event) {
     if (!this.pushing) {
       if (event === this.prevError) {
         return;
@@ -1742,24 +1742,24 @@ Dispatcher = (function () {
       this.queue.push(event);
       return Bacon.more;
     }
-  };
+  }
 
-  Dispatcher.prototype.handleEvent = function (event) {
+  handleEvent(event) {
     if (this._handleEvent) {
       return this._handleEvent(event);
     } else {
       return this.push(event);
     }
-  };
+  }
 
-  Dispatcher.prototype.unsubscribeFromSource = function () {
+  unsubscribeFromSource() {
     if (this.unsubSrc) {
       this.unsubSrc();
     }
     return this.unsubSrc = void 0;
-  };
+  }
 
-  Dispatcher.prototype.subscribe = function (sink) {
+  subscribe(sink) {
     var subscription;
     if (this.ended) {
       sink(end());
@@ -1783,25 +1783,22 @@ Dispatcher = (function () {
         };
       })(this);
     }
-  };
+  }
 
-  return Dispatcher;
+}
 
-})();
+class PropertyDispatcher extends Dispatcher {
 
-PropertyDispatcher = (function (_super) {
-  __extends(PropertyDispatcher, _super);
-
-  function PropertyDispatcher(property, subscribe, handleEvent) {
+  constructor(property, subscribe, handleEvent) {
     this.property = property;
     this.subscribe = this.subscribe.bind(this);
-    PropertyDispatcher.__super__.constructor.call(this, subscribe, handleEvent);
+    super(subscribe, handleEvent);
     this.current = None;
     this.currentValueRootId = void 0;
     this.propertyEnded = false;
   }
 
-  PropertyDispatcher.prototype.push = function (event) {
+  push(event) {
     if (event.isEnd()) {
       this.propertyEnded = true;
     }
@@ -1809,21 +1806,21 @@ PropertyDispatcher = (function (_super) {
       this.current = new Some(event);
       this.currentValueRootId = UpdateBarrier.currentEventId();
     }
-    return PropertyDispatcher.__super__.push.call(this, event);
-  };
+    return super(event);
+  }
 
-  PropertyDispatcher.prototype.maybeSubSource = function (sink, reply) {
+  maybeSubSource(sink, reply) {
     if (reply === Bacon.noMore) {
       return nop;
     } else if (this.propertyEnded) {
       sink(end());
       return nop;
     } else {
-      return Dispatcher.prototype.subscribe.call(this, sink);
+      return super.subscribe(sink);
     }
-  };
+  }
 
-  PropertyDispatcher.prototype.subscribe = function (sink) {
+  subscribe(sink) {
     var dispatchingId, initSent, reply, valId;
     initSent = false;
     reply = Bacon.more;
@@ -1848,11 +1845,9 @@ PropertyDispatcher = (function (_super) {
     } else {
       return this.maybeSubSource(sink, reply);
     }
-  };
+  }
 
-  return PropertyDispatcher;
-
-})(Dispatcher);
+}
 
 class Bus extends EventStream {
 
@@ -1960,27 +1955,29 @@ class Bus extends EventStream {
 
 }
 
-Source = (function () {
-  function Source(obs, sync, lazy) {
+class Source {
+
+  constructor(obs, sync, lazy) {
     this.obs = obs;
+    this.flatten = true;
     this.sync = sync;
     this.lazy = lazy != null ? lazy : false;
     this.queue = [];
   }
 
-  Source.prototype.subscribe = function (sink) {
+  subscribe(sink) {
     return this.obs.dispatcher.subscribe(sink);
-  };
+  }
 
-  Source.prototype.toString = function () {
+  toString() {
     return this.obs.toString();
-  };
+  }
 
-  Source.prototype.markEnded = function () {
+  markEnded() {
     return this.ended = true;
-  };
+  }
 
-  Source.prototype.consume = function () {
+  consume() {
     if (this.lazy) {
       return {
         value: _.always(this.queue[0])
@@ -1988,54 +1985,46 @@ Source = (function () {
     } else {
       return this.queue[0];
     }
-  };
-
-  Source.prototype.push = function (x) {
-    return this.queue = [x];
-  };
-
-  Source.prototype.mayHave = function () {
-    return true;
-  };
-
-  Source.prototype.hasAtLeast = function () {
-    return this.queue.length;
-  };
-
-  Source.prototype.flatten = true;
-
-  return Source;
-
-})();
-
-ConsumingSource = (function (_super) {
-  __extends(ConsumingSource, _super);
-
-  function ConsumingSource() {
-    return ConsumingSource.__super__.constructor.apply(this, arguments);
   }
 
-  ConsumingSource.prototype.consume = function () {
+  push(x) {
+    return this.queue = [x];
+  }
+
+  mayHave() {
+    return true;
+  }
+
+  hasAtLeast() {
+    return this.queue.length;
+  }
+
+}
+
+class ConsumingSource extends Source {
+
+  constructor() {
+    this.flatten = false;
+    super(...arguments);
+  }
+
+  consume() {
     return this.queue.shift();
-  };
+  }
 
-  ConsumingSource.prototype.push = function (x) {
+  push(x) {
     return this.queue.push(x);
-  };
+  }
 
-  ConsumingSource.prototype.mayHave = function (c) {
+  mayHave(c) {
     return !this.ended || this.queue.length >= c;
-  };
+  }
 
-  ConsumingSource.prototype.hasAtLeast = function (c) {
+  hasAtLeast(c) {
     return this.queue.length >= c;
-  };
+  }
 
-  ConsumingSource.prototype.flatten = false;
-
-  return ConsumingSource;
-
-})(Source);
+}
 
 class BufferingSource extends Source {
 
@@ -2104,30 +2093,29 @@ findDeps = function (x) {
   }
 };
 
-Desc = (function () {
-  function Desc(context, method, args) {
+class Desc {
+
+  constructor(context, method, args) {
     this.context = context;
     this.method = method;
     this.args = args;
     this.cached = void 0;
   }
 
-  Desc.prototype.deps = function () {
+  deps() {
     return this.cached || (this.cached = findDeps([this.context].concat(this.args)));
-  };
+  }
 
-  Desc.prototype.apply = function (obs) {
+  apply(obs) {
     obs.desc = this;
     return obs;
-  };
+  }
 
-  Desc.prototype.toString = function () {
+  toString() {
     return _.toString(this.context) + "." + _.toString(this.method) + "(" + _.map(_.toString, this.args) + ")";
-  };
+  }
 
-  return Desc;
-
-})();
+}
 
 withDescription = function () {
   var desc, obs, _i;
@@ -2390,12 +2378,11 @@ compositeUnsubscribe = function () {
   return new CompositeUnsubscribe(ss).unsubscribe;
 };
 
-CompositeUnsubscribe = (function () {
-  function CompositeUnsubscribe(ss) {
+class CompositeUnsubscribe {
+
+  constructor(ss = []) {
     var s, _i, _len;
-    if (ss == null) {
-      ss = [];
-    }
+
     this.unsubscribe = this.unsubscribe.bind(this);
     this.unsubscribed = false;
     this.subscriptions = [];
@@ -2406,7 +2393,7 @@ CompositeUnsubscribe = (function () {
     }
   }
 
-  CompositeUnsubscribe.prototype.add = function (subscription) {
+  add(subscription) {
     var ended, unsub, unsubMe;
     if (this.unsubscribed) {
       return;
@@ -2430,18 +2417,18 @@ CompositeUnsubscribe = (function () {
     }
     _.remove(subscription, this.starting);
     return unsub;
-  };
+  }
 
-  CompositeUnsubscribe.prototype.remove = function (unsub) {
+  remove(unsub) {
     if (this.unsubscribed) {
       return;
     }
     if ((_.remove(unsub, this.subscriptions)) !== void 0) {
       return unsub();
     }
-  };
+  }
 
-  CompositeUnsubscribe.prototype.unsubscribe = function () {
+  unsubscribe() {
     var s, _i, _len, _ref1;
     if (this.unsubscribed) {
       return;
@@ -2454,22 +2441,20 @@ CompositeUnsubscribe = (function () {
     }
     this.subscriptions = [];
     return this.starting = [];
-  };
+  }
 
-  CompositeUnsubscribe.prototype.count = function () {
+  count() {
     if (this.unsubscribed) {
       return 0;
     }
     return this.subscriptions.length + this.starting.length;
-  };
+  }
 
-  CompositeUnsubscribe.prototype.empty = function () {
+  empty() {
     return this.count() === 0;
-  };
+  }
 
-  return CompositeUnsubscribe;
-
-})();
+}
 
 Bacon.CompositeUnsubscribe = CompositeUnsubscribe;
 
