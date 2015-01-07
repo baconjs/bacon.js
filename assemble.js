@@ -16,20 +16,19 @@ var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object
 var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.coffee"), "utf-8");
 
 var peaceCache = {};
-var dependenciesRegex = /#\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/;
+var dependenciesRegex = /#\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/g;
 
 function readPiece(peaceName) {
   if (!peaceCache[peaceName]) {
     var contents = fs.readFileSync(path.join(__dirname, "src", peaceName + ".coffee"), "utf-8");
-    var deps = contents.match(dependenciesRegex);
+    var deps = [];
 
-    if (deps) {
-      // split list by whitespace or comma
-      deps = deps[1].split(/\s*[, \t]\s*/).map(function (x) { return x.trim(); });
-    } else {
-      // no match, no deps
-      deps = [];
-    }    
+    var depsRegex = new RegExp(dependenciesRegex);
+
+    var match;
+    while (match = depsRegex.exec(contents)) {
+      deps = deps.concat(match[1].split(/\s*[, \t]\s*/).map(function (x) { return x.trim(); }))
+    }
 
     // Put in cache
     peaceCache[peaceName] = {
