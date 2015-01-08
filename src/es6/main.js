@@ -3081,7 +3081,4 @@ Bacon.scheduler = {
   }
 };
 
-
-export {
-  Bacon
-};
+export default Bacon;
