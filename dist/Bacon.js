@@ -2,17 +2,17 @@
     if (typeof define === "function" && define.amd) {
       // AMD. Register as an anonymous module.
       define(["exports"], function(exports) {
-        factory((root.Bacon = exports));
+        factory((root.Bacon = exports), root);
       });
     } else if (typeof exports === "object") {
       // CommonJS
-      factory(exports);
+      factory(exports, global);
     } else {
       // Browser globals
-      factory(root);
+      factory(root, root);
     }
-  }(this, function(exports) {
-    "use strict";(function (global) {
+  }(this, function(exports, global) {
+      "use strict";(function (global) {
   var polyfill = global.polyfill = {};
   polyfill.inherits = function (child, parent) {
     if (typeof parent !== "function" && parent !== null) {
@@ -129,7 +129,7 @@ main = function (exports) {
     }
   };
   Bacon.version = "<version>";
-  var Exception = (global ? global : this).Error;
+  var Exception = global.Error;
   Bacon.fromBinder = function (binder, eventTransformer) {
     if (!eventTransformer) {
       eventTransformer = _.id;
@@ -3017,9 +3017,8 @@ main = function (exports) {
   };
   exports = Bacon;
   return exports;
-}({});
-   exports.Bacon = main;
+}({});	exports.Bacon = main;
 
-   return main;
+	return main;
 
 }));

@@ -1,6 +1,5 @@
+	exports.Bacon = main;
 
-   exports.Bacon = main;
-
-   return main;
+	return main;
 
 }));
