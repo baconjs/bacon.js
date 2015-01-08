@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -e
+./assemble.js
 grunt coffeelint
 ./node_modules/.bin/mocha --compilers coffee:coffee-script/register spec/*Spec.coffee
