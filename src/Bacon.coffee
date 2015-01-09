@@ -710,6 +710,10 @@ class Observable
 
   decode: (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
 
+  partition: (f, args...) ->
+    convertArgsToFunction this, f, args, (f) ->
+      withDescription(this, "partition", f, [this.filter(f), this.filter(_.negate(f)) ])
+
   awaiting: (other) ->
     withDescription(this, "awaiting", other,
       Bacon.groupSimultaneous(this, other)

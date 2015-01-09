@@ -3014,6 +3014,18 @@ describe "Observable.onEnd", ->
     s.end()
     expect(ended).to.deep.equal(true)
 
+describe "Observable.partition", ->
+  it "splits events to 2 separate streams", ->
+    b = new Bacon.Bus()
+    [even, odd] = b.partition((x)->x%2==0)
+    evenValues = []
+    oddValues = []
+    even.onValue (x) -> evenValues.push x 
+    odd.onValue (x) -> oddValues.push x
+    [1,2,3,4,5].forEach (x) -> b.push(x) 
+    expect(oddValues).to.deep.equal([1,3,5])
+    expect(evenValues).to.deep.equal([2,4])
+
 describe "Field value extraction", ->
   describe "extracts field value", ->
     expectStreamEvents(
