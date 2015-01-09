@@ -9,6 +9,7 @@ promise = {
     success = s
     fail = f
     calls = calls + 1
+    then: () ->
 }
 _ = Bacon._
 nop = ->
