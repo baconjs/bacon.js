@@ -260,7 +260,11 @@ main = function (exports) {
   Bacon.spy = function (spy) {
     return spys.push(spy);
   };
-  var spys = [], registerObs = function (obs) {
+  var spys = [], bind = function (method, ctx) {
+      return function () {
+        return method.apply(ctx, arguments);
+      };
+    }, registerObs = function (obs) {
       var spy, _i, _len;
       if (spys.length) {
         if (!registerObs.running) {
@@ -1730,8 +1734,8 @@ main = function (exports) {
   var Dispatcher = function Dispatcher(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;
-    this.subscribe = this.subscribe.bind(this);
-    this.handleEvent = this.handleEvent.bind(this);
+    this.subscribe = bind(this.subscribe, this);
+    this.handleEvent = bind(this.handleEvent, this);
     this.subscriptions = [];
     this.queue = [];
     this.pushing = false;
@@ -1836,7 +1840,7 @@ main = function (exports) {
     var _Dispatcher = Dispatcher;
     var PropertyDispatcher = function PropertyDispatcher(property, subscribe, handleEvent) {
       this.property = property;
-      this.subscribe = this.subscribe.bind(this);
+      this.subscribe = bind(this.subscribe, this);
       _Dispatcher.call(this, subscribe, handleEvent);
       this.current = none;
       this.currentValueRootId = void 0;
@@ -1897,9 +1901,9 @@ main = function (exports) {
       this.sink = void 0;
       this.subscriptions = [];
       this.ended = false;
-      this.guardedSink = this.guardedSink.bind(this);
-      this.subscribeAll = this.subscribeAll.bind(this);
-      this.unsubAll = this.unsubAll.bind(this);
+      this.guardedSink = bind(this.guardedSink, this);
+      this.subscribeAll = bind(this.subscribeAll, this);
+      this.unsubAll = bind(this.unsubAll, this);
       _EventStream.call(this, describe(Bacon, "Bus"), this.subscribeAll);
     };
     polyfill.inherits(Bus, _EventStream);
@@ -2378,7 +2382,7 @@ main = function (exports) {
   var CompositeUnsubscribe = function CompositeUnsubscribe() {
     var ss = arguments[0] === undefined ? [] : arguments[0];
     var s, _i, _len;
-    this.unsubscribe = this.unsubscribe.bind(this);
+    this.unsubscribe = bind(this.unsubscribe, this);
     this.unsubscribed = false;
     this.subscriptions = [];
     this.starting = [];

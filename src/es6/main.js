@@ -154,7 +154,11 @@ Bacon.spy = function(spy) {
 };
 
 var spys = [],
-
+  bind = function(method,ctx) {
+    return function() {
+      return method.apply(ctx,arguments);
+    };
+  },
   registerObs = function(obs) {
     var spy, _i, _len;
     if (spys.length) {
@@ -1672,8 +1676,8 @@ class Dispatcher {
   constructor(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;
-    this.subscribe = this.subscribe.bind(this);
-    this.handleEvent = this.handleEvent.bind(this);
+    this.subscribe = bind(this.subscribe,this);
+    this.handleEvent = bind(this.handleEvent,this);
     this.subscriptions = [];
     this.queue = [];
     this.pushing = false;
@@ -1791,7 +1795,7 @@ class PropertyDispatcher extends Dispatcher {
 
   constructor(property, subscribe, handleEvent) {
     this.property = property;
-    this.subscribe = this.subscribe.bind(this);
+    this.subscribe = bind(this.subscribe,this);
     super(subscribe, handleEvent);
     this.current = none;
     this.currentValueRootId = void 0;
@@ -1857,9 +1861,9 @@ class Bus extends EventStream {
     this.subscriptions = [];
     this.ended = false;
 
-    this.guardedSink = this.guardedSink.bind(this);
-    this.subscribeAll = this.subscribeAll.bind(this);
-    this.unsubAll = this.unsubAll.bind(this);
+    this.guardedSink = bind(this.guardedSink,this);
+    this.subscribeAll = bind(this.subscribeAll,this);
+    this.unsubAll = bind(this.unsubAll,this);
 
     super(describe(Bacon, "Bus"), this.subscribeAll);
   }
@@ -2383,7 +2387,7 @@ class CompositeUnsubscribe {
   constructor(ss = []) {
     var s, _i, _len;
 
-    this.unsubscribe = this.unsubscribe.bind(this);
+    this.unsubscribe = bind(this.unsubscribe,this);
     this.unsubscribed = false;
     this.subscriptions = [];
     this.starting = [];
