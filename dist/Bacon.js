@@ -110,26 +110,514 @@
 })(typeof global === "undefined" ? self : global);var main;
 main = function (exports) {
   "use strict";
-  var Bacon, none, updateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, end, findDeps, flatMap_, former, initial, isArray, isFieldKey, isFunction, isObservable, latter, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, next, nop, partiallyApplied, recursionDepth, registerObs, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, _, _ref, __slice = [].slice, __hasProp = {}.hasOwnProperty, __extends = function (child, parent) {
-      for (var key in parent) {
-        if (__hasProp.call(parent, key))
-          child[key] = parent[key];
+  var _, _ref, __slice = [].slice, none = {
+      getOrElse: function (value) {
+        return value;
+      },
+      filter: function () {
+        return none;
+      },
+      map: function () {
+        return none;
+      },
+      forEach: function () {
+      },
+      isDefined: false,
+      toArray: function () {
+        return [];
+      },
+      inspect: function () {
+        return "none";
+      },
+      toString: function () {
+        return this.inspect();
       }
-      function ctor() {
-        this.constructor = child;
+    }, updateBarrier = function () {
+      var afterTransaction, afters, aftersIndex, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
+      rootEvent = void 0;
+      waiterObs = [];
+      waiters = {};
+      afters = [];
+      aftersIndex = 0;
+      afterTransaction = function (f) {
+        if (rootEvent) {
+          return afters.push(f);
+        } else {
+          return f();
+        }
+      };
+      whenDoneWith = function (obs, f) {
+        var obsWaiters;
+        if (rootEvent) {
+          obsWaiters = waiters[obs.id];
+          if (obsWaiters == null) {
+            obsWaiters = waiters[obs.id] = [f];
+            return waiterObs.push(obs);
+          } else {
+            return obsWaiters.push(f);
+          }
+        } else {
+          return f();
+        }
+      };
+      flush = function () {
+        while (waiterObs.length > 0) {
+          flushWaiters(0);
+        }
+        return void 0;
+      };
+      flushWaiters = function (index) {
+        var f, obs, obsId, obsWaiters, _i, _len;
+        obs = waiterObs[index];
+        obsId = obs.id;
+        obsWaiters = waiters[obsId];
+        waiterObs.splice(index, 1);
+        delete waiters[obsId];
+        flushDepsOf(obs);
+        for (_i = 0, _len = obsWaiters.length; _i < _len; _i++) {
+          f = obsWaiters[_i];
+          f();
+        }
+        return void 0;
+      };
+      flushDepsOf = function (obs) {
+        var dep, deps, index, _i, _len;
+        deps = obs.internalDeps();
+        for (_i = 0, _len = deps.length; _i < _len; _i++) {
+          dep = deps[_i];
+          flushDepsOf(dep);
+          if (waiters[dep.id]) {
+            index = _.indexOf(waiterObs, dep);
+            flushWaiters(index);
+          }
+        }
+        return void 0;
+      };
+      inTransaction = function (event, context, f, args) {
+        var after, result;
+        if (rootEvent) {
+          return f.apply(context, args);
+        } else {
+          rootEvent = event;
+          try {
+            result = f.apply(context, args);
+            flush();
+          } finally {
+            rootEvent = void 0;
+            while (aftersIndex < afters.length) {
+              after = afters[aftersIndex];
+              aftersIndex++;
+              after();
+            }
+            aftersIndex = 0;
+            afters = [];
+          }
+          return result;
+        }
+      };
+      currentEventId = function () {
+        if (rootEvent) {
+          return rootEvent.id;
+        } else {
+          return void 0;
+        }
+      };
+      wrappedSubscribe = function (obs, sink) {
+        var doUnsub, unsub, unsubd;
+        unsubd = false;
+        doUnsub = function () {
+        };
+        unsub = function () {
+          unsubd = true;
+          return doUnsub();
+        };
+        doUnsub = obs.dispatcher.subscribe(function (event) {
+          return afterTransaction(function () {
+            var reply;
+            if (!unsubd) {
+              reply = sink(event);
+              if (reply === Bacon.noMore) {
+                return unsub();
+              }
+            }
+          });
+        });
+        return unsub;
+      };
+      hasWaiters = function () {
+        return waiterObs.length > 0;
+      };
+      return {
+        whenDoneWith: whenDoneWith,
+        hasWaiters: hasWaiters,
+        inTransaction: inTransaction,
+        currentEventId: currentEventId,
+        wrappedSubscribe: wrappedSubscribe,
+        afterTransaction: afterTransaction
+      };
+    }(), withDescription = function () {
+      var desc, obs, _i;
+      desc = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), obs = arguments[_i++];
+      return describe.apply(null, desc).apply(obs);
+    }, toFieldExtractor = function (f, args) {
+      var partFuncs, parts;
+      parts = f.slice(1).split(".");
+      partFuncs = _.map(toSimpleExtractor(args), parts);
+      return function (value) {
+        var _i, _len;
+        for (_i = 0, _len = partFuncs.length; _i < _len; _i++) {
+          f = partFuncs[_i];
+          value = f(value);
+        }
+        return value;
+      };
+    }, toSimpleExtractor = function (args) {
+      return function (key) {
+        return function (value) {
+          var fieldValue;
+          if (!value) {
+            return;
+          } else {
+            fieldValue = value[key];
+            if (isFunction(fieldValue)) {
+              return fieldValue.apply(value, args);
+            } else {
+              return fieldValue;
+            }
+          }
+        };
+      };
+    }, toFieldKey = function (f) {
+      return f.slice(1);
+    }, toCombinator = function (f) {
+      var key;
+      if (isFunction(f)) {
+        return f;
+      } else if (isFieldKey(f)) {
+        key = toFieldKey(f);
+        return function (left, right) {
+          return left[key](right);
+        };
+      } else {
+        return assert("not a function or a field key: " + f, false);
       }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      child.__super__ = parent.prototype;
-      return child;
+    }, toOption = function (v) {
+      if (v instanceof Some || v === none) {
+        return v;
+      } else {
+        return new Some(v);
+      }
+    }, recursionDepth = 0, describe = function () {
+      var args, context, method;
+      context = arguments[0], method = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      if ((context || method) instanceof Desc) {
+        return context || method;
+      } else {
+        return new Desc(context, method, args);
+      }
+    }, findDeps = function (x) {
+      if (isArray(x)) {
+        return _.flatMap(findDeps, x);
+      } else if (isObservable(x)) {
+        return [x];
+      } else if (x instanceof Source) {
+        return [x.obs];
+      } else {
+        return [];
+      }
+    }, containsDuplicateDeps = function (observables, state) {
+      var checkObservable;
+      if (state == null) {
+        state = [];
+      }
+      checkObservable = function (obs) {
+        var deps;
+        if (_.contains(state, obs)) {
+          return true;
+        } else {
+          deps = obs.internalDeps();
+          if (deps.length) {
+            state.push(obs);
+            return _.any(deps, checkObservable);
+          } else {
+            state.push(obs);
+            return false;
+          }
+        }
+      };
+      return _.any(observables, checkObservable);
+    }, compositeUnsubscribe = function () {
+      var ss;
+      ss = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return new CompositeUnsubscribe(ss).unsubscribe;
+    }, flatMap_ = function (root, f, firstOnly, limit) {
+      var childDeps, result, rootDep;
+      rootDep = [root];
+      childDeps = [];
+      result = new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function (sink) {
+        var checkEnd, checkQueue, composite, queue, spawn;
+        composite = new CompositeUnsubscribe();
+        queue = [];
+        spawn = function (event) {
+          var child;
+          child = makeObservable(f(event.value()));
+          childDeps.push(child);
+          return composite.add(function (unsubAll, unsubMe) {
+            return child.dispatcher.subscribe(function (event) {
+              var reply;
+              if (event.isEnd()) {
+                _.remove(child, childDeps);
+                checkQueue();
+                checkEnd(unsubMe);
+                return Bacon.noMore;
+              } else {
+                if (event instanceof Initial) {
+                  event = event.toNext();
+                }
+                reply = sink(event);
+                if (reply === Bacon.noMore) {
+                  unsubAll();
+                }
+                return reply;
+              }
+            });
+          });
+        };
+        checkQueue = function () {
+          var event;
+          event = queue.shift();
+          if (event) {
+            return spawn(event);
+          }
+        };
+        checkEnd = function (unsub) {
+          unsub();
+          if (composite.empty()) {
+            return sink(end());
+          }
+        };
+        composite.add(function (__, unsubRoot) {
+          return root.dispatcher.subscribe(function (event) {
+            if (event.isEnd()) {
+              return checkEnd(unsubRoot);
+            } else if (event.isError()) {
+              return sink(event);
+            } else if (firstOnly && composite.count() > 1) {
+              return Bacon.more;
+            } else {
+              if (composite.unsubscribed) {
+                return Bacon.noMore;
+              }
+              if (limit && composite.count() > limit) {
+                return queue.push(event);
+              } else {
+                return spawn(event);
+              }
+            }
+          });
+        });
+        return composite.unsubscribe;
+      });
+      result.internalDeps = function () {
+        if (childDeps.length) {
+          return rootDep.concat(childDeps);
+        } else {
+          return rootDep;
+        }
+      };
+      return result;
+    }, Exception = global.Error, spys = [], bind = function (method, ctx) {
+      return function () {
+        return method.apply(ctx, arguments);
+      };
+    }, withMethodCallSupport = function (wrapped) {
+      return function () {
+        var args, context, f, methodName;
+        f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        if (typeof f === "object" && args.length) {
+          context = f;
+          methodName = args[0];
+          f = function () {
+            return context[methodName].apply(context, arguments);
+          };
+          args = args.slice(1);
+        }
+        return wrapped.apply(null, [f].concat(__slice.call(args)));
+      };
+    }, registerObs = function (obs) {
+      var spy, _i, _len;
+      if (spys.length) {
+        if (!registerObs.running) {
+          try {
+            registerObs.running = true;
+            for (_i = 0, _len = spys.length; _i < _len; _i++) {
+              spy = spys[_i];
+              spy(obs);
+            }
+          } finally {
+            delete registerObs.running;
+          }
+        }
+      }
+      return void 0;
+    }, nop = function () {
+    }, latter = function (_, x) {
+      return x;
+    }, former = function (x, _) {
+      return x;
+    }, initial = function (value) {
+      return new Initial(value, true);
+    }, next = function (value) {
+      return new Next(value, true);
+    }, end = function () {
+      return new End();
+    }, toEvent = function (x) {
+      if (x instanceof Event) {
+        return x;
+      } else {
+        return next(x);
+      }
+    }, cloneArray = function (xs) {
+      return xs.slice(0);
+    }, assert = function (message, condition) {
+      if (!condition) {
+        throw new Exception(message);
+      }
+    }, assertEventStream = function (event) {
+      if (!(event instanceof EventStream)) {
+        throw new Exception("not an EventStream : " + event);
+      }
+    }, assertObservable = function (event) {
+      if (!(event instanceof Observable)) {
+        throw new Exception("not an Observable : " + event);
+      }
+    }, assertFunction = function (f) {
+      return assert("not a function : " + f, isFunction(f));
+    }, isFunction = function (f) {
+      return typeof f === "function";
+    }, isArray = function (xs) {
+      return xs instanceof Array;
+    }, isObservable = function (x) {
+      return x instanceof Observable;
+    }, assertArray = function (xs) {
+      if (!isArray(xs)) {
+        throw new Exception("not an array : " + xs);
+      }
+    }, assertNoArguments = function (args) {
+      return assert("no arguments supported", args.length === 0);
+    }, assertString = function (x) {
+      if (typeof x !== "string") {
+        throw new Exception("not a string : " + x);
+      }
+    }, partiallyApplied = function (f, applied) {
+      return function () {
+        var args = [];
+        for (var _key = 0; _key < arguments.length; _key++) {
+          args[_key] = arguments[_key];
+        }
+        return f.apply(null, applied.concat(args));
+      };
+    }, makeSpawner = function (args) {
+      if (args.length === 1 && isObservable(args[0])) {
+        return _.always(args[0]);
+      } else {
+        return makeFunctionArgs(args);
+      }
+    }, makeFunctionArgs = function (args) {
+      args = Array.prototype.slice.call(args);
+      return makeFunction_.apply(null, args);
+    }, makeFunction_ = withMethodCallSupport(function () {
+      var args, f;
+      f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (isFunction(f)) {
+        if (args.length) {
+          return partiallyApplied(f, args);
+        } else {
+          return f;
+        }
+      } else if (isFieldKey(f)) {
+        return toFieldExtractor(f, args);
+      } else {
+        return _.always(f);
+      }
+    }), makeFunction = function (f, args) {
+      return makeFunction_.apply(null, [f].concat(__slice.call(args)));
+    }, constantToFunction = function (f) {
+      if (isFunction(f)) {
+        return f;
+      } else {
+        return _.always(f);
+      }
+    }, makeObservable = function (x) {
+      if (isObservable(x)) {
+        return x;
+      } else {
+        return Bacon.once(x);
+      }
+    }, isFieldKey = function (f) {
+      return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
+    }, liftCallback = function (desc, wrapped) {
+      return withMethodCallSupport(function () {
+        var args, f, stream;
+        f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        stream = partiallyApplied(wrapped, [function (values, callback) {
+            return f.apply(null, __slice.call(values).concat([callback]));
+          }]);
+        return withDescription.apply(null, [
+          Bacon,
+          desc,
+          f
+        ].concat(__slice.call(args), [Bacon.combineAsArray(args).flatMap(stream)]));
+      });
+    }, convertArgsToFunction = function (obs, f, args, method) {
+      var sampled;
+      if (f instanceof Property) {
+        sampled = f.sampledBy(obs, function (p, s) {
+          return [
+            p,
+            s
+          ];
+        });
+        return method.call(sampled, function (_arg) {
+          var p, s;
+          p = _arg[0], s = _arg[1];
+          return p;
+        }).map(function (_arg) {
+          var p, s;
+          p = _arg[0], s = _arg[1];
+          return s;
+        });
+      } else {
+        f = makeFunction(f, args);
+        return method.call(obs, f);
+      }
+    }, addPropertyInitValueToStream = function (property, stream) {
+      var justInitValue;
+      justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
+        var unsub, value;
+        value = void 0;
+        unsub = property.dispatcher.subscribe(function (event) {
+          if (!event.isEnd()) {
+            value = event;
+          }
+          return Bacon.noMore;
+        });
+        updateBarrier.whenDoneWith(justInitValue, function () {
+          if (value != null) {
+            sink(value);
+          }
+          return sink(end());
+        });
+        return unsub;
+      });
+      return justInitValue.concat(stream).toProperty();
+    }, Bacon = {
+      toString: function () {
+        return "Bacon";
+      }
     };
-  Bacon = {
-    toString: function () {
-      return "Bacon";
-    }
-  };
   Bacon.version = "<version>";
-  var Exception = global.Error;
+  Bacon.isFieldKey = isFieldKey;
   Bacon.fromBinder = function (binder, eventTransformer) {
     if (!eventTransformer) {
       eventTransformer = _.id;
@@ -147,8 +635,8 @@ main = function (exports) {
       };
       unbinder = binder(function () {
         var args = [];
-        for (var _key = 0; _key < arguments.length; _key++) {
-          args[_key] = arguments[_key];
+        for (var _key2 = 0; _key2 < arguments.length; _key2++) {
+          args[_key2] = arguments[_key2];
         }
         var event, reply, value, _i, _len;
         value = eventTransformer.apply(this, args);
@@ -260,54 +748,6 @@ main = function (exports) {
   Bacon.spy = function (spy) {
     return spys.push(spy);
   };
-  var spys = [], bind = function (method, ctx) {
-      return function () {
-        return method.apply(ctx, arguments);
-      };
-    }, registerObs = function (obs) {
-      var spy, _i, _len;
-      if (spys.length) {
-        if (!registerObs.running) {
-          try {
-            registerObs.running = true;
-            for (_i = 0, _len = spys.length; _i < _len; _i++) {
-              spy = spys[_i];
-              spy(obs);
-            }
-          } finally {
-            delete registerObs.running;
-          }
-        }
-      }
-      return void 0;
-    }, withMethodCallSupport = function (wrapped) {
-      return function () {
-        var args, context, f, methodName;
-        f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-        if (typeof f === "object" && args.length) {
-          context = f;
-          methodName = args[0];
-          f = function () {
-            return context[methodName].apply(context, arguments);
-          };
-          args = args.slice(1);
-        }
-        return wrapped.apply(null, [f].concat(__slice.call(args)));
-      };
-    }, liftCallback = function (desc, wrapped) {
-      return withMethodCallSupport(function () {
-        var args, f, stream;
-        f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-        stream = partiallyApplied(wrapped, [function (values, callback) {
-            return f.apply(null, __slice.call(values).concat([callback]));
-          }]);
-        return withDescription.apply(null, [
-          Bacon,
-          desc,
-          f
-        ].concat(__slice.call(args), [Bacon.combineAsArray(args).flatMap(stream)]));
-      });
-    };
   Bacon.fromCallback = liftCallback("fromCallback", function () {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -1226,83 +1666,6 @@ main = function (exports) {
   Observable.prototype.reduce = Observable.prototype.fold;
   Observable.prototype.assign = Observable.prototype.onValue;
   Observable.prototype.inspect = Observable.prototype.toString;
-  flatMap_ = function (root, f, firstOnly, limit) {
-    var childDeps, result, rootDep;
-    rootDep = [root];
-    childDeps = [];
-    result = new EventStream(describe(root, "flatMap" + (firstOnly ? "First" : ""), f), function (sink) {
-      var checkEnd, checkQueue, composite, queue, spawn;
-      composite = new CompositeUnsubscribe();
-      queue = [];
-      spawn = function (event) {
-        var child;
-        child = makeObservable(f(event.value()));
-        childDeps.push(child);
-        return composite.add(function (unsubAll, unsubMe) {
-          return child.dispatcher.subscribe(function (event) {
-            var reply;
-            if (event.isEnd()) {
-              _.remove(child, childDeps);
-              checkQueue();
-              checkEnd(unsubMe);
-              return Bacon.noMore;
-            } else {
-              if (event instanceof Initial) {
-                event = event.toNext();
-              }
-              reply = sink(event);
-              if (reply === Bacon.noMore) {
-                unsubAll();
-              }
-              return reply;
-            }
-          });
-        });
-      };
-      checkQueue = function () {
-        var event;
-        event = queue.shift();
-        if (event) {
-          return spawn(event);
-        }
-      };
-      checkEnd = function (unsub) {
-        unsub();
-        if (composite.empty()) {
-          return sink(end());
-        }
-      };
-      composite.add(function (__, unsubRoot) {
-        return root.dispatcher.subscribe(function (event) {
-          if (event.isEnd()) {
-            return checkEnd(unsubRoot);
-          } else if (event.isError()) {
-            return sink(event);
-          } else if (firstOnly && composite.count() > 1) {
-            return Bacon.more;
-          } else {
-            if (composite.unsubscribed) {
-              return Bacon.noMore;
-            }
-            if (limit && composite.count() > limit) {
-              return queue.push(event);
-            } else {
-              return spawn(event);
-            }
-          }
-        });
-      });
-      return composite.unsubscribe;
-    });
-    result.internalDeps = function () {
-      if (childDeps.length) {
-        return rootDep.concat(childDeps);
-      } else {
-        return rootDep;
-      }
-    };
-    return result;
-  };
   var EventStream = function () {
     var _Observable = Observable;
     var EventStream = function EventStream(desc, subscribe, handler) {
@@ -1687,50 +2050,6 @@ main = function (exports) {
     };
     return Property;
   }();
-  convertArgsToFunction = function (obs, f, args, method) {
-    var sampled;
-    if (f instanceof Property) {
-      sampled = f.sampledBy(obs, function (p, s) {
-        return [
-          p,
-          s
-        ];
-      });
-      return method.call(sampled, function (_arg) {
-        var p, s;
-        p = _arg[0], s = _arg[1];
-        return p;
-      }).map(function (_arg) {
-        var p, s;
-        p = _arg[0], s = _arg[1];
-        return s;
-      });
-    } else {
-      f = makeFunction(f, args);
-      return method.call(obs, f);
-    }
-  };
-  addPropertyInitValueToStream = function (property, stream) {
-    var justInitValue;
-    justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
-      var unsub, value;
-      value = void 0;
-      unsub = property.dispatcher.subscribe(function (event) {
-        if (!event.isEnd()) {
-          value = event;
-        }
-        return Bacon.noMore;
-      });
-      updateBarrier.whenDoneWith(justInitValue, function () {
-        if (value != null) {
-          sink(value);
-        }
-        return sink(end());
-      });
-      return unsub;
-    });
-    return justInitValue.concat(stream).toProperty();
-  };
   var Dispatcher = function Dispatcher(_subscribe, _handleEvent) {
     this._subscribe = _subscribe;
     this._handleEvent = _handleEvent;
@@ -2080,26 +2399,6 @@ main = function (exports) {
       return new ConsumingSource(s, true);
     }
   };
-  describe = function () {
-    var args, context, method;
-    context = arguments[0], method = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    if ((context || method) instanceof Desc) {
-      return context || method;
-    } else {
-      return new Desc(context, method, args);
-    }
-  };
-  findDeps = function (x) {
-    if (isArray(x)) {
-      return _.flatMap(findDeps, x);
-    } else if (isObservable(x)) {
-      return [x];
-    } else if (x instanceof Source) {
-      return [x.obs];
-    } else {
-      return [];
-    }
-  };
   var Desc = function Desc(context, method, args) {
     this.context = context;
     this.method = method;
@@ -2115,11 +2414,6 @@ main = function (exports) {
   };
   Desc.prototype.toString = function () {
     return _.toString(this.context) + "." + _.toString(this.method) + "(" + _.map(_.toString, this.args) + ")";
-  };
-  withDescription = function () {
-    var desc, obs, _i;
-    desc = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), obs = arguments[_i++];
-    return describe.apply(null, desc).apply(obs);
   };
   Bacon.when = function () {
     var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref1;
@@ -2320,28 +2614,6 @@ main = function (exports) {
       }());
     });
   };
-  containsDuplicateDeps = function (observables, state) {
-    var checkObservable;
-    if (state == null) {
-      state = [];
-    }
-    checkObservable = function (obs) {
-      var deps;
-      if (_.contains(state, obs)) {
-        return true;
-      } else {
-        deps = obs.internalDeps();
-        if (deps.length) {
-          state.push(obs);
-          return _.any(deps, checkObservable);
-        } else {
-          state.push(obs);
-          return false;
-        }
-      }
-    };
-    return _.any(observables, checkObservable);
-  };
   Bacon.update = function () {
     var i, initial, lateBindFirst, patterns;
     initial = arguments[0], patterns = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -2373,11 +2645,6 @@ main = function (exports) {
     ].concat(__slice.call(patterns), [Bacon.when.apply(Bacon, patterns).scan(initial, function (x, f) {
         return f(x);
       })]));
-  };
-  compositeUnsubscribe = function () {
-    var ss;
-    ss = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    return new CompositeUnsubscribe(ss).unsubscribe;
   };
   var CompositeUnsubscribe = function CompositeUnsubscribe() {
     var ss = arguments[0] === undefined ? [] : arguments[0];
@@ -2480,153 +2747,6 @@ main = function (exports) {
   Some.prototype.toString = function () {
     return this.inspect();
   };
-  none = {
-    getOrElse: function (value) {
-      return value;
-    },
-    filter: function () {
-      return none;
-    },
-    map: function () {
-      return none;
-    },
-    forEach: function () {
-    },
-    isDefined: false,
-    toArray: function () {
-      return [];
-    },
-    inspect: function () {
-      return "none";
-    },
-    toString: function () {
-      return this.inspect();
-    }
-  };
-  updateBarrier = function () {
-    var afterTransaction, afters, aftersIndex, currentEventId, flush, flushDepsOf, flushWaiters, hasWaiters, inTransaction, rootEvent, waiterObs, waiters, whenDoneWith, wrappedSubscribe;
-    rootEvent = void 0;
-    waiterObs = [];
-    waiters = {};
-    afters = [];
-    aftersIndex = 0;
-    afterTransaction = function (f) {
-      if (rootEvent) {
-        return afters.push(f);
-      } else {
-        return f();
-      }
-    };
-    whenDoneWith = function (obs, f) {
-      var obsWaiters;
-      if (rootEvent) {
-        obsWaiters = waiters[obs.id];
-        if (obsWaiters == null) {
-          obsWaiters = waiters[obs.id] = [f];
-          return waiterObs.push(obs);
-        } else {
-          return obsWaiters.push(f);
-        }
-      } else {
-        return f();
-      }
-    };
-    flush = function () {
-      while (waiterObs.length > 0) {
-        flushWaiters(0);
-      }
-      return void 0;
-    };
-    flushWaiters = function (index) {
-      var f, obs, obsId, obsWaiters, _i, _len;
-      obs = waiterObs[index];
-      obsId = obs.id;
-      obsWaiters = waiters[obsId];
-      waiterObs.splice(index, 1);
-      delete waiters[obsId];
-      flushDepsOf(obs);
-      for (_i = 0, _len = obsWaiters.length; _i < _len; _i++) {
-        f = obsWaiters[_i];
-        f();
-      }
-      return void 0;
-    };
-    flushDepsOf = function (obs) {
-      var dep, deps, index, _i, _len;
-      deps = obs.internalDeps();
-      for (_i = 0, _len = deps.length; _i < _len; _i++) {
-        dep = deps[_i];
-        flushDepsOf(dep);
-        if (waiters[dep.id]) {
-          index = _.indexOf(waiterObs, dep);
-          flushWaiters(index);
-        }
-      }
-      return void 0;
-    };
-    inTransaction = function (event, context, f, args) {
-      var after, result;
-      if (rootEvent) {
-        return f.apply(context, args);
-      } else {
-        rootEvent = event;
-        try {
-          result = f.apply(context, args);
-          flush();
-        } finally {
-          rootEvent = void 0;
-          while (aftersIndex < afters.length) {
-            after = afters[aftersIndex];
-            aftersIndex++;
-            after();
-          }
-          aftersIndex = 0;
-          afters = [];
-        }
-        return result;
-      }
-    };
-    currentEventId = function () {
-      if (rootEvent) {
-        return rootEvent.id;
-      } else {
-        return void 0;
-      }
-    };
-    wrappedSubscribe = function (obs, sink) {
-      var doUnsub, unsub, unsubd;
-      unsubd = false;
-      doUnsub = function () {
-      };
-      unsub = function () {
-        unsubd = true;
-        return doUnsub();
-      };
-      doUnsub = obs.dispatcher.subscribe(function (event) {
-        return afterTransaction(function () {
-          var reply;
-          if (!unsubd) {
-            reply = sink(event);
-            if (reply === Bacon.noMore) {
-              return unsub();
-            }
-          }
-        });
-      });
-      return unsub;
-    };
-    hasWaiters = function () {
-      return waiterObs.length > 0;
-    };
-    return {
-      whenDoneWith: whenDoneWith,
-      hasWaiters: hasWaiters,
-      inTransaction: inTransaction,
-      currentEventId: currentEventId,
-      wrappedSubscribe: wrappedSubscribe,
-      afterTransaction: afterTransaction
-    };
-  }();
   Bacon.EventStream = EventStream;
   Bacon.Property = Property;
   Bacon.Observable = Observable;
@@ -2635,182 +2755,6 @@ main = function (exports) {
   Bacon.Next = Next;
   Bacon.End = End;
   Bacon.Error = Error;
-  nop = function () {
-  };
-  latter = function (_, x) {
-    return x;
-  };
-  former = function (x, _) {
-    return x;
-  };
-  initial = function (value) {
-    return new Initial(value, true);
-  };
-  next = function (value) {
-    return new Next(value, true);
-  };
-  end = function () {
-    return new End();
-  };
-  toEvent = function (x) {
-    if (x instanceof Event) {
-      return x;
-    } else {
-      return next(x);
-    }
-  };
-  cloneArray = function (xs) {
-    return xs.slice(0);
-  };
-  assert = function (message, condition) {
-    if (!condition) {
-      throw new Exception(message);
-    }
-  };
-  assertEventStream = function (event) {
-    if (!(event instanceof EventStream)) {
-      throw new Exception("not an EventStream : " + event);
-    }
-  };
-  assertObservable = function (event) {
-    if (!(event instanceof Observable)) {
-      throw new Exception("not an Observable : " + event);
-    }
-  };
-  assertFunction = function (f) {
-    return assert("not a function : " + f, isFunction(f));
-  };
-  isFunction = function (f) {
-    return typeof f === "function";
-  };
-  isArray = function (xs) {
-    return xs instanceof Array;
-  };
-  isObservable = function (x) {
-    return x instanceof Observable;
-  };
-  assertArray = function (xs) {
-    if (!isArray(xs)) {
-      throw new Exception("not an array : " + xs);
-    }
-  };
-  assertNoArguments = function (args) {
-    return assert("no arguments supported", args.length === 0);
-  };
-  assertString = function (x) {
-    if (typeof x !== "string") {
-      throw new Exception("not a string : " + x);
-    }
-  };
-  partiallyApplied = function (f, applied) {
-    return function () {
-      var args = [];
-      for (var _key2 = 0; _key2 < arguments.length; _key2++) {
-        args[_key2] = arguments[_key2];
-      }
-      return f.apply(null, applied.concat(args));
-    };
-  };
-  makeSpawner = function (args) {
-    if (args.length === 1 && isObservable(args[0])) {
-      return _.always(args[0]);
-    } else {
-      return makeFunctionArgs(args);
-    }
-  };
-  makeFunctionArgs = function (args) {
-    args = Array.prototype.slice.call(args);
-    return makeFunction_.apply(null, args);
-  };
-  makeFunction_ = withMethodCallSupport(function () {
-    var args, f;
-    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    if (isFunction(f)) {
-      if (args.length) {
-        return partiallyApplied(f, args);
-      } else {
-        return f;
-      }
-    } else if (isFieldKey(f)) {
-      return toFieldExtractor(f, args);
-    } else {
-      return _.always(f);
-    }
-  });
-  makeFunction = function (f, args) {
-    return makeFunction_.apply(null, [f].concat(__slice.call(args)));
-  };
-  constantToFunction = function (f) {
-    if (isFunction(f)) {
-      return f;
-    } else {
-      return _.always(f);
-    }
-  };
-  makeObservable = function (x) {
-    if (isObservable(x)) {
-      return x;
-    } else {
-      return Bacon.once(x);
-    }
-  };
-  isFieldKey = function (f) {
-    return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
-  };
-  Bacon.isFieldKey = isFieldKey;
-  toFieldExtractor = function (f, args) {
-    var partFuncs, parts;
-    parts = f.slice(1).split(".");
-    partFuncs = _.map(toSimpleExtractor(args), parts);
-    return function (value) {
-      var _i, _len;
-      for (_i = 0, _len = partFuncs.length; _i < _len; _i++) {
-        f = partFuncs[_i];
-        value = f(value);
-      }
-      return value;
-    };
-  };
-  toSimpleExtractor = function (args) {
-    return function (key) {
-      return function (value) {
-        var fieldValue;
-        if (!value) {
-          return;
-        } else {
-          fieldValue = value[key];
-          if (isFunction(fieldValue)) {
-            return fieldValue.apply(value, args);
-          } else {
-            return fieldValue;
-          }
-        }
-      };
-    };
-  };
-  toFieldKey = function (f) {
-    return f.slice(1);
-  };
-  toCombinator = function (f) {
-    var key;
-    if (isFunction(f)) {
-      return f;
-    } else if (isFieldKey(f)) {
-      key = toFieldKey(f);
-      return function (left, right) {
-        return left[key](right);
-      };
-    } else {
-      return assert("not a function or a field key: " + f, false);
-    }
-  };
-  toOption = function (v) {
-    if (v instanceof Some || v === none) {
-      return v;
-    } else {
-      return new Some(v);
-    }
-  };
   _ = {
     indexOf: Array.prototype.indexOf ? function (xs, x) {
       return xs.indexOf(x);
@@ -3003,7 +2947,6 @@ main = function (exports) {
       }
     }
   };
-  recursionDepth = 0;
   Bacon._ = _;
   Bacon.scheduler = {
     setTimeout: function (f, d) {
