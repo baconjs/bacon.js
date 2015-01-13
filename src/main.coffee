@@ -4,10 +4,14 @@
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream describe(Bacon, "fromBinder", binder, eventTransformer), (sink) ->
     unbound = false
+    needsUnbind = false
     unbind = ->
-      if unbinder?
-        unbinder() unless unbound
-        unbound = true
+      if not unbound
+        if unbinder?
+          unbinder()
+          unbound = true
+        else
+          needsUnbind = true
     unbinder = binder (args...) ->
       value = eventTransformer.apply(this, args)
       unless isArray(value) and _.last(value) instanceof Event
@@ -18,9 +22,11 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
         reply = sink(event = toEvent(event))
         if reply == Bacon.noMore or event.isEnd()
           # defer if binder calls handler in sync before returning unbinder
-          if unbinder? then unbind() else Bacon.scheduler.setTimeout unbind, 0
+          unbind()
           return reply
       reply
+    if needsUnbind
+      unbind()
     unbind
 
 # eventTransformer - defaults to returning the first argument to handler

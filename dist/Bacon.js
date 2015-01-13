@@ -233,14 +233,17 @@
       eventTransformer = _.id;
     }
     return new EventStream(describe(Bacon, "fromBinder", binder, eventTransformer), function(sink) {
-      var unbind, unbinder, unbound;
+      var needsUnbind, unbind, unbinder, unbound;
       unbound = false;
+      needsUnbind = false;
       unbind = function() {
-        if (typeof unbinder !== "undefined" && unbinder !== null) {
-          if (!unbound) {
+        if (!unbound) {
+          if (typeof unbinder !== "undefined" && unbinder !== null) {
             unbinder();
+            return unbound = true;
+          } else {
+            return needsUnbind = true;
           }
-          return unbound = true;
         }
       };
       unbinder = binder(function() {
@@ -255,16 +258,15 @@
           event = value[_i];
           reply = sink(event = toEvent(event));
           if (reply === Bacon.noMore || event.isEnd()) {
-            if (unbinder != null) {
-              unbind();
-            } else {
-              Bacon.scheduler.setTimeout(unbind, 0);
-            }
+            unbind();
             return reply;
           }
         }
         return reply;
       });
+      if (needsUnbind) {
+        unbind();
+      }
       return unbind;
     });
   };
