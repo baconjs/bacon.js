@@ -8,6 +8,7 @@ var path = require("path");
 
 // Manifest to build
 var manifest = "main";
+var defaultOutput = path.join(__dirname, "dist", "Bacon.coffee");
 
 // Boilerplate: *header* and *footer*
 var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.coffee"), "utf-8");
@@ -61,6 +62,8 @@ function resolve(peaceName, resolving) {
 }
 
 var main = function(options){
+  options = options || {};
+
   var pieces = resolve(manifest);
   if (options.verbose) {
     console.info("Linearised dependency graph:")
@@ -89,6 +92,9 @@ var main = function(options){
 if (require.main === module) {
   main({
     verbose: true,
-    output: "src/Bacon.coffee",
+    output: defaultOutput,
   });
 }
+
+exports.main = main;
+

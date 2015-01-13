@@ -13,7 +13,7 @@ module.exports = (grunt) ->
         ]
 
     coffeelint:
-      bacon: [ 'src/Bacon.coffee' ]
+      bacon: [ 'dist/Bacon.coffee' ]
       options:
         configFile: 'coffeelint.json'
 
@@ -26,7 +26,7 @@ module.exports = (grunt) ->
       dist:
         expand:true
         files:[
-          'dist/Bacon.coffee': 'src/Bacon.coffee'
+          'dist/Bacon.coffee': 'dist/Bacon.coffee'
         ]
 
 
@@ -62,3 +62,7 @@ module.exports = (grunt) ->
     readmedoc = require './readme-src.coffee'
     readmegen = require './readme/readme.coffee'
     fs.writeFileSync('README.md', readmegen readmedoc)
+
+  grunt.registerTask 'assemble', 'Generate bacon.coffee', ->
+    require('./assemble.js').main
+      output: 'dist/Bacon.coffee'

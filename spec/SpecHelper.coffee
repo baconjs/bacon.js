@@ -1,5 +1,5 @@
 expect = require("chai").expect
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 _ = Bacon._
 
 t = @t = (time) -> time

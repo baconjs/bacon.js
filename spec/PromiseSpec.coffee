@@ -1,5 +1,5 @@
 expect = require("chai").expect
-Bacon = (require "../src/Bacon").Bacon
+Bacon = (require "../dist/Bacon").Bacon
 
 success = undefined
 fail = undefined
