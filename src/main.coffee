@@ -1487,7 +1487,9 @@ UpdateBarrier = (->
 
   wrappedSubscribe = (obs, sink) ->
     unsubd = false
+    shouldUnsub = false
     doUnsub = ->
+      shouldUnsub = true
     unsub = ->
       unsubd = true
       doUnsub()
@@ -1497,6 +1499,8 @@ UpdateBarrier = (->
           reply = sink event
           if reply == Bacon.noMore
             unsub()
+    if shouldUnsub
+      doUnsub()
     unsub
 
   hasWaiters = -> waiterObs.length > 0

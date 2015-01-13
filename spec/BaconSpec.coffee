@@ -3003,6 +3003,14 @@ describe "Observable.subscribe and onValue", ->
     dispose()
     s.push "wut"
     expect(values).to.deep.equal(["lol"])
+  it "respects returned Bacon.noMore return value (#523)", ->
+    calls = 0
+    Bacon.once(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
+      calls++
+      Bacon.noMore
+    expect(calls).to.equal(1)
+    # will hang if the underlying interval-stream isn't disposed correctly
+
 
 describe "Observable.onEnd", ->
   it "is called on stream end", ->
@@ -3365,6 +3373,7 @@ describe "Exceptions", ->
     b.take(1).onValue((x) -> values.push(x))
     b.push("after exception")
     expect(values).to.deep.equal(["after exception"])
+
 
 endlessly = (values...) ->
   index = 0
