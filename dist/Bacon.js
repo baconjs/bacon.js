@@ -2893,9 +2893,12 @@
       }
     };
     wrappedSubscribe = function(obs, sink) {
-      var doUnsub, unsub, unsubd;
+      var doUnsub, shouldUnsub, unsub, unsubd;
       unsubd = false;
-      doUnsub = function() {};
+      shouldUnsub = false;
+      doUnsub = function() {
+        return shouldUnsub = true;
+      };
       unsub = function() {
         unsubd = true;
         return doUnsub();
@@ -2911,6 +2914,9 @@
           }
         });
       });
+      if (shouldUnsub) {
+        doUnsub();
+      }
       return unsub;
     };
     hasWaiters = function() {
