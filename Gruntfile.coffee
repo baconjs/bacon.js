@@ -52,7 +52,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-text-replace'
-  grunt.loadNpmTasks 'grunt-coffeelint';
+  grunt.loadNpmTasks 'grunt-coffeelint'
 
   grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build','readme']
