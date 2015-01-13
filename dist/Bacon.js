@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.42';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -233,16 +233,16 @@
       eventTransformer = _.id;
     }
     return new EventStream(describe(Bacon, "fromBinder", binder, eventTransformer), function(sink) {
-      var needsUnbind, unbind, unbinder, unbound;
+      var shouldUnbind, unbind, unbinder, unbound;
       unbound = false;
-      needsUnbind = false;
+      shouldUnbind = false;
       unbind = function() {
         if (!unbound) {
           if (typeof unbinder !== "undefined" && unbinder !== null) {
             unbinder();
             return unbound = true;
           } else {
-            return needsUnbind = true;
+            return shouldUnbind = true;
           }
         }
       };
@@ -264,7 +264,7 @@
         }
         return reply;
       });
-      if (needsUnbind) {
+      if (shouldUnbind) {
         unbind();
       }
       return unbind;

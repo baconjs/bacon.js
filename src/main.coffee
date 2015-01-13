@@ -4,14 +4,14 @@
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
   new EventStream describe(Bacon, "fromBinder", binder, eventTransformer), (sink) ->
     unbound = false
-    needsUnbind = false
+    shouldUnbind = false
     unbind = ->
       if not unbound
         if unbinder?
           unbinder()
           unbound = true
         else
-          needsUnbind = true
+          shouldUnbind = true
     unbinder = binder (args...) ->
       value = eventTransformer.apply(this, args)
       unless isArray(value) and _.last(value) instanceof Event
@@ -25,7 +25,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
           unbind()
           return reply
       reply
-    if needsUnbind
+    if shouldUnbind
       unbind()
     unbind
 
