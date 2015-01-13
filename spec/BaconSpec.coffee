@@ -3286,6 +3286,18 @@ describe "Bacon.fromBinder", ->
     timer.take(1).log()
     output "hello"
     expect(unbound).to.equal(1)
+  describe "unbind works in synchronous case", ->
+    expectStreamEvents( ->
+        Bacon.fromBinder (sink) ->
+          unsubTest = Bacon.scheduler.setInterval((->), 10)
+          sink("hello")
+          sink(new Bacon.End())
+          ->
+            # test hangs if any interval is left uncleared
+            Bacon.scheduler.clearInterval(unsubTest)
+      ,
+      ["hello"])
+
   it "toString", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
