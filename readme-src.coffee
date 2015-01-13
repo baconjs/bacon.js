@@ -74,7 +74,7 @@ Anyways, you can wrap an event source,
 say "mouse clicks on an element" into an `EventStream` by saying
 
 ```js
-var cliks = $("h1").asEventStream("click")
+var clicks = $("h1").asEventStream("click")
 ```
 
 Each EventStream represents a stream of events. It is an Observable object, meaning
@@ -82,7 +82,7 @@ that you can listen to events in the stream using, for instance, the [`onValue`]
 with a callback. Like this:
 
 ```js
-cliks.onValue(function() { alert("you clicked the h1 element") })
+clicks.onValue(function() { alert("you clicked the h1 element") })
 ```
 
 But you can do neater stuff too. The Bacon of bacon.js is in that you can transform,
