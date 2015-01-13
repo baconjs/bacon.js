@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+
 "use strict";
 
 var _ = require("lodash");
@@ -17,7 +18,7 @@ var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "export
 var peaceCache = {};
 var dependenciesRegex = /#\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/;
 
-function readPeace(peaceName) {
+function readPiece(peaceName) {
   if (!peaceCache[peaceName]) {
     var contents = fs.readFileSync(path.join(__dirname, "src", peaceName + ".coffee"), "utf-8");
     var deps = contents.match(dependenciesRegex);
@@ -49,7 +50,7 @@ function resolve(peaceName, resolving) {
   }
 
   // read peace
-  var piece = readPeace(peaceName);
+  var piece = readPiece(peaceName);
 
   // recursively resolve dependencies
   var recResolving = [peaceName].concat(recResolving)
@@ -83,6 +84,7 @@ var main = function(options){
   ].join("\n");
 
   if (options.output) {
+    try {fs.mkdirSync("dist")} catch (e) {}
     fs.writeFileSync(options.output, output);
   } else {
     console.log(output);

@@ -22,14 +22,6 @@ module.exports = (grunt) ->
         files:
           'dist/Bacon.min.js': 'dist/Bacon.min.js'
 
-    copy:
-      dist:
-        expand:true
-        files:[
-          'dist/Bacon.coffee': 'dist/Bacon.coffee'
-        ]
-
-
     replace:
       asserts:
         dest: 'dist/Bacon.noAssert.coffee'
@@ -54,7 +46,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-text-replace'
   grunt.loadNpmTasks 'grunt-coffeelint'
 
-  grunt.registerTask 'build', ['clean:dist', 'copy', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
+  grunt.registerTask 'build', ['clean:dist', 'assemble', 'coffeelint', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build','readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->

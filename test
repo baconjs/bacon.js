@@ -4,8 +4,6 @@ npm install --silent
 
 PATH=node_modules/.bin:$PATH
 
-./node_modules/.bin/coffee src/*.coffee
-
 export grep=$1
 
 ./runtests
