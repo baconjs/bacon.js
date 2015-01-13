@@ -28,7 +28,7 @@ Here's the stuff.
 - [Bacon.js Google Group](https://groups.google.com/forum/#!forum/baconjs) for discussion and questions
 - [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/bacon.js) for well-formed questions. Use the "bacon.js" tag.
-- [Gitter](https://gitter.im/bacon/bacon.js) chat for developers of Bacon.
+- [Gitter](https://gitter.im/baconjs/bacon.js) chat for developers of Bacon.
 
 You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
 
