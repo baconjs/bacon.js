@@ -271,31 +271,10 @@
     });
   };
 
-  Bacon.$ = {};
-
-  Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
-    var _ref;
-    if (isFunction(selector)) {
-      _ref = [selector, void 0], eventTransformer = _ref[0], selector = _ref[1];
-    }
-    return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
-      return function(handler) {
-        _this.on(eventName, selector, handler);
-        return function() {
-          return _this.off(eventName, selector, handler);
-        };
-      };
-    })(this), eventTransformer));
-  };
-
-  if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : void 0) != null) {
-    _ref.fn.asEventStream = Bacon.$.asEventStream;
-  }
-
   Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-    var sub, unsub, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
-    sub = (_ref1 = (_ref2 = (_ref3 = target.addEventListener) != null ? _ref3 : target.addListener) != null ? _ref2 : target.bind) != null ? _ref1 : target.on;
-    unsub = (_ref4 = (_ref5 = (_ref6 = target.removeEventListener) != null ? _ref6 : target.removeListener) != null ? _ref5 : target.unbind) != null ? _ref4 : target.off;
+    var sub, unsub, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+    sub = (_ref = (_ref1 = (_ref2 = target.addEventListener) != null ? _ref2 : target.addListener) != null ? _ref1 : target.bind) != null ? _ref : target.on;
+    unsub = (_ref3 = (_ref4 = (_ref5 = target.removeEventListener) != null ? _ref5 : target.removeListener) != null ? _ref4 : target.unbind) != null ? _ref3 : target.off;
     return withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder(function(handler) {
       sub.call(target, eventName, handler);
       return function() {
@@ -559,10 +538,10 @@
   };
 
   Bacon.zipWith = function() {
-    var f, streams, _ref1;
+    var f, streams, _ref;
     f = arguments[0], streams = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (!isFunction(f)) {
-      _ref1 = [f, streams[0]], streams = _ref1[0], f = _ref1[1];
+      _ref = [f, streams[0]], streams = _ref[0], f = _ref[1];
     }
     streams = _.map((function(s) {
       return s.toEventStream();
@@ -1677,11 +1656,11 @@
       var endMarker;
       endMarker = {};
       return withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function(event) {
-        var data, reply, value, _i, _len, _ref1;
+        var data, reply, value, _i, _len, _ref;
         if (!event.hasValue()) {
           return this.push(event);
         } else {
-          _ref1 = event.value(), data = _ref1[0], stopper = _ref1[1];
+          _ref = event.value(), data = _ref[0], stopper = _ref[1];
           if (stopper.length) {
             return this.push(end());
           } else {
@@ -1875,8 +1854,8 @@
     };
 
     Property.prototype.bufferingThrottle = function() {
-      var _ref1;
-      return (_ref1 = Property.__super__.bufferingThrottle.apply(this, arguments)).bufferingThrottle.apply(_ref1, arguments).toProperty();
+      var _ref;
+      return (_ref = Property.__super__.bufferingThrottle.apply(this, arguments)).bufferingThrottle.apply(_ref, arguments).toProperty();
     };
 
     return Property;
@@ -2126,10 +2105,10 @@
     }
 
     Bus.prototype.unsubAll = function() {
-      var sub, _i, _len, _ref1;
-      _ref1 = this.subscriptions;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        sub = _ref1[_i];
+      var sub, _i, _len, _ref;
+      _ref = this.subscriptions;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        sub = _ref[_i];
         if (typeof sub.unsub === "function") {
           sub.unsub();
         }
@@ -2138,11 +2117,11 @@
     };
 
     Bus.prototype.subscribeAll = function(newSink) {
-      var subscription, _i, _len, _ref1;
+      var subscription, _i, _len, _ref;
       this.sink = newSink;
-      _ref1 = cloneArray(this.subscriptions);
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        subscription = _ref1[_i];
+      _ref = cloneArray(this.subscriptions);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        subscription = _ref[_i];
         this.subscribeInput(subscription);
       }
       return this.unsubAll;
@@ -2166,10 +2145,10 @@
     };
 
     Bus.prototype.unsubscribeInput = function(input) {
-      var i, sub, _i, _len, _ref1;
-      _ref1 = this.subscriptions;
-      for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
-        sub = _ref1[i];
+      var i, sub, _i, _len, _ref;
+      _ref = this.subscriptions;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        sub = _ref[i];
         if (sub.input === input) {
           if (typeof sub.unsub === "function") {
             sub.unsub();
@@ -2397,7 +2376,7 @@
   };
 
   Bacon.when = function() {
-    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref1;
+    var f, i, index, ix, len, needsBarrier, pat, patSources, pats, patterns, resultStream, s, sources, triggerFound, usage, _i, _j, _len, _len1, _ref;
     if (arguments.length === 0) {
       return Bacon.never();
     }
@@ -2428,9 +2407,9 @@
           sources.push(s);
           index = sources.length - 1;
         }
-        _ref1 = pat.ixs;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          ix = _ref1[_j];
+        _ref = pat.ixs;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          ix = _ref[_j];
           if (ix.index === index) {
             ix.count++;
           }
@@ -2460,10 +2439,10 @@
       triggers = [];
       ends = false;
       match = function(p) {
-        var _k, _len2, _ref2;
-        _ref2 = p.ixs;
-        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-          i = _ref2[_k];
+        var _k, _len2, _ref1;
+        _ref1 = p.ixs;
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          i = _ref1[_k];
           if (!sources[i.index].hasAtLeast(i.count)) {
             return false;
           }
@@ -2474,10 +2453,10 @@
         return !source.sync || source.ended;
       };
       cannotMatch = function(p) {
-        var _k, _len2, _ref2;
-        _ref2 = p.ixs;
-        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-          i = _ref2[_k];
+        var _k, _len2, _ref1;
+        _ref1 = p.ixs;
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          i = _ref1[_k];
           if (!sources[i.index].mayHave(i.count)) {
             return true;
           }
@@ -2501,11 +2480,11 @@
                 p = pats[_k];
                 if (match(p)) {
                   events = (function() {
-                    var _l, _len3, _ref2, _results;
-                    _ref2 = p.ixs;
+                    var _l, _len3, _ref1, _results;
+                    _ref1 = p.ixs;
                     _results = [];
-                    for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
-                      i = _ref2[_l];
+                    for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+                      i = _ref1[_l];
                       _results.push(sources[i.index].consume());
                     }
                     return _results;
@@ -2703,14 +2682,14 @@
     };
 
     CompositeUnsubscribe.prototype.unsubscribe = function() {
-      var s, _i, _len, _ref1;
+      var s, _i, _len, _ref;
       if (this.unsubscribed) {
         return;
       }
       this.unsubscribed = true;
-      _ref1 = this.subscriptions;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        s = _ref1[_i];
+      _ref = this.subscriptions;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        s = _ref[_i];
         s();
       }
       this.subscriptions = [];
@@ -3154,6 +3133,27 @@
       return new Some(v);
     }
   };
+
+  Bacon.$ = {};
+
+  Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
+    var _ref;
+    if (isFunction(selector)) {
+      _ref = [selector, void 0], eventTransformer = _ref[0], selector = _ref[1];
+    }
+    return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
+      return function(handler) {
+        _this.on(eventName, selector, handler);
+        return function() {
+          return _this.off(eventName, selector, handler);
+        };
+      };
+    })(this), eventTransformer));
+  };
+
+  if ((_ref = typeof jQuery !== "undefined" && jQuery !== null ? jQuery : typeof Zepto !== "undefined" && Zepto !== null ? Zepto : void 0) != null) {
+    _ref.fn.asEventStream = Bacon.$.asEventStream;
+  }
 
   if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
     define([], function() {
