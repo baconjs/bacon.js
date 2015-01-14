@@ -15,12 +15,12 @@ var defaultOutput = path.join(__dirname, "dist", "Bacon.coffee");
 var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.coffee"), "utf-8");
 var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.coffee"), "utf-8");
 
-var peaceCache = {};
+var pieceCache = {};
 var dependenciesRegex = /#\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/g;
 
-function readPiece(peaceName) {
-  if (!peaceCache[peaceName]) {
-    var contents = fs.readFileSync(path.join(__dirname, "src", peaceName + ".coffee"), "utf-8");
+function readPiece(pieceName) {
+  if (!pieceCache[pieceName]) {
+    var contents = fs.readFileSync(path.join(__dirname, "src", pieceName + ".coffee"), "utf-8");
     var deps = [];
 
     var depsRegex = new RegExp(dependenciesRegex);
@@ -31,28 +31,28 @@ function readPiece(peaceName) {
     }
 
     // Put in cache
-    peaceCache[peaceName] = {
-      name: peaceName,
+    pieceCache[pieceName] = {
+      name: pieceName,
       deps: deps,
       contents: contents,
     };
   }
 
-  return peaceCache[peaceName];
+  return pieceCache[pieceName];
 }
 
-function resolve(peaceName, resolving) {
+function resolve(pieceName, resolving) {
   resolving = resolving || [];
 
-  if (_.contains(resolving, peaceName)) {
-    throw new Error("circular dependency resolving " + peace + "; stack: " + resolving.join(""));
+  if (_.contains(resolving, pieceName)) {
+    throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
   }
 
-  // read peace
-  var piece = readPiece(peaceName);
+  // read piece
+  var piece = readPiece(pieceName);
 
   // recursively resolve dependencies
-  var recResolving = [peaceName].concat(recResolving)
+  var recResolving = [pieceName].concat(recResolving)
   var deps = _.chain(piece.deps)
     .map(function (x) { return resolve(x, recResolving); })
     .flatten()
