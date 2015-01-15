@@ -1,3 +1,5 @@
+# build-dependencies: flatmaplatest
+
 Bacon.fromPoll = (delay, poll) ->
   withDescription(Bacon, "fromPoll", delay, poll,
   (Bacon.fromBinder(((handler) ->
@@ -5,7 +7,7 @@ Bacon.fromPoll = (delay, poll) ->
     -> Bacon.scheduler.clearInterval(id)), poll)))
 
 Bacon.later = (delay, value) ->
-  withDescription(Bacon, "later", delay, value, Bacon.fromPoll(delay, -> [value, end()]))
+  withDescription(Bacon, "later", delay, value, Bacon.fromPoll(delay, -> [value, endEvent()]))
 
 Bacon.sequentially = (delay, values) ->
   index = 0
@@ -14,9 +16,9 @@ Bacon.sequentially = (delay, values) ->
     if index < values.length
       value
     else if index == values.length
-      [value, end()]
+      [value, endEvent()]
     else
-      end())
+      endEvent())
 
 Bacon.repeatedly = (delay, values) ->
   index = 0
@@ -24,7 +26,7 @@ Bacon.repeatedly = (delay, values) ->
 
 Bacon.interval = (delay, value) ->
   value = {} unless value?
-  withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, -> next(value)))
+  withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, -> nextEvent(value)))
 
 Bacon.retry = (options) ->
   throw new Exception("'source' option has to be a function") unless _.isFunction(options.source)
@@ -49,15 +51,9 @@ Bacon.EventStream :: delay = (delay) ->
   withDescription(this, "delay", delay, @flatMap (value) ->
     Bacon.later delay, value)
 
-Bacon.EventStream :: debounce = (delay) ->
-  withDescription(this, "debounce", delay, @flatMapLatest (value) ->
-    Bacon.later delay, value)
+Bacon.Property :: delay = (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
 
-Bacon.EventStream :: debounceImmediate = (delay) ->
-  withDescription(this, "debounceImmediate", delay, @flatMapFirst (value) ->
-    Bacon.once(value).concat(Bacon.later(delay).filter(false)))
+Bacon.Property :: delayChanges = (desc..., f) ->
+  withDescription(this, desc...,
+    addPropertyInitValueToStream(this, f(@changes())))
 
-Bacon.Observable :: bufferingThrottle = (minimumInterval) ->
-  withDescription(this, "bufferingThrottle", minimumInterval,
-    @flatMapConcat (x) ->
-      Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))

@@ -10,13 +10,13 @@ Bacon.fromCallback = liftCallback "fromCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
-  , ((value) -> [value, end()])
+  , ((value) -> [value, endEvent()])
 
 Bacon.fromNodeCallback = liftCallback "fromNodeCallback", (f, args...) ->
   Bacon.fromBinder (handler) ->
     makeFunction(f, args)(handler)
     nop
   , (error, value) ->
-    return [new Error(error), end()] if error
-    [value, end()]
+    return [new Error(error), endEvent()] if error
+    [value, endEvent()]
 

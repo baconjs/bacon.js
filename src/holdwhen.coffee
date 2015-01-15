@@ -1,4 +1,4 @@
-# build-dependencies: core, flatmap, merge
+# build-dependencies: core, flatmap, merge, takeuntil, scan
 
 Bacon.EventStream :: holdWhen = (valve) ->
   valve_ = valve.startWith(false)

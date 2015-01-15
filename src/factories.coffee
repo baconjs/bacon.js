@@ -58,24 +58,24 @@ Bacon.fromPromise = (promise, abort) ->
   withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder (handler) ->
     promise.then(handler, (e) -> handler(new Error(e)))
     -> promise.abort?() if abort
-  , ((value) -> [value, end()]))
+  , ((value) -> [value, endEvent()]))
 
 
 Bacon.constant = (value) ->
   new Property describe(Bacon, "constant", value), (sink) ->
-    sink (initial value)
-    sink (end())
+    sink (initialEvent value)
+    sink (endEvent())
     nop
 
 Bacon.never = ->
   new EventStream describe(Bacon, "never"), (sink) ->
-    sink (end())
+    sink (endEvent())
     nop
 
 Bacon.once = (value) ->
   new EventStream describe(Bacon, "once", value), (sink) ->
     sink (toEvent(value))
-    sink (end())
+    sink (endEvent())
     nop
 
 Bacon.fromArray = (values) ->
@@ -93,7 +93,7 @@ Bacon.fromArray = (values) ->
           reply = sink(toEvent(value))
           if reply != Bacon.noMore
             if i == values.length
-              sink(end())
+              sink(endEvent())
             else
               UpdateBarrier.afterTransaction push
       push()

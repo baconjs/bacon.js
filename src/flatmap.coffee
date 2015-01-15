@@ -11,12 +11,6 @@ Bacon.Observable :: flatMapWithConcurrencyLimit = (limit, args...) ->
   withDescription(this, "flatMapWithConcurrencyLimit", limit, args...,
     flatMap_ this, makeSpawner(args), false, limit)
 
-Bacon.Observable :: flatMapLatest = ->
-  f = makeSpawner(arguments)
-  stream = @toEventStream()
-  withDescription(this, "flatMapLatest", f, stream.flatMap (value) ->
-    makeObservable(f(value)).takeUntil(stream))
-
 Bacon.Observable :: flatMapError = (fn) ->
   withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->
     if x instanceof Error
@@ -27,11 +21,6 @@ Bacon.Observable :: flatMapError = (fn) ->
 Bacon.Observable :: flatMapConcat = ->
   withDescription(this, "flatMapConcat", arguments...,
     @flatMapWithConcurrencyLimit 1, arguments...)
-
-Bacon.Observable :: bufferingThrottle = (minimumInterval) ->
-  withDescription(this, "bufferingThrottle", minimumInterval,
-    @flatMapConcat (x) ->
-      Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
 
 flatMap_ = (root, f, firstOnly, limit) ->
   rootDep = [root]
@@ -60,7 +49,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
       spawn event if event
     checkEnd = (unsub) ->
       unsub()
-      sink end() if composite.empty()
+      sink endEvent() if composite.empty()
     composite.add (__, unsubRoot) -> root.dispatcher.subscribe (event) ->
       if event.isEnd()
         checkEnd(unsubRoot)

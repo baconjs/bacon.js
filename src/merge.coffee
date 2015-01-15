@@ -16,7 +16,7 @@ Bacon.mergeAll = (streams...) ->
         if event.isEnd()
           ends++
           if ends == streams.length
-            sink end()
+            sink endEvent()
           else
             Bacon.more
         else

@@ -81,7 +81,7 @@ Bacon.when = ->
           ends = false
           if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
             reply = Bacon.noMore
-            sink end()
+            sink endEvent()
         unsubAll() if reply == Bacon.noMore
         #console.log "flushed"
         reply
@@ -117,15 +117,3 @@ containsDuplicateDeps = (observables, state = []) ->
         false
 
   _.any observables, checkObservable
-
-Bacon.update = (initial, patterns...) ->
-  lateBindFirst = (f) -> (args...) -> (i) -> f([i].concat(args)...)
-  i = patterns.length - 1
-  while (i > 0)
-    unless patterns[i] instanceof Function
-      patterns[i] = do (x = patterns[i]) -> (-> x)
-    patterns[i] = lateBindFirst patterns[i]
-    i = i - 2
-  withDescription(Bacon, "update", initial, patterns..., Bacon.when(patterns...).scan initial, ((x,f) -> f x))
-
-

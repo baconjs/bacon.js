@@ -1,4 +1,4 @@
-# build-dependencies: _
+# build-dependencies: _, source
 
 class Desc
   constructor: (@context, @method, @args) ->
