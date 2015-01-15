@@ -58,12 +58,13 @@ _ = {
         value = f()
         f = undefined
       value
+  isFunction: (f) -> typeof f == "function"
   toString: (obj) ->
     try
       recursionDepth++
       unless obj?
         "undefined"
-      else if isFunction(obj)
+      else if _.isFunction(obj)
         "function"
       else if isArray(obj)
         return "[..]" if recursionDepth > 5
