@@ -1,4 +1,5 @@
-# build-dependencies: core, functionconstruction
+# build-dependencies: core
+# build-dependencies: functionconstruction
 # build-dependencies: compositeunsubscribe
 
 Bacon.Observable :: flatMap = ->
@@ -6,21 +7,6 @@ Bacon.Observable :: flatMap = ->
 
 Bacon.Observable :: flatMapFirst = ->
   flatMap_ this, makeSpawner(arguments), true
-
-Bacon.Observable :: flatMapWithConcurrencyLimit = (limit, args...) ->
-  withDescription(this, "flatMapWithConcurrencyLimit", limit, args...,
-    flatMap_ this, makeSpawner(args), false, limit)
-
-Bacon.Observable :: flatMapError = (fn) ->
-  withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->
-    if x instanceof Error
-      fn(x.error)
-    else
-      Bacon.once(x))
-
-Bacon.Observable :: flatMapConcat = ->
-  withDescription(this, "flatMapConcat", arguments...,
-    @flatMapWithConcurrencyLimit 1, arguments...)
 
 flatMap_ = (root, f, firstOnly, limit) ->
   rootDep = [root]

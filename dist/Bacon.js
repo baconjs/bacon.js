@@ -2188,34 +2188,46 @@
     }));
   };
 
+  Bacon.Observable.prototype.filter = function() {
+    var args, f;
+    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return convertArgsToFunction(this, f, args, function(f) {
+      return withDescription(this, "filter", f, this.withHandler(function(event) {
+        if (event.filter(f)) {
+          return this.push(event);
+        } else {
+          return Bacon.more;
+        }
+      }));
+    });
+  };
+
+  Bacon.EventStream.prototype.concat = function(right) {
+    var left;
+    left = this;
+    return new EventStream(describe(left, "concat", right), function(sink) {
+      var unsubLeft, unsubRight;
+      unsubRight = nop;
+      unsubLeft = left.dispatcher.subscribe(function(e) {
+        if (e.isEnd()) {
+          return unsubRight = right.dispatcher.subscribe(sink);
+        } else {
+          return sink(e);
+        }
+      });
+      return function() {
+        unsubLeft();
+        return unsubRight();
+      };
+    });
+  };
+
   Bacon.Observable.prototype.flatMap = function() {
     return flatMap_(this, makeSpawner(arguments));
   };
 
   Bacon.Observable.prototype.flatMapFirst = function() {
     return flatMap_(this, makeSpawner(arguments), true);
-  };
-
-  Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function() {
-    var args, limit;
-    limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    return withDescription.apply(null, [this, "flatMapWithConcurrencyLimit", limit].concat(__slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
-  };
-
-  Bacon.Observable.prototype.flatMapError = function(fn) {
-    return withDescription(this, "flatMapError", fn, this.mapError(function(err) {
-      return new Error(err);
-    }).flatMap(function(x) {
-      if (x instanceof Error) {
-        return fn(x.error);
-      } else {
-        return Bacon.once(x);
-      }
-    }));
-  };
-
-  Bacon.Observable.prototype.flatMapConcat = function() {
-    return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
   };
 
   flatMap_ = function(root, f, firstOnly, limit) {
@@ -2312,38 +2324,14 @@
     }
   };
 
-  Bacon.Observable.prototype.filter = function() {
-    var args, f;
-    f = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    return convertArgsToFunction(this, f, args, function(f) {
-      return withDescription(this, "filter", f, this.withHandler(function(event) {
-        if (event.filter(f)) {
-          return this.push(event);
-        } else {
-          return Bacon.more;
-        }
-      }));
-    });
+  Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function() {
+    var args, limit;
+    limit = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return withDescription.apply(null, [this, "flatMapWithConcurrencyLimit", limit].concat(__slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
   };
 
-  Bacon.EventStream.prototype.concat = function(right) {
-    var left;
-    left = this;
-    return new EventStream(describe(left, "concat", right), function(sink) {
-      var unsubLeft, unsubRight;
-      unsubRight = nop;
-      unsubLeft = left.dispatcher.subscribe(function(e) {
-        if (e.isEnd()) {
-          return unsubRight = right.dispatcher.subscribe(sink);
-        } else {
-          return sink(e);
-        }
-      });
-      return function() {
-        unsubLeft();
-        return unsubRight();
-      };
-    });
+  Bacon.Observable.prototype.flatMapConcat = function() {
+    return withDescription.apply(null, [this, "flatMapConcat"].concat(__slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(__slice.call(arguments)))]));
   };
 
   Bacon.Observable.prototype.bufferingThrottle = function(minimumInterval) {
@@ -2770,6 +2758,30 @@
         }
       }));
     });
+  };
+
+  Bacon.Observable.prototype.mapError = function() {
+    var f;
+    f = makeFunctionArgs(arguments);
+    return withDescription(this, "mapError", f, this.withHandler(function(event) {
+      if (event.isError()) {
+        return this.push(nextEvent(f(event.error)));
+      } else {
+        return this.push(event);
+      }
+    }));
+  };
+
+  Bacon.Observable.prototype.flatMapError = function(fn) {
+    return withDescription(this, "flatMapError", fn, this.mapError(function(err) {
+      return new Error(err);
+    }).flatMap(function(x) {
+      if (x instanceof Error) {
+        return fn(x.error);
+      } else {
+        return Bacon.once(x);
+      }
+    }));
   };
 
   Bacon.EventStream.prototype.sampledBy = function(sampler, combinator) {

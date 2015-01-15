@@ -39,4 +39,3 @@ Bacon.Property :: delay = (delay) -> @delayChanges("delay", delay, (changes) -> 
 Bacon.Property :: delayChanges = (desc..., f) ->
   withDescription(this, desc...,
     addPropertyInitValueToStream(this, f(@changes())))
-

@@ -13,7 +13,10 @@
 # build-dependencies: endonerror
 # build-dependencies: factories
 # build-dependencies: flatmap
+# build-dependencies: flatmapconcat
+# build-dependencies: flatmaperror
 # build-dependencies: flatmaplatest
+# build-dependencies: flatmapwithconcurrencylimit
 # build-dependencies: fold
 # build-dependencies: holdwhen
 # build-dependencies: jquery
