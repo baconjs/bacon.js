@@ -1,4 +1,5 @@
 # build-dependencies: _, core
+# build-dependencies: when
 
 Bacon.zipAsArray = (streams...) ->
   if isArray streams[0]

@@ -1,4 +1,5 @@
 # build-dependencies: scan
+# build-dependencies: functionconstruction
 
 Bacon.Observable :: diff = (start, f) ->
   f = toCombinator(f)

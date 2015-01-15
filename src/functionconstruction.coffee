@@ -57,3 +57,16 @@ convertArgsToFunction = (obs, f, args, method) ->
   else
     f = makeFunction(f, args)
     method.call(obs, f)
+
+toCombinator = (f) ->
+  if _.isFunction f
+    f
+  else if isFieldKey f
+    key = toFieldKey(f)
+    (left, right) ->
+      left[key](right)
+  else
+    assert "not a function or a field key: " + f, false
+
+toFieldKey = (f) ->
+  f.slice(1)

@@ -1,4 +1,6 @@
 # build-dependencies: flatmaplatest
+# build-dependencies: addpropertyinitialvaluetostream
+# build-dependencies: scheduler
 
 Bacon.fromPoll = (delay, poll) ->
   withDescription(Bacon, "fromPoll", delay, poll,

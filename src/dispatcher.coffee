@@ -1,4 +1,5 @@
 # build-dependencies: _
+# build-dependencies: updatebarrier
 
 class Dispatcher
   constructor: (@_subscribe, @_handleEvent) ->

@@ -72,3 +72,9 @@ makeSpawner = (args) ->
     _.always(args[0])
   else
     makeFunctionArgs args
+
+makeObservable = (x) ->
+  if (isObservable(x))
+    x
+  else
+    Bacon.once(x)

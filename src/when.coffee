@@ -1,4 +1,5 @@
 # build-dependencies: compositeunsubscribe
+# build-dependencies: updatebarrier
 
 Bacon.when = ->
   return Bacon.never() if arguments.length == 0
@@ -117,3 +118,10 @@ containsDuplicateDeps = (observables, state = []) ->
         false
 
   _.any observables, checkObservable
+
+constantToFunction = (f) ->
+  if _.isFunction f
+    f
+  else
+    _.always(f)
+

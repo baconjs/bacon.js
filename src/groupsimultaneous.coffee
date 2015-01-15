@@ -1,4 +1,5 @@
 # build-dependencies: source
+# build-dependencies: when
 
 Bacon.groupSimultaneous = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))

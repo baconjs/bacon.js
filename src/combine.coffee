@@ -1,4 +1,6 @@
 # build-dependencies: core, source
+# build-dependencies: functionconstruction
+# build-dependencies: when
 
 Bacon.combineAsArray = (streams...) ->
   if (streams.length == 1 and isArray(streams[0]))

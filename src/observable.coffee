@@ -4,6 +4,7 @@
 # build-dependencies: optional
 
 idCounter = 0
+registerObs = ->
 
 class Observable
   constructor: (desc) ->

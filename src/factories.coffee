@@ -1,4 +1,5 @@
 # build-dependencies: _
+# build-dependencies: updatebarrier
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->

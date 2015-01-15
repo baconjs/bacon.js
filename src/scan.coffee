@@ -1,5 +1,7 @@
 # build-dependencies: optional
 # build-dependencies: core
+# build-dependencies: functionconstruction
+# build-dependencies: when
 
 Bacon.Observable :: scan = (seed, f) ->
   f = toCombinator(f)

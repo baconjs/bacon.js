@@ -68,3 +68,9 @@ Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
+
+initialEvent = (value) -> new Initial(value, true)
+nextEvent = (value) -> new Next(value, true)
+endEvent = -> new End()
+# instanceof more performant than x.?isEvent?()
+toEvent = (x) -> if x instanceof Event then x else nextEvent x
