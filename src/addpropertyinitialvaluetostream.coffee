@@ -1,5 +1,6 @@
 # build-dependencies: eventstream
 # build-dependencies: updatebarrier
+# build-dependencies: concat
 
 addPropertyInitValueToStream = (property, stream) ->
   justInitValue = new EventStream describe(property, "justInitValue"), (sink) ->

@@ -50,31 +50,6 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-  concat: (right) ->
-    left = this
-    new EventStream describe(left, "concat", right), (sink) ->
-      unsubRight = nop
-      unsubLeft = left.dispatcher.subscribe (e) ->
-        if e.isEnd()
-          unsubRight = right.dispatcher.subscribe sink
-        else
-          sink(e)
-      -> unsubLeft() ; unsubRight()
-
-  skipUntil: (starter) ->
-    started = starter.take(1).map(true).toProperty(false)
-    withDescription(this, "skipUntil", starter, @filter(started))
-
-  skipWhile: (f, args...) ->
-    ok = false
-    convertArgsToFunction this, f, args, (f) ->
-      withDescription(this, "skipWhile", f, @withHandler (event) ->
-        if ok or !event.hasValue() or !f(event.value())
-          ok = true if event.hasValue()
-          @push event
-        else
-          Bacon.more)
-
 
   startWith: (seed) ->
     withDescription(this, "startWith", seed,

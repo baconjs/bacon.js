@@ -73,7 +73,6 @@ class Property extends Observable
 
   changes: -> new EventStream describe(this, "changes"), (sink) =>
     @dispatcher.subscribe (event) ->
-      #console.log "CHANGES", event.toString()
       sink event unless event.isInitial()
 
   withHandler: (handler) ->

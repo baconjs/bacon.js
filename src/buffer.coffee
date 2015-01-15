@@ -1,4 +1,5 @@
 # build-dependencies: scheduler
+# build-dependencies: eventstream, property
 
 Bacon.EventStream :: bufferWithTime = (delay) ->
   withDescription(this, "bufferWithTime", delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))

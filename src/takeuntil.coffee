@@ -1,5 +1,7 @@
 # build-dependencies: core
 # build-dependencies: addpropertyinitialvaluetostream
+# build-dependencies: mapend
+# build-dependencies: skiperrors
 
 Bacon.EventStream :: takeUntil = (stopper) ->
   endMarker = {}
