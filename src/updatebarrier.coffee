@@ -6,7 +6,7 @@ UpdateBarrier = (->
   waiters = {}
   afters = []
   aftersIndex = 0
-  
+
   afterTransaction = (f) ->
     if rootEvent
       afters.push(f)

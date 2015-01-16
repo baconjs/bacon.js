@@ -11,7 +11,7 @@ class Observable
     @id = ++idCounter
     withDescription(desc, this)
     @initialDesc = @desc
-  
+
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
 
