@@ -21,8 +21,8 @@
 # build-dependencies: holdwhen
 # build-dependencies: jquery
 # build-dependencies: log
-# build-dependencies: mapError
-# build-dependencies: mapEnd
+# build-dependencies: maperror
+# build-dependencies: mapend
 # build-dependencies: merge
 # build-dependencies: retry
 # build-dependencies: sample
@@ -37,7 +37,7 @@
 # build-dependencies: spy
 # build-dependencies: startwith
 # build-dependencies: take
-# build-dependencies: takeWhile
+# build-dependencies: takewhile
 # build-dependencies: takeuntil
 # build-dependencies: throttle
 # build-dependencies: update
