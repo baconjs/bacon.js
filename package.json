@@ -52,7 +52,8 @@
     "jasmine-node": "~1.13.1",
     "lodash": "~2.4.1",
     "mocha": "1.17.1",
-    "sinon": "~1.8.1"
+    "sinon": "~1.8.1",
+    "typescript": "^1.4.1"
   },
   "repository": {
     "type": "git",
