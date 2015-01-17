@@ -2,34 +2,22 @@ module.exports = (grunt) ->
   grunt.initConfig
     clean:
       dist: ['dist/']
-      coffee: ['dist/*.coffee']
-
-    coffee:
-      compile:
-        expand: true
-        files: [
-          'dist/Bacon.js': 'dist/Bacon.coffee'
-          'dist/Bacon.min.js': 'dist/Bacon.noAssert.coffee'
-        ]
-
-    coffeelint:
-      bacon: [ 'dist/Bacon.coffee' ]
-      options:
-        configFile: 'coffeelint.json'
 
     uglify:
       dist:
         files:
-          'dist/Bacon.min.js': 'dist/Bacon.min.js'
+          'dist/Bacon.min.js': 'dist/Bacon.noAssert.js'
 
+    # TODO: Can be done with falafel on JavaScript source
     replace:
       asserts:
-        dest: 'dist/Bacon.noAssert.coffee'
-        src: ['dist/Bacon.coffee']
+        dest: 'dist/Bacon.noAssert.js'
+        src: ['dist/Bacon.js']
         replacements: [
-          from: /assert.*/g
+          from: /assert[a-zA-Z]*\(.*/g
           to: ''
         ]
+
     watch:
       coffee:
         files: 'src/*.coffee'
@@ -46,7 +34,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-text-replace'
   grunt.loadNpmTasks 'grunt-coffeelint'
 
-  grunt.registerTask 'build', ['clean:dist', 'assemble', 'coffeelint', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
+  grunt.registerTask 'build', ['clean:dist', 'assemble', 'replace:asserts', 'uglify']
   grunt.registerTask 'default', ['build','readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
@@ -57,4 +45,4 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'assemble', 'Generate bacon.coffee', ->
     require('./assemble.js').main
-      output: 'dist/Bacon.coffee'
+      output: 'dist/Bacon.js'
