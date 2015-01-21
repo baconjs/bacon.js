@@ -2921,7 +2921,7 @@
 
   Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
     var _ref;
-    if (isFunction(selector)) {
+    if (_.isFunction(selector)) {
       _ref = [selector, void 0], eventTransformer = _ref[0], selector = _ref[1];
     }
     return withDescription(this.selector || this, "asEventStream", eventName, Bacon.fromBinder((function(_this) {
@@ -2945,32 +2945,6 @@
       return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, __slice.call(args).concat([event.log()])) : void 0 : void 0;
     });
     return this;
-  };
-
-  Bacon.Observable.prototype.mapError = function() {
-    var f;
-    f = makeFunctionArgs(arguments);
-    return withDescription(this, "mapError", f, this.withHandler(function(event) {
-      if (event.isError()) {
-        return this.push(nextEvent(f(event.error)));
-      } else {
-        return this.push(event);
-      }
-    }));
-  };
-
-  Bacon.Observable.prototype.mapEnd = function() {
-    var f;
-    f = makeFunctionArgs(arguments);
-    return withDescription(this, "mapEnd", f, this.withHandler(function(event) {
-      if (event.isEnd()) {
-        this.push(nextEvent(f(event)));
-        this.push(endEvent());
-        return Bacon.noMore;
-      } else {
-        return this.push(event);
-      }
-    }));
   };
 
   Bacon.retry = function(options) {
