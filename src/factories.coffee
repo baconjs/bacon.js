@@ -58,6 +58,9 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
 Bacon.fromPromise = (promise, abort) ->
   withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder (handler) ->
     promise.then(handler, (e) -> handler(new Error(e)))
+    .then null, (e) ->
+      rethrow = -> throw e
+      setTimeout rethrow, 0
     -> promise.abort?() if abort
   , ((value) -> [value, endEvent()]))
 
