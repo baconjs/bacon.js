@@ -18,7 +18,7 @@ function readPiece(pieceName) {
 }
 
 var main = function(options){
-  var pieces = [readPiece("_"), readPiece("TheRest")]
+  var pieces = [readPiece("_"), readPiece("core"), readPiece("frompromise")]
   var output = [
     header,
     pieces.join("\n"),

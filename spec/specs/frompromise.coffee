@@ -1,19 +1,16 @@
-expect = require("chai").expect
-Bacon = (require "../dist/Bacon").Bacon
-
-success = undefined
-fail = undefined
-calls = 0
-promise = {
-  then: (s, f) ->
-    success = s
-    fail = f
-    calls = calls + 1
-}
-_ = Bacon._
-nop = ->
-
 describe "Bacon.fromPromise", ->
+  success = undefined
+  fail = undefined
+  calls = 0
+  promise = {
+    then: (s, f) ->
+      success = s
+      fail = f
+      calls = calls + 1
+  }
+  _ = Bacon._
+  nop = ->
+
   it "should produce value and end on success", ->
     events = []
     Bacon.fromPromise(promise).subscribe( (e) => events.push(e))
