@@ -46,7 +46,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-text-replace'
   grunt.loadNpmTasks 'grunt-coffeelint'
 
-  grunt.registerTask 'build', ['clean:dist', 'assemble', 'coffeelint', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
+  grunt.registerTask 'build', ['coffeelint', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
   grunt.registerTask 'default', ['build','readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
@@ -54,7 +54,3 @@ module.exports = (grunt) ->
     readmedoc = require './readme-src.coffee'
     readmegen = require './readme/readme.coffee'
     fs.writeFileSync('README.md', readmegen readmedoc)
-
-  grunt.registerTask 'assemble', 'Generate bacon.coffee', ->
-    require('./assemble.js').main
-      output: 'dist/Bacon.coffee'

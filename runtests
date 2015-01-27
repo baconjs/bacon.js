@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -e
-grunt
+./build $@
 node assemble-specs.js $@
 ./node_modules/.bin/mocha --compilers coffee:coffee-script/register spec/BaconSpec.coffee

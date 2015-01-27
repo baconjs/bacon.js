@@ -4,6 +4,7 @@
 # build-dependencies: updatebarrier
 # build-dependencies: dispatcher
 # build-dependencies: optional
+# build-dependencies: helpers
 
 class PropertyDispatcher extends Dispatcher
   constructor: (@property, subscribe, handleEvent) ->

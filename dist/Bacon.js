@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, findDeps, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, withDescription, withMethodCallSupport, _, _ref,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, compositeUnsubscribe, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, findDeps, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport, _, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice,
@@ -14,6 +14,66 @@
   Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
+
+  nop = function() {};
+
+  latter = function(_, x) {
+    return x;
+  };
+
+  former = function(x, _) {
+    return x;
+  };
+
+  cloneArray = function(xs) {
+    return xs.slice(0);
+  };
+
+  assert = function(message, condition) {
+    if (!condition) {
+      throw new Exception(message);
+    }
+  };
+
+  assertEventStream = function(event) {
+    if (!(event instanceof EventStream)) {
+      throw new Exception("not an EventStream : " + event);
+    }
+  };
+
+  assertObservable = function(event) {
+    if (!(event instanceof Observable)) {
+      throw new Exception("not an Observable : " + event);
+    }
+  };
+
+  assertFunction = function(f) {
+    return assert("not a function : " + f, _.isFunction(f));
+  };
+
+  isArray = function(xs) {
+    return xs instanceof Array;
+  };
+
+  isObservable = function(x) {
+    return x instanceof Observable;
+  };
+
+  assertArray = function(xs) {
+    if (!isArray(xs)) {
+      throw new Exception("not an array : " + xs);
+    }
+  };
+
+  assertNoArguments = function(args) {
+    return assert("no arguments supported", args.length === 0);
+  };
+
+  assertString = function(x) {
+    if (typeof x !== "string") {
+      throw new Exception("not a string : " + x);
+    }
+  };
 
   _ = {
     indexOf: Array.prototype.indexOf ? function(xs, x) {
@@ -726,6 +786,10 @@
     }
   };
 
+  Bacon.noMore = ["<no-more>"];
+
+  Bacon.more = ["<more>"];
+
   idCounter = 0;
 
   registerObs = function() {};
@@ -1157,66 +1221,6 @@
     }))]));
   };
 
-  nop = function() {};
-
-  latter = function(_, x) {
-    return x;
-  };
-
-  former = function(x, _) {
-    return x;
-  };
-
-  cloneArray = function(xs) {
-    return xs.slice(0);
-  };
-
-  assert = function(message, condition) {
-    if (!condition) {
-      throw new Exception(message);
-    }
-  };
-
-  assertEventStream = function(event) {
-    if (!(event instanceof EventStream)) {
-      throw new Exception("not an EventStream : " + event);
-    }
-  };
-
-  assertObservable = function(event) {
-    if (!(event instanceof Observable)) {
-      throw new Exception("not an Observable : " + event);
-    }
-  };
-
-  assertFunction = function(f) {
-    return assert("not a function : " + f, _.isFunction(f));
-  };
-
-  isArray = function(xs) {
-    return xs instanceof Array;
-  };
-
-  isObservable = function(x) {
-    return x instanceof Observable;
-  };
-
-  assertArray = function(xs) {
-    if (!isArray(xs)) {
-      throw new Exception("not an array : " + xs);
-    }
-  };
-
-  assertNoArguments = function(args) {
-    return assert("no arguments supported", args.length === 0);
-  };
-
-  assertString = function(x) {
-    if (typeof x !== "string") {
-      throw new Exception("not a string : " + x);
-    }
-  };
-
   eventIdCounter = 0;
 
   Event = (function() {
@@ -1440,10 +1444,6 @@
       return nextEvent(x);
     }
   };
-
-  Bacon.noMore = ["<no-more>"];
-
-  Bacon.more = ["<more>"];
 
   Dispatcher = (function() {
     function Dispatcher(_subscribe, _handleEvent) {
@@ -1821,21 +1821,6 @@
         return unsub.call(target, eventName, handler);
       };
     }, eventTransformer));
-  };
-
-  Bacon.fromPromise = function(promise, abort) {
-    return withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder(function(handler) {
-      promise.then(handler, function(e) {
-        return handler(new Error(e));
-      });
-      return function() {
-        if (abort) {
-          return typeof promise.abort === "function" ? promise.abort() : void 0;
-        }
-      };
-    }, (function(value) {
-      return [value, endEvent()];
-    })));
   };
 
   Bacon.constant = function(value) {
@@ -2758,6 +2743,23 @@
         }
       }));
     });
+  };
+
+  valueAndEnd = (function(value) {
+    return [value, endEvent()];
+  });
+
+  Bacon.fromPromise = function(promise, abort) {
+    return withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder(function(handler) {
+      promise.then(handler, function(e) {
+        return handler(new Error(e));
+      });
+      return function() {
+        if (abort) {
+          return typeof promise.abort === "function" ? promise.abort() : void 0;
+        }
+      };
+    }, valueAndEnd));
   };
 
   Bacon.Observable.prototype.mapError = function() {

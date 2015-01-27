@@ -1,5 +1,6 @@
 # build-dependencies: _
-# build-dependencies: updatebarrier
+# build-dependencies: updatebarrier, eventstream
+# build-dependencies: helpers
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
@@ -17,7 +18,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
       value = eventTransformer.apply(this, args)
       unless isArray(value) and _.last(value) instanceof Event
         value = [value]
-
+        
       reply = Bacon.more
       for event in value
         reply = sink(event = toEvent(event))
@@ -54,13 +55,6 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
   , eventTransformer)
-
-Bacon.fromPromise = (promise, abort) ->
-  withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder (handler) ->
-    promise.then(handler, (e) -> handler(new Error(e)))
-    -> promise.abort?() if abort
-  , ((value) -> [value, endEvent()]))
-
 
 Bacon.constant = (value) ->
   new Property describe(Bacon, "constant", value), (sink) ->

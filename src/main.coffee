@@ -12,6 +12,7 @@
 # build-dependencies: doaction
 # build-dependencies: endonerror
 # build-dependencies: factories
+# build-dependencies: frompromise
 # build-dependencies: flatmap
 # build-dependencies: flatmapconcat
 # build-dependencies: flatmaperror

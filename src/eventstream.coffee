@@ -3,6 +3,7 @@
 # build-dependencies: functionconstruction
 # build-dependencies: dispatcher
 # build-dependencies: optional
+# build-dependencies: helpers
 
 class EventStream extends Observable
   constructor: (desc, subscribe, handler) ->

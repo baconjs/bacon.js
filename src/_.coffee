@@ -1,3 +1,5 @@
+# build-dependencies: helpers
+
 _ = {
   indexOf: if Array :: indexOf
     (xs, x) -> xs.indexOf(x)

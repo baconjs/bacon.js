@@ -7,8 +7,8 @@ var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
 
-// Manifest to build
-var manifest = "main";
+var argPieceNames =  process.argv.slice(2)
+var manifests = argPieceNames.length ? argPieceNames : ["main"];
 var defaultOutput = path.join(__dirname, "dist", "Bacon.coffee");
 
 // Boilerplate: *header* and *footer*
@@ -41,24 +41,23 @@ function readPiece(pieceName) {
   return pieceCache[pieceName];
 }
 
-function resolve(pieceName, resolving) {
+function resolve(pieceNames, resolving) {
   resolving = resolving || [];
 
-  if (_.contains(resolving, pieceName)) {
-    throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
-  }
+  return _.uniq(_.flatten(pieceNames.map(function(pieceName) {
+    var piece = readPiece(pieceName);
 
-  // read piece
-  var piece = readPiece(pieceName);
+    if (_.contains(resolving, pieceName)) {
+      throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
+    }
 
-  // recursively resolve dependencies
-  var recResolving = [pieceName].concat(recResolving)
-  var deps = _.chain(piece.deps)
-    .map(function (x) { return resolve(x, recResolving); })
-    .flatten()
-    .value();
+    var deps = _.chain(piece.deps)
+      .map(function (x) { return resolve([x], resolving.concat([pieceName])) })
+      .flatten()
+      .value();
 
-  return _.uniq(deps.concat([piece]));
+    return deps.concat([piece]);
+  })))
 }
 
 // 16 spaces
@@ -67,7 +66,7 @@ var padding = "                ";
 var main = function(options){
   options = options || {};
 
-  var pieces = resolve(manifest);
+  var pieces = resolve(manifests);
   if (options.verbose) {
     console.info("Linearised dependency graph:")
     _.each(pieces, function (p) {
@@ -95,8 +94,8 @@ var main = function(options){
 
 if (require.main === module) {
   main({
-    verbose: true,
-    output: defaultOutput,
+    verbose:true,
+    output: defaultOutput
   });
 }
 
