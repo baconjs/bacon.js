@@ -985,9 +985,9 @@ doc.subsection "Property"
 
 doc.fn "Bacon.Property", """
 a reactive property. Has the concept of "current value".
-You can create a Property from an EventStream by using either toProperty
-or scan method. Note depending on how a Property is created, it may or may not
-have an initial value. The current value stays as its last value after stream ended.
+You can create a Property from an EventStream by using either `toProperty`
+or `scan` method. Note: depending on how a Property is created, it may or may not
+have an initial value. The current value stays as its last value after the stream has ended.
 """
 
 doc.fn "Bacon.constant(x)", """
