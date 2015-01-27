@@ -58,3 +58,5 @@ module.exports = (grunt) ->
   grunt.registerTask 'assemble', 'Generate bacon.coffee', ->
     require('./assemble.js').main
       output: 'dist/Bacon.coffee'
+    require('./assemble-specs.js').main
+      output: 'spec/BaconSpec.coffee'
