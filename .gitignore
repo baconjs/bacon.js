@@ -8,5 +8,6 @@ npm-debug.log
 *.nupkg
 browsertest/bundle.js
 src/Testing*
+spec/BaconSpec.coffee
 testing
 performance/performance.js
