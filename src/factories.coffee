@@ -1,5 +1,5 @@
 # build-dependencies: _
-# build-dependencies: updatebarrier, eventstream
+# build-dependencies: updatebarrier, eventstream, event
 # build-dependencies: helpers
 
 # eventTransformer - should return one value or one or many events
