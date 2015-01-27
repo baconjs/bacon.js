@@ -10,19 +10,6 @@ browser = (typeof window == "object")
 if browser
   console.log("Running in browser, narrowing test set")
 
-grep = process.env.grep
-if grep
-  console.log("running with grep:", grep)
-  origDescribe = describe
-  match = false
-  global.describe = (desc, f) ->
-    if desc.indexOf(grep) >= 0
-      match = true
-      origDescribe(desc, f)
-      match = false
-    else if match
-      origDescribe(desc, f)
-
 @error = (msg) -> new Bacon.Error(msg)
 @soon = (f) -> setTimeout f, t(1)
 @series = (interval, values) ->

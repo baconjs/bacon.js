@@ -4,6 +4,4 @@ npm install --silent
 
 PATH=node_modules/.bin:$PATH
 
-export grep=$1
-
-./runtests
+./runtests $@

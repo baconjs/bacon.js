@@ -1695,7 +1695,11 @@ Test
 
 Run unit tests:
 
-    npm test
+    ./test
+
+Run some unit tests:
+
+    ./test core _ frompromise
 
 Run browser tests (using testem):
 
