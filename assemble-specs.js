@@ -18,7 +18,9 @@ function readPiece(pieceName) {
 }
 
 var main = function(options){
-  var pieces = [readPiece("_"), readPiece("core"), readPiece("frompromise")]
+  var pieces = fs.readdirSync("spec/specs")
+    .map(function(name) { return name.substring(0, name.length - 7)})
+    .map(readPiece)
   var output = [
     header,
     pieces.join("\n"),
