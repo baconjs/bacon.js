@@ -946,7 +946,7 @@ Property
 [`Bacon.Property`](#bacon-property "Bacon.Property") a reactive property. Has the concept of "current value".
 You can create a Property from an EventStream by using either toProperty
 or scan method. Note depending on how a Property is created, it may or may not
-have an initial value.
+have an initial value. The current value stays as its last value after stream ended.
 
 <a name="bacon-constant"></a>
 [`Bacon.constant(x)`](#bacon-constant "Bacon.constant(x)") creates a constant property with value x.
