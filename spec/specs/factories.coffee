@@ -47,3 +47,55 @@ describe "Bacon.fromBinder", ->
   it "toString", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
 
+describe "Bacon.once", ->
+  describe "should send single event and end", ->
+    expectStreamEvents(
+      -> Bacon.once("pow")
+      ["pow"])
+  describe "accepts an Error event as parameter", ->
+    expectStreamEvents(
+      -> Bacon.once(new Bacon.Error("oop"))
+      [error()])
+  describe "Allows wrapped events, for instance, Bacon.Error", ->
+    expectStreamEvents(
+      -> Bacon.once(error())
+      [error()])
+  it "Responds synchronously", ->
+    values = []
+    s = Bacon.once(1)
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
+    s.onValue(values.push.bind(values))
+    expect(values).to.deep.equal([1])
+
+describe "Bacon.fromArray", ->
+  describe "Turns an empty array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([])
+      [])
+  describe "Turns a single-element array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1])
+      [1])
+  describe "Turns a longer array into an EventStream", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([1, 2, 3])
+      [1, 2, 3])
+  describe "Allows wrapped events, for instance, Bacon.Error", ->
+    expectStreamEvents(
+      -> Bacon.fromArray([error(), 1])
+      [error(), 1])
+  it "toString", ->
+    expect(Bacon.fromArray([1,2]).toString()).to.equal("Bacon.fromArray([1,2])")
+  it "doesn't mutate the given array, toString works after subscribe (bug fix)", ->
+    array = [1,2]
+    s = Bacon.fromArray(array)
+    s.onValue(->)
+    expect(s.toString()).to.equal("Bacon.fromArray([1,2])")
+    expect(array).to.deep.equal([1,2])
+
+describe "Bacon.never", ->
+  describe "should send just end", ->
+    expectStreamEvents(
+      -> Bacon.never()
+      [])
