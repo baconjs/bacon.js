@@ -1,4 +1,4 @@
-# build-dependencies: core, combine, factories
+# build-dependencies: core, combine, factories, flatmap
 
 liftCallback = (desc, wrapped) ->
   withMethodCallSupport (f, args...) ->
