@@ -6,6 +6,7 @@ var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
 var shell = require('shelljs');
+var Deps = require('./build-deps')
 
 // Manifest to build
 var defaultOutput = path.join(__dirname, "spec", "BaconSpec.coffee");
@@ -24,6 +25,13 @@ function readPiece(pieceName) {
   return fs.readFileSync(path.join(__dirname, "spec", "specs", pieceName + ".coffee"), "utf-8");
 }
 
+function buildArgs(pieceNames) {
+  if (pieceNames.length > 3) return ""
+  var pieceNames = Deps.resolvePieces(pieceNames, "spec/specs")
+    .map(function(piece) { return piece.name })
+  return pieceNames.join(" ")
+}
+
 var main = function(options){
   var pieceNames = (options.pieceNames || resolvePieceNames())
   var pieces = pieceNames.map(readPiece)
@@ -32,11 +40,10 @@ var main = function(options){
     pieces.join("\n"),
   ].join("\n");
 
-  var buildArgs = pieces.length > 3 ? "" : pieceNames.join(" ")
 
-  console.log("Building lib with args: " + buildArgs)
+  console.log("Building lib with args: " + buildArgs(pieceNames))
 
-  var result = shell.exec("./build " + buildArgs)
+  var result = shell.exec("./build " + buildArgs(pieceNames))
   if (result.code != 0)
     process.exit(result.code)
 

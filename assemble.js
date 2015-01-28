@@ -20,7 +20,7 @@ var padding = "                ";
 var main = function(options){
   options = options || {};
 
-  var pieces = Deps.resolvePieces(manifests);
+  var pieces = Deps.resolvePieces(manifests, "src");
   if (options.verbose) {
     console.info("Linearised dependency graph:")
     _.each(pieces, function (p) {

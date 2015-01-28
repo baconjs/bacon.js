@@ -15,9 +15,9 @@ function readDeps(contents) {
 }
 
 
-function readPiece(pieceName, pieceCache) {
+function readPiece(pieceName, dir, pieceCache) {
   if (!pieceCache[pieceName]) {
-    var contents = fs.readFileSync(path.join(__dirname, "src", pieceName + ".coffee"), "utf-8");
+    var contents = fs.readFileSync(path.join(dir, pieceName + ".coffee"), "utf-8");
 
     // Put in cache
     pieceCache[pieceName] = {
@@ -30,18 +30,18 @@ function readPiece(pieceName, pieceCache) {
   return pieceCache[pieceName];
 }
 
-function resolve(pieceNames, resolving, pieceCache) {
+function resolve(pieceNames, dir, resolving, pieceCache) {
   resolving = resolving || [];
 
   return _.uniq(_.flatten(pieceNames.map(function(pieceName) {
-    var piece = readPiece(pieceName, pieceCache);
+    var piece = readPiece(pieceName, dir, pieceCache);
 
     if (_.contains(resolving, pieceName)) {
       throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
     }
 
     var deps = _.chain(piece.deps)
-      .map(function (x) { return resolve([x], resolving.concat([pieceName]), pieceCache) })
+      .map(function (x) { return resolve([x], dir, resolving.concat([pieceName]), pieceCache) })
       .flatten()
       .value();
 
@@ -49,6 +49,6 @@ function resolve(pieceNames, resolving, pieceCache) {
   })))
 }
 
-module.exports.resolvePieces = function(pieceNames) {
-  return resolve(pieceNames, [], {})
+module.exports.resolvePieces = function(pieceNames, dir) {
+  return resolve(pieceNames, dir, [], {})
 }
