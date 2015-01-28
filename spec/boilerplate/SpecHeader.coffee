@@ -37,3 +37,15 @@ activate = (obs) ->
   obs.onValue(->)
   obs
 
+take = (count, obs) ->
+  obs.withHandler (event) ->
+    unless event.hasValue()
+      @push event
+    else
+      count--
+      if count > 0
+        @push event
+      else
+        @push event if count == 0
+        @push new Bacon.End()
+        Bacon.noMore

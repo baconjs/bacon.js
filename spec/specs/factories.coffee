@@ -46,3 +46,4 @@ describe "Bacon.fromBinder", ->
 
   it "toString", ->
     expect(Bacon.fromBinder(->).toString()).to.equal("Bacon.fromBinder(function,function)")
+
