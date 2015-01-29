@@ -57,6 +57,7 @@ class Observable
     @initialDesc.deps()
 
 Observable :: assign = Observable :: onValue
+Observable :: forEach = Observable :: onValue
 Observable :: inspect = Observable :: toString
 
 Bacon.Observable = Observable
