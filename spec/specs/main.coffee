@@ -2653,6 +2653,7 @@ testSideEffects = (wrapper, method) ->
 describe "Property.onValue", testSideEffects(Bacon.constant, "onValue")
 describe "Property.assign", testSideEffects(Bacon.constant, "assign")
 describe "EventStream.onValue", testSideEffects(Bacon.once, "onValue")
+describe "EventStream.forEach", testSideEffects(Bacon.once, "forEach")
 
 describe "Property.assign", ->
   it "calls given objects given method with property values", ->

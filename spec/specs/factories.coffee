@@ -105,6 +105,10 @@ toEventTarget = (emitter) ->
     emitter.addListener(event, handler)
   removeEventListener: (event, handler) -> emitter.removeListener(event, handler)
 
+describe "Bacon.fromEvent", ->
+  it "is shorthand for Bacon.fromEventTarget", ->
+    expect(Bacon.fromEvent).to.equal(Bacon.fromEventTarget)
+
 describe "Bacon.fromEventTarget", ->
   soon = (f) -> setTimeout f, 0
   describe "should create EventStream from DOM object", ->
@@ -137,7 +141,6 @@ describe "Bacon.fromEventTarget", ->
         take 1, Bacon.fromEventTarget(emitter, "data", (x, y) => [x, y])
       [["x", "y"]]
     )
-
 
   it "should clean up event listeners from EventEmitter", ->
     emitter = new EventEmitter()
