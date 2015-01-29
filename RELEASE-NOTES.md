@@ -1,3 +1,8 @@
+## 0.7.43
+
+- Add `Bacon.fromEvent` as shorthand for `Bacon.fromEventTarget`
+- Add `Observable :: forEach` as synonym for `onValue`
+
 ## 0.7.42
 
 - Fix #523: respect return value of subscribe function in synchronous case
