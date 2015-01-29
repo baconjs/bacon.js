@@ -56,6 +56,8 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
     -> unsub.call(target, eventName, handler)
   , eventTransformer)
 
+Bacon.fromEvent = Bacon.fromEventTarget
+
 Bacon.constant = (value) ->
   new Property describe(Bacon, "constant", value), (sink) ->
     sink (initialEvent value)
