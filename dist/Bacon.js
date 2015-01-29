@@ -878,6 +878,8 @@
 
   Observable.prototype.assign = Observable.prototype.onValue;
 
+  Observable.prototype.forEach = Observable.prototype.onValue;
+
   Observable.prototype.inspect = Observable.prototype.toString;
 
   Bacon.Observable = Observable;
@@ -1822,6 +1824,8 @@
       };
     }, eventTransformer));
   };
+
+  Bacon.fromEvent = Bacon.fromEventTarget;
 
   Bacon.constant = function(value) {
     return new Property(describe(Bacon, "constant", value), function(sink) {
