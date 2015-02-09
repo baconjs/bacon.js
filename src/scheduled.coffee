@@ -1,4 +1,4 @@
-# build-dependencies: flatmaplatest
+# build-dependencies: flatmaplatest, flatmap
 # build-dependencies: addpropertyinitialvaluetostream
 # build-dependencies: scheduler
 

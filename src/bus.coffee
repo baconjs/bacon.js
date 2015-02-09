@@ -1,3 +1,5 @@
+# build-dependencies: EventStream
+#
 class Bus extends EventStream
   constructor: ->
     @sink = undefined
