@@ -9,7 +9,9 @@ function readDeps(contents) {
     var depsRegex = new RegExp(dependenciesRegex);
     var match;
     while (match = depsRegex.exec(contents)) {
-      deps = deps.concat(match[1].split(/\s*[, \t]\s*/).map(function (x) { return x.trim(); }))
+      deps = deps.concat(match[1].split(/\s*[, \t]\s*/).map(function (x) { 
+        return x.trim().toLowerCase()
+      }))
     }
     return deps
 }
