@@ -1,4 +1,4 @@
-# build-dependencies: observable
+# build-dependencies: observable, describe
 
 Bacon.Observable :: mapError = ->
   f = makeFunctionArgs(arguments)
