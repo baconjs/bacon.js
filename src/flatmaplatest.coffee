@@ -1,4 +1,4 @@
-# build-dependencies: core, functionconstruction
+# build-dependencies: core, functionconstruction, flatmap
 # build-dependencies: compositeunsubscribe, takeuntil
 
 Bacon.Observable :: flatMapLatest = ->

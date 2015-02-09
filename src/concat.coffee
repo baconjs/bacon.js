@@ -1,4 +1,4 @@
-# build-dependencies: core
+# build-dependencies: core, eventstream
 
 Bacon.EventStream :: concat = (right) ->
   left = this
