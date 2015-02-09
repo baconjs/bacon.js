@@ -599,7 +599,7 @@ describe "EventStream.debounce", ->
       -> series(2, [1, error(), 2]).debounce(t(7))
       [error(), 2])
   describe "waits for a quiet period before outputing anything", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounce(t(3))
       [[11, 4]])
   describe "works with synchronous source", ->
@@ -619,7 +619,7 @@ describe "EventStream.debounce", ->
 
 describe "EventStream.debounceImmediate(delay)", ->
   describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
       [[2, 1], [6, 3]], unstable)
   describe "works with synchronous source", ->
@@ -631,7 +631,7 @@ describe "EventStream.debounceImmediate(delay)", ->
 
 describe "EventStream.throttle(delay)", ->
   describe "outputs at steady intervals, without waiting for quiet period", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       -> series(2, [1, 2, 3]).throttle(t(3))
       [[5, 2], [8, 3]])
   describe "works with synchronous source", ->
@@ -643,7 +643,7 @@ describe "EventStream.throttle(delay)", ->
 
 describe "EventStream.bufferingThrottle(minimumInterval)", ->
   describe "limits throughput but includes all events", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       -> series(1, [1,2,3]).bufferingThrottle(t(3))
       [[1,1], [4,2], [7,3]])
   it "toString", ->
@@ -651,27 +651,27 @@ describe "EventStream.bufferingThrottle(minimumInterval)", ->
 
 describe "Property.bufferingThrottle(delay)", ->
   describe "limits throughput but includes all events", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       -> series(1, [1,2,3]).toProperty().bufferingThrottle(t(3)).changes()
       [[1,1], [4,2], [7,3]])
 
 describe "EventStream.holdWhen", ->
   describe "Keeps events on hold when a property is true", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       ->
         src = series(2, [1,2,3,4])
         valve = series(2, [true, false, true, false]).delay(1).toProperty()
         src.holdWhen(valve)
       [[2, 1], [5, 2], [6, 3], [9, 4]])
   describe "Holds forever when the property ends with truthy value", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       ->
         src = series(2, [1,2,3,4])
         valve = series(2, [true, false, true]).delay(1).toProperty()
         src.holdWhen(valve)
       [[2, 1], [5, 2], [6, 3]])
   describe "Supports truthy init value for property", ->
-    th.expectStreamTimings(
+    expectStreamTimings(
       ->
         src = series(2, [1,2])
         valve = series(2, [false]).delay(1).toProperty(true)
@@ -689,62 +689,6 @@ describe "EventStream.holdWhen", ->
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
-
-describe "EventStream.bufferWithTime", ->
-  describe "returns events in bursts, passing through errors", ->
-    expectStreamEvents(
-      -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTime(t(7))
-      [error(), [1, 2, 3, 4], [5, 6, 7]])
-  describe "keeps constant output rate even when input is sporadical", ->
-    th.expectStreamTimings(
-      -> th.atGivenTimes([[0, "a"], [3, "b"], [5, "c"]]).bufferWithTime(t(2))
-      [[2, ["a"]], [4, ["b"]], [6, ["c"]]]
-      unstable
-    )
-  describe "works with empty stream", ->
-    expectStreamEvents(
-      -> Bacon.never().bufferWithTime(t(1))
-      [])
-  describe "allows custom defer-function", ->
-    fast = (f) -> sc.setTimeout(f, 0)
-    th.expectStreamTimings(
-      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
-      [[0, ["a"]], [2, ["b"]]])
-  describe "works with synchronous defer-function", ->
-    sync = (f) -> f()
-    th.expectStreamTimings(
-      -> th.atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(sync)
-      [[0, ["a"]], [2, ["b"]]])
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> series(2, [1,2,3]).bufferWithTime(t(7))
-      [[1,2,3]])
-  it "toString", ->
-    expect(Bacon.never().bufferWithTime(1).toString()).to.equal("Bacon.never().bufferWithTime(1)")
-
-describe "EventStream.bufferWithCount", ->
-  describe "returns events in chunks of fixed size, passing through errors", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, 3, error(), 4, 5]).bufferWithCount(2)
-      [[1, 2], error(), [3, 4], [5]])
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> Bacon.fromArray([1,2,3,4,5]).bufferWithCount(2)
-      [[1, 2], [3, 4], [5]])
-  it "toString", ->
-    expect(Bacon.never().bufferWithCount(1).toString()).to.equal("Bacon.never().bufferWithCount(1)")
-
-describe "EventStream.bufferWithTimeOrCount", ->
-  describe "flushes on count", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, 3, error(), 4, 5]).bufferWithTimeOrCount(t(10), 2)
-      [[1, 2], error(), [3, 4], [5]])
-  describe "flushes on timeout", ->
-    expectStreamEvents(
-      -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTimeOrCount(t(7), 10)
-      [error(), [1, 2, 3, 4], [5, 6, 7]])
-  it "toString", ->
-    expect(Bacon.never().bufferWithTimeOrCount(1, 2).toString()).to.equal("Bacon.never().bufferWithTimeOrCount(1,2)")
 
 describe "EventStream.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
@@ -846,29 +790,6 @@ describe "EventStream.takeUntil", ->
   ###
   it "toString", ->
     expect(Bacon.later(1, "a").takeUntil(Bacon.later(2, "b")).toString()).to.equal("Bacon.later(1,a).takeUntil(Bacon.later(2,b))")
-
-describe "EventStream.awaiting(other)", ->
-  describe "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
-    expectPropertyEvents(
-      -> series(2, [1, 1]).awaiting(series(3, [2]))
-      [false, true, false, true])
-  describe "supports Properties", ->
-    expectPropertyEvents(
-      -> series(2, [1, 1]).awaiting(series(3, [2]).toProperty())
-      [false, true, false, true])
-  describe "supports simultaneouts events", ->
-    expectPropertyEvents(
-      -> 
-        src = Bacon.later(1, 1)
-        src.awaiting(src.map(->))
-      [false])
-    expectPropertyEvents(
-      -> 
-        src = Bacon.later(1, 1)
-        src.map(->).awaiting(src)
-      [false])
-  it "toString", ->
-    expect(Bacon.never().awaiting(Bacon.once(1)).toString()).to.equal("Bacon.never().awaiting(Bacon.once(1))")
 
 describe "EventStream.endOnError", ->
   describe "terminates on error", ->
@@ -1258,12 +1179,6 @@ describe "Property.endOnError", ->
     expectPropertyEvents(
       -> series(2, [1, error(), 2]).toProperty().endOnError()
       [1, error()])
-
-describe "Property.awaiting(other)", ->
-  describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
-    expectPropertyEvents(
-      -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]))
-      [false, true, false, true])
 
 describe "Property.skipDuplicates", ->
   describe "drops duplicates", ->
@@ -1723,35 +1638,6 @@ describe "Bacon.combineWith", ->
       [1])
   it "toString", ->
     expect(Bacon.combineWith((->), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())")
-
-describe "Boolean logic", ->
-  describe "combines Properties with and()", ->
-    expectPropertyEvents(
-      -> Bacon.constant(true).and(Bacon.constant(false))
-      [false])
-  describe "combines Properties with or()", ->
-    expectPropertyEvents(
-      -> Bacon.constant(true).or(Bacon.constant(false))
-      [true])
-  describe "inverts property with not()", ->
-    expectPropertyEvents(
-      -> Bacon.constant(true).not()
-      [false])
-  describe "accepts constants instead of properties", ->
-    describe "true and false", ->
-      expectPropertyEvents(
-        -> Bacon.constant(true).and(false)
-        [false])
-    describe "true and true", ->
-      expectPropertyEvents(
-        -> Bacon.constant(true).and(true)
-        [true])
-    describe "true or false", ->
-      expectPropertyEvents(
-        -> Bacon.constant(true).or(false)
-        [true])
-  it "toString", ->
-    expect(Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3)).toString()).to.equal("Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3))")
 
 describe "Bacon.mergeAll", ->
   describe ("merges all given streams"), ->

@@ -64,11 +64,6 @@ Bacon.constant = (value) ->
     sink (endEvent())
     nop
 
-Bacon.never = ->
-  new EventStream describe(Bacon, "never"), (sink) ->
-    sink (endEvent())
-    nop
-
 Bacon.once = (value) ->
   new EventStream describe(Bacon, "once", value), (sink) ->
     sink (toEvent(value))

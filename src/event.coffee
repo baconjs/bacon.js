@@ -64,6 +64,7 @@ class Error extends Event
   toString: ->
     "<error> " + _.toString(@error)
 
+Bacon.Event = Event
 Bacon.Initial = Initial
 Bacon.Next = Next
 Bacon.End = End

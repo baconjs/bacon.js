@@ -1,4 +1,4 @@
-# build-dependencies: observable, groupsimultaneous, skipduplicates
+# build-dependencies: observable, groupsimultaneous, skipduplicates, map
 
 Bacon.Observable :: awaiting = (other) ->
   withDescription(this, "awaiting", other,

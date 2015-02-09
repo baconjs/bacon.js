@@ -3,6 +3,7 @@
 # build-dependencies: functionconstruction
 # build-dependencies: optional
 # build-dependencies: reply
+# build-dependencies: event
 
 idCounter = 0
 registerObs = ->

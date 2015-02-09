@@ -1,6 +1,6 @@
 # build-dependencies: _
 
-UpdateBarrier = (->
+UpdateBarrier = Bacon.UpdateBarrier = (->
   rootEvent = undefined
   waiterObs = []
   waiters = {}

@@ -61,3 +61,9 @@ class EventStream extends Observable
 
 Bacon.EventStream = EventStream
 
+Bacon.never = ->
+  new EventStream describe(Bacon, "never"), (sink) ->
+    sink (endEvent())
+    nop
+
+

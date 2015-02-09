@@ -13,6 +13,7 @@ var defaultOutput = path.join(__dirname, "spec", "BaconSpec.coffee");
 
 // Boilerplate: *header* and *footer*
 var header = fs.readFileSync(path.join(__dirname, "spec", "boilerplate", "SpecHeader.coffee"), "utf-8");
+var helper = fs.readFileSync(path.join(__dirname, "spec", "boilerplate", "SpecHelper.coffee"), "utf-8");
 
 function resolvePieceNames() {
   var argPieceNames =  process.argv.slice(2)
@@ -37,6 +38,7 @@ var main = function(options){
   var pieces = pieceNames.map(readPiece)
   var output = [
     header,
+    helper,
     pieces.join("\n"),
   ].join("\n");
 

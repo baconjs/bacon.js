@@ -1,4 +1,4 @@
-# build-dependencies: core, source
+# build-dependencies: core, source, map
 # build-dependencies: functionconstruction
 # build-dependencies: when
 

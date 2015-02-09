@@ -1,7 +1,3 @@
-expect = require("chai").expect
-Bacon = (require "../dist/Bacon").Bacon
-_ = Bacon._
-
 t = @t = (time) -> time
 seqs = []
 waitMs = 100
@@ -10,30 +6,50 @@ browser = (typeof window == "object")
 if browser
   console.log("Running in browser, narrowing test set")
 
-@error = (msg) -> new Bacon.Error(msg)
-@soon = (f) -> setTimeout f, t(1)
-@series = (interval, values) ->
-  Bacon.sequentially(t(interval), values)
-@repeat = (interval, values) ->
+error = (msg) -> new Bacon.Error(msg)
+soon = (f) -> setTimeout f, t(1)
+series = (interval, values) ->
+  sequentially(t(interval), values)
+repeat = (interval, values) ->
   source = Bacon.repeatedly(t(interval), values)
   seqs.push({ values : values, source : source })
   source
-@atGivenTimes = (timesAndValues) ->
-  streams = for tv in timesAndValues
-    Bacon.later(t(tv[0]), tv[1])
-  Bacon.mergeAll(streams)
 
-@expectStreamTimings = (src, expectedEventsAndTimings, options) ->
+atGivenTimes = (timesAndValues) ->
+  startTime = Bacon.scheduler.now()
+  fromBinder (sink) ->
+    shouldStop = false
+    schedule = (timeOffset, index) ->
+      first = timesAndValues[index]
+      scheduledTime = first[0]
+      delay = scheduledTime - Bacon.scheduler.now() + startTime
+      push = ->
+        return if shouldStop
+        value = first[1]
+        sink(new Bacon.Next(-> value))
+        if !shouldStop && (index+1 < timesAndValues.length)
+          schedule(scheduledTime, index+1)
+        else
+          sink(new Bacon.End())
+      Bacon.scheduler.setTimeout push, delay
+    schedule(0, 0)
+    ->
+      shouldStop = true
+
+expectStreamTimings = (src, expectedEventsAndTimings, options) ->
   srcWithRelativeTime = () ->
     now = Bacon.scheduler.now
     t0 = now()
-    relativeTime = () -> 
+    relativeTime = () ->
       Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
-    src().flatMap(withRelativeTime)
-  @expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
+    src().withHandler (e) ->
+      e = e.fmap(withRelativeTime)
+      e.value?() # force eval
+      @push e
+  expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
 
-@expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
+expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
   verifyLateEval src, expectedEvents
   if not unstable
@@ -41,7 +57,7 @@ if browser
     verifySwitchingWithUnsub src, expectedEvents unless browser
     verifySwitchingAggressively src, expectedEvents
 
-@expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
+expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
   expect(expectedEvents.length > 0).to.deep.equal(true, "at least one expected event is specified")
   verifyPSingleSubscriber src, expectedEvents, extraCheck
   verifyPLateEval src, expectedEvents
@@ -227,7 +243,7 @@ verifyExhausted = (src) ->
   expect(events[0].isEnd()).to.deep.equal(true)
 
 lastNonError = (events) ->
-  _.last(_.filter(((e) -> toValue(e) != "<error>"), events))
+  Bacon._.last(Bacon._.filter(((e) -> toValue(e) != "<error>"), events))
 
 verifyFinalState = (property, value) ->
   events = []
@@ -235,7 +251,7 @@ verifyFinalState = (property, value) ->
     events.push(event)
   expect(toValues(events)).to.deep.equal(toValues([value, "<end>"]))
 
-verifyCleanup = @verifyCleanup = ->
+verifyCleanup = ->
   for seq in seqs
     expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
   seqs = []
@@ -253,17 +269,15 @@ toValue = (x) ->
     else x.value()
 
 justValues = (xs) ->
-  _.filter hasValue, xs
+  Bacon._.filter hasValue, xs
 hasValue = (x) ->
   toValue(x) != "<error>"
 
-@toValues = toValues
-
 Bacon.Observable?.prototype.onUnsub = (f) ->
-  self = this;
+  self = this
   ended = false
   return new Bacon.EventStream (sink) ->
     unsub = self.subscribe sink
-    -> 
+    ->
       f()
       unsub()
