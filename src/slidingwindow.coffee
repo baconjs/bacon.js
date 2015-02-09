@@ -1,4 +1,4 @@
-# build-dependencies: scan
+# build-dependencies: scan, filter
 
 Bacon.Observable :: slidingWindow = (n, minValues = 0) ->
   withDescription(this, "slidingWindow", n, minValues, @scan([], ((window, value) -> window.concat([value]).slice(-n)))
