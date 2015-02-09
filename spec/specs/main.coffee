@@ -971,19 +971,6 @@ describe "Property.toProperty", ->
       fail()
     catch e
 
-describe "Property.map", ->
-  describe "maps property values", ->
-    expectPropertyEvents(
-      ->
-        s = new Bacon.Bus()
-        p = s.toProperty(1).map(times, 2)
-        soon ->
-          s.push 2
-          s.error()
-          s.end()
-        p
-      [2, 4, error()])
-
 describe "Property.take(1)", ->
   describe "takes the Initial event", ->
     expectPropertyEvents(
