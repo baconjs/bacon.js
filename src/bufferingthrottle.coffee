@@ -1,6 +1,6 @@
 # build-dependencies: filter
 # build-dependencies: concat
-# build-dependencies: flatmapconcat
+# build-dependencies: flatmapconcat, scheduled
 
 Bacon.Observable :: bufferingThrottle = (minimumInterval) ->
   withDescription(this, "bufferingThrottle", minimumInterval,
