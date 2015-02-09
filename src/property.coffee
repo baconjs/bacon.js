@@ -90,3 +90,9 @@ class Property extends Observable
         sink event
 
 Bacon.Property = Property
+
+Bacon.constant = (value) ->
+  new Property describe(Bacon, "constant", value), (sink) ->
+    sink (initialEvent value)
+    sink (endEvent())
+    nop

@@ -58,12 +58,6 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
 
 Bacon.fromEvent = Bacon.fromEventTarget
 
-Bacon.constant = (value) ->
-  new Property describe(Bacon, "constant", value), (sink) ->
-    sink (initialEvent value)
-    sink (endEvent())
-    nop
-
 Bacon.once = (value) ->
   new EventStream describe(Bacon, "once", value), (sink) ->
     sink (toEvent(value))

@@ -11,7 +11,7 @@ soon = (f) -> setTimeout f, t(1)
 series = (interval, values) ->
   sequentially(t(interval), values)
 repeat = (interval, values) ->
-  source = Bacon.repeatedly(t(interval), values)
+  source = repeatedly(t(interval), values)
   seqs.push({ values : values, source : source })
   source
 

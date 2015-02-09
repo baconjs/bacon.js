@@ -90,6 +90,10 @@ sequentially = Bacon.sequentially || (delay, values) ->
     else
       new Bacon.End()
 
+repeatedly = Bacon.repeatedlly || (delay, values) ->
+  index = 0
+  fromPoll(delay, -> values[index++ % values.length])
+
 fromArray = Bacon.fromArray || (values) ->
   assertArray values
   if !values.length
@@ -110,6 +114,13 @@ fromArray = Bacon.fromArray || (values) ->
               Bacon.UpdateBarrier.afterTransaction push
       push()
       -> unsubd = true
+
+once = Bacon.once || (value) ->
+  new EventStream (sink) ->
+    sink (toEvent(value))
+    sink (new Bacon.End())
+    nop
+
 isArray = (xs) -> xs instanceof Array
 
 assertArray = (xs) -> throw new Exception("not an array : " + xs) unless isArray(xs)

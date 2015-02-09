@@ -17,53 +17,6 @@ describe "Observable.slidingWindow", ->
   it "toString", ->
     expect(Bacon.never().slidingWindow(2).toString()).to.equal("Bacon.never().slidingWindow(2,0)")
 
-describe "EventStream.map", ->
-  describe "should map with given function", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, 3]).map(times, 2)
-      [2, 4, 6])
-  describe "also accepts a constant value", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, 3,]).map("lol")
-      ["lol", "lol", "lol"])
-  describe "extracts property from value object", ->
-    o = { lol : "wut" }
-    expectStreamEvents(
-      -> repeat(1, [o]).take(3).map(".lol")
-      ["wut", "wut", "wut"])
-  describe "extracts a nested property too", ->
-    o = { lol : { wut : "wat" } }
-    expectStreamEvents(
-      -> Bacon.once(o).map(".lol.wut")
-      ["wat"])
-  describe "in case of a function property, calls the function with no args", ->
-    expectStreamEvents(
-      -> Bacon.once([1,2,3]).map(".length")
-      [3])
-  describe "allows arguments for methods", ->
-    thing = { square: (x) -> x * x }
-    expectStreamEvents(
-      -> Bacon.once(thing).map(".square", 2)
-      [4])
-  describe "works with method call on given object, with partial application", ->
-    multiplier = { multiply: (x, y) -> x * y }
-    expectStreamEvents(
-      -> series(1, [1,2,3]).map(multiplier, "multiply", 2)
-      [2,4,6])
-  describe "can map to a Property value", ->
-    expectStreamEvents(
-      -> series(1, [1,2,3]).map(Bacon.constant(2))
-      [2,2,2])
-  it "preserves laziness", ->
-    calls = 0
-    id = (x) ->
-      calls++
-      x
-    Bacon.fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
-    expect(calls).to.equal(1)
-  it "toString", ->
-    expect(Bacon.once(1).map(true).toString()).to.equal("Bacon.once(1).map(function)")
-
 describe "EventStream.mapError", ->
   describe "should map error events with given function", ->
     expectStreamEvents(

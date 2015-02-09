@@ -1,6 +1,6 @@
 # build-dependencies: core, source
 # build-dependencies: functionconstruction
-# build-dependencies: when
+# build-dependencies: when, map
 
 Bacon.EventStream :: sampledBy = (sampler, combinator) ->
   withDescription(this, "sampledBy", sampler, combinator,
