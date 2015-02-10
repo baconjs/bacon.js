@@ -1,451 +1,3 @@
-describe "EventStream.take", ->
-  describe "takes N first elements", ->
-    expectStreamEvents(
-      -> series(1, [1,2,3,4]).take(2)
-      [1,2])
-  describe "works with N=0", ->
-    expectStreamEvents(
-      -> series(1, [1,2,3,4]).take(0)
-      [])
-  describe "will stop properly even when exception thrown by subscriber", ->
-    expectStreamEvents(
-      ->
-        s = Bacon.repeatedly(t(1), ["lol", "wut"]).take(2)
-        s.onValue (value) ->
-          throw "testing" if value == "lol"
-        s
-      ["lol", "wut"], unstable)
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1,2,3,4]).take(2)
-      [1,2])
-  it "toString", ->
-    expect(Bacon.never().take(1).toString()).to.equal("Bacon.never().take(1)")
-
-describe "EventStream.takeWhile", ->
-  describe "takes while predicate is true", ->
-    expectStreamEvents(
-      -> repeat(1, [1, error("wat"), 2, 3]).takeWhile(lessThan(3))
-      [1, error("wat"), 2])
-  describe "extracts field values", ->
-    expectStreamEvents(
-      ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .takeWhile(".good").map(".value")
-      ["yes"])
-  describe "can filter by Property value", ->
-    expectStreamEvents(
-      ->
-        src = series(1, [1,1,2,3,4,4,8,7])
-        odd = src.map((x) -> x % 2).toProperty()
-        src.takeWhile(odd)
-      [1,1])
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1, 2, 3]).takeWhile(lessThan(3))
-      [1, 2])
-  it "toString", ->
-    expect(Bacon.never().takeWhile(true).toString()).to.equal("Bacon.never().takeWhile(function)")
-
-describe "EventStream.skip", ->
-  describe "should skip first N items", ->
-    expectStreamEvents(
-      -> series(1, [1, error(), 2, error(), 3]).skip(1)
-    [error(), 2, error(), 3])
-  describe "accepts N <= 0", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).skip(-1)
-    [1, 2])
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1, 2, 3]).skip(1)
-    [2, 3])
-  it "toString", ->
-    expect(Bacon.never().skip(1).toString()).to.equal("Bacon.never().skip(1)")
-
-describe "EventStream.skipWhile", ->
-  describe "skips filter predicate holds true", ->
-    expectStreamEvents(
-      -> series(1, [1, error(), 2, error(), 3, 2]).skipWhile(lessThan(3))
-      [error(), error(), 3, 2])
-  describe "extracts field values", ->
-    expectStreamEvents(
-      ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .skipWhile(".good").map(".value")
-      ["no"])
-  describe "can filter by Property value", ->
-    expectStreamEvents(
-      ->
-        src = series(1, [1,1,2,3,4,4,8,7])
-        odd = src.map((x) -> x % 2).toProperty()
-        src.skipWhile(odd)
-      [2,3,4,4,8,7])
-  describe "for synchronous sources", ->
-    describe "skips filter predicate holds true", ->
-      expectStreamEvents(
-        -> fromArray([1, 2, 3, 2]).skipWhile(lessThan(3))
-        [3, 2])
-  it "toString", ->
-    expect(Bacon.never().skipWhile(1).toString()).to.equal("Bacon.never().skipWhile(function)")
-
-describe "EventStream.skipUntil", ->
-  describe "skips events until one appears in given starter stream", ->
-    expectStreamEvents(
-      ->
-        src = series(3, [1,2,3])
-        src.onValue(->) # to start "time" immediately instead of on subscribe
-        starter = series(4, ["start"])
-        src.skipUntil(starter)
-      [2,3])
-  describe "works with self-derived starter", ->
-    expectStreamEvents(
-      ->
-        src = series(3, [1,2,3])
-        starter = src.filter((x) -> x == 3)
-        src.skipUntil(starter)
-      [3])
-  describe "works with self-derived starter with an evil twist", ->
-    expectStreamEvents(
-      ->
-        src = series(3, [1,2,3])
-        data = src.map((x) -> x)
-        data.onValue(->)
-        starter = src.filter((x) -> x == 3)
-        data.skipUntil(starter)
-      [3])
-  it "toString", ->
-    expect(Bacon.never().skipUntil(Bacon.once(1)).toString()).to.equal("Bacon.never().skipUntil(Bacon.once(1))")
-
-describe "EventStream.skipDuplicates", ->
-  it "Drops duplicates with subscribers with non-overlapping subscription time (#211)", ->
-    b = new Bacon.Bus()
-    noDups = b.skipDuplicates()
-    round = (expected) ->
-      values = []
-      noDups.take(1).onValue (x) -> values.push(x)
-      b.push 1
-      expect(values).to.deep.equal(expected)
-    round([1])
-    round([])
-    round([])
-
-  describe "drops duplicates", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, error(), 2, 3, 1]).skipDuplicates()
-    [1, 2, error(), 3, 1])
-
-  describe "allows undefined as initial value", ->
-    expectStreamEvents(
-      -> series(1, [undefined, undefined, 1, 2]).skipDuplicates()
-    [undefined, 1, 2])
-
-  describe "works with custom isEqual function", ->
-    a = {x: 1}; b = {x: 2}; c = {x: 2}; d = {x: 3}; e = {x: 1}
-    isEqual = (a, b) -> a?.x == b?.x
-    expectStreamEvents(
-      -> series(1, [a, b, error(), c, d, e]).skipDuplicates(isEqual)
-      [a, b, error(), d, e])
-
-  describe "works with synchrounous sources", ->
-    expectStreamEvents(
-      -> fromArray([1, 2, 2, 3, 1]).skipDuplicates()
-    [1, 2, 3, 1], unstable)
-  
-  it "toString", ->
-    expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")
-
-describe "EventStream.flatMap", ->
-  describe "should spawn new stream for each value and collect results into a single stream", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).flatMap (value) ->
-        sequentially(t(2), [value, error(), value])
-      [1, 2, error(), error(), 1, 2], unstable)
-  describe "should pass source errors through to the result", ->
-    expectStreamEvents(
-      -> series(1, [error(), 1]).flatMap (value) ->
-        later(t(1), value)
-      [error(), 1])
-  describe "should work with a spawned stream responding synchronously", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value))
-      [1, 2], unstable)
-    expectStreamEvents(
-      -> series(1, [1,2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value)).concat(Bacon.once("lol"))
-      [1, "lol", 2, "lol"], unstable)
-  describe "should work with a source stream responding synchronously", ->
-    expectStreamEvents(
-      -> fromArray([1, 2]).flatMap (value) ->
-         Bacon.once(value)
-      [1, 2], unstable)
-    expectStreamEvents(
-      -> fromArray([1, 2]).flatMap (value) ->
-         fromArray([value, value*10])
-      [1, 10, 2, 20], unstable)
-    expectStreamEvents(
-      -> Bacon.once(1).flatMap (value) ->
-         later(0, value)
-      [1], unstable)
-  describe "Works also when f returns a Property instead of an EventStream", ->
-    expectStreamEvents(
-      -> series(1, [1,2]).flatMap(Bacon.constant)
-      [1,2], unstable)
-  describe "Works also when f returns a constant value instead of an EventStream", ->
-    expectStreamEvents(
-      -> series(1, [1,2]).flatMap((x) -> x)
-      [1,2], unstable)
-  describe "Works also when f returns an Error instead of an EventStream", ->
-    expectStreamEvents(
-      -> series(1, [1,2]).flatMap((x) -> new Bacon.Error(x))
-      [new Bacon.Error(1), new Bacon.Error(2)], unstable)
-  describe "Accepts a constant EventStream/Property as an alternative to a function", ->
-    expectStreamEvents(
-      -> Bacon.once("asdf").flatMap(Bacon.constant("bacon"))
-      ["bacon"])
-    expectStreamEvents(
-      -> Bacon.once("asdf").flatMap(Bacon.once("bacon"))
-      ["bacon"])
-  describe "works with a complex setup (fix #363)", ->
-    it "case 1 (samplee has no subscribers)", ->
-      result = ""
-      prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
-      Bacon.once().flatMap(->
-          problem = prop.sampledBy(Bacon.once())
-          problem.onValue (x) ->
-            result = x
-      ).onValue ->
-      expect(result).to.deep.equal({faq: "default value"})
-    it "case 2 (samplee has subscriber)", ->
-      result = ""
-      prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
-      prop.onValue ->
-      Bacon.once().flatMap(->
-          problem = prop.sampledBy(Bacon.once())
-          problem.onValue (x) ->
-            result = x
-      ).onValue ->
-      expect(result).to.deep.equal({faq: "default value"})
-    it "case 3 (original fiddle)", ->
-      result = ""
-      input = new Bacon.Bus()
-      prop = Bacon.combineTemplate(faq: input.toProperty("default value"))
-      events = new Bacon.Bus()
-      events.flatMapLatest(->
-          problem = prop.sampledBy(Bacon.once())
-          problem.onValue (x) ->
-            result = x
-      ).onValue ->
-      events.push()
-      expect(result).to.deep.equal({faq: "default value"})
-  describe "Respects function construction rules", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap(".bacon")
-      ["sir francis"], unstable)
-    expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMap(".bacon")
-      ["sir francis"], unstable)
-    expectStreamEvents(
-      ->
-        glorify = (x, y) -> fromArray([x, y])
-        Bacon.once("francis").flatMap(glorify, "sir")
-      ["sir", "francis"], unstable)
-  it "toString", ->
-    expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
-
-describe "EventStream.flatMapWithConcurrencyLimit", ->
-  describe "limits the number of concurrently active spawned streams by queuing", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).flatMapWithConcurrencyLimit(1, (value) ->
-        sequentially(t(2), [value, error(), value]))
-      [1, error(), 1, 2, error(), 2], unstable)
-  describe "works with n=2", ->
-    expectStreamEvents(
-      -> series(1, [1,2,3]).flatMapWithConcurrencyLimit(2, (value) ->
-        sequentially(t(2), [value, value]))
-      [1, 2, 1, 2, 3, 3])
-  describe "Respects function construction rules", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
-      ["sir francis"])
-  it "toString", ->
-    expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
-      .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
-
-describe "EventStream.flatMapConcat", ->
-  describe "is like flatMapWithConcurrencyLimit(1)", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).flatMapConcat((value) ->
-        sequentially(t(2), [value, error(), value]))
-      [1, error(), 1, 2, error(), 2], unstable)
-  describe "Respects function construction rules", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")
-      ["sir francis"])
-  it "toString", ->
-    expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")
-
-
-describe "Property.flatMap", ->
-  describe "should spawn new stream for all events including Init", ->
-    expectStreamEvents(
-      ->
-        once = (x) -> Bacon.once(x)
-        series(1, [1, 2]).toProperty(0).flatMap(once)
-      [0, 1, 2], unstable)
-  describe "Works also when f returns a Property instead of an EventStream", ->
-    expectStreamEvents(
-      -> series(1, [1,2]).toProperty().flatMap(Bacon.constant)
-      [1,2], unstable)
-    expectPropertyEvents(
-      -> series(1, [1,2]).toProperty().flatMap(Bacon.constant).toProperty()
-      [1,2], unstable)
-  describe "works for synchronous source", ->
-    expectStreamEvents(
-      ->
-        once = (x) -> Bacon.once(x)
-        fromArray([1, 2]).toProperty(0).flatMap(once)
-      [0, 1, 2], unstable)
-  describe "works in a complex scenario #338", ->
-    expectStreamEvents(
-      -> 
-        a = activate(series(2, ["a", "A"]))
-        b = activate(series(2, ["b", "B"])).delay(1).toProperty()
-        a.flatMapLatest((a) -> b.map((b) -> a + b))
-      ["ab", "Ab", "AB"], unstable)
-  it "toString", ->
-    expect(Bacon.constant(1).flatMap(->).toString()).to.equal("Bacon.constant(1).flatMap(function)")
-
-describe "EventStream.flatMapLatest", ->
-  describe "spawns new streams but collects values from the latest spawned stream only", ->
-    expectStreamEvents(
-      -> series(3, [1, 2]).flatMapLatest (value) ->
-        sequentially(t(2), [value, error(), value])
-      [1, 2, error(), 2], unstable)
-  describe "Accepts a constant EventStream/Property as an alternative to a function", ->
-    expectStreamEvents(
-      -> Bacon.once("asdf").flatMapLatest(Bacon.constant("bacon"))
-      ["bacon"], unstable)
-  describe "Accepts a field extractor string instead of function", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapLatest(".bacon")
-      ["sir francis"])
-    expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMapLatest(".bacon")
-      ["sir francis"])
-  it "toString", ->
-    expect(Bacon.never().flatMapLatest(->).toString()).to.equal("Bacon.never().flatMapLatest(function)")
-  describe "No glitches in a complex scenario", ->
-    expectPropertyEvents(
-      ->
-        changes = series(1, [{a:0,b:0},{a:1,b:1}])
-
-        a = changes.map '.a'
-        b = changes.map '.b'
-
-        ab = Bacon.combineAsArray a, b
-
-        f = ab.flatMapLatest (values) ->
-          Bacon.once 'f' + values
-
-        Bacon.combineAsArray(f, b).map(".0")
-      ["f0,0","f1,1"])
-
-  it "Works with flatMap source spawning fromArrays", ->
-    result = []
-    array = [1,2,3]
-    fromArray(array)
-      .map(array)
-      .flatMap(fromArray)
-      .flatMapLatest(Bacon._.id)
-      .onValue (v) -> result.push v
-    expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
-
-describe "Property.flatMapLatest", ->
-  describe "spawns new streams but collects values from the latest spawned stream only", ->
-    expectStreamEvents(
-      -> series(3, [1, 2]).toProperty(0).flatMapLatest (value) ->
-        sequentially(t(2), [value, value])
-      [0, 1, 2, 2], unstable)
-  describe "Accepts a constant EventStream/Property as an alternative to a function", ->
-    expectStreamEvents(
-      -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
-      ["bacon"], unstable)
-  it "toString", ->
-    expect(Bacon.constant(1).flatMapLatest(->).toString()).to.equal("Bacon.constant(1).flatMapLatest(function)")
-
-describe "EventStream.flatMapFirst", ->
-  describe "spawns new streams and ignores source events until current spawned stream has ended", ->
-    expectStreamEvents(
-      -> series(2, [2, 4, 6, 8]).flatMapFirst (value) ->
-        series(1, ["a" + value, "b" + value, "c" + value])
-      ["a2", "b2", "c2", "a6", "b6", "c6"], unstable)
-  describe "Accepts a field extractor string instead of function", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapFirst(".bacon")
-      ["sir francis"])
-    expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMapFirst(".bacon")
-      ["sir francis"])
-  it "toString", ->
-    expect(Bacon.never().flatMapFirst(->).toString()).to.equal("Bacon.never().flatMapFirst(function)")
-
-describe "EventStream.flatMapError", ->
-  describe "allows spawning a new stream from an error", ->
-    expectStreamEvents(
-      ->
-        source = fromArray [
-          error()
-          error(value: true, data: 1)
-          error()
-          error(value: true, data: 2)
-        ]
-        source.flatMapError (err) ->
-          if err?.value
-            Bacon.once(err.data)
-          else
-            error()
-
-      [error(), 1, error(), 2]
-    )
-  describe "has no effect on values", ->
-    expectStreamEvents(
-      -> fromArray([1, 2]).flatMapError(-> Bacon.once("omg"))
-      [1, 2])
-  it "toString", ->
-    expect(Bacon.once(1).flatMapError(->).toString()).to.equal("Bacon.once(1).flatMapError(function)")
-
-describe "EventStream.merge", ->
-  describe "merges two streams and ends when both are exhausted", ->
-    expectStreamEvents(
-      ->
-        left = series(1, [1, error(), 2, 3])
-        right = series(1, [4, 5, 6]).delay(t(4))
-        left.merge(right)
-      [1, error(), 2, 3, 4, 5, 6], unstable)
-  describe "respects subscriber return value", ->
-    expectStreamEvents(
-      ->
-        left = repeat(2, [1, 3]).take(3)
-        right = repeat(3, [2]).take(3)
-        left.merge(right).takeWhile(lessThan(2))
-      [1])
-  describe "does not duplicate same error from two streams", ->
-    expectStreamEvents(
-      ->
-        src = series(1, [1, error(), 2, error(), 3])
-        left = src.map((x) -> x)
-        right = src.map((x) -> x * 2)
-        left.merge(right)
-      [1, 2, error(), 2, 4, error(), 3, 6], unstable)
-  describe "works with synchronous sources", ->
-    expectStreamEvents(
-      -> fromArray([1,2]).merge(fromArray([3,4]))
-      [1,2,3,4])
-  it "toString", ->
-    expect(Bacon.once(1).merge(Bacon.once(2)).toString()).to.equal("Bacon.once(1).merge(Bacon.once(2))")
-
 describe "EventStream.delay", ->
   describe "delays all events (except errors) by given delay in milliseconds", ->
     expectStreamEvents(
@@ -861,60 +413,6 @@ describe "Property.toProperty", ->
       fail()
     catch e
 
-describe "Property.take(1)", ->
-  describe "takes the Initial event", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty(0).take(1)
-      [0])
-  describe "takes the first Next event, if no Initial value", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty().take(1)
-      [1])
-  describe "works for constants", ->
-    expectPropertyEvents(
-      -> Bacon.constant(1)
-      [1])
-  describe "works for never-ending Property", ->
-    expectPropertyEvents(
-      -> repeat(1, [1,2,3]).toProperty(0).take(1)
-      [0])
-    expectPropertyEvents(
-      -> repeat(1, [1,2,3]).toProperty().take(1)
-      [1])
-
-describe "Bacon.once().take(1)", ->
-  describe "works", ->
-    expectStreamEvents(
-      -> Bacon.once(1).take(1)
-      [1])
-
-describe "Property.takeWhile", ->
-  describe "takes while predicate is true", ->
-    expectPropertyEvents(
-      ->
-        series(1, [1, error("wat"), 2, 3])
-          .toProperty().takeWhile(lessThan(3))
-      [1, error("wat"), 2])
-  describe "extracts field values", ->
-    expectPropertyEvents(
-      ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .toProperty().takeWhile(".good").map(".value")
-      ["yes"])
-  describe "can filter by Property value", ->
-    expectPropertyEvents(
-      ->
-        src = series(1, [1,1,2,3,4,4,8,7]).toProperty()
-        odd = src.map((x) -> x % 2)
-        src.takeWhile(odd)
-      [1,1])
-  describe "works with never-ending Property", ->
-    expectPropertyEvents(
-      ->
-        repeat(1, [1, error("wat"), 2, 3])
-          .toProperty().takeWhile(lessThan(3))
-      [1, error("wat"), 2])
-
 describe "Property.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
@@ -1001,25 +499,6 @@ describe "Property.endOnError", ->
     expectPropertyEvents(
       -> series(2, [1, error(), 2]).toProperty().endOnError()
       [1, error()])
-
-describe "Property.skipDuplicates", ->
-  describe "drops duplicates", ->
-    expectPropertyEvents(
-      -> series(1, [1, 2, error(), 2, 3, 1]).toProperty(0).skipDuplicates()
-    [0, 1, 2, error(), 3, 1])
-  describe "Doesn't skip initial value (bug fix #211)", ->
-    b = new Bacon.Bus()
-    p = b.toProperty()
-    p.onValue -> # force property update
-    s = p.skipDuplicates()
-    b.push 'foo'
-
-    describe "series 1", ->
-      expectPropertyEvents((-> s.take(1)), ["foo"])
-    describe "series 2", ->
-      expectPropertyEvents((-> s.take(1)), ["foo"])
-    describe "series 3", ->
-      expectPropertyEvents((-> s.take(1)), ["foo"])
 
 describe "Property.changes", ->
   describe "sends property change events", ->
@@ -1198,7 +677,7 @@ describe "Property update is atomic", ->
     expect(calls).to.equal(2)
   describe "yet respects subscriber return values (bug fix)", ->
     expectStreamEvents(
-      -> Bacon.repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
+      -> repeatedly(t(1), [1, 2, 3]).toProperty().changes().take(1)
       [1])
 
 describe "When an Event triggers another one in the same stream, while dispatching", ->
@@ -2520,3 +1999,99 @@ Bacon.fromGenerator = (generator) ->
 Bacon.fromSynchronousGenerator = (generator) ->
   Bacon.fromGenerator (push) ->
     push generator()
+
+describe "Integration tests", ->
+  describe "Property.skipDuplicates", ->
+    describe "Doesn't skip initial value (bug fix #211)", ->
+      b = new Bacon.Bus()
+      p = b.toProperty()
+      p.onValue -> # force property update
+      s = p.skipDuplicates()
+      b.push 'foo'
+
+      describe "series 1", ->
+        expectPropertyEvents((-> s.take(1)), ["foo"])
+      describe "series 2", ->
+        expectPropertyEvents((-> s.take(1)), ["foo"])
+      describe "series 3", ->
+        expectPropertyEvents((-> s.take(1)), ["foo"])
+  describe "EventStream.skipDuplicates", ->
+    it "Drops duplicates with subscribers with non-overlapping subscription time (#211)", ->
+      b = new Bacon.Bus()
+      noDups = b.skipDuplicates()
+      round = (expected) ->
+        values = []
+        noDups.take(1).onValue (x) -> values.push(x)
+        b.push 1
+        expect(values).to.deep.equal(expected)
+      round([1])
+      round([])
+      round([])
+  describe "EventStream.flatMap", ->
+    describe "works with a complex setup (fix #363)", ->
+      it "case 1 (samplee has no subscribers)", ->
+        result = ""
+        prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
+        Bacon.once().flatMap(->
+            problem = prop.sampledBy(Bacon.once())
+            problem.onValue (x) ->
+              result = x
+        ).onValue ->
+        expect(result).to.deep.equal({faq: "default value"})
+      it "case 2 (samplee has subscriber)", ->
+        result = ""
+        prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
+        prop.onValue ->
+        Bacon.once().flatMap(->
+            problem = prop.sampledBy(Bacon.once())
+            problem.onValue (x) ->
+              result = x
+        ).onValue ->
+        expect(result).to.deep.equal({faq: "default value"})
+      it "case 3 (original fiddle)", ->
+        result = ""
+        input = new Bacon.Bus()
+        prop = Bacon.combineTemplate(faq: input.toProperty("default value"))
+        events = new Bacon.Bus()
+        events.flatMapLatest(->
+            problem = prop.sampledBy(Bacon.once())
+            problem.onValue (x) ->
+              result = x
+        ).onValue ->
+        events.push()
+        expect(result).to.deep.equal({faq: "default value"})
+  describe "Property.flatMap", ->
+    describe "works in a complex scenario #338", ->
+      expectStreamEvents(
+        -> 
+          a = activate(series(2, ["a", "A"]))
+          b = activate(series(2, ["b", "B"])).delay(1).toProperty()
+          a.flatMapLatest((a) -> b.map((b) -> a + b))
+        ["ab", "Ab", "AB"], unstable)
+
+  describe "EventStream.flatMapLatest", ->
+    describe "No glitches in a complex scenario", ->
+      expectPropertyEvents(
+        ->
+          changes = series(1, [{a:0,b:0},{a:1,b:1}])
+
+          a = changes.map '.a'
+          b = changes.map '.b'
+
+          ab = Bacon.combineAsArray a, b
+
+          f = ab.flatMapLatest (values) ->
+            Bacon.once 'f' + values
+
+          Bacon.combineAsArray(f, b).map(".0")
+        ["f0,0","f1,1"])
+
+    it "Works with flatMap source spawning fromArrays", ->
+      result = []
+      array = [1,2,3]
+      fromArray(array)
+        .map(array)
+        .flatMap(fromArray)
+        .flatMapLatest(Bacon._.id)
+        .onValue (v) -> result.push v
+      expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
