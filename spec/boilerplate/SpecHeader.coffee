@@ -45,6 +45,16 @@ map = (obs, f) ->
   obs.withHandler (event) ->
     @push event.fmap(f)
 
+skip = (count, obs) ->
+  obs.withHandler (event) ->
+    unless event.hasValue()
+      @push event
+    else if (count > 0)
+      count--
+      Bacon.more
+    else
+      @push event
+
 toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(-> x)
 
 fromBinder = Bacon.fromBinder || (binder, eventTransformer = Bacon._.id) ->

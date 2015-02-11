@@ -1,5 +1,9 @@
-# build-dependencies: scan
+# build-dependencies: scan, concat
 
-Bacon.Property :: startWith = (value) ->
-  withDescription(this, "startWith", value,
-    @scan(value, (prev, next) -> next))
+Bacon.Property :: startWith = (seed) ->
+  withDescription(this, "startWith", seed,
+    @scan(seed, (prev, next) -> next))
+
+Bacon.EventStream :: startWith = (seed) ->
+  withDescription(this, "startWith", seed,
+    Bacon.once(seed).concat(this))

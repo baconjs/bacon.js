@@ -1,114 +1,3 @@
-describe "EventStream.startWith", ->
-  describe "provides seed value, then the rest", ->
-    expectStreamEvents(
-      ->
-        left = series(1, [1, 2, 3])
-        left.startWith('pow')
-      ['pow', 1, 2, 3], unstable)
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      ->
-        left = fromArray([1, 2, 3])
-        left.startWith('pow')
-      ['pow', 1, 2, 3], unstable)
-  it "toString", ->
-    expect(Bacon.never().startWith(0).toString()).to.equal("Bacon.never().startWith(0)")
-
-describe "Property.startWith", ->
-  describe "starts with given value if the Property doesn't have an initial value", ->
-    expectPropertyEvents(
-      ->
-        left = series(1, [1, 2, 3]).toProperty()
-        left.startWith('pow')
-      ['pow', 1, 2, 3], unstable)
-  describe "works with synchronous source", ->
-    expectPropertyEvents(
-      ->
-        left = fromArray([1, 2, 3]).toProperty()
-        left.startWith('pow')
-      ['pow', 1, 2, 3], unstable)
-  describe "starts with the initial value of the Property if any", ->
-    expectPropertyEvents(
-      ->
-        left = series(1, [1, 2, 3]).toProperty(0)
-        left.startWith('pow')
-      [0, 1, 2, 3], unstable)
-  it "works with combineAsArray", ->
-    result = null
-    a = Bacon.constant("lolbal")
-    result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong")
-    result.onValue((x) -> result = x)
-    expect(result).to.equal("right")
-  it "toString", ->
-    expect(Bacon.constant(2).startWith(1).toString()).to.equal("Bacon.constant(2).startWith(1)")
-
-describe "EventStream.toProperty", ->
-  describe "delivers current value and changes to subscribers", ->
-    expectPropertyEvents(
-      ->
-        s = new Bacon.Bus()
-        p = s.toProperty("a")
-        soon ->
-          s.push "b"
-          s.end()
-        p
-      ["a", "b"])
-  describe "passes through also Errors", ->
-    expectPropertyEvents(
-      -> series(1, [1, error(), 2]).toProperty()
-      [1, error(), 2])
-
-  describe "supports null as value", ->
-    expectPropertyEvents(
-      -> series(1, [null, 1, null]).toProperty(null)
-      [null, null, 1, null])
-
-  describe "does not get messed-up by a transient subscriber (bug fix)", ->
-    expectPropertyEvents(
-      ->
-        prop = series(1, [1,2,3]).toProperty(0)
-        prop.subscribe (event) =>
-          Bacon.noMore
-        prop
-      [0, 1, 2, 3])
-  describe "works with synchronous source", ->
-    expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty()
-      [1,2,3])
-    expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty(0)
-      [0,1,2,3], unstable)
-  it "preserves laziness", ->
-    calls = 0
-    id = (x) ->
-      calls++
-      x
-    fromArray([1,2,3,4,5]).map(id).toProperty().skip(4).onValue()
-    expect(calls).to.equal(1)
-  it "toString", ->
-    expect(Bacon.once(1).toProperty(0).toString()).to.equal("Bacon.once(1).toProperty(0)")
-
-describe "Property.toEventStream", ->
-  describe "creates a stream that starts with current property value", ->
-    expectStreamEvents(
-      -> series(1, [1, 2]).toProperty(0).toEventStream()
-      [0, 1, 2], unstable)
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1, 2]).toProperty(0).toEventStream()
-      [0, 1, 2], unstable)
-
-describe "Property.toProperty", ->
-  describe "returns the same Property", ->
-    expectPropertyEvents(
-      -> Bacon.constant(1).toProperty()
-      [1])
-  it "rejects arguments", ->
-    try
-      Bacon.constant(1).toProperty(0)
-      fail()
-    catch e
-
 describe "Property.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
     expectPropertyEvents(
@@ -1766,4 +1655,10 @@ describe "Integration tests", ->
       visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
       visibleP.debounce(500).onValue (val)  ->
         values.push(val)
-
+  describe "Property.startWith", ->
+    it "works with combineAsArray", ->
+      result = null
+      a = Bacon.constant("lolbal")
+      result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong")
+      result.onValue((x) -> result = x)
+      expect(result).to.equal("right")

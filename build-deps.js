@@ -32,7 +32,7 @@ function readPiece(pieceName, dir, pieceCache) {
   return pieceCache[pieceName];
 }
 
-function resolve(pieceNames, dir, resolving, pieceCache) {
+function resolve(pieceNames, dir, resolving, pieceCache, options) {
   resolving = resolving || [];
 
   return _.uniq(_.flatten(pieceNames.map(function(pieceName) {
@@ -43,14 +43,20 @@ function resolve(pieceNames, dir, resolving, pieceCache) {
     }
 
     var deps = _.chain(piece.deps)
-      .map(function (x) { return resolve([x], dir, resolving.concat([pieceName]), pieceCache) })
+      .map(function (x) { 
+        if (options.recursive)
+          return resolve([x], dir, resolving.concat([pieceName]), pieceCache, options) 
+        else
+          return readPiece(x, dir, pieceCache)
+      })
       .flatten()
       .value();
-
+    
     return deps.concat([piece]);
   })))
 }
 
-module.exports.resolvePieces = function(pieceNames, dir) {
-  return resolve(pieceNames, dir, [], {})
+module.exports.resolvePieces = function(pieceNames, dir, options) {
+  if (!options) options = { recursive: true }
+  return resolve(pieceNames, dir, [], {}, options)
 }

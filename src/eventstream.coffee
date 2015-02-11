@@ -51,11 +51,6 @@ class EventStream extends Observable
 
   toEventStream: -> this
 
-
-  startWith: (seed) ->
-    withDescription(this, "startWith", seed,
-      Bacon.once(seed).concat(this))
-
   withHandler: (handler) ->
     new EventStream describe(this, "withHandler", handler), @dispatcher.subscribe, handler
 

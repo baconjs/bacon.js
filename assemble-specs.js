@@ -28,7 +28,7 @@ function readPiece(pieceName) {
 
 function buildArgs(pieceNames) {
   if (pieceNames.length > 3) return ""
-  var pieceNames = Deps.resolvePieces(pieceNames, "spec/specs")
+  var pieceNames = Deps.resolvePieces(pieceNames, "spec/specs", { recursive: false })
     .map(function(piece) { return piece.name })
   return pieceNames.join(" ")
 }
