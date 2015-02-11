@@ -2130,12 +2130,15 @@
       onFlush = nop;
     }
     buffer = {
-      scheduled: false,
+      scheduled: null,
       end: void 0,
       values: [],
       flush: function() {
         var reply;
-        this.scheduled = false;
+        if (this.scheduled) {
+          Bacon.scheduler.clearTimeout(this.scheduled);
+          this.scheduled = null;
+        }
         if (this.values.length > 0) {
           reply = this.push(nextEvent(this.values));
           this.values = [];
@@ -2152,8 +2155,7 @@
       },
       schedule: function() {
         if (!this.scheduled) {
-          this.scheduled = true;
-          return delay((function(_this) {
+          return this.scheduled = delay((function(_this) {
             return function() {
               return _this.flush();
             };
