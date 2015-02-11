@@ -143,6 +143,6 @@ mergeAll = Bacon.mergeAll || (streams...) ->
           unsubBoth() if reply == Bacon.noMore
           reply
       sinks = Bacon._.map smartSink, streams
-      compositeUnsubscribe sinks...
+      new Bacon.CompositeUnsubscribe(sinks).unsubscribe
   else
     Bacon.never()

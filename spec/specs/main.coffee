@@ -1,21 +1,3 @@
-describe "EventStream.delay", ->
-  describe "delays all events (except errors) by given delay in milliseconds", ->
-    expectStreamEvents(
-      ->
-        left = series(2, [1, 2, 3])
-        right = series(1, [error(), 4, 5, 6]).delay(t(6))
-        left.merge(right)
-      [error(), 1, 2, 3, 4, 5, 6], unstable)
-  describe "works with synchronous streams", ->
-    expectStreamEvents(
-      ->
-        left = fromArray([1, 2, 3])
-        right = fromArray([4, 5, 6]).delay(t(6))
-        left.merge(right)
-      [1, 2, 3, 4, 5, 6], unstable)
-  it "toString", ->
-    expect(Bacon.never().delay(1).toString()).to.equal("Bacon.never().delay(1)")
-
 describe "EventStream.debounce", ->
   describe "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(
