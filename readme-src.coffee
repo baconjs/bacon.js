@@ -1783,13 +1783,23 @@ of the bundle with your selected features using
 
 doc.section "Test"
 doc.text """
-Run unit tests:
+Run all unit tests:
 
     ./test
 
-Run some unit tests:
+Run limited set of unit tests:
 
     ./test core _ frompromise
+
+The names correspond to the file names under `src/spec/specs`. The library will
+be built with the listed features only.
+
+You can also test all features individually:
+
+    ./test-individually.js
+
+This will loop thru all files under `spec/specs` and build the library with the
+single feature and run the test.
 
 Run browser tests (using testem):
 
