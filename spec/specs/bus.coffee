@@ -1,4 +1,4 @@
-# build-dependencies: filter
+# build-dependencies: filter, map
 
 describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
@@ -54,8 +54,8 @@ describe "Bacon.Bus", ->
   it "handles cold single-event streams correctly (bug fix)", ->
     values = []
     bus = new Bacon.Bus()
-    bus.plug(Bacon.once("x"))
-    bus.plug(Bacon.once("y"))
+    bus.plug(once("x"))
+    bus.plug(once("y"))
     bus.onValue((x) -> values.push(x))
     expect(values).to.deep.equal(["x", "y"])
 
