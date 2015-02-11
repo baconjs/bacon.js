@@ -1,4 +1,4 @@
-# build-dependencies: observable, property
+# build-dependencies: observable, property, eventstream
 # build-dependencies: functionconstruction
 
 Bacon.Observable :: filter = (f, args...) ->
