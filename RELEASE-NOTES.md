@@ -1,3 +1,8 @@
+## 0.7.44
+
+- Fix #543: holdWhen with array values
+- Fix #544: bufferWithTimeOrCount
+
 ## 0.7.43
 
 - Add `Bacon.fromEvent` as shorthand for `Bacon.fromEventTarget`
