@@ -1,4 +1,4 @@
-# build-dependencies: filter, bus
+# build-dependencies: filter, bus, property, mapend
 
 describe "EventStream.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
@@ -19,7 +19,7 @@ describe "EventStream.takeUntil", ->
     expectStreamEvents(
       ->
         src = repeat(3, [3, 2, 1])
-        data = src.map((x) -> x)
+        data = map(src, (x) -> x)
         take(3, data).onValue(->)
         stopper = src.filter(lessThan(3))
         data.takeUntil(stopper)
@@ -99,6 +99,25 @@ describe "EventStream.takeUntil", ->
       [1])
   ###
   it "toString", ->
-    expect(later(1, "a").takeUntil(later(2, "b")).toString()).to.equal("Bacon.later(1,a).takeUntil(Bacon.later(2,b))")
+    expect(Bacon.never().takeUntil(Bacon.never()).toString()).to.equal("Bacon.never().takeUntil(Bacon.never())")
 
-
+describe "Property.takeUntil", ->
+  describe "takes elements from source until an event appears in the other stream", ->
+    expectPropertyEvents(
+      -> series(2, [1,2,3]).toProperty().takeUntil(later(t(3)))
+      [1])
+  describe "works with errors", ->
+    expectPropertyEvents(
+      ->
+        src = repeat(2, [1, error(), 3])
+        stopper = repeat(5, ["stop!"])
+        src.toProperty(0).takeUntil(stopper)
+      [0, 1, error()])
+  it "works with synchronous error (fix #447)", ->
+    errors = []
+    Bacon.once(new Bacon.Error("fail")).toProperty()
+      .takeUntil(Bacon.never())
+      .onError((e) -> errors.push(e))
+    expect(errors).to.deep.equal(["fail"])
+  it "toString", ->
+    expect(Bacon.constant(1).takeUntil(Bacon.never()).toString()).to.equal("Bacon.constant(1).takeUntil(Bacon.never())")

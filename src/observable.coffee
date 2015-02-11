@@ -39,8 +39,6 @@ class Observable
     @subscribe (event) ->
       f() if event.isEnd()
 
-  errors: -> withDescription(this, "errors", @filter(-> false))
-
   name: (name) ->
     @_name = name
     this

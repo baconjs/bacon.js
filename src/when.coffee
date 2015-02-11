@@ -1,4 +1,4 @@
-# build-dependencies: compositeunsubscribe
+# build-dependencies: compositeunsubscribe, eventstream
 # build-dependencies: updatebarrier
 
 Bacon.when = ->

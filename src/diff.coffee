@@ -1,4 +1,4 @@
-# build-dependencies: scan
+# build-dependencies: scan, filter, map
 # build-dependencies: functionconstruction
 
 Bacon.Observable :: diff = (start, f) ->

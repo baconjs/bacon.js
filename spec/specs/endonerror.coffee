@@ -17,3 +17,9 @@ describe "EventStream.endOnError", ->
       [1, 2, error()])
   it "toString", ->
     expect(Bacon.never().endOnError().toString()).to.equal("Bacon.never().endOnError()")
+
+describe "Property.endOnError", ->
+  describe "terminates on Error", ->
+    expectPropertyEvents(
+      -> series(2, [1, error(), 2]).toProperty().endOnError()
+      [1, error()])

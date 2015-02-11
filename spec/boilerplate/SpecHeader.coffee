@@ -130,10 +130,10 @@ fromArray = Bacon.fromArray || (values) ->
       -> unsubd = true
 
 once = Bacon.once || (value) ->
-  new EventStream (sink) ->
+  new Bacon.EventStream (sink) ->
     sink (toEvent(value))
     sink (new Bacon.End())
-    nop
+    ->
 
 isArray = (xs) -> xs instanceof Array
 

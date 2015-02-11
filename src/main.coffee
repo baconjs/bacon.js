@@ -11,6 +11,7 @@
 # build-dependencies: diff
 # build-dependencies: doaction
 # build-dependencies: endonerror
+# build-dependencies: errors
 # build-dependencies: factories
 # build-dependencies: frompromise
 # build-dependencies: flatmap

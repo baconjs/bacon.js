@@ -45,3 +45,13 @@ describe "Property.toProperty", ->
       fail()
     catch e
 
+describe "Property.changes", ->
+  describe "sends property change events", ->
+    expectStreamEvents(
+      ->
+        p = sequentially(1, ["b", new Bacon.Error()]).toProperty("a").changes()
+      ["b", error()])
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> fromArray([1, 2, 3]).toProperty(0).changes()
+      [1, 2, 3])

@@ -74,3 +74,21 @@ describe "Bacon.fromPoll", ->
   it "toString", ->
     expect(Bacon.fromPoll(1, (->)).toString()).to.equal("Bacon.fromPoll(1,function)")
 
+describe "Property.delay", ->
+  describe "delivers initial value and changes", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).delay(t(1))
+      [0,1,2,3])
+  describe "delays changes", ->
+    expectStreamEvents(
+      ->
+        series(2, [1,2,3])
+          .toProperty()
+          .delay(t(2)).changes().takeUntil(later(t(5)))
+      [1], unstable)
+  describe "does not delay initial value", ->
+    expectPropertyEvents(
+      -> series(3, [1]).toProperty(0).delay(1).takeUntil(later(t(2)))
+      [0])
+  it "toString", ->
+    expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)")

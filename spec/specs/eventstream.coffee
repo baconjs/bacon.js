@@ -39,3 +39,4 @@ describe "EventStream.toProperty", ->
     expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.never().toProperty(0).toString()).to.equal("Bacon.never().toProperty(0)")
+
