@@ -4,6 +4,7 @@
 # build-dependencies: takeuntil
 # build-dependencies: scan
 # build-dependencies: take
+# build-dependencies: sample
 
 Bacon.EventStream :: holdWhen = (valve) ->
   valve_ = valve.startWith(false)

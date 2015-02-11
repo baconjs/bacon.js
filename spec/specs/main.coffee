@@ -57,6 +57,16 @@ describe "Integration tests", ->
       round([1])
       round([])
       round([])
+  describe "EventStream.concat", ->
+    describe "Works with synchronized left stream and doAction", ->
+      expectStreamEvents(
+        ->
+          bus = new Bacon.Bus()
+          stream = fromArray([1,2]).flatMapLatest (x) ->
+            Bacon.once(x).concat(later(10, x).doAction((x) -> bus.push(x); bus.end()))
+          stream.onValue ->
+          bus
+        [2])
   describe "EventStream.flatMap", ->
     describe "works with a complex setup (fix #363)", ->
       it "case 1 (samplee has no subscribers)", ->
@@ -184,6 +194,22 @@ describe "Integration tests", ->
       unsub()
       bus.push("bacon")
       expect(values).to.deep.equal(["bacon"])
+  describe "Observable.subscribe and onValue", ->
+    it "returns a dispose() for unsubscribing", ->
+      s = new Bacon.Bus()
+      values = []
+      dispose = s.onValue (value) -> values.push value
+      s.push "lol"
+      dispose()
+      s.push "wut"
+      expect(values).to.deep.equal(["lol"])
+    it "respects returned Bacon.noMore return value (#523)", ->
+      calls = 0
+      once(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
+        calls++
+        Bacon.noMore
+      expect(calls).to.equal(1)
+      # will hang if the underlying interval-stream isn't disposed correctly
   describe "Infinite synchronous sequences", ->
     describe "Limiting length with take(n)", ->
       expectStreamEvents(

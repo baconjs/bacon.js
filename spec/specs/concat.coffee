@@ -46,15 +46,6 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.once(1).concat(fromArray([2, 3]))
       [1, 2, 3], unstable)
-  describe "Works with synchronized left stream and doAction", ->
-    expectStreamEvents(
-      ->
-        bus = new Bacon.Bus()
-        stream = fromArray([1,2]).flatMapLatest (x) ->
-          Bacon.once(x).concat(later(10, x).doAction((x) -> bus.push(x); bus.end()))
-        stream.onValue ->
-        bus
-      [2])
   it "toString", ->
     expect(Bacon.once(1).concat(Bacon.once(2)).toString()).to.equal("Bacon.once(1).concat(Bacon.once(2))")
 

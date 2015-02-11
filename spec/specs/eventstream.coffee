@@ -62,20 +62,3 @@ describe "Observable.withDescription", ->
 
 describe "EventStream.onValue", testSideEffects(once, "onValue")
 describe "EventStream.forEach", testSideEffects(once, "forEach")
-
-describe "Observable.subscribe and onValue", ->
-  it "returns a dispose() for unsubscribing", ->
-    s = new Bacon.Bus()
-    values = []
-    dispose = s.onValue (value) -> values.push value
-    s.push "lol"
-    dispose()
-    s.push "wut"
-    expect(values).to.deep.equal(["lol"])
-  it "respects returned Bacon.noMore return value (#523)", ->
-    calls = 0
-    Bacon.once(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
-      calls++
-      Bacon.noMore
-    expect(calls).to.equal(1)
-    # will hang if the underlying interval-stream isn't disposed correctly
