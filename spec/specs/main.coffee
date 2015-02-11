@@ -1,39 +1,3 @@
-describe "EventStream.debounce", ->
-  describe "throttles input by given delay, passing-through errors", ->
-    expectStreamEvents(
-      -> series(2, [1, error(), 2]).debounce(t(7))
-      [error(), 2])
-  describe "waits for a quiet period before outputing anything", ->
-    expectStreamTimings(
-      -> series(2, [1, 2, 3, 4]).debounce(t(3))
-      [[11, 4]])
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1, 2, 3, 4]).debounce(t(3))
-      [4])
-  describe "works in combination with scan", ->
-    count = 0
-    expectPropertyEvents(
-      -> series(2, [1,2,3]).debounce(1).scan(0, (x,y) -> count++; x + y)
-      [0, 1, 3, 6]
-      {extraCheck: -> it "calls function once per value", -> expect(count).to.equal(3)}
-    )
-  it "toString", ->
-    expect(Bacon.never().debounce(1).toString()).to.equal("Bacon.never().debounce(1)")
-
-
-describe "EventStream.debounceImmediate(delay)", ->
-  describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
-    expectStreamTimings(
-      -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
-      [[2, 1], [6, 3]], unstable)
-  describe "works with synchronous source", ->
-    expectStreamEvents(
-      -> fromArray([1, 2, 3, 4]).debounceImmediate(t(3))
-      [1])
-  it "toString", ->
-    expect(Bacon.never().debounceImmediate(1).toString()).to.equal("Bacon.never().debounceImmediate(1)")
-
 describe "EventStream.throttle(delay)", ->
   describe "outputs at steady intervals, without waiting for quiet period", ->
     expectStreamTimings(
@@ -400,35 +364,6 @@ describe "Property.delay", ->
   it "toString", ->
     expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)")
 
-describe "Property.debounce", ->
-  describe "delivers initial value and changes", ->
-    expectPropertyEvents(
-      -> series(2, [1,2,3]).toProperty(0).debounce(t(1))
-      [0,1,2,3])
-  describe "throttles changes, but not initial value", ->
-    expectPropertyEvents(
-      -> series(1, [1,2,3]).toProperty(0).debounce(t(4))
-      [0,3])
-  describe "works without initial value", ->
-    expectPropertyEvents(
-      -> series(2, [1,2,3]).toProperty().debounce(t(4))
-      [3])
-  describe "works with Bacon.constant (bug fix)", ->
-    expectPropertyEvents(
-      -> Bacon.constant(1).debounce(1)
-      [1])
-  it "works with Bacon.combine (bug fix)", ->
-    values = []
-    p1 = Bacon.once(true).toProperty()
-    p2 = Bacon.once(true).toProperty()
-
-    visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
-
-    visibleP.debounce(500).onValue (val)  ->
-      values.push(val)
-
-  it "toString", ->
-    expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
 describe "Property.throttle", ->
   describe "throttles changes, but not initial value", ->
     expectPropertyEvents(
@@ -2042,3 +1977,20 @@ describe "Integration tests", ->
         .flatMapLatest(Bacon._.id)
         .onValue (v) -> result.push v
       expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
+  describe "EventStream.debounce", ->
+    describe "works in combination with scan", ->
+      count = 0
+      expectPropertyEvents(
+        -> series(2, [1,2,3]).debounce(1).scan(0, (x,y) -> count++; x + y)
+        [0, 1, 3, 6]
+        {extraCheck: -> it "calls function once per value", -> expect(count).to.equal(3)}
+      )
+  describe "Property.debounce", ->
+    it "works with Bacon.combine (bug fix)", ->
+      values = []
+      p1 = Bacon.once(true).toProperty()
+      p2 = Bacon.once(true).toProperty()
+      visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
+      visibleP.debounce(500).onValue (val)  ->
+        values.push(val)
+

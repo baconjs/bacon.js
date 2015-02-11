@@ -1,5 +1,5 @@
-# build-dependencies: flatmap, flatmaplatest, scheduled
-# build-dependencies: concat
+# build-dependencies: flatmaplatest, scheduled
+# build-dependencies: concat, filter
 
 Bacon.EventStream :: debounce = (delay) ->
   withDescription(this, "debounce", delay, @flatMapLatest (value) ->
