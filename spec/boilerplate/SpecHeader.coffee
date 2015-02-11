@@ -41,6 +41,10 @@ take = (count, obs) ->
         @push new Bacon.End()
         Bacon.noMore
 
+map = (obs, f) ->
+  obs.withHandler (event) ->
+    @push event.fmap(f)
+
 toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(-> x)
 
 fromBinder = Bacon.fromBinder || (binder, eventTransformer = Bacon._.id) ->
