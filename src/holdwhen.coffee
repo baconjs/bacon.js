@@ -16,4 +16,4 @@ Bacon.EventStream :: holdWhen = (valve) ->
       unless shouldHold
         @takeUntil(putToHold)
       else
-        @scan([], ((xs,x) -> xs.concat(x))).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+        @scan([], ((xs,x) -> xs.concat([x]))).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
