@@ -17,12 +17,15 @@ Bacon.EventStream :: bufferWithTimeOrCount = (delay, count) ->
 
 Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
   buffer = {
-    scheduled: false
+    scheduled: null
     end: undefined
     values: []
     flush: ->
-      @scheduled = false
+      if @scheduled
+        Bacon.scheduler.clearTimeout(@scheduled)
+        @scheduled = null
       if @values.length > 0
+        #console.log Bacon.scheduler.now() + ": flush " + @values
         reply = @push nextEvent(@values)
         @values = []
         if @end?
@@ -33,13 +36,16 @@ Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
         @push @end if @end?
     schedule: ->
       unless @scheduled
-        @scheduled = true
-        delay(=> @flush())
+        @scheduled = delay =>
+          #console.log Bacon.scheduler.now() + ": scheduled flush"
+          @flush()
   }
   reply = Bacon.more
   unless _.isFunction(delay)
     delayMs = delay
-    delay = (f) -> Bacon.scheduler.setTimeout(f, delayMs)
+    delay = (f) ->
+      #console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
+      Bacon.scheduler.setTimeout(f, delayMs)
   withDescription(this, "buffer", @withHandler (event) ->
     buffer.push = (event) => @push(event)
     if event.isError()
@@ -50,6 +56,7 @@ Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
         buffer.flush()
     else
       buffer.values.push(event.value())
+      #console.log Bacon.scheduler.now() + ": input " + event.value()
       onInput(buffer)
     reply)
 

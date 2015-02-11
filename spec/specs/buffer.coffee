@@ -51,6 +51,11 @@ describe "EventStream.bufferWithTimeOrCount", ->
     expectStreamEvents(
       -> series(2, [error(), 1, 2, 3, 4, 5, 6, 7]).bufferWithTimeOrCount(t(7), 10)
       [error(), [1, 2, 3, 4], [5, 6, 7]])
+  describe "flushes correctly when scheduled and count-based times overlap", ->
+    expectStreamEvents(
+      -> take(3, repeatedly(1, [1,2,3,4,5]).bufferWithTimeOrCount(5, 5))
+      [[1,2,3,4,5],[1,2,3,4],[5, 1,2,3,4]])
+
   it "toString", ->
     expect(Bacon.never().bufferWithTimeOrCount(1, 2).toString()).to.equal("Bacon.never().bufferWithTimeOrCount(1,2)")
 
