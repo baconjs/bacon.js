@@ -56,6 +56,9 @@ For [bower](https://github.com/twitter/bower) users:
 
 Both minified and unminified versions available on [cdnjs](https://cdnjs.com/libraries/bacon.js).
 
+Starting from 0.7.45, you can build your own Bacon.js bundle with selected features
+only. See instructions [here](#Build).
+
 Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
 Visual Studio users can obtain version 0.7.16 via NuGet Packages
@@ -1754,20 +1757,28 @@ See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffe
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 """
 
-doc.section "Install by npm"
-doc.text """
-Bacon uses npm to install the dependencies needed for compiling the coffeescript source and run the test. So first run:
-
-    npm install
-"""
-
 doc.section "Build"
 doc.text """
-Build the coffeescript source into javascript:
 
-    grunt
+First check out the Bacon.js repository and run `npm install`.
 
-Result javascript files will be generated in `dist` directory.
+Then build the coffeescript sources into javascript:
+
+    ./build
+
+Result javascript files will be generated in `dist` directory. If your planning
+to develop Bacon.js yourself, you'll want to run [tests] too.
+
+You can also build a bundle with selected features only. For instance
+
+    ./build flatmap combine takeuntil
+
+The build system will go its best to determine the dependencies of the selected
+features and include those into the bundle too. You can also test the integrity
+of the bundle with your selected features using
+
+    ./test flatmap combine takeuntil
+
 """
 
 doc.section "Test"
