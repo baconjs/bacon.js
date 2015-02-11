@@ -48,10 +48,21 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
 #   # => EventStream
 #
 # Returns EventStream
+eventMethods = [
+  ["addEventListener","removeEventListener"]
+  ["addListener", "removeListener"]
+  ["on", "off"]
+  ["bind", "unbind"]
+]
+findHandlerMethods = (target) ->
+  for pair in eventMethods
+    methodPair = [target[pair[0]], target[pair[1]]]
+    return methodPair if methodPair[0] and methodPair[1]
+  throw new Error("No suitable event methods in " + target)
+
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
-  sub = target.addEventListener ? target.addListener ? target.bind ? target.on
-  unsub = target.removeEventListener ? target.removeListener ? target.unbind ? target.off
-  withDescription(Bacon, "fromEventTarget", target, eventName, Bacon.fromBinder (handler) ->
+  [sub, unsub] = findHandlerMethods target
+  withDescription(Bacon, "fromEvent", target, eventName, Bacon.fromBinder (handler) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
   , eventTransformer)
