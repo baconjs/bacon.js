@@ -1,6 +1,3 @@
-compositeUnsubscribe = (ss...) ->
-  new CompositeUnsubscribe(ss).unsubscribe
-
 class CompositeUnsubscribe
   constructor: (ss = []) ->
     @unsubscribed = false

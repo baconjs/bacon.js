@@ -102,7 +102,7 @@ Bacon.when = ->
         unsubAll() if reply == Bacon.noMore
         reply or Bacon.more
 
-    compositeUnsubscribe (part s for s in sources)...
+    new Bacon.CompositeUnsubscribe(part s for s in sources).unsubscribe
 
 containsDuplicateDeps = (observables, state = []) ->
   checkObservable = (obs) ->
