@@ -1,4 +1,4 @@
-# build-dependencies: buffer, scheduled
+# build-dependencies: buffer, scheduled, map
 
 Bacon.EventStream :: throttle = (delay) ->
   withDescription(this, "throttle", delay, @bufferWithTime(delay).map((values) -> values[values.length - 1]))
