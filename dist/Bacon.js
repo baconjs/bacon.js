@@ -2930,7 +2930,7 @@
           return _this.takeUntil(putToHold);
         } else {
           return _this.scan([], (function(xs, x) {
-            return xs.concat(x);
+            return xs.concat([x]);
           })).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
         }
       };
