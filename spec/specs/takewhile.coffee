@@ -1,4 +1,4 @@
-# build-dependencies: eventstream, property, map
+# build-dependencies: eventstream, property, sample
 #
 describe "EventStream.takeWhile", ->
   describe "takes while predicate is true", ->
@@ -8,14 +8,14 @@ describe "EventStream.takeWhile", ->
   describe "extracts field values", ->
     expectStreamEvents(
       ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .takeWhile(".good").map(".value")
+        map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+          .takeWhile(".good"), (x) -> x.value)
       ["yes"])
   describe "can filter by Property value", ->
     expectStreamEvents(
       ->
         src = series(1, [1,1,2,3,4,4,8,7])
-        odd = src.map((x) -> x % 2).toProperty()
+        odd = map(src, (x) -> x % 2).toProperty()
         src.takeWhile(odd)
       [1,1])
   describe "works with synchronous source", ->
@@ -35,14 +35,14 @@ describe "Property.takeWhile", ->
   describe "extracts field values", ->
     expectPropertyEvents(
       ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .toProperty().takeWhile(".good").map(".value")
+        map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
+          .toProperty().takeWhile(".good"), (x) -> x.value)
       ["yes"])
   describe "can filter by Property value", ->
     expectPropertyEvents(
       ->
         src = series(1, [1,1,2,3,4,4,8,7]).toProperty()
-        odd = src.map((x) -> x % 2)
+        odd = map(src, (x) -> x % 2)
         src.takeWhile(odd)
       [1,1])
   describe "works with never-ending Property", ->

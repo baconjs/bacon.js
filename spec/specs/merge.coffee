@@ -1,4 +1,4 @@
-# build-dependencies: scheduled, map, takeWhile
+# build-dependencies: scheduled, takeWhile
 #
 describe "EventStream.merge", ->
   describe "merges two streams and ends when both are exhausted", ->
@@ -19,8 +19,8 @@ describe "EventStream.merge", ->
     expectStreamEvents(
       ->
         src = series(1, [1, error(), 2, error(), 3])
-        left = src.map((x) -> x)
-        right = src.map((x) -> x * 2)
+        left = map(src, (x) -> x)
+        right = map(src, (x) -> x * 2)
         left.merge(right)
       [1, 2, error(), 2, 4, error(), 3, 6], unstable)
   describe "works with synchronous sources", ->

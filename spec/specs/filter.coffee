@@ -1,4 +1,4 @@
-# build-dependencies: EventStream, Property, map, sample, scheduled
+# build-dependencies: EventStream, Property, sample, scheduled
 #
 describe "EventStream.filter", ->
   describe "should filter values", ->
@@ -7,13 +7,13 @@ describe "EventStream.filter", ->
       [1, 2, error()])
   describe "extracts field values", ->
     expectStreamEvents(
-      -> series(1, [{good:true, value:"yes"}, {good:false, value:"no"}]).filter(".good").map(".value")
+      -> map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}]).filter(".good"), (x) -> x.value)
       ["yes"])
   describe "can filter by Property value", ->
     expectStreamEvents(
       ->
         src = series(1, [1,1,2,3,4,4,8,7])
-        odd = src.map((x) -> x % 2).toProperty()
+        odd = map(src, (x) -> x % 2).toProperty()
         src.filter(odd)
       [1,1,3,7])
   it "toString", ->

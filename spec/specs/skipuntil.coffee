@@ -1,4 +1,4 @@
-# build-dependencies: map, filter
+# build-dependencies: filter
 #
 describe "EventStream.skipUntil", ->
   describe "skips events until one appears in given starter stream", ->
@@ -20,7 +20,7 @@ describe "EventStream.skipUntil", ->
     expectStreamEvents(
       ->
         src = series(3, [1,2,3])
-        data = src.map((x) -> x)
+        data = map(src, (x) -> x)
         data.onValue(->)
         starter = src.filter((x) -> x == 3)
         data.skipUntil(starter)
