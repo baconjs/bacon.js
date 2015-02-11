@@ -160,3 +160,57 @@ mergeAll = Bacon.mergeAll || (streams...) ->
       new Bacon.CompositeUnsubscribe(sinks).unsubscribe
   else
     Bacon.never()
+
+testSideEffects = (wrapper, method) ->
+  ->
+    it "(f) calls function with property value", ->
+      f = mockFunction()
+      wrapper("kaboom")[method](f)
+      f.verify("kaboom")
+    it "(f, param) calls function, partially applied with param", ->
+      f = mockFunction()
+      wrapper("kaboom")[method](f, "pow")
+      f.verify("pow", "kaboom")
+    it "('.method') calls event value object method", ->
+      value = mock("get")
+      value.when().get().thenReturn("pow")
+      wrapper(value)[method](".get")
+      value.verify().get()
+    it "('.method', param) calls event value object method with param", ->
+      value = mock("get")
+      value.when().get("value").thenReturn("pow")
+      wrapper(value)[method](".get", "value")
+      value.verify().get("value")
+    it "(object, method) calls object method with property value", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow")
+      target.verify().pow("kaboom")
+    it "(object, method, param) partially applies object method with param", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow", "smack")
+      target.verify().pow("smack", "kaboom")
+    it "(object, method, param1, param2) partially applies with 2 args", ->
+      target = mock("pow")
+      wrapper("kaboom")[method](target, "pow", "smack", "whack")
+      target.verify().pow("smack", "whack", "kaboom")
+endlessly = (values...) ->
+  index = 0
+  Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
+
+Bacon.fromGenerator = (generator) ->
+  fromBinder (sink) ->
+    unsubd = false
+    push = (events) ->
+      events = Bacon._.toArray(events)
+      for event in events
+        return if unsubd
+        reply = sink event
+        return if event.isEnd() or reply == Bacon.noMore
+      generator(push)
+    push []
+    -> unsubd = true
+
+Bacon.fromSynchronousGenerator = (generator) ->
+  Bacon.fromGenerator (push) ->
+    push generator()
+

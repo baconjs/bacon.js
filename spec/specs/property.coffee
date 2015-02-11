@@ -55,3 +55,26 @@ describe "Property.changes", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3]).toProperty(0).changes()
       [1, 2, 3])
+
+describe "Observable.onValues", ->
+  it "splits value array to callback arguments", ->
+    f = mockFunction()
+    Bacon.constant([1,2,3]).onValues(f)
+    f.verify(1,2,3)
+
+describe "Property.assign", ->
+  it "calls given objects given method with property values", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").assign(target, "pow")
+    target.verify().pow("kaboom")
+  it "allows partial application of method (i.e. adding fixed args)", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").assign(target, "pow", "smack")
+    target.verify().pow("smack", "kaboom")
+  it "allows partial application of method with 2 args (i.e. adding fixed args)", ->
+    target = mock("pow")
+    Bacon.constant("kaboom").assign(target, "pow", "smack", "whack")
+    target.verify().pow("smack", "whack", "kaboom")
+
+describe "Property.onValue", testSideEffects(Bacon.constant, "onValue")
+describe "Property.assign", testSideEffects(Bacon.constant, "assign")

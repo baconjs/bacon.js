@@ -1,3 +1,5 @@
+# build-dependencies: _
+
 eventIdCounter = 0
 
 class Event
