@@ -97,7 +97,7 @@ For [bower](https://github.com/twitter/bower) users:
 Both minified and unminified versions available on [cdnjs](https://cdnjs.com/libraries/bacon.js).
 
 Starting from 0.7.45, you can build your own Bacon.js bundle with selected features
-only. See instructions [here](#Build).
+only. See instructions [here](#build).
 
 Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
@@ -1702,7 +1702,7 @@ You can also build a bundle with selected features only. For instance
 
     ./build flatmap combine takeuntil
 
-The build system will go its best to determine the dependencies of the selected
+The build system will do its best to determine the dependencies of the selected
 features and include those into the bundle too. You can also test the integrity
 of the bundle with your selected features using
 
