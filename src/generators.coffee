@@ -1,5 +1,25 @@
 # build-dependencies: factories, _, event
 
+Bacon.fromStreamGenerator = (generator) ->
+  Bacon.fromBinder (sink) ->
+    unsub = ->
+    empty = true
+    handleEvent = (event) ->
+      if event.isEnd()
+        if empty
+          sink endEvent()
+        else
+          empty = true
+          subscribeNext()
+      else
+        empty = false
+        sink event
+    subscribeNext = ->
+      next = generator()
+      unsub = next.subscribeInternal(handleEvent)
+    subscribeNext()
+    -> unsub()
+
 Bacon.fromGenerator = (generator) ->
   Bacon.fromBinder (sink) ->
     unsubd = false
