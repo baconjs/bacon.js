@@ -1,3 +1,7 @@
+## 0.7.46
+
+- Fix #506: smarter method lookup in Bacon.fromEvent
+
 ## 0.7.45
 
 - Fix #543: holdWhen with array values
