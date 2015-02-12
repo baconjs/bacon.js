@@ -1,3 +1,7 @@
+## 0.7.47
+
+- Fix #541: stack overflow with Bacon.retry
+
 ## 0.7.46
 
 - Fix #506: smarter method lookup in Bacon.fromEvent
