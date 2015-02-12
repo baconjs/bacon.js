@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.46';
+  Bacon.version = '0.7.47';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2973,8 +2973,35 @@
     return this;
   };
 
+  Bacon.fromStreamGenerator = function(generator) {
+    return Bacon.fromBinder(function(sink) {
+      var handleEvent, subscribeNext, unsub;
+      unsub = function() {};
+      handleEvent = function(event) {
+        if (event.isEnd()) {
+          return subscribeNext();
+        } else {
+          return sink(event);
+        }
+      };
+      subscribeNext = function() {
+        var next;
+        next = generator();
+        if (next) {
+          return unsub = next.subscribeInternal(handleEvent);
+        } else {
+          return sink(endEvent());
+        }
+      };
+      subscribeNext();
+      return function() {
+        return unsub();
+      };
+    });
+  };
+
   Bacon.retry = function(options) {
-    var delay, isRetryable, maxRetries, retries, retry, source;
+    var delay, error, finished, isRetryable, maxRetries, retries, source;
     if (!_.isFunction(options.source)) {
       throw new Exception("'source' option has to be a function");
     }
@@ -2987,28 +3014,43 @@
     isRetryable = options.isRetryable || function() {
       return true;
     };
-    retry = function(context) {
-      var delayedRetry, nextAttemptOptions;
-      nextAttemptOptions = {
-        source: source,
-        retries: retries - 1,
-        maxRetries: maxRetries,
-        delay: delay,
-        isRetryable: isRetryable
-      };
-      delayedRetry = function() {
-        return Bacon.retry(nextAttemptOptions);
-      };
-      return Bacon.later(delay(context)).filter(false).concat(Bacon.once().flatMap(delayedRetry));
-    };
-    return withDescription(Bacon, "retry", options, source().flatMapError(function(e) {
-      if (isRetryable(e) && retries > 0) {
-        return retry({
-          error: e,
-          retriesDone: maxRetries - retries
-        });
+    finished = false;
+    error = null;
+    return withDescription(Bacon, "retry", options, Bacon.fromStreamGenerator(function() {
+      var context, pause, valueStream;
+      if (finished) {
+        return null;
       } else {
-        return Bacon.once(new Error(e));
+        valueStream = function() {
+          return source().endOnError().withHandler(function(event) {
+            if (event.isError()) {
+              error = event;
+              if (isRetryable(error.error) && retries > 0) {
+
+              } else {
+                finished = true;
+                return this.push(event);
+              }
+            } else {
+              if (event.hasValue()) {
+                error = null;
+                finished = true;
+              }
+              return this.push(event);
+            }
+          });
+        };
+        if (error) {
+          context = {
+            error: error.error,
+            retriesDone: maxRetries - retries
+          };
+          pause = Bacon.later(delay(context)).filter(false);
+          retries = retries - 1;
+          return pause.concat(Bacon.once().flatMap(valueStream));
+        } else {
+          return valueStream();
+        }
       }
     }));
   };
