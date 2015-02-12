@@ -17,7 +17,11 @@ expectError = (errorText, f) ->
 
 endlessly = (values...) ->
   index = 0
-  Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
+  reply = Bacon.more
+  fromBinder (sink) ->
+    while reply != Bacon.noMore
+      reply = sink(new Bacon.Next(-> values[index++ % values.length]))
+    -> reply = Bacon.noMore
 
 lessThan = (limit) ->
   (x) -> x < limit

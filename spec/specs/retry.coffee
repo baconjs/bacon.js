@@ -71,6 +71,13 @@ describe "Bacon.retry", ->
     Bacon.retry({source, interval, retries: 1}).onValue -> # noop
     expect(calls).to.equal 1
     done()
+  describe "no stack overflows", ->
+    expectStreamEvents(
+      ->
+        source = -> Bacon.once(new Bacon.Error())
+        interval = -> 1
+        Bacon.retry({source, interval, retries: 1000})
+      [error()])
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
   it "toString", ->

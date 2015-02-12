@@ -1,4 +1,4 @@
-# build-dependencies: take, concat, flatmap
+# build-dependencies: take, concat, flatmap, fromgenerator
 
 describe "Bacon.fromStreamGenerator", ->
   describe "Polls new streams from generator function until empty result", ->
@@ -9,8 +9,6 @@ describe "Bacon.fromStreamGenerator", ->
           count++
           if count <= 3
             later(1, count)
-          else
-            Bacon.never()
       [1,2,3])
   describe "Works with synchronous streams", ->
     expectStreamEvents(
@@ -20,8 +18,6 @@ describe "Bacon.fromStreamGenerator", ->
           count++
           if count <= 3
             Bacon.once(count)
-          else
-            Bacon.never()
       [1,2,3], unstable)
   describe "Works with endless asynchronous generators", ->
     expectStreamEvents(
@@ -44,25 +40,4 @@ describe "Bacon.fromStreamGenerator", ->
         take(3, Bacon.fromStreamGenerator(-> Bacon.once(1)))
       [1,1,1], unstable)
 
-describe "Infinite synchronous sequences", ->
-  describe "Limiting length with take(n)", ->
-    expectStreamEvents(
-      -> endlessly(1,2,3).take(4)
-      [1,2,3,1], unstable)
-    expectStreamEvents(
-      -> endlessly(1,2,3).take(4).concat(Bacon.once(5))
-      [1,2,3,1,5], unstable)
-    expectStreamEvents(
-      -> endlessly(1,2,3).take(4).concat(endlessly(5, 6).take(2))
-      [1,2,3,1,5,6], unstable)
-  describe "With flatMap", ->
-    expectStreamEvents(
-      -> fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
-      [1,1], unstable)
-    expectStreamEvents(
-      -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
-      [1,1], unstable)
 
-endlessly = (values...) ->
-  index = 0
-  Bacon.fromSynchronousGenerator -> new Bacon.Next(-> values[index++ % values.length])
