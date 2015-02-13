@@ -1,19 +1,3 @@
-t = @t = (time) -> time
-seqs = []
-waitMs = 100
-
-browser = (typeof window == "object")
-if browser
-  console.log("Running in browser, narrowing test set")
-
-error = (msg) -> new Bacon.Error(msg)
-soon = (f) -> setTimeout f, t(1)
-series = (interval, values) ->
-  sequentially(t(interval), values)
-repeat = (interval, values) ->
-  source = repeatedly(t(interval), values)
-  seqs.push({ values : values, source : source })
-  source
 
 atGivenTimes = (timesAndValues) ->
   startTime = Bacon.scheduler.now()
@@ -35,6 +19,11 @@ atGivenTimes = (timesAndValues) ->
     schedule(0, 0)
     ->
       shouldStop = true
+
+
+browser = (typeof window == "object")
+if browser
+  console.log("Running in browser, narrowing test set")
 
 expectStreamTimings = (src, expectedEventsAndTimings, options) ->
   srcWithRelativeTime = () ->
@@ -250,11 +239,6 @@ verifyFinalState = (property, value) ->
   property.subscribe (event) ->
     events.push(event)
   expect(toValues(events)).to.deep.equal(toValues([value, "<end>"]))
-
-verifyCleanup = ->
-  for seq in seqs
-    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
-  seqs = []
 
 toValues = (xs) ->
   values = []

@@ -198,3 +198,22 @@ testSideEffects = (wrapper, method) ->
       wrapper("kaboom")[method](target, "pow", "smack", "whack")
       target.verify().pow("smack", "whack", "kaboom")
 
+t = @t = (time) -> time
+seqs = []
+
+verifyCleanup = ->
+  for seq in seqs
+    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
+  seqs = []
+
+error = (msg) -> new Bacon.Error(msg)
+soon = (f) -> setTimeout f, t(1)
+series = (interval, values) ->
+  sequentially(t(interval), values)
+
+regSrc = (source, values) ->
+  seqs.push({ values, source })
+  source
+
+repeat = (interval, values) ->
+  regSrc repeatedly(t(interval), values)
