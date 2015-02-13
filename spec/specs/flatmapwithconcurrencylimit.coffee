@@ -2,12 +2,12 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
   describe "limits the number of concurrently active spawned streams by queuing", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMapWithConcurrencyLimit(1, (value) ->
-        sequentially(t(2), [value, error(), value]))
+        series(t(2), [value, error(), value]))
       [1, error(), 1, 2, error(), 2], unstable)
   describe "works with n=2", ->
     expectStreamEvents(
       -> series(1, [1,2,3]).flatMapWithConcurrencyLimit(2, (value) ->
-        sequentially(t(2), [value, value]))
+        series(t(2), [value, value]))
       [1, 2, 1, 2, 3, 3])
   describe "Respects function construction rules", ->
     expectStreamEvents(

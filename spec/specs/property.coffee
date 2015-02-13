@@ -49,7 +49,7 @@ describe "Property.changes", ->
   describe "sends property change events", ->
     expectStreamEvents(
       ->
-        p = sequentially(1, ["b", new Bacon.Error()]).toProperty("a").changes()
+        p = series(1, ["b", new Bacon.Error()]).toProperty("a").changes()
       ["b", error()])
   describe "works with synchronous source", ->
     expectStreamEvents(

@@ -434,7 +434,7 @@ describe "Integration tests", ->
       expectStreamEvents(
         ->
           bus = new Bacon.Bus()
-          root = sequentially(1, [1,2]).toProperty()
+          root = series(1, [1,2]).toProperty()
           root.subscribe (event) ->
           outdatedChild = root.filter((x) -> x == 1).map((x) -> x)
           outdatedChild.onValue(->) # sets value but will be outdated at value 2

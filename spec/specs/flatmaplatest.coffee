@@ -4,7 +4,7 @@ describe "EventStream.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
       -> series(3, [1, 2]).flatMapLatest (value) ->
-        sequentially(t(2), [value, error(), value])
+        series(t(2), [value, error(), value])
       [1, 2, error(), 2], unstable)
   describe "Accepts a constant EventStream/Property as an alternative to a function", ->
     expectStreamEvents(
@@ -24,7 +24,7 @@ describe "Property.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
       -> series(3, [1, 2]).toProperty(0).flatMapLatest (value) ->
-        sequentially(t(2), [value, value])
+        series(t(2), [value, value])
       [0, 1, 2, 2], unstable)
   describe "Accepts a constant EventStream/Property as an alternative to a function", ->
     expectStreamEvents(

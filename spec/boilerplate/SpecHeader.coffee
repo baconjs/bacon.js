@@ -206,14 +206,15 @@ verifyCleanup = ->
     expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
   seqs = []
 
-error = (msg) -> new Bacon.Error(msg)
-soon = (f) -> setTimeout f, t(1)
-series = (interval, values) ->
-  sequentially(t(interval), values)
-
-regSrc = (source, values) ->
-  seqs.push({ values, source })
+regSrc = (source) ->
+  seqs.push { source }
   source
+
+series = (interval, values) ->
+  regSrc sequentially(t(interval), values)
 
 repeat = (interval, values) ->
   regSrc repeatedly(t(interval), values)
+
+error = (msg) -> new Bacon.Error(msg)
+soon = (f) -> setTimeout f, t(1)

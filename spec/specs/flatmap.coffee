@@ -4,7 +4,7 @@ describe "EventStream.flatMap", ->
   describe "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->
-        sequentially(t(2), [value, error(), value])
+        series(t(2), [value, error(), value])
       [1, 2, error(), error(), 1, 2], unstable)
   describe "should pass source errors through to the result", ->
     expectStreamEvents(
