@@ -52,6 +52,13 @@ describe "EventStream.takeUntil", ->
         stopper = Bacon.once("stop")
         src.takeUntil(stopper)
       [])
+  describe "ends immediately with endless synchronous stopper", ->
+    expectStreamEvents(
+      ->
+        src = repeat(3, [1, 2, 3])
+        stopper = endlessly(["stop"])
+        src.takeUntil(stopper)
+      [])
   describe "ends properly with a never-ending stopper", ->
     expectStreamEvents(
       ->
