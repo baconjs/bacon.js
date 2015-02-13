@@ -2,17 +2,26 @@
 
 Bacon.fromStreamGenerator = (generator) ->
   Bacon.fromBinder (sink) ->
+    flag = false # signal flag used to eliminate recursion on synchronous responses
+    reply = Bacon.more
     unsub = ->
     handleEvent = (event) ->
       if event.isEnd()
-        subscribeNext()
+        if !flag
+          flag = true
+        else
+          subscribeNext()
       else
-        sink event
+        reply = sink event
     subscribeNext = ->
-      next = generator()
-      if next
-        unsub = next.subscribeInternal(handleEvent)
-      else
-        sink endEvent()
+      flag = true
+      while flag and reply != Bacon.noMore
+        next = generator()
+        flag = false
+        if next
+          unsub = next.subscribeInternal(handleEvent)
+        else
+          sink endEvent()
+      flag = true
     subscribeNext()
     -> unsub()

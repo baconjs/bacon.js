@@ -1,4 +1,4 @@
-# build-dependencies: take, concat, flatmap, fromgenerator
+# build-dependencies: take, concat, flatmap, fromgenerator, filter
 
 describe "Bacon.fromStreamGenerator", ->
   describe "Polls new streams from generator function until empty result", ->
@@ -24,6 +24,11 @@ describe "Bacon.fromStreamGenerator", ->
       ->
         take(3, Bacon.fromStreamGenerator(-> later(0, 1)))
       [1,1,1])
+  describe "No stackoverflow", ->
+    expectStreamEvents(
+      ->
+        take(3000, Bacon.fromStreamGenerator(-> Bacon.once(1))).filter(false)
+      [])
   describe "Works with endless asynchronous streams", ->
     expectStreamEvents(
       ->
