@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.47';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1141,6 +1141,8 @@
       unsub = subscription(this.unsubscribe, unsubMe);
       if (!(this.unsubscribed || ended)) {
         this.subscriptions.push(unsub);
+      } else {
+        unsub();
       }
       _.remove(subscription, this.starting);
       return unsub;
@@ -2975,23 +2977,34 @@
 
   Bacon.fromStreamGenerator = function(generator) {
     return Bacon.fromBinder(function(sink) {
-      var handleEvent, subscribeNext, unsub;
+      var flag, handleEvent, reply, subscribeNext, unsub;
+      flag = false;
+      reply = Bacon.more;
       unsub = function() {};
       handleEvent = function(event) {
         if (event.isEnd()) {
-          return subscribeNext();
+          if (!flag) {
+            return flag = true;
+          } else {
+            return subscribeNext();
+          }
         } else {
-          return sink(event);
+          return reply = sink(event);
         }
       };
       subscribeNext = function() {
         var next;
-        next = generator();
-        if (next) {
-          return unsub = next.subscribeInternal(handleEvent);
-        } else {
-          return sink(endEvent());
+        flag = true;
+        while (flag && reply !== Bacon.noMore) {
+          next = generator();
+          flag = false;
+          if (next) {
+            unsub = next.subscribeInternal(handleEvent);
+          } else {
+            sink(endEvent());
+          }
         }
+        return flag = true;
       };
       subscribeNext();
       return function() {
