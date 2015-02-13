@@ -15,7 +15,10 @@ class CompositeUnsubscribe
       @remove unsub
       _.remove subscription, @starting
     unsub = subscription @unsubscribe, unsubMe
-    @subscriptions.push unsub unless (@unsubscribed or ended)
+    unless (@unsubscribed or ended)
+      @subscriptions.push unsub
+    else
+      unsub()
     _.remove subscription, @starting
     unsub
   remove: (unsub) ->
