@@ -1,12 +1,12 @@
 # build-dependencies: core
 # build-dependencies: addpropertyinitialvaluetostream
 # build-dependencies: mapend
-# build-dependencies: skiperrors
+# build-dependencies: skiperrors, take
 # build-dependencies: groupsimultaneous
 
 Bacon.EventStream :: takeUntil = (stopper) ->
   endMarker = {}
-  withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.skipErrors())
+  withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.take(1).skipErrors())
     .withHandler((event) ->
       unless event.hasValue()
         @push event
