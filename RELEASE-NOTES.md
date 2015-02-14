@@ -1,3 +1,7 @@
+## 0.7.48
+
+- Fix stack overflow with synchronous sources in Bacon.fromStreamGenerator
+
 ## 0.7.47
 
 - Fix #541: stack overflow with Bacon.retry
