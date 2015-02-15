@@ -19,6 +19,11 @@ describe "Bacon.repeat", ->
           if count <= 3
             Bacon.once(count)
       [1,2,3], unstable)
+  describe "Provides generator function with index", ->
+    expectStreamEvents(
+      ->
+        take(3, Bacon.repeat((x) -> later(0, x)))
+      [0,1,2])
   describe "Works with endless asynchronous generators", ->
     expectStreamEvents(
       ->

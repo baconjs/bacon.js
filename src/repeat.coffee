@@ -1,6 +1,7 @@
 # build-dependencies: factories, _, event
 
 Bacon.repeat = (generator) ->
+  index = 0
   Bacon.fromBinder (sink) ->
     flag = false # signal flag used to eliminate recursion on synchronous responses
     reply = Bacon.more
@@ -16,7 +17,7 @@ Bacon.repeat = (generator) ->
     subscribeNext = ->
       flag = true
       while flag and reply != Bacon.noMore
-        next = generator()
+        next = generator(index++)
         flag = false
         if next
           unsub = next.subscribeInternal(handleEvent)
