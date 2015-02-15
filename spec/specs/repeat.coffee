@@ -1,11 +1,11 @@
 # build-dependencies: take, concat, flatmap, fromgenerator, filter
 
-describe "Bacon.fromStreamGenerator", ->
+describe "Bacon.repeat", ->
   describe "Polls new streams from generator function until empty result", ->
     expectStreamEvents(
       ->
         count = 0
-        Bacon.fromStreamGenerator ->
+        Bacon.repeat ->
           count++
           if count <= 3
             later(1, count)
@@ -14,7 +14,7 @@ describe "Bacon.fromStreamGenerator", ->
     expectStreamEvents(
       ->
         count = 0
-        Bacon.fromStreamGenerator ->
+        Bacon.repeat ->
           count++
           if count <= 3
             Bacon.once(count)
@@ -22,27 +22,27 @@ describe "Bacon.fromStreamGenerator", ->
   describe "Works with endless asynchronous generators", ->
     expectStreamEvents(
       ->
-        take(3, Bacon.fromStreamGenerator(-> later(0, 1)))
+        take(3, Bacon.repeat(-> later(0, 1)))
       [1,1,1])
   describe "No stackoverflow", ->
     expectStreamEvents(
       ->
-        take(3000, Bacon.fromStreamGenerator(-> Bacon.once(1))).filter(false)
+        take(3000, Bacon.repeat(-> Bacon.once(1))).filter(false)
       [])
   describe "Works with endless asynchronous streams", ->
     expectStreamEvents(
       ->
-        take(3, Bacon.fromStreamGenerator(-> repeatedly(1, [1])))
+        take(3, Bacon.repeat(-> repeatedly(1, [1])))
       [1,1,1])
   describe "Works with endless synchronous streams", ->
     expectStreamEvents(
       ->
-        take(3, Bacon.fromStreamGenerator(-> endlessly(1)))
+        take(3, Bacon.repeat(-> endlessly(1)))
       [1,1,1])
   describe "Works with endless synchronous generators", ->
     expectStreamEvents(
       ->
-        take(3, Bacon.fromStreamGenerator(-> Bacon.once(1)))
+        take(3, Bacon.repeat(-> Bacon.once(1)))
       [1,1,1], unstable)
 
 

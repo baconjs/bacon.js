@@ -1,4 +1,4 @@
-# build-dependencies: flatmap, scheduled, filter, fromstreamgenerator, endonerror
+# build-dependencies: flatmap, scheduled, filter, repeat, endonerror
 
 Bacon.retry = (options) ->
   throw new Exception("'source' option has to be a function") unless _.isFunction(options.source)
@@ -10,7 +10,7 @@ Bacon.retry = (options) ->
 
   finished = false
   error = null
-  withDescription Bacon, "retry", options, Bacon.fromStreamGenerator ->
+  withDescription Bacon, "retry", options, Bacon.repeat ->
     if finished
       null # end it
     else

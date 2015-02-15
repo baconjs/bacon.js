@@ -1,6 +1,6 @@
 # build-dependencies: factories, _, event
 
-Bacon.fromStreamGenerator = (generator) ->
+Bacon.repeat = (generator) ->
   Bacon.fromBinder (sink) ->
     flag = false # signal flag used to eliminate recursion on synchronous responses
     reply = Bacon.more

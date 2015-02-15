@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.48';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2975,7 +2975,7 @@
     return this;
   };
 
-  Bacon.fromStreamGenerator = function(generator) {
+  Bacon.repeat = function(generator) {
     return Bacon.fromBinder(function(sink) {
       var flag, handleEvent, reply, subscribeNext, unsub;
       flag = false;
@@ -3029,7 +3029,7 @@
     };
     finished = false;
     error = null;
-    return withDescription(Bacon, "retry", options, Bacon.fromStreamGenerator(function() {
+    return withDescription(Bacon, "retry", options, Bacon.repeat(function() {
       var context, pause, valueStream;
       if (finished) {
         return null;
