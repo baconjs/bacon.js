@@ -1,3 +1,7 @@
+## 0.7.49
+
+- Introduce Bacon.repeat(fn)
+
 ## 0.7.48
 
 - Fix stack overflow with synchronous sources in Bacon.fromStreamGenerator
