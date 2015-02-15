@@ -1,6 +1,6 @@
 ## 0.7.49
 
-- Introduce Bacon.repeat(fn)
+- Introduce Bacon.repeat(fn), previously known as Bacon.fromStreamGenerator
 
 ## 0.7.48
 
