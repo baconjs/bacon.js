@@ -272,6 +272,31 @@ with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
 would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
 """
 
+doc.fn "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]", """
+Calls generator function which is expected to return an observable. The returned EventStream contains 
+values and errors from the spawned observable. When the spawned observable ends, the generator is called 
+again to spawn a new observable. 
+
+This is repeated until the generator returns a falsy value 
+(such as `undefined` or `false`).
+
+The generator function is called with one argument — iteration number starting from `0`.
+
+Here's an example:
+
+```js
+Bacon.repeat(function(i) {
+  if (i < 3) {
+    return Bacon.once(i);
+  } else {
+    return false;
+  }
+}).log()
+```
+
+The example will produce values 0, 1 and 2.
+"""
+
 doc.fn "Bacon.never() : EventStream", """
 creates an EventStream that immediately ends.
 """
