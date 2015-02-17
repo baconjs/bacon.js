@@ -627,10 +627,16 @@ The [Function Construction rules](#function-construction-rules) below apply here
 """
 
 doc.fn "observable.flatMapFirst(f)", """
-like flatMap, but only spawns a new
+like `flatMap`, but only spawns a new
 stream if the previously spawned stream has ended.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
+"""
+
+doc.fn "observable.flatMapError(f)", """
+like `flatMap`, but is applied only on [`Error`](#bacon-error) events. Returned values go into the
+value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
+passed through, which can be implemented using flatMapError.
 """
 
 doc.fn "observable.flatMapWithConcurrencyLimit(@ : Observable[A], limit : Number, f : A -> Observable[B] | Event[B] | B) : EventStream[B]", """
@@ -1446,6 +1452,14 @@ stream = Bacon.fromArray([1,2,3,4]).flatMap(function(x) {
     return new Bacon.Error("too big")
   else
     return x
+})
+```
+
+Conversely, if you want to convert some [`Error`](#bacon-error) events into value events, you may use `flatMapError`:
+
+```js
+myStream.flatMapError(function(error) {
+  return isNonCriticalError(error) ? handleNonCriticalError(error) : new Bacon.Error(error)
 })
 ```
 

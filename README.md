@@ -624,10 +624,15 @@ Note that instead of a function, you can provide a stream/property too.
 The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="observable-flatmapfirst"></a>
-[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like flatMap, but only spawns a new
+[`observable.flatMapFirst(f)`](#observable-flatmapfirst "observable.flatMapFirst(f)") like [`flatMap`](#observable-flatmap), but only spawns a new
 stream if the previously spawned stream has ended.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
+
+<a name="observable-flatmaperror"></a>
+[`observable.flatMapError(f)`](#observable-flatmaperror "observable.flatMapError(f)") like [`flatMap`](#observable-flatmap), but is applied only on [`Error`](#bacon-error) events. Returned values go into the
+value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
+passed through, which can be implemented using flatMapError.
 
 <a name="observable-flatmapwithconcurrencylimit"></a>
 [`observable.flatMapWithConcurrencyLimit(limit, f)`](#observable-flatmapwithconcurrencylimit "observable.flatMapWithConcurrencyLimit(@ : Observable[A], limit : Number, f : A -> Observable[B] | Event[B] | B) : EventStream[B]") a super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
@@ -1370,7 +1375,7 @@ as well as all the spawned stream.
 You can take action on errors by using the [`observable.onError(f)`](#observable-onerror)
 callback.
 
-See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors), [`Bacon.retry`](#bacon-retry) and `flatMapError` above.
+See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors), [`Bacon.retry`](#bacon-retry) and [`flatMapError`](#observable-flatmaperror) above.
 
 In case you want to convert (some) value events into [`Error`](#bacon-error) events, you may use [`flatMap`](#observable-flatmap) like this:
 
@@ -1380,6 +1385,14 @@ stream = Bacon.fromArray([1,2,3,4]).flatMap(function(x) {
     return new Bacon.Error("too big")
   else
     return x
+})
+```
+
+Conversely, if you want to convert some [`Error`](#bacon-error) events into value events, you may use [`flatMapError`](#observable-flatmaperror):
+
+```js
+myStream.flatMapError(function(error) {
+  return isNonCriticalError(error) ? handleNonCriticalError(error) : new Bacon.Error(error)
 })
 ```
 
