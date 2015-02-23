@@ -212,14 +212,14 @@ $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 This stream will contain a single value or an error, followed immediately by stream end.  You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 
-<a name="bacon-fromeventtarget"></a>
-[`Bacon.fromEventTarget(target, eventName [, eventTransformer])`](#bacon-fromeventtarget "Bacon.fromEventTarget(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream") creates an EventStream from events
+<a name="bacon-fromevent"></a>
+[`Bacon.fromEvent(target, eventName [, eventTransformer])`](#bacon-fromevent "Bacon.fromEvent(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream") creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
 You can also pass an optional function that transforms the emitted
 events' parameters.
 
 ```js
-Bacon.fromEventTarget(document.body, "click").onValue(function() { alert("Bacon!") })
+Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
 ```
 
 <a name="bacon-fromcallback"></a>

@@ -173,14 +173,14 @@ This stream will contain a single value or an error, followed immediately by str
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 """
 
-doc.fn "Bacon.fromEventTarget(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream", """
+doc.fn "Bacon.fromEvent(target : EventTarget | EventEmitter, eventName : String [, eventTransformer]) : EventStream", """
 creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
 You can also pass an optional function that transforms the emitted
 events' parameters.
 
 ```js
-Bacon.fromEventTarget(document.body, "click").onValue(function() { alert("Bacon!") })
+Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
 ```
 """
 
