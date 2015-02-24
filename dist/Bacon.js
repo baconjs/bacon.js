@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.50';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1843,47 +1843,6 @@
 
   Bacon.fromEvent = Bacon.fromEventTarget;
 
-  Bacon.once = function(value) {
-    return new EventStream(describe(Bacon, "once", value), function(sink) {
-      sink(toEvent(value));
-      sink(endEvent());
-      return nop;
-    });
-  };
-
-  Bacon.fromArray = function(values) {
-    var i;
-    assertArray(values);
-    if (!values.length) {
-      return withDescription(Bacon, "fromArray", values, Bacon.never());
-    } else {
-      i = 0;
-      return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-        var push, reply, unsubd;
-        unsubd = false;
-        reply = Bacon.more;
-        push = function() {
-          var value;
-          if ((reply !== Bacon.noMore) && !unsubd) {
-            value = values[i++];
-            reply = sink(toEvent(value));
-            if (reply !== Bacon.noMore) {
-              if (i === values.length) {
-                return sink(endEvent());
-              } else {
-                return UpdateBarrier.afterTransaction(push);
-              }
-            }
-          }
-        };
-        push();
-        return function() {
-          return unsubd = true;
-        };
-      });
-    }
-  };
-
   Bacon.Observable.prototype.map = function() {
     var args, p;
     p = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -2204,6 +2163,14 @@
           return Bacon.more;
         }
       }));
+    });
+  };
+
+  Bacon.once = function(value) {
+    return new EventStream(describe(Bacon, "once", value), function(sink) {
+      sink(toEvent(value));
+      sink(endEvent());
+      return nop;
     });
   };
 
@@ -2928,6 +2895,39 @@
         }
       }
     }));
+  };
+
+  Bacon.fromArray = function(values) {
+    var i;
+    assertArray(values);
+    if (!values.length) {
+      return withDescription(Bacon, "fromArray", values, Bacon.never());
+    } else {
+      i = 0;
+      return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
+        var push, reply, unsubd;
+        unsubd = false;
+        reply = Bacon.more;
+        push = function() {
+          var value;
+          if ((reply !== Bacon.noMore) && !unsubd) {
+            value = values[i++];
+            reply = sink(toEvent(value));
+            if (reply !== Bacon.noMore) {
+              if (i === values.length) {
+                return sink(endEvent());
+              } else {
+                return UpdateBarrier.afterTransaction(push);
+              }
+            }
+          }
+        };
+        push();
+        return function() {
+          return unsubd = true;
+        };
+      });
+    }
   };
 
   Bacon.EventStream.prototype.holdWhen = function(valve) {
