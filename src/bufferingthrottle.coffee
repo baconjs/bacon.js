@@ -1,4 +1,4 @@
-# build-dependencies: filter, property
+# build-dependencies: filter, property, once
 # build-dependencies: concat
 # build-dependencies: flatmapconcat, scheduled
 

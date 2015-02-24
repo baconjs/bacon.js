@@ -26,6 +26,7 @@
 # build-dependencies: maperror
 # build-dependencies: mapend
 # build-dependencies: merge
+# build-dependencies: once
 # build-dependencies: retry
 # build-dependencies: sample
 # build-dependencies: scan

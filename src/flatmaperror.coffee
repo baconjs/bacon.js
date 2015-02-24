@@ -1,4 +1,4 @@
-# build-dependencies: flatmap, maperror
+# build-dependencies: flatmap, maperror, once
 
 Bacon.Observable :: flatMapError = (fn) ->
   withDescription(this, "flatMapError", fn, @mapError((err) -> new Error(err)).flatMap (x) ->

@@ -1,4 +1,4 @@
-# build-dependencies: core, eventstream
+# build-dependencies: core, eventstream, once
 # build-dependencies: functionconstruction
 # build-dependencies: compositeunsubscribe
 

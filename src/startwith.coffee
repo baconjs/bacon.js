@@ -1,4 +1,4 @@
-# build-dependencies: scan, concat
+# build-dependencies: scan, concat, once
 
 Bacon.Property :: startWith = (seed) ->
   withDescription(this, "startWith", seed,

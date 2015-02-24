@@ -69,12 +69,6 @@ Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
 
 Bacon.fromEvent = Bacon.fromEventTarget
 
-Bacon.once = (value) ->
-  new EventStream describe(Bacon, "once", value), (sink) ->
-    sink (toEvent(value))
-    sink (endEvent())
-    nop
-
 Bacon.fromArray = (values) ->
   assertArray values
   if !values.length
