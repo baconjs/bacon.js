@@ -4,12 +4,11 @@ describe "Bacon.Bus", ->
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
     values = []
-    dispose = bus.onValue (value) -> values.push value
+    bus.take(1).onValue (value) -> values.push value
     push = new Bacon.Bus()
     bus.plug(push)
     push.push("lol")
     expect(values).to.deep.equal(["lol"])
-    dispose()
     verifyCleanup()
   describe "works with looped streams", ->
     expectStreamEvents(
@@ -24,7 +23,7 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus()
     bus.plug(later(t(2), "lol"))
     bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
-    dispose = bus.onValue(=>)
+    dispose = bus.subscribe(=>)
     dispose()
   it "Removes input from input list on End event", ->
     subscribed = 0
@@ -36,7 +35,7 @@ describe "Bacon.Bus", ->
       subscribed++
       inputSubscribe.call(input, sink)
     bus.plug(input)
-    dispose = bus.onValue(=>)
+    dispose = bus.subscribe(=>)
     input.end()
     dispose()
     bus.onValue(=>) # this latter subscription should not go to the ended source anymore
@@ -109,7 +108,7 @@ describe "Bacon.Bus", ->
     bus = new Bacon.Bus
     otherBus = new Bacon.Bus
     otherBus.plug(bus)
-    unsub = otherBus.onValue ->
+    unsub = otherBus.subscribe ->
     unsub()
     o = []
     otherBus.onValue (v) -> o.push(v)

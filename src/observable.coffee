@@ -25,6 +25,7 @@ class Observable
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.value() if event.hasValue()
+    this
 
   onValues: (f) ->
     @onValue (args) -> f(args...)
@@ -33,11 +34,13 @@ class Observable
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f event.error if event.isError()
+    this
 
   onEnd: ->
     f = makeFunctionArgs(arguments)
     @subscribe (event) ->
       f() if event.isEnd()
+    this
 
   name: (name) ->
     @_name = name

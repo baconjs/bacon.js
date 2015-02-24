@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.53';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1038,11 +1038,12 @@
     Observable.prototype.onValue = function() {
       var f;
       f = makeFunctionArgs(arguments);
-      return this.subscribe(function(event) {
+      this.subscribe(function(event) {
         if (event.hasValue()) {
           return f(event.value());
         }
       });
+      return this;
     };
 
     Observable.prototype.onValues = function(f) {
@@ -1054,21 +1055,23 @@
     Observable.prototype.onError = function() {
       var f;
       f = makeFunctionArgs(arguments);
-      return this.subscribe(function(event) {
+      this.subscribe(function(event) {
         if (event.isError()) {
           return f(event.error);
         }
       });
+      return this;
     };
 
     Observable.prototype.onEnd = function() {
       var f;
       f = makeFunctionArgs(arguments);
-      return this.subscribe(function(event) {
+      this.subscribe(function(event) {
         if (event.isEnd()) {
           return f();
         }
       });
+      return this;
     };
 
     Observable.prototype.name = function(name) {

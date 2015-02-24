@@ -6,7 +6,7 @@ describe "Bacon.constant", ->
       -> Bacon.constant("lol")
     ["lol"])
   it "ignores unsubscribe", ->
-    Bacon.constant("lol").onValue(=>)()
+    Bacon.constant("lol").subscribe(=>)()
   describe "provides same value to all listeners", ->
     c = Bacon.constant("lol")
     expectPropertyEvents((-> c), ["lol"])

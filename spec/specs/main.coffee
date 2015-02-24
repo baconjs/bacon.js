@@ -195,14 +195,6 @@ describe "Integration tests", ->
       bus.push("bacon")
       expect(values).to.deep.equal(["bacon"])
   describe "Observable.subscribe and onValue", ->
-    it "returns a dispose() for unsubscribing", ->
-      s = new Bacon.Bus()
-      values = []
-      dispose = s.onValue (value) -> values.push value
-      s.push "lol"
-      dispose()
-      s.push "wut"
-      expect(values).to.deep.equal(["lol"])
     it "respects returned Bacon.noMore return value (#523)", ->
       calls = 0
       once(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
