@@ -1,4 +1,4 @@
-# build-dependencies: filter, bus, property, mapend
+# build-dependencies: filter, bus, property, mapend, fromarray
 
 describe "EventStream.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->
