@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.49';
+  Bacon.version = '0.7.50';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2777,9 +2777,14 @@
 
   Bacon.fromPromise = function(promise, abort) {
     return withDescription(Bacon, "fromPromise", promise, Bacon.fromBinder(function(handler) {
-      promise.then(handler, function(e) {
+      var _ref;
+      if ((_ref = promise.then(handler, function(e) {
         return handler(new Error(e));
-      });
+      })) != null) {
+        if (typeof _ref.done === "function") {
+          _ref.done();
+        }
+      }
       return function() {
         if (abort) {
           return typeof promise.abort === "function" ? promise.abort() : void 0;
