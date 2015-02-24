@@ -1,3 +1,7 @@
+## 0.7.50
+
+- Fix #501: Call promise.done() to prevent swallowing exceptions from wrapped Promises
+
 ## 0.7.49
 
 - Introduce Bacon.repeat(fn), previously known as Bacon.fromStreamGenerator
