@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-node assemble.js $@
-./grunt build
+node_modules/.bin/babel-node assemble.js $@

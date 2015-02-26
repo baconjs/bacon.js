@@ -2,52 +2,39 @@ module.exports = (grunt) ->
   grunt.initConfig
     clean:
       dist: ['dist/']
-      coffee: ['dist/*.coffee']
-
-    coffee:
-      compile:
-        expand: true
-        files: [
-          'dist/Bacon.js': 'dist/Bacon.coffee'
-          'dist/Bacon.min.js': 'dist/Bacon.noAssert.coffee'
-        ]
 
     coffeelint:
       bacon: [ 'src/*.coffee' ]
       options:
         configFile: 'coffeelint.json'
 
-    uglify:
-      dist:
-        files:
-          'dist/Bacon.min.js': 'dist/Bacon.min.js'
-
-    replace:
-      asserts:
-        dest: 'dist/Bacon.noAssert.coffee'
-        src: ['dist/Bacon.coffee']
-        replacements: [
-          from: /assert.*/g
-          to: ''
-        ]
+    eslint:
+      bacon: [ 'src/*.js' ]
+      options:
+        configFile: '.eslintrc'
+    shell:
+      build:
+        command: './build'
     watch:
       coffee:
-        files: 'src/*.coffee'
-        tasks: 'build'
+        files: [ 'src/*.coffee' ]
+        tasks: [ 'coffeelint', 'build' ]
+      js:
+        files: [ 'src/*.js' ]
+        tasls: [ 'eslint', 'build' ]
       readme:
         files: 'readme-src.coffee'
         tasks: 'readme'
 
-  grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-clean'
-  grunt.loadNpmTasks 'grunt-contrib-copy'
-  grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-watch'
-  grunt.loadNpmTasks 'grunt-text-replace'
   grunt.loadNpmTasks 'grunt-coffeelint'
+  grunt.loadNpmTasks 'grunt-eslint'
+  grunt.loadNpmTasks 'grunt-shell'
 
-  grunt.registerTask 'build', ['coffeelint', 'replace:asserts', 'coffee', 'uglify', 'clean:coffee']
-  grunt.registerTask 'default', ['build','readme']
+  grunt.registerTask 'build', ['shell:build']
+
+  grunt.registerTask 'default', ['coffeelint', 'eslint', 'build', 'readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
     fs = require 'fs'

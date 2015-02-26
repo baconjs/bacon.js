@@ -700,7 +700,7 @@
         return left[key](right);
       };
     } else {
-      return assert("not a function or a field key: " + f, false);
+      throw new Exception("not a function or a field key: " + f);
     }
   };
 
@@ -3172,18 +3172,6 @@
     });
   };
 
-  Bacon.EventStream.prototype.throttle = function(delay) {
-    return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map(function(values) {
-      return values[values.length - 1];
-    }));
-  };
-
-  Bacon.Property.prototype.throttle = function(delay) {
-    return this.delayChanges("throttle", delay, function(changes) {
-      return changes.throttle(delay);
-    });
-  };
-
   Bacon.update = function() {
     var i, initial, lateBindFirst, patterns;
     initial = arguments[0], patterns = 2 <= arguments.length ? slice.call(arguments, 1) : [];
@@ -3245,7 +3233,21 @@
     return withDescription(this, "zip", other, Bacon.zipWith([this, other], f));
   };
 
-  if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+  
+
+Bacon.EventStream.prototype.throttle = function (delay) {
+  return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map(function (values) {
+    return values[values.length - 1];
+  }));
+};
+
+Bacon.Property.prototype.throttle = function (delay) {
+  return this.delayChanges("throttle", delay, function (changes) {
+    return changes.throttle(delay);
+  });
+};
+
+if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
     define([], function() {
       return Bacon;
     });

@@ -1,8 +1,9 @@
 var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
+var assert = require("assert");
 
-var dependenciesRegex = /#\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/g;
+var dependenciesRegex = /(?:#|\/\/)\s+build\-dependencies\s*:?\s*([a-zA-Z_, \t]*)/g;
 
 function readDeps(contents) {
     var deps = [];
@@ -19,13 +20,19 @@ function readDeps(contents) {
 
 function readPiece(pieceName, dir, pieceCache) {
   if (!pieceCache[pieceName]) {
-    var contents = fs.readFileSync(path.join(dir, pieceName + ".coffee"), "utf-8");
+    var jsPath = path.join(dir, pieceName + ".js");
+    var coffeePath = path.join(dir, pieceName + ".coffee");
+
+    var type = fs.existsSync(jsPath) ? "js" : "coffee";
+    var filepath = type === "js" ? jsPath : coffeePath;
+    var contents = fs.readFileSync(filepath, "utf-8");
 
     // Put in cache
     pieceCache[pieceName] = {
       name: pieceName,
       deps: readDeps(contents),
       contents: contents,
+      type: type,
     };
   }
 
@@ -57,6 +64,19 @@ function resolve(pieceNames, dir, resolving, pieceCache, options) {
 }
 
 module.exports.resolvePieces = function(pieceNames, dir, options) {
-  if (!options) options = { recursive: true }
-  return resolve(pieceNames, dir, [], {}, options)
+  if (!options) options = { recursive: true };
+  return resolve(pieceNames, dir, [], {}, options);
 }
+
+var isCoffeePiece = (piece) => piece.type === "coffee";
+var isJsPiece = (piece) => piece.type === "js";
+
+module.exports.splitPieces = function (pieces) {
+  var coffeePieces = _.chain(pieces).takeWhile(isCoffeePiece).value();
+  var jsPieces = _.chain(pieces).dropWhile(isCoffeePiece).takeWhile(isJsPiece).value();
+  var restPieces = _.chain(pieces).dropWhile(isCoffeePiece).dropWhile(isJsPiece).value();
+
+  assert(restPieces.length === 0, "There shouldn't be coffee pieces after js ones.");
+
+  return [coffeePieces, jsPieces];
+};
