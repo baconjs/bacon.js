@@ -13,7 +13,7 @@ module.exports = (grunt) ->
         ]
 
     coffeelint:
-      bacon: [ 'dist/Bacon.coffee' ]
+      bacon: [ 'src/*.coffee' ]
       options:
         configFile: 'coffeelint.json'
 
