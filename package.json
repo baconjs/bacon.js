@@ -50,6 +50,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-eslint": "^7.0.1",
     "grunt-shell": "^1.1.2",
+    "istanbul": "^0.3.6",
     "jasmine-node": "^1.14.5",
     "jsstana": "^0.1.5",
     "lodash": "^3.3.1",

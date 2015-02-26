@@ -26,3 +26,4 @@ node_modules_good
 coffeelint.json
 .eslintrc
 testing
+coverage

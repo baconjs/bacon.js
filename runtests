@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
 set -e
-./node_modules/.bin/babel-node assemble-specs.js $@
-./node_modules/.bin/mocha --compilers coffee:coffee-script/register spec/BaconSpec.coffee
+BABELNODE=./node_modules/.bin/babel-node
+MOCHA=./node_modules/.bin/_mocha
+ISTANBUL=./node_modules/.bin/istanbul
+
+# Assemble specs
+$BABELNODE assemble-specs.js $@
+
+# Run mocha
+echo $MOCHA
+MOCHARUN="$MOCHA --reporter dot --compilers coffee:coffee-script/register spec/BaconSpec.coffee"
+$MOCHARUN
+
+# Run istanbul
+$ISTANBUL cover -- $MOCHARUN
+$ISTANBUL check-coverage --statements -81 --branches -77 --functions 93 coverage/coverage.json
