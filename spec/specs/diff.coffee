@@ -15,7 +15,7 @@ describe "EventStream.diff", ->
     bus.diff(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).to.deep.equal([])
   it "toString", ->
-    expect(Bacon.once(1).diff(0, (->)).toString()).to.equal("Bacon.once(1).diff(0,function)")
+    expect(Bacon.never().diff(0, (->)).toString()).to.equal("Bacon.never().diff(0,function)")
 
 describe "Property.diff", ->
   describe "with Init value, starts with f(start, init)", ->

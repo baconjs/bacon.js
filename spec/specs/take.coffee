@@ -46,5 +46,5 @@ describe "Property.take(1)", ->
 describe "Bacon.once().take(1)", ->
   describe "works", ->
     expectStreamEvents(
-      -> Bacon.once(1).take(1)
+      -> once(1).take(1)
       [1])

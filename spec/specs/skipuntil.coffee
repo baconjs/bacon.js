@@ -1,4 +1,4 @@
-# build-dependencies: filter
+# build-dependencies: filter, once
 #
 describe "EventStream.skipUntil", ->
   describe "skips events until one appears in given starter stream", ->

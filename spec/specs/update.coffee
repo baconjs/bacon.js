@@ -15,8 +15,8 @@ describe "Bacon.update", ->
   describe "Correctly handles multiple arguments in parameter list, and synchronous sources", ->
     expectPropertyEvents(
       ->
-        one = Bacon.once(1)
-        two = Bacon.once(2)
+        one = once(1)
+        two = once(2)
         Bacon.update(
           0,
           [one, two],  (i, a, b) -> [i,a,b])

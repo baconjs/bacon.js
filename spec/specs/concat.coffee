@@ -28,25 +28,25 @@ describe "EventStream.concat", ->
       [])
   describe "works with Bacon.once()", ->
     expectStreamEvents(
-      -> Bacon.once(2).concat(Bacon.once(1))
+      -> once(2).concat(once(1))
       [2, 1])
   describe "works with Bacon.once() and Bacon.never()", ->
     expectStreamEvents(
-      -> Bacon.once(1).concat(Bacon.never())
+      -> once(1).concat(Bacon.never())
       [1])
   describe "works with Bacon.never() and Bacon.once()", ->
     expectStreamEvents(
-      -> Bacon.never().concat(Bacon.once(1))
+      -> Bacon.never().concat(once(1))
       [1])
   describe "works with Bacon.once() and async source", ->
     expectStreamEvents(
-      -> Bacon.once(1).concat(series(1, [2, 3]))
+      -> once(1).concat(series(1, [2, 3]))
       [1, 2, 3])
   describe "works with Bacon.once() and fromArray()", ->
     expectStreamEvents(
-      -> Bacon.once(1).concat(fromArray([2, 3]))
+      -> once(1).concat(fromArray([2, 3]))
       [1, 2, 3], unstable)
   it "toString", ->
-    expect(Bacon.once(1).concat(Bacon.once(2)).toString()).to.equal("Bacon.once(1).concat(Bacon.once(2))")
+    expect(Bacon.never().concat(Bacon.never()).toString()).to.equal("Bacon.never().concat(Bacon.never())")
 
 

@@ -19,7 +19,7 @@ describe "EventStream.awaiting(other)", ->
         src.map(->).awaiting(src)
       [false])
   it "toString", ->
-    expect(Bacon.never().awaiting(Bacon.once(1)).toString()).to.equal("Bacon.never().awaiting(Bacon.once(1))")
+    expect(Bacon.never().awaiting(Bacon.never()).toString()).to.equal("Bacon.never().awaiting(Bacon.never())")
 
 describe "Property.awaiting(other)", ->
   describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->

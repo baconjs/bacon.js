@@ -57,15 +57,15 @@ describe "EventStream.map", ->
   describe "Field value extraction", ->
     describe "extracts field value", ->
       expectStreamEvents(
-        -> Bacon.once({lol:"wut"}).map(".lol")
+        -> once({lol:"wut"}).map(".lol")
         ["wut"])
     describe "extracts nested field value", ->
       expectStreamEvents(
-        -> Bacon.once({lol:{wut: "wat"}}).map(".lol.wut")
+        -> once({lol:{wut: "wat"}}).map(".lol.wut")
         ["wat"])
     describe "yields 'undefined' if any value on the path is 'undefined'", ->
       expectStreamEvents(
-        -> Bacon.once({}).map(".lol.wut")
+        -> once({}).map(".lol.wut")
         [undefined])
     it "if field value is method, it does a method call", ->
       context = null
@@ -75,7 +75,7 @@ describe "EventStream.map", ->
           context = this
           "result"
       }
-      Bacon.once(object).map(".method").onValue((x) -> result = x)
+      once(object).map(".method").onValue((x) -> result = x)
       expect(result).to.deep.equal("result")
       expect(context).to.deep.equal(object)
 
