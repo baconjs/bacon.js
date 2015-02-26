@@ -24,4 +24,5 @@ update-cdnjs
 version
 node_modules_good
 coffeelint.json
+.eslintrc
 testing

@@ -1,0 +1,13 @@
+{
+  "ecmaFeatures": {
+    "arrowFunctions": true,
+    "objectLiteralShorthandProperties": true
+  },
+  "globals": {
+    "Bacon": true,
+    "withDescription": true
+  },
+  "rules": {
+    "strict": 0
+  }
+}
