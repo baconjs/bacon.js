@@ -49,6 +49,9 @@ var main = function(options){
   }
 
   var [coffeePieces, esPieces] = Deps.splitPieces(pieces);
+  if (options.verbose) {
+    console.info(esPieces.length + " of " + (esPieces.length + coffeePieces.length) + " pieces are JavaScript");
+  }
 
   // Coffee pieces
   var coffeeOutput = [
