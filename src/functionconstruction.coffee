@@ -66,7 +66,7 @@ toCombinator = (f) ->
     (left, right) ->
       left[key](right)
   else
-    assert "not a function or a field key: " + f, false
+    throw new Exception("not a function or a field key: " + f)
 
 toFieldKey = (f) ->
   f.slice(1)
