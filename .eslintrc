@@ -6,6 +6,8 @@
   "globals": {
     "Bacon": true,
     "Observable": true,
+    "Exception": true,
+    "nextEvent": true,
     "endEvent": true,
     "withDescription": true
   },
