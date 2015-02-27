@@ -1,3 +1,7 @@
+## 0.7.51
+
+- Add `toPromise()`, `first()` and `last()` (#509)
+
 ## 0.7.50
 
 - Fix #501: Call promise.done() to prevent swallowing exceptions from wrapped Promises
