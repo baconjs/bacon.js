@@ -3235,6 +3235,26 @@
 
   
 
+Bacon.Observable.prototype.first = function () {
+  return withDescription(this, "first", this.take(1));
+};
+
+Bacon.Observable.prototype.last = function () {
+  var lastEvent;
+
+  return withDescription(this, "last", this.withHandler(function (event) {
+    if (event.isEnd()) {
+      if (lastEvent) {
+        this.push(lastEvent);
+      }
+      this.push(endEvent());
+      return Bacon.noMore;
+    } else {
+      lastEvent = event;
+    }
+  }));
+};
+
 Bacon.EventStream.prototype.throttle = function (delay) {
   return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map(function (values) {
     return values[values.length - 1];
@@ -3245,6 +3265,35 @@ Bacon.Property.prototype.throttle = function (delay) {
   return this.delayChanges("throttle", delay, function (changes) {
     return changes.throttle(delay);
   });
+};
+
+Observable.prototype.firstToPromise = function (PromiseCtr) {
+  var _this = this;
+
+  if (typeof PromiseCtr !== "function") {
+    if (typeof Promise === "function") {
+      PromiseCtr = Promise;
+    } else {
+      throw new Exception("There isn't default Promise, use shim or parameter");
+    }
+  }
+
+  return new PromiseCtr(function (resolve, reject) {
+    return _this.subscribe(function (event) {
+      if (event.hasValue()) {
+        resolve(event.value());
+      }
+      if (event.isError()) {
+        reject(event.error);
+      }
+
+      return Bacon.noMore;
+    });
+  });
+};
+
+Observable.prototype.toPromise = function (PromiseCtr) {
+  return this.last().firstToPromise(PromiseCtr);
 };
 
 if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
