@@ -1,3 +1,4 @@
+# build-dependencies: frompromise
 require('when/es6-shim/Promise')
 
 describe "firstToPromise", ->
@@ -22,6 +23,7 @@ describe "toPromise", ->
     sequentially(3, [1, 2, 3]).toPromise().then (x) ->
       expect(x).to.equal(3)
 
-  it.skip "never resolves with undefined from empty Observable", ->
-    sequentially(3, []).toPromise().then (x) ->
-      expect(x).to.equal(undefined)
+  it "never resolves with undefined from empty Observable", ->
+    called = false
+    Bacon.never().toPromise().then(-> called = true)
+    expect(called).to.equal(false)
