@@ -1,5 +1,6 @@
 # build-dependencies: frompromise
 require('when/es6-shim/Promise')
+Bluebird = require "bluebird"
 
 describe "firstToPromise", ->
   it "picks the first event from Observable, later", ->
@@ -27,3 +28,9 @@ describe "toPromise", ->
     called = false
     Bacon.never().toPromise().then(-> called = true)
     expect(called).to.equal(false)
+
+  it "supports custom Promise constructor", ->
+    promise = once("hi").toPromise(Bluebird)
+    expect(promise.constructor).to.equal(Bluebird)
+    promise.then (x) ->
+      expect(x).to.equal("hi")
