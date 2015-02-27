@@ -15,7 +15,6 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
     this.subscribe((event) => {
       if (event.hasValue()) { resolve(event.value()); }
       if (event.isError()) { reject(event.error); }
-      if (event.isEnd()) { resolve(undefined); }
       // One event is enough
       return Bacon.noMore;
     }));

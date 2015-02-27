@@ -6,7 +6,9 @@ Bacon.Observable.prototype.last = function () {
   return withDescription(this, "last", this.withHandler(function (event) {
     if (event.isEnd()) {
       // Push last event or `undefined`
-      this.push(lastEvent || nextEvent());
+      if (lastEvent) {
+        this.push(lastEvent);
+      }
       this.push(endEvent());
       return Bacon.noMore;
     } else {

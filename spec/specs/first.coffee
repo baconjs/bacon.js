@@ -6,7 +6,7 @@ describe "EventStream.first", ->
   describe "works with empty stream", ->
     expectStreamEvents(
       -> series(1, []).first()
-      [undefined])
+      [])
   describe.skip "will stop properly even when exception thrown by subscriber", ->
     expectStreamEvents(
       ->

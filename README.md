@@ -517,10 +517,10 @@ appears in the other stream. If other stream ends without value, it is
 ignored
 
 <a name="observable-first"></a>
-[`observable.first()`](#observable-first "observable.first(@ : Observable[A]) : Observable[A]") takes the first element from the stream. There will be always a [`Next`](#bacon-next) event, even original stream was empty.
+[`observable.first()`](#observable-first "observable.first(@ : Observable[A]) : Observable[A]") takes the first element from the stream. Essentially `observable.take(1)`.
 
 <a name="observable-last"></a>
-[`observable.last()`](#observable-last "observable.last(@ : Observable[A]) : Observable[A]") takes the last element from the stream. There will be always a [`Next`](#bacon-next) event, even original stream was empty.
+[`observable.last()`](#observable-last "observable.last(@ : Observable[A]) : Observable[A]") takes the last element from the stream. None, if stream is empty.
 
 *Note:* `neverEndingStream.last()` creates the stream which doesn't produce any events and never ends.
 

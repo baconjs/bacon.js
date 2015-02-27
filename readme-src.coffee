@@ -510,11 +510,11 @@ ignored
 """
 
 doc.fn "observable.first(@ : Observable[A]) : Observable[A]", """
-takes the first element from the stream. There will be always a `Next` event, even original stream was empty.
+takes the first element from the stream. Essentially `observable.take(1)`.
 """
 
 doc.fn "observable.last(@ : Observable[A]) : Observable[A]", """
-takes the last element from the stream. There will be always a `Next` event, even original stream was empty.
+takes the last element from the stream. None, if stream is empty.
 
 *Note:* `neverEndingStream.last()` creates the stream which doesn't produce any events and never ends.
 """

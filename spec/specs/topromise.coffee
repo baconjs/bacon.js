@@ -9,7 +9,7 @@ describe "firstToPromise", ->
     Bacon.sequentially(3, [1, 2, 3]).firstToPromise().then (x) ->
       expect(x).to.equal(1)
 
-  it "resolves with undefined from empty Observable", ->
+  it.skip "never resolves with undefined from empty Observable", ->
     Bacon.sequentially(3, []).firstToPromise().then (x) ->
       expect(x).to.equal(undefined)
 
@@ -22,6 +22,6 @@ describe "toPromise", ->
     Bacon.sequentially(3, [1, 2, 3]).toPromise().then (x) ->
       expect(x).to.equal(3)
 
-  it "resolves with undefined from empty Observable", ->
+  it.skip "never resolves with undefined from empty Observable", ->
     Bacon.sequentially(3, []).toPromise().then (x) ->
       expect(x).to.equal(undefined)
