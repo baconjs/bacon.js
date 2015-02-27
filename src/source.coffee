@@ -1,16 +1,12 @@
 # build-dependencies: _
 
 class Source
-  constructor: (@obs, @sync, @lazy = false) ->
+  constructor: (@obs, @sync) ->
     @queue = []
   subscribe: (sink) -> @obs.dispatcher.subscribe(sink)
   toString: -> @obs.toString()
   markEnded: -> @ended = true
-  consume: ->
-    if @lazy
-      { value: _.always(@queue[0]) }
-    else
-      @queue[0]
+  consume: -> @queue[0]
   push: (x) -> @queue = [x]
   mayHave: -> true
   hasAtLeast: -> @queue.length

@@ -10,7 +10,7 @@ atGivenTimes = (timesAndValues) ->
       push = ->
         return if shouldStop
         value = first[1]
-        sink(new Bacon.Next(-> value))
+        sink(new Bacon.Next(value))
         if !shouldStop && (index+1 < timesAndValues.length)
           schedule(scheduledTime, index+1)
         else

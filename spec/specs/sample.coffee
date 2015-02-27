@@ -86,8 +86,8 @@ describe "Property.sampledBy(stream)", ->
       sampled = property.sampledBy sampler
       sampled.onValue()
       sampled.onEnd(done)
-    it "preserves laziness", ->
-      expect(calls).to.equal(1)
+    it "evaluates strictly", ->
+      expect(calls).to.equal(5)
   it "toString", ->
     expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never(),function)")
 

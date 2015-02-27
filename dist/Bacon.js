@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.52';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -407,10 +407,9 @@
   })();
 
   Source = (function() {
-    function Source(obs1, sync, lazy1) {
+    function Source(obs1, sync) {
       this.obs = obs1;
       this.sync = sync;
-      this.lazy = lazy1 != null ? lazy1 : false;
       this.queue = [];
     }
 
@@ -427,13 +426,7 @@
     };
 
     Source.prototype.consume = function() {
-      if (this.lazy) {
-        return {
-          value: _.always(this.queue[0])
-        };
-      } else {
-        return this.queue[0];
-      }
+      return this.queue[0];
     };
 
     Source.prototype.push = function(x) {
@@ -840,15 +833,9 @@
   Next = (function(superClass) {
     extend(Next, superClass);
 
-    function Next(valueF, eager) {
+    function Next(value) {
       Next.__super__.constructor.call(this);
-      if (!eager && _.isFunction(valueF) || valueF instanceof Next) {
-        this.valueF = valueF;
-        this.valueInternal = void 0;
-      } else {
-        this.valueF = void 0;
-        this.valueInternal = valueF;
-      }
+      this.valueInternal = value;
     }
 
     Next.prototype.isNext = function() {
@@ -860,29 +847,11 @@
     };
 
     Next.prototype.value = function() {
-      if (this.valueF instanceof Next) {
-        this.valueInternal = this.valueF.value();
-        this.valueF = void 0;
-      } else if (this.valueF) {
-        this.valueInternal = this.valueF();
-        this.valueF = void 0;
-      }
       return this.valueInternal;
     };
 
     Next.prototype.fmap = function(f) {
-      var event, value;
-      if (this.valueInternal) {
-        value = this.valueInternal;
-        return this.apply(function() {
-          return f(value);
-        });
-      } else {
-        event = this;
-        return this.apply(function() {
-          return f(event.value());
-        });
-      }
+      return this.apply(f(this.valueInternal));
     };
 
     Next.prototype.apply = function(value) {
@@ -890,11 +859,11 @@
     };
 
     Next.prototype.filter = function(f) {
-      return f(this.value());
+      return f(this.valueInternal);
     };
 
     Next.prototype.toString = function() {
-      return _.toString(this.value());
+      return _.toString(this.valueInternal);
     };
 
     Next.prototype.log = function() {
@@ -925,7 +894,7 @@
     };
 
     Initial.prototype.toNext = function() {
-      return new Next(this);
+      return new Next(this.valueInternal);
     };
 
     return Initial;
@@ -997,11 +966,11 @@
   Bacon.Error = Error;
 
   initialEvent = function(value) {
-    return new Initial(value, true);
+    return new Initial(value);
   };
 
   nextEvent = function(value) {
-    return new Next(value, true);
+    return new Next(value);
   };
 
   endEvent = function() {
@@ -1327,9 +1296,7 @@
 
     EventStream.prototype.toProperty = function(initValue_) {
       var disp, initValue;
-      initValue = arguments.length === 0 ? None : toOption(function() {
-        return initValue_;
-      });
+      initValue = arguments.length === 0 ? None : toOption(initValue_);
       disp = this.dispatcher;
       return new Property(describe(this, "toProperty", initValue_), function(sink) {
         var initSent, reply, sendInit, unsub;
@@ -1492,36 +1459,20 @@
             return UpdateBarrier.whenDoneWith(resultStream, flush);
           };
           flushWhileTriggers = function() {
-            var events, l, len3, p, reply, trigger;
+            var l, len3, len4, m, p, ref1, reply, trigger, values;
             if (triggers.length > 0) {
               reply = Bacon.more;
               trigger = triggers.pop();
               for (l = 0, len3 = pats.length; l < len3; l++) {
                 p = pats[l];
                 if (match(p)) {
-                  events = (function() {
-                    var len4, m, ref1, results;
-                    ref1 = p.ixs;
-                    results = [];
-                    for (m = 0, len4 = ref1.length; m < len4; m++) {
-                      i = ref1[m];
-                      results.push(sources[i.index].consume());
-                    }
-                    return results;
-                  })();
-                  reply = sink(trigger.e.apply(function() {
-                    var event, values;
-                    values = (function() {
-                      var len4, m, results;
-                      results = [];
-                      for (m = 0, len4 = events.length; m < len4; m++) {
-                        event = events[m];
-                        results.push(event.value());
-                      }
-                      return results;
-                    })();
-                    return p.f.apply(p, values);
-                  }));
+                  values = [];
+                  ref1 = p.ixs;
+                  for (m = 0, len4 = ref1.length; m < len4; m++) {
+                    i = ref1[m];
+                    values.push(sources[i.index].consume().value());
+                  }
+                  reply = sink(trigger.e.apply(p.f.apply(p, values)));
                   if (triggers.length) {
                     triggers = _.filter(nonFlattened, triggers);
                   }
@@ -2635,9 +2586,9 @@
     }));
   };
 
-  Bacon.Observable.prototype.scan = function(seed, f) {
-    var acc, resultProperty, subscribe;
-    f = toCombinator(f);
+  Bacon.Observable.prototype.scan = function(seed, f_) {
+    var acc, f, resultProperty, subscribe;
+    f = toCombinator(f_);
     acc = toOption(seed);
     subscribe = (function(_this) {
       return function(sink) {
@@ -2649,9 +2600,7 @@
           if (!initSent) {
             return acc.forEach(function(value) {
               initSent = true;
-              reply = sink(new Initial(function() {
-                return value;
-              }));
+              reply = sink(new Initial(value));
               if (reply === Bacon.noMore) {
                 unsub();
                 return unsub = nop;
@@ -2672,9 +2621,7 @@
               prev = acc.getOrElse(void 0);
               next = f(prev, event.value());
               acc = new Some(next);
-              return sink(event.apply(function() {
-                return next;
-              }));
+              return sink(event.apply(next));
             }
           } else {
             if (event.isEnd()) {
@@ -2788,18 +2735,11 @@
     return withDescription(this, "sampledBy", sampler, combinator, this.toProperty().sampledBy(sampler, combinator));
   };
 
-  Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
-    var lazy, result, samplerSource, stream, thisSource;
-    if (combinator != null) {
-      combinator = toCombinator(combinator);
-    } else {
-      lazy = true;
-      combinator = function(f) {
-        return f.value();
-      };
-    }
-    thisSource = new Source(this, false, lazy);
-    samplerSource = new Source(sampler, true, lazy);
+  Bacon.Property.prototype.sampledBy = function(sampler, combinator_) {
+    var combinator, result, samplerSource, stream, thisSource;
+    combinator = combinator_ != null ? toCombinator(combinator_) : _.id;
+    thisSource = new Source(this, false);
+    samplerSource = new Source(sampler, true);
     stream = Bacon.when([thisSource, samplerSource], combinator);
     result = sampler instanceof Property ? stream.toProperty() : stream;
     return withDescription(this, "sampledBy", sampler, combinator, result);

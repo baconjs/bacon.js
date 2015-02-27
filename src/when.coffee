@@ -63,10 +63,9 @@ Bacon.when = ->
           for p in pats
             if match(p)
               #console.log "match", p
-              events = (sources[i.index].consume() for i in p.ixs)
-              reply = sink trigger.e.apply ->
-                values = (event.value() for event in events)
-                p.f(values...)
+              values = []
+              values.push(sources[i.index].consume().value()) for i in p.ixs
+              reply = sink(trigger.e.apply(p.f(values...)))
               if triggers.length
                 triggers = _.filter nonFlattened, triggers
               if reply == Bacon.noMore
