@@ -14,6 +14,7 @@ git pull --rebase
 echo "Building"
 npm install
 npm test
+node ./test-individually.js
 ./build
 
 echo "Updating files"
