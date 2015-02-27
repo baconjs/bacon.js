@@ -1,4 +1,4 @@
-// build-dependencies: core
+// build-dependencies: core, take
 
 Bacon.Observable.prototype.first = function () {
   // It's important not to use fat arrow here!

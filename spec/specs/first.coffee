@@ -42,6 +42,8 @@ describe "Property.first()", ->
     expectPropertyEvents(
       -> repeat(1, [1,2,3]).toProperty().first()
       [1])
+  it "toString", ->
+    expect(Bacon.constant(0).first().toString()).to.equal("Bacon.constant(0).first()")
 
 describe "Bacon.once().first()", ->
   describe "works", ->
