@@ -22,7 +22,7 @@ describe "EventStream.last", ->
   it "toString", ->
     expect(Bacon.never().last().toString()).to.equal("Bacon.never().last()")
 
-describe "Property.last(1)", ->
+describe "Property.last()", ->
   describe "takes the Initial event", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty(0).last()
