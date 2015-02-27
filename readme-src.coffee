@@ -509,6 +509,16 @@ appears in the other stream. If other stream ends without value, it is
 ignored
 """
 
+doc.fn "observable.first(@ : Observable[A]) : Observable[A]", """
+takes the first element from the stream. There will be always a `Next` event, even original stream was empty.
+"""
+
+doc.fn "observable.last(@ : Observable[A]) : Observable[A]", """
+takes the last element from the stream. There will be always a `Next` event, even original stream was empty.
+
+*Note:* `neverEndingStream.last()` creates the stream which doesn't produce any events and never ends.
+"""
+
 doc.fn "observable.skip(n)", """
 skips the first n elements from the stream
 """

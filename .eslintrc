@@ -5,6 +5,8 @@
   },
   "globals": {
     "Bacon": true,
+    "Observable": true,
+    "endEvent": true,
     "withDescription": true
   },
   "rules": {

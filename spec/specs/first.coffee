@@ -1,0 +1,50 @@
+describe "EventStream.first", ->
+  describe "takes the first element", ->
+    expectStreamEvents(
+      -> series(1, [1,2,3,4]).first()
+      [1])
+  describe "works with empty stream", ->
+    expectStreamEvents(
+      -> series(1, []).first()
+      [undefined])
+  describe.skip "will stop properly even when exception thrown by subscriber", ->
+    expectStreamEvents(
+      ->
+        s = repeatedly(t(1), ["lol", "wut"]).first()
+        s.onValue (value) ->
+          throw "testing" if value == "lol"
+        s
+      ["lol"], unstable)
+  describe "works with synchronous source", ->
+    expectStreamEvents(
+      -> fromArray([1,2,3,4]).first()
+      [1])
+  it "toString", ->
+    expect(Bacon.never().first().toString()).to.equal("Bacon.never().first()")
+
+describe "Property.first(1)", ->
+  describe "takes the Initial event", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty(0).first()
+      [0])
+  describe "takes the first Next event, if no Initial value", ->
+    expectPropertyEvents(
+      -> series(1, [1,2,3]).toProperty().first()
+      [1])
+  describe "works for constants", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1)
+      [1])
+  describe "works for never-ending Property", ->
+    expectPropertyEvents(
+      -> repeat(1, [1,2,3]).toProperty(0).first()
+      [0])
+    expectPropertyEvents(
+      -> repeat(1, [1,2,3]).toProperty().first()
+      [1])
+
+describe "Bacon.once().first()", ->
+  describe "works", ->
+    expectStreamEvents(
+      -> once(1).first()
+      [1])

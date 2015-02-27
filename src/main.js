@@ -47,5 +47,7 @@
 // build-dependencies: zip
 
 // ES6 pieces:
+// build-dependencies: first
+// build-dependencies: last
 // build-dependencies: throttle
 // build-dependencies: topromise

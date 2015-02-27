@@ -1,6 +1,7 @@
 // build-dependencies: observable
+// build-dependencies: last
 
-Observable.prototype.toPromise = function () {
+Observable.prototype.firstToPromise = function () {
   return new Promise((resolve, reject) =>
     this.subscribe((event) => {
       if (event.hasValue()) { resolve(event.value()); }
@@ -9,4 +10,8 @@ Observable.prototype.toPromise = function () {
       // One event is enough
       return Bacon.noMore;
     }));
-}
+};
+
+Observable.prototype.toPromise = function () {
+  return this.last().firstToPromise();
+};
