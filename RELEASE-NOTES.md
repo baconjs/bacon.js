@@ -1,3 +1,7 @@
+## 0.7.52
+
+- Fix #560: unscheduling fail in case subscriber throws error
+
 ## 0.7.51
 
 - Add `toPromise()`, `first()` and `last()` (#509)
