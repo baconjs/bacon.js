@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.52';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2178,12 +2178,7 @@
         }, poll));
     };
     Bacon.later = function (delay, value) {
-        return withDescription(Bacon, 'later', delay, value, Bacon.fromPoll(delay, function () {
-            return [
-                value,
-                endEvent()
-            ];
-        }));
+        return withDescription(Bacon, 'later', delay, value, Bacon.sequentially(delay, [value]));
     };
     Bacon.sequentially = function (delay, values) {
         var index;
