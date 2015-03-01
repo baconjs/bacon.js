@@ -11,6 +11,11 @@ describe "EventStream.debounce", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3, 4]).debounce(t(3))
       [4])
+  it "will stop properly even when exception thrown by subscriber (#560)", ->
+    src = fromArray([1]).debounce(1000)
+    src.onValue -> throw "testing" # special string that's catched by TickScheduler
+    # this will hang indefinitely without the fix in commit 80661af9e9c1c1732e19c39f1873c399e4de7a94
+    # because unscheduling doesn't occur and TickScheduler will never stop ticking
   it "toString", ->
     expect(Bacon.never().debounce(1).toString()).to.equal("Bacon.never().debounce(1)")
 
