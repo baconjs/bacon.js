@@ -9,7 +9,10 @@ Bacon.fromPoll = (delay, poll) ->
     -> Bacon.scheduler.clearInterval(id)), poll)))
 
 Bacon.later = (delay, value) ->
-  withDescription(Bacon, "later", delay, value, Bacon.fromPoll(delay, -> [value, endEvent()]))
+  withDescription Bacon, "later", delay, value, Bacon.fromBinder (sink) ->
+    sender = -> sink [value, endEvent()]
+    id = Bacon.scheduler.setTimeout(sender, delay)
+    -> Bacon.scheduler.clearTimeout(id)
 
 Bacon.sequentially = (delay, values) ->
   index = 0
