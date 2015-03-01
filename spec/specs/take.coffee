@@ -12,7 +12,7 @@ describe "EventStream.take", ->
       ->
         s = repeatedly(t(1), ["lol", "wut"]).take(2)
         s.onValue (value) ->
-          throw "testing" if value == "lol"
+          throw "testing" if value == "lol" # special string that will be catched by TickScheduler
         s
       ["lol", "wut"], unstable)
   describe "works with synchronous source", ->

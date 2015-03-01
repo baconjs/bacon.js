@@ -10,9 +10,10 @@ describe "EventStream.last", ->
   describe.skip "will stop properly even when exception thrown by subscriber", ->
     expectStreamEvents(
       ->
+        # skipped because hangs
         s = repeatedly(t(1), ["lol", "wut"]).last()
         s.onValue (value) ->
-          throw "testing" if value == "lol"
+          throw "testing" if value == "lol" # special string that will be catched by TickScheduler
         s
       ["wut"], unstable)
   describe "works with synchronous source", ->

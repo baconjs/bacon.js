@@ -44,7 +44,7 @@ describe "Bacon.sequentially", ->
       ->
         s = Bacon.sequentially(t(1), ["lol", "wut"])
         s.onValue (value) ->
-          throw "testing"
+          throw "testing" # special string that will be catched by TickScheduler
         s
       ["lol", "wut"], unstable)
   it "toString", ->
