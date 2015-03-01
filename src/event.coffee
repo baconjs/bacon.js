@@ -16,41 +16,23 @@ class Event
   log: -> @toString()
 
 class Next extends Event
-  constructor: (valueF, eager) ->
+  constructor: (value) ->
     super()
-    if !eager && _.isFunction(valueF) || valueF instanceof Next
-      @valueF = valueF
-      @valueInternal = undefined
-    else
-      @valueF = undefined
-      @valueInternal = valueF
+    @valueInternal = value
   isNext: -> true
   hasValue: -> true
-  value: ->
-    if @valueF instanceof Next
-      @valueInternal = @valueF.value()
-      @valueF = undefined
-    else if @valueF
-      @valueInternal = @valueF()
-      @valueF = undefined
-    @valueInternal
-  fmap: (f) ->
-    if @valueInternal
-      value = @valueInternal
-      @apply(-> f(value))
-    else
-      event = this
-      @apply(-> f(event.value()))
+  value: -> @valueInternal
+  fmap: (f) -> @apply(f(@valueInternal))
   apply: (value) -> new Next(value)
-  filter: (f) -> f(@value())
-  toString: -> _.toString(@value())
+  filter: (f) -> f(@valueInternal)
+  toString: -> _.toString(@valueInternal)
   log: -> @value()
 
 class Initial extends Next
   isInitial: -> true
   isNext: -> false
   apply: (value) -> new Initial(value)
-  toNext: -> new Next(this)
+  toNext: -> new Next(@valueInternal)
 
 class End extends Event
   isEnd: -> true
@@ -72,8 +54,8 @@ Bacon.Next = Next
 Bacon.End = End
 Bacon.Error = Error
 
-initialEvent = (value) -> new Initial(value, true)
-nextEvent = (value) -> new Next(value, true)
+initialEvent = (value) -> new Initial(value)
+nextEvent = (value) -> new Next(value)
 endEvent = -> new End()
 # instanceof more performant than x.?isEvent?()
 toEvent = (x) -> if x instanceof Event then x else nextEvent x

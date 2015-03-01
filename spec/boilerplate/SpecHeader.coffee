@@ -20,7 +20,7 @@ endlessly = (values...) ->
   reply = Bacon.more
   fromBinder (sink) ->
     while reply != Bacon.noMore
-      reply = sink(new Bacon.Next(-> values[index++ % values.length]))
+      reply = sink(new Bacon.Next(values[index++ % values.length]))
     -> reply = Bacon.noMore
 
 lessThan = (limit) ->
@@ -59,7 +59,7 @@ skip = (count, obs) ->
     else
       @push event
 
-toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(-> x)
+toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(x)
 
 fromBinder = Bacon.fromBinder || (binder, eventTransformer = Bacon._.id) ->
   new Bacon.EventStream (sink) ->

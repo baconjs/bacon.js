@@ -30,13 +30,13 @@ describe "EventStream.toProperty", ->
     expectPropertyEvents(
       -> fromArray([1,2,3]).toProperty(0)
       [0,1,2,3], unstable)
-  it "preserves laziness", ->
+  it "evaluates strictly", ->
     calls = 0
     id = (x) ->
       calls++
       x
     skip(4, map(fromArray([1,2,3,4,5]), id).toProperty()).onValue()
-    expect(calls).to.equal(1)
+    expect(calls).to.equal(5)
   it "toString", ->
     expect(Bacon.never().toProperty(0).toString()).to.equal("Bacon.never().toProperty(0)")
 

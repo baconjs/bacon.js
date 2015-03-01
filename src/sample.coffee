@@ -6,14 +6,13 @@ Bacon.EventStream :: sampledBy = (sampler, combinator) ->
   withDescription(this, "sampledBy", sampler, combinator,
     @toProperty().sampledBy(sampler, combinator))
 
-Bacon.Property :: sampledBy = (sampler, combinator) ->
-  if combinator?
-    combinator = toCombinator combinator
+Bacon.Property :: sampledBy = (sampler, combinator_) ->
+  combinator = if combinator_?
+    toCombinator(combinator_)
   else
-    lazy = true
-    combinator = (f) -> f.value()
-  thisSource = new Source(this, false, lazy)
-  samplerSource = new Source(sampler, true, lazy)
+    _.id
+  thisSource = new Source(this, false)
+  samplerSource = new Source(sampler, true)
   stream = Bacon.when([thisSource, samplerSource], combinator)
   result = if sampler instanceof Property then stream.toProperty() else stream
   withDescription(this, "sampledBy", sampler, combinator, result)

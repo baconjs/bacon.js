@@ -4,8 +4,8 @@
 # build-dependencies: when
 # build-dependencies: updatebarrier
 
-Bacon.Observable :: scan = (seed, f) ->
-  f = toCombinator(f)
+Bacon.Observable :: scan = (seed, f_) ->
+  f = toCombinator(f_)
   acc = toOption(seed)
   subscribe = (sink) =>
     initSent = false
@@ -15,7 +15,7 @@ Bacon.Observable :: scan = (seed, f) ->
       unless initSent
         acc.forEach (value) ->
           initSent = true
-          reply = sink(new Initial(-> value))
+          reply = sink(new Initial(value))
           if (reply == Bacon.noMore)
             unsub()
             unsub = nop
@@ -29,7 +29,7 @@ Bacon.Observable :: scan = (seed, f) ->
           prev = acc.getOrElse(undefined)
           next = f(prev, event.value())
           acc = new Some(next)
-          sink (event.apply(-> next))
+          sink (event.apply(next))
       else
         if event.isEnd()
           reply = sendInit()

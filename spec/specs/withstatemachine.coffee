@@ -3,7 +3,7 @@ describe "EventStream.withStateMachine", ->
     if event.hasValue()
       [sum + event.value(), []]
     else if event.isEnd()
-      [sum, [new Bacon.Next(-> sum), event]]
+      [sum, [new Bacon.Next(sum), event]]
     else
       [sum, [event]]
   describe "runs state machine on the stream", ->
@@ -18,7 +18,7 @@ describe "Property.withStateMachine", ->
         if event.hasValue()
           [sum + event.value(), []]
         else if event.isEnd()
-          [sum, [new Bacon.Next(-> sum), event]]
+          [sum, [new Bacon.Next(sum), event]]
         else
           [sum, [event]])
       [6])
