@@ -5,4 +5,4 @@ Bacon.Observable :: flatMapError = (fn) ->
     if x instanceof Error
       fn(x.error)
     else
-      Bacon.once(x))
+      Bacon.immediately(x))

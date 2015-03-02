@@ -48,7 +48,7 @@ describe "Property.combine", ->
       try
         Array.prototype.foo = "bar"
         events = []
-        Bacon.once("a").combine(Bacon.once("b"), (a,b) -> [a,b]).onValue (v) ->
+        Bacon.immediately("a").combine(Bacon.immediately("b"), (a,b) -> [a,b]).onValue (v) ->
           events.push(v)
         expect(events).to.deep.equal([["a", "b"]])
       finally

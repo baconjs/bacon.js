@@ -41,5 +41,6 @@ exports.TickScheduler = ->
     setInterval: (fn, recur) -> boot(add recur, { fn, recur })
     clearTimeout: (id) -> toRemove.push(id)
     clearInterval: (id) -> toRemove.push(id)
+    asap: (f) -> @setTimeout(f, 0)
     now: -> currentTick
   }

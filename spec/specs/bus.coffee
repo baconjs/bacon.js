@@ -53,8 +53,8 @@ describe "Bacon.Bus", ->
   it "handles cold single-event streams correctly (bug fix)", ->
     values = []
     bus = new Bacon.Bus()
-    bus.plug(once("x"))
-    bus.plug(once("y"))
+    bus.plug(immediately("x"))
+    bus.plug(immediately("y"))
     bus.onValue((x) -> values.push(x))
     expect(values).to.deep.equal(["x", "y"])
 

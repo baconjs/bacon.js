@@ -63,7 +63,7 @@ describe "Integration tests", ->
         ->
           bus = new Bacon.Bus()
           stream = fromArray([1,2]).flatMapLatest (x) ->
-            Bacon.once(x).concat(later(10, x).doAction((x) -> bus.push(x); bus.end()))
+            Bacon.immediately(x).concat(later(10, x).doAction((x) -> bus.push(x); bus.end()))
           stream.onValue ->
           bus
         [2])
@@ -72,8 +72,8 @@ describe "Integration tests", ->
       it "case 1 (samplee has no subscribers)", ->
         result = ""
         prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
-        Bacon.once().flatMap(->
-            problem = prop.sampledBy(Bacon.once())
+        Bacon.immediately().flatMap(->
+            problem = prop.sampledBy(Bacon.immediately())
             problem.onValue (x) ->
               result = x
         ).onValue ->
@@ -82,8 +82,8 @@ describe "Integration tests", ->
         result = ""
         prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
         prop.onValue ->
-        Bacon.once().flatMap(->
-            problem = prop.sampledBy(Bacon.once())
+        Bacon.immediately().flatMap(->
+            problem = prop.sampledBy(Bacon.immediately())
             problem.onValue (x) ->
               result = x
         ).onValue ->
@@ -94,7 +94,7 @@ describe "Integration tests", ->
         prop = Bacon.combineTemplate(faq: input.toProperty("default value"))
         events = new Bacon.Bus()
         events.flatMapLatest(->
-            problem = prop.sampledBy(Bacon.once())
+            problem = prop.sampledBy(Bacon.immediately())
             problem.onValue (x) ->
               result = x
         ).onValue ->
@@ -121,7 +121,7 @@ describe "Integration tests", ->
           ab = Bacon.combineAsArray a, b
 
           f = ab.flatMapLatest (values) ->
-            Bacon.once 'f' + values
+            Bacon.immediately 'f' + values
 
           Bacon.combineAsArray(f, b).map(".0")
         ["f0,0","f1,1"])
@@ -146,8 +146,8 @@ describe "Integration tests", ->
   describe "Property.debounce", ->
     it "works with Bacon.combine (bug fix)", ->
       values = []
-      p1 = Bacon.once(true).toProperty()
-      p2 = Bacon.once(true).toProperty()
+      p1 = Bacon.immediately(true).toProperty()
+      p2 = Bacon.immediately(true).toProperty()
       visibleP = Bacon.combineAsArray([p1, p2]).startWith(false)
       visibleP.debounce(500).onValue (val)  ->
         values.push(val)
@@ -161,16 +161,16 @@ describe "Integration tests", ->
   describe "EventStream", ->
     describe "works with functions as values (bug fix)", ->
       expectStreamEvents(
-        -> Bacon.once(-> "hello").map((f) -> f())
+        -> Bacon.immediately(-> "hello").map((f) -> f())
         ["hello"])
       expectStreamEvents(
-        -> Bacon.once(-> "hello").flatMap(Bacon.once).map((f) -> f())
+        -> Bacon.immediately(-> "hello").flatMap(Bacon.immediately).map((f) -> f())
         ["hello"])
       expectPropertyEvents(
         -> Bacon.constant(-> "hello").map((f) -> f())
         ["hello"])
       expectStreamEvents(
-        -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
+        -> Bacon.constant(-> "hello").flatMap(Bacon.immediately).map((f) -> f())
         ["hello"])
     it "handles one subscriber added twice just like two separate subscribers (case Bacon.noMore)", ->
       values = []
@@ -197,7 +197,7 @@ describe "Integration tests", ->
   describe "Observable.subscribe and onValue", ->
     it "respects returned Bacon.noMore return value (#523)", ->
       calls = 0
-      once(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
+      Bacon.immediately(1).merge(Bacon.interval(100, 2)).subscribe (event) ->
         calls++
         Bacon.noMore
       expect(calls).to.equal(1)
@@ -316,7 +316,7 @@ describe "Integration tests", ->
     verifyWhileDispatching = (name, f, expected) ->
       it name + " (independent)", ->
         values = []
-        Bacon.once(1).onValue ->
+        Bacon.immediately(1).onValue ->
           f().onValue (value) ->
             values.push(value)
           expect(values).to.deep.equal(expected)
@@ -324,7 +324,7 @@ describe "Integration tests", ->
 
       it name + " (dependent)", ->
         values = []
-        src = Bacon.combineAsArray(Bacon.once(1).toProperty(), Bacon.constant(2))
+        src = Bacon.combineAsArray(Bacon.immediately(1).toProperty(), Bacon.constant(2))
         src.onValue ->
           src.flatMap(f()).onValue (value) ->
             values.push(value)
@@ -349,12 +349,12 @@ describe "Integration tests", ->
       ["right"]
     verifyWhileDispatching "with flatMap", (->
         a = Bacon.constant("lolbal")
-        a.flatMap((x) -> Bacon.once(x))), ["lolbal"]
+        a.flatMap((x) -> Bacon.immediately(x))), ["lolbal"]
     verifyWhileDispatching "with awaiting", (->
         a = Bacon.constant(1)
         s = a.awaiting(a.map(->))), [true]
     verifyWhileDispatching "with concat", (->
-        s = Bacon.once(1).concat(Bacon.once(2))), [1,2]
+        s = Bacon.immediately(1).concat(Bacon.immediately(2))), [1,2]
     verifyWhileDispatching "with Property.delay", (->
         c = Bacon.constant(1)
         Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
@@ -412,7 +412,7 @@ describe "Integration tests", ->
       expectStreamEvents(
         -> 
           bus = new Bacon.Bus()
-          root = Bacon.once(0).toProperty()
+          root = Bacon.immediately(0).toProperty()
           root.onValue ->
           later(1).onValue ->
             root.map(-> 1).subscribe (event) ->

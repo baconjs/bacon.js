@@ -32,7 +32,7 @@ Bacon.retry = (options) ->
         context = { error: error.error, retriesDone: maxRetries - retries }
         pause = Bacon.later(delay(context)).filter(false)
         retries = retries - 1
-        pause.concat(Bacon.once().flatMap(valueStream))
+        pause.concat(Bacon.immediately().flatMap(valueStream))
       else
         # first time
         valueStream()

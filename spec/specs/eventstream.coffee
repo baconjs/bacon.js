@@ -60,5 +60,5 @@ describe "Observable.withDescription", ->
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
 
-describe "EventStream.onValue", testSideEffects(once, "onValue")
-describe "EventStream.forEach", testSideEffects(once, "forEach")
+describe "EventStream.onValue", testSideEffects(immediately, "onValue")
+describe "EventStream.forEach", testSideEffects(immediately, "forEach")

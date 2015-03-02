@@ -6,4 +6,4 @@ Bacon.Property :: startWith = (seed) ->
 
 Bacon.EventStream :: startWith = (seed) ->
   withDescription(this, "startWith", seed,
-    Bacon.once(seed).concat(this))
+    Bacon.immediately(seed).concat(this))

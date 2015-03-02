@@ -63,4 +63,4 @@ makeObservable = (x) ->
   if (isObservable(x))
     x
   else
-    Bacon.once(x)
+    Bacon.immediately(x)

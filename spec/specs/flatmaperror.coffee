@@ -10,7 +10,7 @@ describe "EventStream.flatMapError", ->
         ]
         source.flatMapError (err) ->
           if err?.value
-            Bacon.once(err.data)
+            Bacon.immediately(err.data)
           else
             error()
 

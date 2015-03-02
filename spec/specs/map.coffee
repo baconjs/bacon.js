@@ -75,7 +75,6 @@ describe "EventStream.map", ->
           context = this
           "result"
       }
-      once(object).map(".method").onValue((x) -> result = x)
+      immediately(object).map(".method").onValue((x) -> result = x)
       expect(result).to.deep.equal("result")
       expect(context).to.deep.equal(object)
-

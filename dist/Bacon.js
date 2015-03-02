@@ -2060,6 +2060,9 @@
     clearTimeout: function(id) {
       return clearTimeout(id);
     },
+    asap: function(f) {
+      return this.setTimeout(f, 0);
+    },
     now: function() {
       return new Date().getTime();
     }
@@ -2170,6 +2173,16 @@
   };
 
   Bacon.once = function(value) {
+    return new EventStream(describe(Bacon, "once", value), function(sink) {
+      Bacon.scheduler.asap(function() {
+        sink(toEvent(value));
+        return sink(endEvent());
+      });
+      return nop;
+    });
+  };
+
+  Bacon.immediately = function(value) {
     return new EventStream(describe(Bacon, "once", value), function(sink) {
       sink(toEvent(value));
       sink(endEvent());
@@ -2295,7 +2308,7 @@
     if (isObservable(x)) {
       return x;
     } else {
-      return Bacon.once(x);
+      return Bacon.immediately(x);
     }
   };
 
@@ -2473,7 +2486,7 @@
 
   Bacon.Observable.prototype.bufferingThrottle = function(minimumInterval) {
     return withDescription(this, "bufferingThrottle", minimumInterval, this.flatMapConcat(function(x) {
-      return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
+      return Bacon.immediately(x).concat(Bacon.later(minimumInterval).filter(false));
     }));
   };
 
@@ -2641,7 +2654,7 @@
 
   Bacon.EventStream.prototype.debounceImmediate = function(delay) {
     return withDescription(this, "debounceImmediate", delay, this.flatMapFirst(function(value) {
-      return Bacon.once(value).concat(Bacon.later(delay).filter(false));
+      return Bacon.immediately(value).concat(Bacon.later(delay).filter(false));
     }));
   };
 
@@ -2789,7 +2802,7 @@
       if (x instanceof Error) {
         return fn(x.error);
       } else {
-        return Bacon.once(x);
+        return Bacon.immediately(x);
       }
     }));
   };
@@ -3077,7 +3090,7 @@
           };
           pause = Bacon.later(delay(context)).filter(false);
           retries = retries - 1;
-          return pause.concat(Bacon.once().flatMap(valueStream));
+          return pause.concat(Bacon.immediately().flatMap(valueStream));
         } else {
           return valueStream();
         }
@@ -3164,7 +3177,7 @@
   };
 
   Bacon.EventStream.prototype.startWith = function(seed) {
-    return withDescription(this, "startWith", seed, Bacon.once(seed).concat(this));
+    return withDescription(this, "startWith", seed, Bacon.immediately(seed).concat(this));
   };
 
   Bacon.Observable.prototype.takeWhile = function() {

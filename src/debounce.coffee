@@ -9,4 +9,4 @@ Bacon.Property :: debounce = (delay) -> @delayChanges("debounce", delay, (change
 
 Bacon.EventStream :: debounceImmediate = (delay) ->
   withDescription(this, "debounceImmediate", delay, @flatMapFirst (value) ->
-    Bacon.once(value).concat(Bacon.later(delay).filter(false)))
+    Bacon.immediately(value).concat(Bacon.later(delay).filter(false)))

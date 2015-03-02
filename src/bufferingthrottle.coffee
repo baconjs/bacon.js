@@ -5,7 +5,7 @@
 Bacon.Observable :: bufferingThrottle = (minimumInterval) ->
   withDescription(this, "bufferingThrottle", minimumInterval,
     @flatMapConcat (x) ->
-      Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
+      Bacon.immediately(x).concat(Bacon.later(minimumInterval).filter(false)))
 
 Bacon.Property :: bufferingThrottle = ->
   Bacon.Observable :: bufferingThrottle.apply(this, arguments).toProperty()

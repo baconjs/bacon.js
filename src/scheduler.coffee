@@ -3,5 +3,6 @@ Bacon.scheduler = {
   setInterval: (f, i) -> setInterval(f, i)
   clearInterval: (id) -> clearInterval(id)
   clearTimeout: (id) -> clearTimeout(id)
+  asap: (f) -> @setTimeout(f, 0)
   now: -> new Date().getTime()
 }

@@ -135,6 +135,13 @@ fromArray = Bacon.fromArray || (values) ->
 
 once = Bacon.once || (value) ->
   new Bacon.EventStream (sink) ->
+    Bacon.scheduler.asap ->
+      sink (toEvent(value))
+      sink (new Bacon.End())
+    ->
+
+immediately = Bacon.immediately || (value) ->
+  new Bacon.EventStream (sink) ->
     sink (toEvent(value))
     sink (new Bacon.End())
     ->

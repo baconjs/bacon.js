@@ -49,7 +49,7 @@ describe "EventStream.takeUntil", ->
     expectStreamEvents(
       ->
         src = repeat(3, [1, 2, 3])
-        stopper = once("stop")
+        stopper = immediately("stop")
         src.takeUntil(stopper)
       [])
   describe "ends properly with a never-ending stopper", ->
@@ -115,7 +115,7 @@ describe "Property.takeUntil", ->
       [0, 1, error()])
   it "works with synchronous error (fix #447)", ->
     errors = []
-    once(new Bacon.Error("fail")).toProperty()
+    immediately(new Bacon.Error("fail")).toProperty()
       .takeUntil(Bacon.never())
       .onError((e) -> errors.push(e))
     expect(errors).to.deep.equal(["fail"])
