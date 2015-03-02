@@ -32,7 +32,7 @@ exports.TickScheduler = ->
               entry.fn()
             catch e
               throw e unless e == "testing"
-            add entry.recur, entry if entry.recur
+            add entry.recur, entry if entry.recur?
       delete schedule[currentTick]
       currentTick++
     running = false
