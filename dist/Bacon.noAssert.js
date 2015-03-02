@@ -1964,7 +1964,7 @@
         });
     };
     Bacon.immediately = function (value) {
-        return new EventStream(describe(Bacon, 'once', value), function (sink) {
+        return new EventStream(describe(Bacon, 'immediately', value), function (sink) {
             sink(toEvent(value));
             sink(endEvent());
             return nop;

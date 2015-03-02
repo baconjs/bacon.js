@@ -7,7 +7,7 @@ Bacon.once = (value) ->
     nop
 
 Bacon.immediately = (value) ->
-  new EventStream describe(Bacon, "once", value), (sink) ->
+  new EventStream describe(Bacon, "immediately", value), (sink) ->
     sink (toEvent(value))
     sink (endEvent())
     nop
