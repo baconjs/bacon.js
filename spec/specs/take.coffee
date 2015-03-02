@@ -17,7 +17,7 @@ describe "EventStream.take", ->
       ["lol", "wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1,2,3,4]).take(2)
+      -> fromArraySync([1,2,3,4]).take(2)
       [1,2])
   it "toString", ->
     expect(Bacon.never().take(1).toString()).to.equal("Bacon.never().take(1)")

@@ -9,10 +9,10 @@ describe "EventStream.debounce", ->
       [[11, 4]])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 3, 4]).debounce(t(3))
+      -> fromArraySync([1, 2, 3, 4]).debounce(t(3))
       [4])
   it "will stop properly even when exception thrown by subscriber (#560)", ->
-    src = fromArray([1]).debounce(1000)
+    src = fromArraySync([1]).debounce(1000)
     src.onValue -> throw "testing" # special string that's catched by TickScheduler
     # this will hang indefinitely without the fix in commit 80661af9e9c1c1732e19c39f1873c399e4de7a94
     # because unscheduling doesn't occur and TickScheduler will never stop ticking
@@ -26,7 +26,7 @@ describe "EventStream.debounceImmediate(delay)", ->
       [[2, 1], [6, 3]], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 3, 4]).debounceImmediate(t(3))
+      -> fromArraySync([1, 2, 3, 4]).debounceImmediate(t(3))
       [1])
   it "toString", ->
     expect(Bacon.never().debounceImmediate(1).toString()).to.equal("Bacon.never().debounceImmediate(1)")

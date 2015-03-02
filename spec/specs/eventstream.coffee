@@ -25,17 +25,17 @@ describe "EventStream.toProperty", ->
       [0, 1, 2, 3])
   describe "works with synchronous source", ->
     expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty()
+      -> fromArraySync([1,2,3]).toProperty()
       [1,2,3])
     expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty(0)
+      -> fromArraySync([1,2,3]).toProperty(0)
       [0,1,2,3], unstable)
   it "preserves laziness", ->
     calls = 0
     id = (x) ->
       calls++
       x
-    skip(4, map(fromArray([1,2,3,4,5]), id).toProperty()).onValue()
+    skip(4, map(fromArraySync([1,2,3,4,5]), id).toProperty()).onValue()
     expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.never().toProperty(0).toString()).to.equal("Bacon.never().toProperty(0)")

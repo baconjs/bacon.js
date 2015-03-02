@@ -21,7 +21,7 @@ describe "EventStream.skipWhile", ->
   describe "for synchronous sources", ->
     describe "skips filter predicate holds true", ->
       expectStreamEvents(
-        -> fromArray([1, 2, 3, 2]).skipWhile(lessThan(3))
+        -> fromArraySync([1, 2, 3, 2]).skipWhile(lessThan(3))
         [3, 2])
   it "toString", ->
     expect(Bacon.never().skipWhile(1).toString()).to.equal("Bacon.never().skipWhile(function)")

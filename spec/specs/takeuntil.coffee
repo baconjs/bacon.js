@@ -62,7 +62,7 @@ describe "EventStream.takeUntil", ->
   describe "ends properly with a never-ending stopper and synchronous source", ->
     expectStreamEvents(
       ->
-        src = fromArray([1,2,3]).mapEnd("finito")
+        src = fromArraySync([1,2,3]).mapEnd("finito")
         stopper = new Bacon.Bus()
         src.takeUntil(stopper)
       [1,2,3, "finito"])
@@ -93,7 +93,7 @@ describe "EventStream.takeUntil", ->
   describe "works with synchronous self-derived sources", ->
     expectStreamEvents(
       ->
-        a = Bacon.fromArray [1,2]
+        a = Bacon.fromArraySync [1,2]
         b = a.filter((x) -> x >= 2)
         a.takeUntil b
       [1])

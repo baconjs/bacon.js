@@ -13,7 +13,7 @@ describe "EventStream.endOnError", ->
       [1,2,error(),3,error()])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, error(), 3]).endOnError()
+      -> fromArraySync([1, 2, error(), 3]).endOnError()
       [1, 2, error()])
   it "toString", ->
     expect(Bacon.never().endOnError().toString()).to.equal("Bacon.never().endOnError()")

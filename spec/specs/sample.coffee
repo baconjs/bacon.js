@@ -70,10 +70,10 @@ describe "Property.sampledBy(stream)", ->
       [f, f, f])
   describe "works with synchronous sampler stream", ->
     expectStreamEvents(
-      -> Bacon.constant(1).sampledBy(fromArray([1,2,3]))
+      -> Bacon.constant(1).sampledBy(fromArraySync([1,2,3]))
       [1,1,1], unstable)
     expectStreamEvents(
-      -> later(1, 1).toProperty().sampledBy(fromArray([1,2,3]))
+      -> later(1, 1).toProperty().sampledBy(fromArraySync([1,2,3]))
       [])
   describe "laziness", ->
     calls = 0

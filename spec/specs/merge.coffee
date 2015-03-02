@@ -25,7 +25,7 @@ describe "EventStream.merge", ->
       [1, 2, error(), 2, 4, error(), 3, 6], unstable)
   describe "works with synchronous sources", ->
     expectStreamEvents(
-      -> fromArray([1,2]).merge(fromArray([3,4]))
+      -> fromArraySync([1,2]).merge(fromArraySync([3,4]))
       [1,2,3,4])
   it "toString", ->
     expect(Bacon.once(1).merge(Bacon.once(2)).toString()).to.equal("Bacon.once(1).merge(Bacon.once(2))")

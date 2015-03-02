@@ -25,7 +25,7 @@ describe "Property.filter", ->
       -> series(1, [1, error(), 2, 3]).toProperty().filter(lessThan(3))
       [1, error(), 2])
   it "preserves old current value if the updated value is non-matching", ->
-    p = fromArray([1,2]).toProperty().filter(lessThan(2))
+    p = fromArraySync([1,2]).toProperty().filter(lessThan(2))
     p.onValue(=>) # to ensure that property is actualy updated
     values = []
     p.onValue((v) => values.push(v))

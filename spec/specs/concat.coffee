@@ -1,4 +1,4 @@
-# build-dependencies: bus, doaction, takewhile
+# build-dependencies: bus, doaction, takewhile, once
 
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
@@ -26,25 +26,25 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.never().concat(Bacon.never())
       [])
-  describe "works with Bacon.once()", ->
+  describe "works with Bacon.immediately()", ->
     expectStreamEvents(
-      -> once(2).concat(once(1))
+      -> immediately(2).concat(Bacon.immediately(1))
       [2, 1])
-  describe "works with Bacon.once() and Bacon.never()", ->
+  describe "works with Bacon.immediately() and Bacon.never()", ->
     expectStreamEvents(
-      -> once(1).concat(Bacon.never())
+      -> immediately(1).concat(Bacon.never())
       [1])
-  describe "works with Bacon.never() and Bacon.once()", ->
+  describe "works with Bacon.never() and Bacon.immediately()", ->
     expectStreamEvents(
-      -> Bacon.never().concat(once(1))
+      -> Bacon.never().concat(Bacon.immediately(1))
       [1])
-  describe "works with Bacon.once() and async source", ->
+  describe "works with Bacon.immediately() and async source", ->
     expectStreamEvents(
-      -> once(1).concat(series(1, [2, 3]))
+      -> Bacon.immediately(1).concat(series(1, [2, 3]))
       [1, 2, 3])
-  describe "works with Bacon.once() and fromArray()", ->
+  describe "works with Bacon.immediately() and Bacon.fromArraySync()", ->
     expectStreamEvents(
-      -> once(1).concat(fromArray([2, 3]))
+      -> Bacon.immediately(1).concat(fromArraySync([2, 3]))
       [1, 2, 3], unstable)
   it "toString", ->
     expect(Bacon.never().concat(Bacon.never()).toString()).to.equal("Bacon.never().concat(Bacon.never())")

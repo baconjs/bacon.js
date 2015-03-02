@@ -9,8 +9,8 @@ describe "EventStream.delay", ->
   describe "works with synchronous streams", ->
     expectStreamEvents(
       ->
-        left = fromArray([1, 2, 3])
-        right = fromArray([4, 5, 6]).delay(t(6))
+        left = fromArraySync([1, 2, 3])
+        right = fromArraySync([4, 5, 6]).delay(t(6))
         mergeAll(left, right)
       [1, 2, 3, 4, 5, 6], unstable)
   it "toString", ->

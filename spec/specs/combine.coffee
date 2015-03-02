@@ -131,7 +131,7 @@ describe "Bacon.combineAsArray", ->
     incr = (x) ->
       calls++
       x
-    skip(4, Bacon.combineAsArray(fromArray([1,2,3,4,5]).map(incr))).onValue()
+    skip(4, Bacon.combineAsArray(fromArraySync([1,2,3,4,5]).map(incr))).onValue()
     expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.combineAsArray(Bacon.never()).toString()).to.equal("Bacon.combineAsArray(Bacon.never())")

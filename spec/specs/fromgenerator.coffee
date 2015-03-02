@@ -13,7 +13,7 @@ describe "Infinite synchronous sequences", ->
       [1,2,3,1,5,6], unstable)
   describe "With flatMap", ->
     expectStreamEvents(
-      -> fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
+      -> fromArraySync([1,2]).flatMap((x) -> endlessly(x)).take(2)
       [1,1], unstable)
     expectStreamEvents(
       -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)

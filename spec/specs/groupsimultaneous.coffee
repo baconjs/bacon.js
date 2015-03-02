@@ -29,10 +29,10 @@ describe "Bacon.groupSimultaneous", ->
       [])
   describe "works with synchronous sources", ->
       expectStreamEvents(
-        -> Bacon.groupSimultaneous(fromArray([1,2]))
+        -> Bacon.groupSimultaneous(fromArraySync([1,2]))
         [[[1]], [[2]]])
       expectStreamEvents(
-        -> Bacon.groupSimultaneous(fromArray([1,2]).mapEnd(3))
+        -> Bacon.groupSimultaneous(fromArraySync([1,2]).mapEnd(3))
         [[[1]], [[2]], [[3]]])
   it "toString", ->
     expect(Bacon.groupSimultaneous(Bacon.never()).toString()).to.equal("Bacon.groupSimultaneous(Bacon.never())")

@@ -18,7 +18,7 @@ describe "EventStream.last", ->
       ["wut"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1,2,3,4]).last()
+      -> fromArraySync([1,2,3,4]).last()
       [4])
   it "toString", ->
     expect(Bacon.never().last().toString()).to.equal("Bacon.never().last()")

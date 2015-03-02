@@ -112,7 +112,7 @@ repeatedly = Bacon.repeatedlly || (delay, values) ->
   index = 0
   fromPoll(delay, -> values[index++ % values.length])
 
-fromArray = Bacon.fromArray || (values) ->
+fromArraySync = Bacon.fromArraySync || (values) ->
   assertArray values
   if !values.length
     Bacon.never()

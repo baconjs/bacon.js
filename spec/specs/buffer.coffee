@@ -37,7 +37,7 @@ describe "EventStream.bufferWithCount", ->
       [[1, 2], error(), [3, 4], [5]])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1,2,3,4,5]).bufferWithCount(2)
+      -> fromArraySync([1,2,3,4,5]).bufferWithCount(2)
       [[1, 2], [3, 4], [5]])
   it "toString", ->
     expect(Bacon.never().bufferWithCount(1).toString()).to.equal("Bacon.never().bufferWithCount(1)")

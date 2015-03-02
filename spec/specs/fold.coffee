@@ -9,7 +9,7 @@ describe "EventStream.fold", ->
       [error(), 6])
   describe "works with synchronous source", ->
     expectPropertyEvents(
-      -> fromArray([1, 2, error(), 3]).fold(0, add)
+      -> fromArraySync([1, 2, error(), 3]).fold(0, add)
       [error(), 6])
   describe.skip "works with really large chunks too, with { eager: true }", ->
     count = 50000

@@ -5,7 +5,7 @@ describe "EventStream.throttle(delay)", ->
       [[5, 2], [8, 3]])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 3]).throttle(t(3))
+      -> fromArraySync([1, 2, 3]).throttle(t(3))
       [3])
   it "toString", ->
     expect(Bacon.never().throttle(1).toString()).to.equal("Bacon.never().throttle(1)")

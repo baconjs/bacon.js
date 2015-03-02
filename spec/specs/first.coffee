@@ -18,7 +18,7 @@ describe "EventStream.first", ->
       ["lol"], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1,2,3,4]).first()
+      -> fromArraySync([1,2,3,4]).first()
       [1])
   it "toString", ->
     expect(Bacon.never().first().toString()).to.equal("Bacon.never().first()")

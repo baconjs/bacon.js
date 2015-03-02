@@ -20,7 +20,7 @@ describe "EventStream.skipDuplicates", ->
 
   describe "works with synchrounous sources", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 2, 3, 1]).skipDuplicates()
+      -> fromArraySync([1, 2, 2, 3, 1]).skipDuplicates()
     [1, 2, 3, 1], unstable)
   
   it "toString", ->

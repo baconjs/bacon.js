@@ -2,7 +2,7 @@ describe "EventStream.flatMapError", ->
   describe "allows spawning a new stream from an error", ->
     expectStreamEvents(
       ->
-        source = fromArray [
+        source = fromArraySync [
           error()
           error(value: true, data: 1)
           error()
@@ -18,7 +18,7 @@ describe "EventStream.flatMapError", ->
     )
   describe "has no effect on values", ->
     expectStreamEvents(
-      -> fromArray([1, 2]).flatMapError(-> Bacon.once("omg"))
+      -> fromArraySync([1, 2]).flatMapError(-> Bacon.once("omg"))
       [1, 2])
   it "toString", ->
     expect(Bacon.once(1).flatMapError(->).toString()).to.equal("Bacon.once(1).flatMapError(function)")

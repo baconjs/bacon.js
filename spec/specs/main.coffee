@@ -62,7 +62,7 @@ describe "Integration tests", ->
       expectStreamEvents(
         ->
           bus = new Bacon.Bus()
-          stream = fromArray([1,2]).flatMapLatest (x) ->
+          stream = Bacon.fromArraySync([1,2]).flatMapLatest (x) ->
             Bacon.immediately(x).concat(later(10, x).doAction((x) -> bus.push(x); bus.end()))
           stream.onValue ->
           bus
@@ -126,12 +126,12 @@ describe "Integration tests", ->
           Bacon.combineAsArray(f, b).map(".0")
         ["f0,0","f1,1"])
 
-    it "Works with flatMap source spawning fromArrays", ->
+    it "Works with flatMap source spawning synchronous streams", ->
       result = []
       array = [1,2,3]
-      fromArray(array)
+      Bacon.fromArraySync(array)
         .map(array)
-        .flatMap(fromArray)
+        .flatMap(Bacon.fromArraySync)
         .flatMapLatest(Bacon._.id)
         .onValue (v) -> result.push v
       expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])

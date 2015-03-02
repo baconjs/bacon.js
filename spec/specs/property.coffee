@@ -31,7 +31,7 @@ describe "Property.toEventStream", ->
       [0, 1, 2], unstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2]).toProperty(0).toEventStream()
+      -> fromArraySync([1, 2]).toProperty(0).toEventStream()
       [0, 1, 2], unstable)
 
 describe "Property.toProperty", ->
@@ -53,7 +53,7 @@ describe "Property.changes", ->
       ["b", error()])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 3]).toProperty(0).changes()
+      -> fromArraySync([1, 2, 3]).toProperty(0).changes()
       [1, 2, 3])
 
 describe "Observable.onValues", ->

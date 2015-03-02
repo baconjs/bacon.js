@@ -1,12 +1,15 @@
-# build-dependencies: eventstream, event, updatebarrier
+# build-dependencies: eventstream, event, updatebarrier, scheduled
 
 Bacon.fromArray = (values) ->
+  withDescription(Bacon, "fromArray", values, Bacon.sequentially(0, values))
+
+Bacon.fromArraySync = (values) ->
   assertArray values
   if !values.length
-    withDescription(Bacon, "fromArray", values, Bacon.never())
+    withDescription(Bacon, "fromArraySync", values, Bacon.never())
   else
     i = 0
-    new EventStream describe(Bacon, "fromArray", values), (sink) ->
+    new EventStream describe(Bacon, "fromArraySync", values), (sink) ->
       unsubd = false
       reply = Bacon.more
       push = ->

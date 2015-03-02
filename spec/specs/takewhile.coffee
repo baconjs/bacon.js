@@ -20,7 +20,7 @@ describe "EventStream.takeWhile", ->
       [1,1])
   describe "works with synchronous source", ->
     expectStreamEvents(
-      -> fromArray([1, 2, 3]).takeWhile(lessThan(3))
+      -> fromArraySync([1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
   it "toString", ->
     expect(Bacon.never().takeWhile(true).toString()).to.equal("Bacon.never().takeWhile(function)")

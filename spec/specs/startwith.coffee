@@ -8,7 +8,7 @@ describe "EventStream.startWith", ->
   describe "works with synchronous source", ->
     expectStreamEvents(
       ->
-        left = fromArray([1, 2, 3])
+        left = fromArraySync([1, 2, 3])
         left.startWith('pow')
       ['pow', 1, 2, 3], unstable)
   it "toString", ->
@@ -24,7 +24,7 @@ describe "Property.startWith", ->
   describe "works with synchronous source", ->
     expectPropertyEvents(
       ->
-        left = fromArray([1, 2, 3]).toProperty()
+        left = fromArraySync([1, 2, 3]).toProperty()
         left.startWith('pow')
       ['pow', 1, 2, 3], unstable)
   describe "starts with the initial value of the Property if any", ->

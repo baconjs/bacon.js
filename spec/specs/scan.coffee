@@ -20,7 +20,7 @@ describe "EventStream.scan", ->
       [null, 1])
   describe "works with synchronous streams", ->
     expectPropertyEvents(
-      -> fromArray([1,2,3]).scan(0, ((x,y)->x+y))
+      -> fromArraySync([1,2,3]).scan(0, ((x,y)->x+y))
       [0,1,3,6], unstable)
   describe "calls accumulator function once per value", ->
     describe "(simple case)", ->
@@ -62,11 +62,11 @@ describe "Property.scan", ->
   describe "for synchronous source", ->
     describe "with Init value, starts with f(seed, init)", ->
       expectPropertyEvents(
-        -> fromArray([2,3]).toProperty(1).scan(0, add)
+        -> fromArraySync([2,3]).toProperty(1).scan(0, add)
         [1, 3, 6], unstable)
     describe "without Init value, starts with seed", ->
       expectPropertyEvents(
-        -> fromArray([2,3]).toProperty().scan(0, add)
+        -> fromArraySync([2,3]).toProperty().scan(0, add)
         [0, 2, 5], unstable)
     describe "works with synchronously responding empty source", ->
       expectPropertyEvents(
