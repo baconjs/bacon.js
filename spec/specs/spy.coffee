@@ -3,7 +3,7 @@
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> 
+    spy = (obs) ->
       obs.toString()
       calls++
     Bacon.spy spy

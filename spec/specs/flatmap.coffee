@@ -14,23 +14,23 @@ describe "EventStream.flatMap", ->
   describe "should work with a spawned stream responding synchronously", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value))
+         Bacon.never().concat(immediately(value))
       [1, 2], unstable)
     expectStreamEvents(
       -> series(1, [1,2]).flatMap (value) ->
-         Bacon.never().concat(Bacon.once(value)).concat(Bacon.once("lol"))
+         Bacon.never().concat(immediately(value)).concat(immediately("lol"))
       [1, "lol", 2, "lol"], unstable)
   describe "should work with a source stream responding synchronously", ->
     expectStreamEvents(
       -> fromArraySync([1, 2]).flatMap (value) ->
-         Bacon.once(value)
+         immediately(value)
       [1, 2], unstable)
     expectStreamEvents(
       -> fromArraySync([1, 2]).flatMap (value) ->
          fromArraySync([value, value*10])
       [1, 10, 2, 20], unstable)
     expectStreamEvents(
-      -> Bacon.once(1).flatMap (value) ->
+      -> immediately(1).flatMap (value) ->
          later(0, value)
       [1], unstable)
   describe "Works also when f returns a Property instead of an EventStream", ->
@@ -85,8 +85,7 @@ describe "Property.flatMap", ->
   describe "works for synchronous source", ->
     expectStreamEvents(
       ->
-        once = (x) -> Bacon.once(x)
-        fromArraySync([1, 2]).toProperty(0).flatMap(once)
+        fromArraySync([1, 2]).toProperty(0).flatMap(immediately)
       [0, 1, 2], unstable)
   it "toString", ->
     expect(Bacon.constant(1).flatMap(->).toString()).to.equal("Bacon.constant(1).flatMap(function)")

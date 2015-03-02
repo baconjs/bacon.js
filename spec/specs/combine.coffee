@@ -120,11 +120,11 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
-      -> 
+      ->
         Bacon
-          .once(123)
+          .immediately(123)
           .flatMap ->
-              Bacon.combineAsArray(Bacon.once(1), Bacon.once(2), 3)
+              Bacon.combineAsArray(immediately(1), immediately(2), 3)
     [[1,2,3]])
   it "preserves laziness", ->
     calls = 0

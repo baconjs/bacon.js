@@ -6,7 +6,7 @@ describe "Infinite synchronous sequences", ->
       -> endlessly(1,2,3).take(4)
       [1,2,3,1], unstable)
     expectStreamEvents(
-      -> endlessly(1,2,3).take(4).concat(Bacon.once(5))
+      -> endlessly(1,2,3).take(4).concat(immediately(5))
       [1,2,3,1,5], unstable)
     expectStreamEvents(
       -> endlessly(1,2,3).take(4).concat(endlessly(5, 6).take(2))

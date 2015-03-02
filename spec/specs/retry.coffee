@@ -7,7 +7,7 @@ describe "Bacon.retry", ->
         calls = 0
         source = ->
           calls += 1
-          Bacon.once({calls})
+          Bacon.immediately({calls})
         Bacon.retry({source, retries: 2})
       [calls: 1])
   describe "retries to run the source stream given number of times until it yields a value", ->
@@ -17,9 +17,9 @@ describe "Bacon.retry", ->
         source = ->
           calls += 1
           if calls < 3
-            Bacon.once(new Bacon.Error())
+            Bacon.immediately(new Bacon.Error())
           else
-            Bacon.once({calls})
+            Bacon.immediately({calls})
         Bacon.retry({source, retries: 5})
       [calls: 3])
   describe "does not change source stream characteristics", ->
@@ -32,7 +32,7 @@ describe "Bacon.retry", ->
         calls = 0
         source = ->
           calls += 1
-          Bacon.once(new Bacon.Error({calls}))
+          Bacon.immediately(new Bacon.Error({calls}))
         isRetryable = ({calls}) ->
           calls < 2
         Bacon.retry({source, isRetryable, retries: 5})
@@ -43,7 +43,7 @@ describe "Bacon.retry", ->
         calls = 0
         source = ->
           calls += 1
-          Bacon.once(new Bacon.Error({calls}))
+          Bacon.immediately(new Bacon.Error({calls}))
         Bacon.retry {source, retries: 2}
       [error(calls: 3)]) # TODO: assert error content
   it "allows specifying delay by context for each retry", (done) ->
@@ -51,7 +51,7 @@ describe "Bacon.retry", ->
     contexts = []
     source = ->
       calls += 1
-      Bacon.once(new Bacon.Error({calls}))
+      Bacon.immediately(new Bacon.Error({calls}))
     delay = (context) ->
       contexts.push(context)
       1
@@ -66,7 +66,7 @@ describe "Bacon.retry", ->
     calls = 0
     source = ->
       calls += 1
-      Bacon.once(new Bacon.Error())
+      Bacon.immediately(new Bacon.Error())
     interval = -> 100
     Bacon.retry({source, interval, retries: 1}).onValue -> # noop
     expect(calls).to.equal 1
@@ -74,11 +74,11 @@ describe "Bacon.retry", ->
   describe "no stack overflows", ->
     expectStreamEvents(
       ->
-        source = -> Bacon.once(new Bacon.Error())
+        source = -> Bacon.immediately(new Bacon.Error())
         interval = -> 1
         Bacon.retry({source, interval, retries: 1000})
       [error()])
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
   it "toString", ->
-    expect(Bacon.retry({source: -> Bacon.once(1)}).toString()).to.equals("Bacon.retry({source:function})")
+    expect(Bacon.retry({source: -> Bacon.immediately(1)}).toString()).to.equals("Bacon.retry({source:function})")

@@ -16,7 +16,7 @@ describe "EventStream.flatMapError", ->
 
       [error(), 1, error(), 2]
     )
-  describe "has no effect on values", ->
+  describe "passes value events through", ->
     expectStreamEvents(
       -> fromArraySync([1, 2]).flatMapError(-> Bacon.once("omg"))
       [1, 2])

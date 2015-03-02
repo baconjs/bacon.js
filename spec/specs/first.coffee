@@ -46,8 +46,8 @@ describe "Property.first()", ->
   it "toString", ->
     expect(Bacon.constant(0).first().toString()).to.equal("Bacon.constant(0).first()")
 
-describe "Bacon.once().first()", ->
+describe "Bacon.immediately().first()", ->
   describe "works", ->
     expectStreamEvents(
-      -> once(1).first()
+      -> immediately(1).first()
       [1])

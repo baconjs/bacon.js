@@ -48,3 +48,9 @@ describe "Bacon.once().take(1)", ->
     expectStreamEvents(
       -> once(1).take(1)
       [1])
+
+describe "Bacon.immediately().take(1)", ->
+  describe "works", ->
+    expectStreamEvents(
+      -> immediately(1).take(1)
+      [1])

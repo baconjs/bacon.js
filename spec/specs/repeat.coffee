@@ -17,7 +17,7 @@ describe "Bacon.repeat", ->
         Bacon.repeat ->
           count++
           if count <= 3
-            Bacon.once(count)
+            Bacon.immediately(count)
       [1,2,3], unstable)
   describe "Provides generator function with index", ->
     expectStreamEvents(
@@ -32,7 +32,7 @@ describe "Bacon.repeat", ->
   describe "No stackoverflow", ->
     expectStreamEvents(
       ->
-        take(3000, Bacon.repeat(-> Bacon.once(1))).filter(false)
+        take(3000, Bacon.repeat(-> Bacon.immediately(1))).filter(false)
       [])
   describe "Works with endless asynchronous streams", ->
     expectStreamEvents(
@@ -47,7 +47,7 @@ describe "Bacon.repeat", ->
   describe "Works with endless synchronous generators", ->
     expectStreamEvents(
       ->
-        take(3, Bacon.repeat(-> Bacon.once(1)))
+        take(3, Bacon.repeat(-> Bacon.immediately(1)))
       [1,1,1], unstable)
 
 

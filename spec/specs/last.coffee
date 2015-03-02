@@ -37,6 +37,12 @@ describe "Property.last()", ->
       -> Bacon.constant(1)
       [1])
 
+describe "Bacon.immediately().last()", ->
+  describe "works", ->
+    expectStreamEvents(
+      -> immediately(1).last()
+      [1])
+
 describe "Bacon.once().last()", ->
   describe "works", ->
     expectStreamEvents(

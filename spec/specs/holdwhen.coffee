@@ -22,7 +22,7 @@ describe "EventStream.holdWhen", ->
         valve = series(2, [false]).delay(1).toProperty(true)
         src.holdWhen(valve)
       [[3, 1], [4, 2]])
-  describe "Works with array values", -> 
+  describe "Works with array values", ->
     expectStreamEvents(
       ->
         Bacon.interval(1000, [1,2]).
