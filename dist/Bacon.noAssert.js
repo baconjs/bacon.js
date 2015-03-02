@@ -2671,12 +2671,15 @@
         }));
     };
     Bacon.fromArray = function (values) {
+        return withDescription(Bacon, 'fromArray', values, Bacon.sequentially(0, values));
+    };
+    Bacon.fromArraySync = function (values) {
         var i;
         if (!values.length) {
-            return withDescription(Bacon, 'fromArray', values, Bacon.never());
+            return withDescription(Bacon, 'fromArraySync', values, Bacon.never());
         } else {
             i = 0;
-            return new EventStream(describe(Bacon, 'fromArray', values), function (sink) {
+            return new EventStream(describe(Bacon, 'fromArraySync', values), function (sink) {
                 var push, reply, unsubd;
                 unsubd = false;
                 reply = Bacon.more;
@@ -2715,7 +2718,7 @@
                 } else {
                     return _this.scan([], function (xs, x) {
                         return xs.concat([x]);
-                    }).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
+                    }).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArraySync);
                 }
             };
         }(this))));
