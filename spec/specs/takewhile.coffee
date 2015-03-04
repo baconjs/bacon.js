@@ -52,3 +52,8 @@ describe "Property.takeWhile", ->
           .toProperty().takeWhile(lessThan(3))
       [1, error("wat"), 2])
 
+describe "Observable.takeWhile(EventStream)", ->
+  it "should throw an error", ->
+    expect(
+      -> once(true).takeWhile(once(true))
+    ).to.throw(Error, "Observable is not a Property : Bacon.once(true)")
