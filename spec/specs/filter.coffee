@@ -37,3 +37,9 @@ describe "Property.filter", ->
         ok = series(2, [false, true, true, false]).toProperty()
         src.filter(ok)
       [2, 3])
+
+describe "Observable.filter(EventStream)", ->
+  it "should throw an error", ->
+    expect(
+      -> once(true).filter(once(true))
+    ).to.throw(Error, "Observable is not a Property : Bacon.once(true)")
