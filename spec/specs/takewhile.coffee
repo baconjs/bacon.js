@@ -55,5 +55,5 @@ describe "Property.takeWhile", ->
 describe "Observable.takeWhile(EventStream)", ->
   it "should throw an error", ->
     expect(
-      -> once(true).takeWhile(once(true))
-    ).to.throw(Error, "Observable is not a Property : Bacon.once(true)")
+      -> Bacon.never().takeWhile(Bacon.never())
+    ).to.throw(Error, "Observable is not a Property : Bacon.never()")

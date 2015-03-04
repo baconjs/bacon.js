@@ -29,5 +29,5 @@ describe "EventStream.skipWhile", ->
 describe "Observable.skipWhile(EventStream)", ->
   it "should throw an error", ->
     expect(
-      -> once(true).skipWhile(once(true))
-    ).to.throw(Error, "Observable is not a Property : Bacon.once(true)")
+      -> Bacon.never().skipWhile(Bacon.never())
+    ).to.throw(Error, "Observable is not a Property : Bacon.never()")
