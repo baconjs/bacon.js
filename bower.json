@@ -2,4 +2,32 @@
   "name": "bacon",
   "version": "0.7.55",
   "main": "dist/Bacon.js"
+  "ignore": [
+    ".*",
+    "*.md",
+    "*.coffee",
+    "*.png",
+    "browsertest/",
+    "examples/",
+    "lib/",
+    "nuspec/",
+    "performance/",
+    "readme/",
+    "spec/",
+    "src/",
+    "build",
+    "coffeelint.json",
+    "component.json",
+    "package.json",
+    "grunt",
+    "release",
+    "test",
+    "runtests",
+    "testem.json",
+    "update-cdnjs",
+    "version",
+    "assemble*.js",
+    "build-deps.js",
+    "test-individually.js"
+  ]
 }
