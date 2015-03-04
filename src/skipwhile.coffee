@@ -1,6 +1,7 @@
-# build-dependencies: eventstream
+# build-dependencies: eventstream, helpers
 
 Bacon.EventStream :: skipWhile = (f, args...) ->
+  assertObservableIsProperty(f)
   ok = false
   convertArgsToFunction this, f, args, (f) ->
     withDescription(this, "skipWhile", f, @withHandler (event) ->
