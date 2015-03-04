@@ -1,3 +1,10 @@
+## NEXT
+
+- Throw an exception with a helpful error message if the user calls `filter(EventStream)`,
+  `takeWhile(EventStream)` or `skipWhile(EventStream)`
+
+  This is a potentially **backward incompatible change**.
+
 ## 0.7.52
 
 - Fix #560: unscheduling fail in case subscriber throws error
