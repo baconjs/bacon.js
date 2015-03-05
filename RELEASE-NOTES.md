@@ -5,6 +5,8 @@
 
   This is a potentially **backward incompatible change**.
 
+- Ignore unnecessary files from Bower component
+
 ## 0.7.52
 
 - Fix #560: unscheduling fail in case subscriber throws error
