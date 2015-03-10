@@ -6,7 +6,7 @@ npm-debug.log
 .c9/
 *.iml
 *.exe
-*.nupkgeventTransformer
+*.nupkg
 browsertest/bundle.js
 src/Testing*
 spec/BaconSpec.coffee
