@@ -3,9 +3,10 @@ npm-debug.log
 **/.DS_Store
 .DS_Store
 .idea/
+.c9/
 *.iml
 *.exe
-*.nupkg
+*.nupkgeventTransformer
 browsertest/bundle.js
 src/Testing*
 spec/BaconSpec.coffee
