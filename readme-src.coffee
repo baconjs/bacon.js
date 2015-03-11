@@ -435,7 +435,7 @@ Use shim if you need to support legacy browsers or platforms.
 
 doc.fn "observable.map(@ : Observable[A], f : A -> B) : Observable[B]", """
 maps values using given function, returning a new
-EventStream. Instead of a function, you can also provide a constant
+stream/property. Instead of a function, you can also provide a constant
 value. Further, you can use a property extractor string like
 ".keyCode". So, if f is a string starting with a
 dot, the elements will be mapped to the corresponding field/function in the event
