@@ -427,10 +427,15 @@ be called when the stream ends. Just like `subscribe`, this method returns a fun
 """
 
 doc.fn "observable.toPromise(@ : Observable[A]) : Promise[A]", """
-returns a Promise which will be resolved with the first event coming from an Observable.
+returns a Promise which will be resolved with the last event coming from an Observable.
 The global ES6 promise implementation will be used.
 Use shim if you need to support legacy browsers or platforms.
 [caniuse promises](http://caniuse.com/#feat=promises).
+"""
+
+doc.fn "observable.firstToPromise(@ : Observable[A]) : Promise[A]", """
+returns a Promise which will be resolved with the first event coming from an Observable.
+Like `toPromise`, the global ES6 promise implementation will be used.
 """
 
 doc.fn "observable.map(@ : Observable[A], f : A -> B) : Observable[B]", """
