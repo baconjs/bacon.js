@@ -302,11 +302,11 @@ with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
 would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
 
 <a name="bacon-repeat"></a>
-[`Bacon.repeat(fn)`](#bacon-repeat "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]") Calls generator function which is expected to return an observable. The returned EventStream contains 
-values and errors from the spawned observable. When the spawned observable ends, the generator is called 
-again to spawn a new observable. 
+[`Bacon.repeat(fn)`](#bacon-repeat "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]") Calls generator function which is expected to return an observable. The returned EventStream contains
+values and errors from the spawned observable. When the spawned observable ends, the generator is called
+again to spawn a new observable.
 
-This is repeated until the generator returns a falsy value 
+This is repeated until the generator returns a falsy value
 (such as `undefined` or `false`).
 
 The generator function is called with one argument — iteration number starting from `0`.
