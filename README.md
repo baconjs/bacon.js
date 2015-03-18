@@ -447,14 +447,15 @@ will be called for each error in the stream.
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 
 <a name="observable-topromise"></a>
-[`observable.toPromise()`](#observable-topromise "observable.toPromise(@ : Observable[A]) : Promise[A]") returns a Promise which will be resolved with the last event coming from an Observable.
-The global ES6 promise implementation will be used.
-Use shim if you need to support legacy browsers or platforms.
+[`observable.toPromise([PromiseCtr])`](#observable-topromise "observable.toPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the last event coming from an Observable.
+The global ES6 promise implementation will be used unless a promise constructor is given.
+Use a shim if you need to support legacy browsers or platforms.
 [caniuse promises](http://caniuse.com/#feat=promises).
 
 <a name="observable-firsttopromise"></a>
-[`observable.firstToPromise()`](#observable-firsttopromise "observable.firstToPromise(@ : Observable[A]) : Promise[A]") returns a Promise which will be resolved with the first event coming from an Observable.
-Like [`toPromise`](#observable-topromise), the global ES6 promise implementation will be used.
+[`observable.firstToPromise([PromiseCtr])`](#observable-firsttopromise "observable.firstToPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the first event coming from an Observable.
+Like [`toPromise`](#observable-topromise), the global ES6 promise implementation will be used unless a promise
+constructor is given.
 
 <a name="observable-map"></a>
 [`observable.map(f)`](#observable-map "observable.map(@ : Observable[A], f : A -> B) : Observable[B]") maps values using given function, returning a new
