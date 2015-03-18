@@ -273,11 +273,11 @@ would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
 """
 
 doc.fn "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]", """
-Calls generator function which is expected to return an observable. The returned EventStream contains 
-values and errors from the spawned observable. When the spawned observable ends, the generator is called 
-again to spawn a new observable. 
+Calls generator function which is expected to return an observable. The returned EventStream contains
+values and errors from the spawned observable. When the spawned observable ends, the generator is called
+again to spawn a new observable.
 
-This is repeated until the generator returns a falsy value 
+This is repeated until the generator returns a falsy value
 (such as `undefined` or `false`).
 
 The generator function is called with one argument — iteration number starting from `0`.
@@ -426,11 +426,17 @@ subscribes a callback to stream end. The function will
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 """
 
-doc.fn "observable.toPromise(@ : Observable[A]) : Promise[A]", """
-returns a Promise which will be resolved with the first event coming from an Observable.
-The global ES6 promise implementation will be used.
-Use shim if you need to support legacy browsers or platforms.
+doc.fn "observable.toPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]", """
+returns a Promise which will be resolved with the last event coming from an Observable.
+The global ES6 promise implementation will be used unless a promise constructor is given.
+Use a shim if you need to support legacy browsers or platforms.
 [caniuse promises](http://caniuse.com/#feat=promises).
+"""
+
+doc.fn "observable.firstToPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]", """
+returns a Promise which will be resolved with the first event coming from an Observable.
+Like `toPromise`, the global ES6 promise implementation will be used unless a promise
+constructor is given.
 """
 
 doc.fn "observable.map(@ : Observable[A], f : A -> B) : Observable[B]", """
@@ -489,13 +495,12 @@ at the time of the event.
 """
 
 doc.fn "observable.takeWhile(@ : Observable[A], f : A -> Bool) : Observable[A]", """
-takes while given predicate function holds
-true. [Function Construction rules](#function-construction-rules) apply.
+takes while given predicate function holds true, and then ends.
+[Function Construction rules](#function-construction-rules) apply.
 """
 
 doc.fnOverload "observable.takeWhile(property)", "property", """
-takes values while the value of a
-property holds `true`.
+takes values while the value of a property holds true, and then ends.
 """
 
 doc.fn "observable.take(@ : Observable[A], n : Number) : Observable[A]", """
@@ -975,12 +980,14 @@ single-element stream contains `value` with this stream.
 """
 
 doc.fn "stream.skipWhile(f)", """
-skips elements while given predicate function holds true.
+skips elements until the given predicate function returns falsy once, and then
+lets all events pass through.
 The [Function Construction rules](#function-construction-rules) below apply here.
 """
 
 doc.fnOverload "stream.skipWhile(property)", "property", """
-skips elements while the value of the given Property is `true`.
+skips elements until the value of the given Property is falsy once, and then
+lets all events pass through.
 """
 
 doc.fn "stream.skipUntil(stream2)", """

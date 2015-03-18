@@ -302,11 +302,11 @@ with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
 would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
 
 <a name="bacon-repeat"></a>
-[`Bacon.repeat(fn)`](#bacon-repeat "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]") Calls generator function which is expected to return an observable. The returned EventStream contains 
-values and errors from the spawned observable. When the spawned observable ends, the generator is called 
-again to spawn a new observable. 
+[`Bacon.repeat(fn)`](#bacon-repeat "Bacon.repeat(fn: Number -> Observable[A]): EventStream[A]") Calls generator function which is expected to return an observable. The returned EventStream contains
+values and errors from the spawned observable. When the spawned observable ends, the generator is called
+again to spawn a new observable.
 
-This is repeated until the generator returns a falsy value 
+This is repeated until the generator returns a falsy value
 (such as `undefined` or `false`).
 
 The generator function is called with one argument — iteration number starting from `0`.
@@ -447,10 +447,15 @@ will be called for each error in the stream.
 be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
 
 <a name="observable-topromise"></a>
-[`observable.toPromise()`](#observable-topromise "observable.toPromise(@ : Observable[A]) : Promise[A]") returns a Promise which will be resolved with the first event coming from an Observable.
-The global ES6 promise implementation will be used.
-Use shim if you need to support legacy browsers or platforms.
+[`observable.toPromise([PromiseCtr])`](#observable-topromise "observable.toPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the last event coming from an Observable.
+The global ES6 promise implementation will be used unless a promise constructor is given.
+Use a shim if you need to support legacy browsers or platforms.
 [caniuse promises](http://caniuse.com/#feat=promises).
+
+<a name="observable-firsttopromise"></a>
+[`observable.firstToPromise([PromiseCtr])`](#observable-firsttopromise "observable.firstToPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the first event coming from an Observable.
+Like [`toPromise`](#observable-topromise), the global ES6 promise implementation will be used unless a promise
+constructor is given.
 
 <a name="observable-map"></a>
 [`observable.map(f)`](#observable-map "observable.map(@ : Observable[A], f : A -> B) : Observable[B]") maps values using given function, returning a new
@@ -500,12 +505,11 @@ property. Event will be included in output [if and only if](http://en.wikipedia.
 at the time of the event.
 
 <a name="observable-takewhile"></a>
-[`observable.takeWhile(f)`](#observable-takewhile "observable.takeWhile(@ : Observable[A], f : A -> Bool) : Observable[A]") takes while given predicate function holds
-true. [Function Construction rules](#function-construction-rules) apply.
+[`observable.takeWhile(f)`](#observable-takewhile "observable.takeWhile(@ : Observable[A], f : A -> Bool) : Observable[A]") takes while given predicate function holds true, and then ends.
+[Function Construction rules](#function-construction-rules) apply.
 
 <a name="observable-takewhile-property"></a>
-[`observable.takeWhile(property)`](#observable-takewhile-property "observable.takeWhile(property)") takes values while the value of a
-property holds `true`.
+[`observable.takeWhile(property)`](#observable-takewhile-property "observable.takeWhile(property)") takes values while the value of a property holds true, and then ends.
 
 <a name="observable-take"></a>
 [`observable.take(n)`](#observable-take "observable.take(@ : Observable[A], n : Number) : Observable[A]") takes at most n elements from the stream.
@@ -936,11 +940,13 @@ All buffered events are released when valve becomes falsy.
 single-element stream contains [`value`](#event-value) with this stream.
 
 <a name="stream-skipwhile"></a>
-[`stream.skipWhile(f)`](#stream-skipwhile "stream.skipWhile(f)") skips elements while given predicate function holds true.
+[`stream.skipWhile(f)`](#stream-skipwhile "stream.skipWhile(f)") skips elements until the given predicate function returns falsy once, and then
+lets all events pass through.
 The [Function Construction rules](#function-construction-rules) below apply here.
 
 <a name="stream-skipwhile-property"></a>
-[`stream.skipWhile(property)`](#stream-skipwhile-property "stream.skipWhile(property)") skips elements while the value of the given Property is `true`.
+[`stream.skipWhile(property)`](#stream-skipwhile-property "stream.skipWhile(property)") skips elements until the value of the given Property is falsy once, and then
+lets all events pass through.
 
 <a name="stream-skipuntil"></a>
 [`stream.skipUntil(stream2)`](#stream-skipuntil "stream.skipUntil(stream2)") skips elements from `stream` until a Next event
