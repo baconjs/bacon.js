@@ -1777,7 +1777,7 @@ Run limited set of unit tests:
 
     ./test core _ frompromise
 
-The names correspond to the file names under `src/spec/specs`. The library will
+The names correspond to the file names under `spec/specs`. The library will
 be built with the listed features only.
 
 You can also test all features individually:
