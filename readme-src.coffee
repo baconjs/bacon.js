@@ -18,7 +18,7 @@ Here's the stuff.
 - [Homepage](http://baconjs.github.io/)
 - [CoffeeScript source](https://github.com/baconjs/bacon.js/tree/master/src)
 - [Generated javascript](https://github.com/baconjs/bacon.js/blob/master/dist/)
-- [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffee)
+- [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/specs/main.coffee)
 - [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/baconjs/bacon.js/wiki/) with more docs, related projects and more
 - [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
@@ -1815,7 +1815,7 @@ doc.section "Examples"
 doc.text """
 See [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 
-See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/BaconSpec.coffee)
+See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/specs/main.coffee)
 
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 """
@@ -1854,7 +1854,7 @@ Run limited set of unit tests:
 
     ./test core _ frompromise
 
-The names correspond to the file names under `src/spec/specs`. The library will
+The names correspond to the file names under `spec/specs`. The library will
 be built with the listed features only.
 
 You can also test all features individually:
