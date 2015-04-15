@@ -94,6 +94,14 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).to.deep.equal(false)
 
+  it "respects end() calls before subscribers", ->
+    failed = false
+    bus = new Bacon.Bus()
+    bus.end()
+    bus.onValue(-> failed = true;)
+    bus.push('foo')
+    expect(failed).to.deep.equal(false)
+
   it "returns unplug function from plug", ->
     values = []
     bus = new Bacon.Bus()
@@ -117,5 +125,3 @@ describe "Bacon.Bus", ->
     expect(o).to.deep.equal(["foo"])
   it "toString", ->
     expect(new Bacon.Bus().toString()).to.equal("Bacon.Bus()")
-
-
