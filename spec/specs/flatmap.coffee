@@ -64,6 +64,20 @@ describe "EventStream.flatMap", ->
         glorify = (x, y) -> fromArray([x, y])
         Bacon.once("francis").flatMap(glorify, "sir")
       ["sir", "francis"], unstable)
+  it "doesn't flush events while one is being processed", ->
+    criticalSection = false
+    bus = new Bacon.Bus()
+    bus.onValue(->)
+    Bacon.once([1, 2])
+      .flatMap(Bacon.fromArray)
+      .onValue(
+        (x) ->
+          if criticalSection
+            throw new Error("Should not happen")
+          criticalSection = true
+          bus.end()
+          criticalSection = false
+        )
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
 
