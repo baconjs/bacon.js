@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     slice = [].slice,
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.53';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -32,6 +32,12 @@
   assert = function(message, condition) {
     if (!condition) {
       throw new Exception(message);
+    }
+  };
+
+  assertObservableIsProperty = function(x) {
+    if (x instanceof Observable && !(x instanceof Property)) {
+      throw new Exception("Observable is not a Property : " + x);
     }
   };
 
@@ -2155,6 +2161,7 @@
   Bacon.Observable.prototype.filter = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "filter", f, this.withHandler(function(event) {
         if (event.filter(f)) {
@@ -2573,7 +2580,9 @@
     };
 
     Bus.prototype.push = function(value) {
-      return typeof this.sink === "function" ? this.sink(nextEvent(value)) : void 0;
+      if (!this.ended) {
+        return typeof this.sink === "function" ? this.sink(nextEvent(value)) : void 0;
+      }
     };
 
     Bus.prototype.error = function(error) {
@@ -3104,6 +3113,7 @@
   Bacon.EventStream.prototype.skipWhile = function() {
     var args, f, ok;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     ok = false;
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "skipWhile", f, this.withHandler(function(event) {
@@ -3167,6 +3177,7 @@
   Bacon.Observable.prototype.takeWhile = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "takeWhile", f, this.withHandler(function(event) {
         if (event.filter(f)) {

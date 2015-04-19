@@ -1,5 +1,5 @@
 (function () {
-    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
+    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
             for (var key in parent) {
                 if (hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.53';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2331,7 +2331,9 @@
             return typeof this.sink === 'function' ? this.sink(endEvent()) : void 0;
         };
         Bus.prototype.push = function (value) {
-            return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            if (!this.ended) {
+                return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            }
         };
         Bus.prototype.error = function (error) {
             return typeof this.sink === 'function' ? this.sink(new Error(error)) : void 0;

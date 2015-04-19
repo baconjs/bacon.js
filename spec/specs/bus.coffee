@@ -94,6 +94,26 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).to.deep.equal(false)
 
+  it "respects end() even events comes from plugged stream", ->
+    failed = false
+    busA = new Bacon.Bus()
+    busB = new Bacon.Bus()
+    busB.onValue(-> failed = true;)
+    busB.plug(busA)
+    busB.end()
+    busA.push('foo')
+    expect(failed).to.equal(false)
+
+  it "does not plug after end(), second variant", ->
+    failed = false
+    busA = new Bacon.Bus()
+    busB = new Bacon.Bus()
+    busB.onValue(-> failed = true;)
+    busB.plug(busA)
+    busB.end()
+    busA.push('foo')
+    expect(failed).to.equal(false)
+
   it "respects end() calls before subscribers", ->
     failed = false
     bus = new Bacon.Bus()
