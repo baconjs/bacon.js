@@ -1,4 +1,4 @@
-# build-dependencies: scheduled, takeWhile
+# build-dependencies: takeWhile, delay
 #
 describe "EventStream.merge", ->
   describe "merges two streams and ends when both are exhausted", ->
@@ -28,7 +28,7 @@ describe "EventStream.merge", ->
       -> fromArray([1,2]).merge(fromArray([3,4]))
       [1,2,3,4])
   it "toString", ->
-    expect(Bacon.once(1).merge(Bacon.once(2)).toString()).to.equal("Bacon.once(1).merge(Bacon.once(2))")
+    expect(Bacon.never(1).merge(Bacon.never()).toString()).to.equal("Bacon.never().merge(Bacon.never())")
 
 describe "Bacon.mergeAll", ->
   describe ("merges all given streams"), ->
@@ -49,10 +49,10 @@ describe "Bacon.mergeAll", ->
       [1, 3, 5, 2, 4, 6], unstable)
   describe "works with a single stream", ->
     expectStreamEvents(
-      -> Bacon.mergeAll([Bacon.once(1)])
+      -> Bacon.mergeAll([once(1)])
       [1])
     expectStreamEvents(
-      -> Bacon.mergeAll(Bacon.once(1))
+      -> Bacon.mergeAll(once(1))
       [1])
   describe "returns empty stream for zero input", ->
     expectStreamEvents(

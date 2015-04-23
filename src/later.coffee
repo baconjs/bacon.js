@@ -1,3 +1,4 @@
+# build-dependencies: factories
 Bacon.later = (delay, value) ->
   withDescription Bacon, "later", delay, value, Bacon.fromBinder (sink) ->
     sender = -> sink [value, endEvent()]

@@ -1,4 +1,4 @@
-# build-dependencies: scheduled, bus
+# build-dependencies: bus, flatmap, delay
 
 describe "Property.combine", ->
   describe "combines latest values of two properties, with given combinator function, passing through errors", ->
@@ -48,7 +48,7 @@ describe "Property.combine", ->
       try
         Array.prototype.foo = "bar"
         events = []
-        Bacon.once("a").combine(Bacon.once("b"), (a,b) -> [a,b]).onValue (v) ->
+        once("a").combine(once("b"), (a,b) -> [a,b]).onValue (v) ->
           events.push(v)
         expect(events).to.deep.equal([["a", "b"]])
       finally
@@ -94,7 +94,7 @@ describe "Bacon.combineAsArray", ->
   describe "works with single stream", ->
     expectPropertyEvents(
       ->
-        Bacon.combineAsArray([Bacon.once(1)])
+        Bacon.combineAsArray([once(1)])
       [[1]])
   describe "works with arrays as values, with first array being empty (bug fix)", ->
     expectPropertyEvents(
@@ -121,10 +121,9 @@ describe "Bacon.combineAsArray", ->
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
       -> 
-        Bacon
-          .once(123)
+          once(123)
           .flatMap ->
-              Bacon.combineAsArray(Bacon.once(1), Bacon.once(2), 3)
+              Bacon.combineAsArray(once(1), once(2), 3)
     [[1,2,3]])
   it "preserves laziness", ->
     calls = 0

@@ -1,4 +1,4 @@
-# build-dependencies: skip, scheduled
+# build-dependencies: skip, delay
 
 describe "EventStream.zip", ->
   describe "pairwise combines values from two streams", ->
@@ -20,7 +20,7 @@ describe "EventStream.zip", ->
         obs.zip(obs.skip(1))
       [['a', 'b'], ['b', 'c']])
   it "toString", ->
-    expect(Bacon.never().zip(Bacon.once(1)).toString()).to.equal("Bacon.never().zip(Bacon.once(1))")
+    expect(Bacon.never().zip(Bacon.never()).toString()).to.equal("Bacon.never().zip(Bacon.never())")
 
 describe "Property.zip", ->
   describe "pairwise combines values from two properties", ->

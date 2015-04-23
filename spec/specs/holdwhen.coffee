@@ -1,4 +1,4 @@
-# build-dependencies: startwith, scheduled, filter
+# build-dependencies: startwith, filter, delay, interval
 
 describe "EventStream.holdWhen", ->
   describe "Keeps events on hold when a property is true", ->

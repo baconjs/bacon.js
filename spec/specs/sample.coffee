@@ -1,4 +1,4 @@
-# build-dependencies: scheduled, take
+# build-dependencies: take, interval, delay
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->

@@ -1,4 +1,4 @@
-# build-dependencies: scheduler
+# build-dependencies: scheduler, factories
 
 Bacon.fromPoll = (delay, poll) ->
   withDescription(Bacon, "fromPoll", delay, poll,

@@ -1,4 +1,4 @@
-# build-dependencies: EventStream, Property, sample, scheduled
+# build-dependencies: EventStream, Property, sample, delay
 #
 describe "EventStream.filter", ->
   describe "should filter values", ->

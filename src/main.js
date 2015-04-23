@@ -35,7 +35,6 @@
 // build-dependencies: retry
 // build-dependencies: sample
 // build-dependencies: scan
-// build-dependencies: scheduled
 // build-dependencies: sequentially
 // build-dependencies: skip
 // build-dependencies: skipduplicates
