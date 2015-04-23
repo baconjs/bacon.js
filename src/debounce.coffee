@@ -1,4 +1,4 @@
-# build-dependencies: flatmaplatest, scheduled, once
+# build-dependencies: flatmaplatest, delay, once
 # build-dependencies: concat, filter
 
 Bacon.EventStream :: debounce = (delay) ->

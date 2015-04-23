@@ -17,7 +17,7 @@ describe "Property.throttle", ->
       [0,3])
   describe "works with Bacon.once (bug fix)", ->
     expectPropertyEvents(
-      -> Bacon.once(1).toProperty().throttle(1)
+      -> once(1).toProperty().throttle(1)
       [1])
   it "toString", ->
     expect(Bacon.constant(0).throttle(1).toString()).to.equal("Bacon.constant(0).throttle(1)")

@@ -1,4 +1,4 @@
-// build-dependencies: buffer, scheduled, map
+// build-dependencies: buffer, map, delaychanges
 
 Bacon.EventStream.prototype.throttle = function (delay) {
   return withDescription(this, "throttle", delay, this.bufferWithTime(delay).map((values) => values[values.length - 1]));

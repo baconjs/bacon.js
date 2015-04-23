@@ -1,4 +1,4 @@
-# build-dependencies: flatmap, scheduled, filter, repeat, endonerror, once
+# build-dependencies: flatmap, later, filter, repeat, endonerror, once, concat
 
 Bacon.retry = (options) ->
   throw new Exception("'source' option has to be a function") unless _.isFunction(options.source)
