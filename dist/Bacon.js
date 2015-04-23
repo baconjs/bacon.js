@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     slice = [].slice,
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.53';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -32,6 +32,12 @@
   assert = function(message, condition) {
     if (!condition) {
       throw new Exception(message);
+    }
+  };
+
+  assertObservableIsProperty = function(x) {
+    if (x instanceof Observable && !(x instanceof Property)) {
+      throw new Exception("Observable is not a Property : " + x);
     }
   };
 
@@ -2155,6 +2161,7 @@
   Bacon.Observable.prototype.filter = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "filter", f, this.withHandler(function(event) {
         if (event.filter(f)) {
@@ -2306,104 +2313,6 @@
     return withDescription.apply(null, [this, "flatMapConcat"].concat(slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(slice.call(arguments)))]));
   };
 
-  addPropertyInitValueToStream = function(property, stream) {
-    var justInitValue;
-    justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
-      var unsub, value;
-      value = void 0;
-      unsub = property.dispatcher.subscribe(function(event) {
-        if (!event.isEnd()) {
-          value = event;
-        }
-        return Bacon.noMore;
-      });
-      UpdateBarrier.whenDoneWith(justInitValue, function() {
-        if (value != null) {
-          sink(value);
-        }
-        return sink(endEvent());
-      });
-      return unsub;
-    });
-    return justInitValue.concat(stream).toProperty();
-  };
-
-  Bacon.Observable.prototype.mapEnd = function() {
-    var f;
-    f = makeFunctionArgs(arguments);
-    return withDescription(this, "mapEnd", f, this.withHandler(function(event) {
-      if (event.isEnd()) {
-        this.push(nextEvent(f(event)));
-        this.push(endEvent());
-        return Bacon.noMore;
-      } else {
-        return this.push(event);
-      }
-    }));
-  };
-
-  Bacon.Observable.prototype.skipErrors = function() {
-    return withDescription(this, "skipErrors", this.withHandler(function(event) {
-      if (event.isError()) {
-        return Bacon.more;
-      } else {
-        return this.push(event);
-      }
-    }));
-  };
-
-  Bacon.EventStream.prototype.takeUntil = function(stopper) {
-    var endMarker;
-    endMarker = {};
-    return withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function(event) {
-      var data, j, len1, ref, reply, value;
-      if (!event.hasValue()) {
-        return this.push(event);
-      } else {
-        ref = event.value(), data = ref[0], stopper = ref[1];
-        if (stopper.length) {
-          return this.push(endEvent());
-        } else {
-          reply = Bacon.more;
-          for (j = 0, len1 = data.length; j < len1; j++) {
-            value = data[j];
-            if (value === endMarker) {
-              reply = this.push(endEvent());
-            } else {
-              reply = this.push(nextEvent(value));
-            }
-          }
-          return reply;
-        }
-      }
-    }));
-  };
-
-  Bacon.Property.prototype.takeUntil = function(stopper) {
-    var changes;
-    changes = this.changes().takeUntil(stopper);
-    return withDescription(this, "takeUntil", stopper, addPropertyInitValueToStream(this, changes));
-  };
-
-  Bacon.Observable.prototype.flatMapLatest = function() {
-    var f, stream;
-    f = makeSpawner(arguments);
-    stream = this.toEventStream();
-    return withDescription(this, "flatMapLatest", f, stream.flatMap(function(value) {
-      return makeObservable(f(value)).takeUntil(stream);
-    }));
-  };
-
-  Bacon.fromPoll = function(delay, poll) {
-    return withDescription(Bacon, "fromPoll", delay, poll, Bacon.fromBinder((function(handler) {
-      var id;
-      id = Bacon.scheduler.setInterval(handler, delay);
-      return function() {
-        return Bacon.scheduler.clearInterval(id);
-      };
-    }), poll));
-  };
-
   Bacon.later = function(delay, value) {
     return withDescription(Bacon, "later", delay, value, Bacon.fromBinder(function(sink) {
       var id, sender;
@@ -2415,57 +2324,6 @@
         return Bacon.scheduler.clearTimeout(id);
       };
     }));
-  };
-
-  Bacon.sequentially = function(delay, values) {
-    var index;
-    index = 0;
-    return withDescription(Bacon, "sequentially", delay, values, Bacon.fromPoll(delay, function() {
-      var value;
-      value = values[index++];
-      if (index < values.length) {
-        return value;
-      } else if (index === values.length) {
-        return [value, endEvent()];
-      } else {
-        return endEvent();
-      }
-    }));
-  };
-
-  Bacon.repeatedly = function(delay, values) {
-    var index;
-    index = 0;
-    return withDescription(Bacon, "repeatedly", delay, values, Bacon.fromPoll(delay, function() {
-      return values[index++ % values.length];
-    }));
-  };
-
-  Bacon.interval = function(delay, value) {
-    if (value == null) {
-      value = {};
-    }
-    return withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, function() {
-      return nextEvent(value);
-    }));
-  };
-
-  Bacon.EventStream.prototype.delay = function(delay) {
-    return withDescription(this, "delay", delay, this.flatMap(function(value) {
-      return Bacon.later(delay, value);
-    }));
-  };
-
-  Bacon.Property.prototype.delay = function(delay) {
-    return this.delayChanges("delay", delay, function(changes) {
-      return changes.delay(delay);
-    });
-  };
-
-  Bacon.Property.prototype.delayChanges = function() {
-    var desc, f, j;
-    desc = 2 <= arguments.length ? slice.call(arguments, 0, j = arguments.length - 1) : (j = 0, []), f = arguments[j++];
-    return withDescription.apply(null, [this].concat(slice.call(desc), [addPropertyInitValueToStream(this, f(this.changes()))]));
   };
 
   Bacon.Observable.prototype.bufferingThrottle = function(minimumInterval) {
@@ -2623,6 +2481,112 @@
       return [value, endEvent()];
     });
   });
+
+  addPropertyInitValueToStream = function(property, stream) {
+    var justInitValue;
+    justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
+      var unsub, value;
+      value = void 0;
+      unsub = property.dispatcher.subscribe(function(event) {
+        if (!event.isEnd()) {
+          value = event;
+        }
+        return Bacon.noMore;
+      });
+      UpdateBarrier.whenDoneWith(justInitValue, function() {
+        if (value != null) {
+          sink(value);
+        }
+        return sink(endEvent());
+      });
+      return unsub;
+    });
+    return justInitValue.concat(stream).toProperty();
+  };
+
+  Bacon.Observable.prototype.mapEnd = function() {
+    var f;
+    f = makeFunctionArgs(arguments);
+    return withDescription(this, "mapEnd", f, this.withHandler(function(event) {
+      if (event.isEnd()) {
+        this.push(nextEvent(f(event)));
+        this.push(endEvent());
+        return Bacon.noMore;
+      } else {
+        return this.push(event);
+      }
+    }));
+  };
+
+  Bacon.Observable.prototype.skipErrors = function() {
+    return withDescription(this, "skipErrors", this.withHandler(function(event) {
+      if (event.isError()) {
+        return Bacon.more;
+      } else {
+        return this.push(event);
+      }
+    }));
+  };
+
+  Bacon.EventStream.prototype.takeUntil = function(stopper) {
+    var endMarker;
+    endMarker = {};
+    return withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function(event) {
+      var data, j, len1, ref, reply, value;
+      if (!event.hasValue()) {
+        return this.push(event);
+      } else {
+        ref = event.value(), data = ref[0], stopper = ref[1];
+        if (stopper.length) {
+          return this.push(endEvent());
+        } else {
+          reply = Bacon.more;
+          for (j = 0, len1 = data.length; j < len1; j++) {
+            value = data[j];
+            if (value === endMarker) {
+              reply = this.push(endEvent());
+            } else {
+              reply = this.push(nextEvent(value));
+            }
+          }
+          return reply;
+        }
+      }
+    }));
+  };
+
+  Bacon.Property.prototype.takeUntil = function(stopper) {
+    var changes;
+    changes = this.changes().takeUntil(stopper);
+    return withDescription(this, "takeUntil", stopper, addPropertyInitValueToStream(this, changes));
+  };
+
+  Bacon.Observable.prototype.flatMapLatest = function() {
+    var f, stream;
+    f = makeSpawner(arguments);
+    stream = this.toEventStream();
+    return withDescription(this, "flatMapLatest", f, stream.flatMap(function(value) {
+      return makeObservable(f(value)).takeUntil(stream);
+    }));
+  };
+
+  Bacon.Property.prototype.delayChanges = function() {
+    var desc, f, j;
+    desc = 2 <= arguments.length ? slice.call(arguments, 0, j = arguments.length - 1) : (j = 0, []), f = arguments[j++];
+    return withDescription.apply(null, [this].concat(slice.call(desc), [addPropertyInitValueToStream(this, f(this.changes()))]));
+  };
+
+  Bacon.EventStream.prototype.delay = function(delay) {
+    return withDescription(this, "delay", delay, this.flatMap(function(value) {
+      return Bacon.later(delay, value);
+    }));
+  };
+
+  Bacon.Property.prototype.delay = function(delay) {
+    return this.delayChanges("delay", delay, function(changes) {
+      return changes.delay(delay);
+    });
+  };
 
   Bacon.EventStream.prototype.debounce = function(delay) {
     return withDescription(this, "debounce", delay, this.flatMapLatest(function(value) {
@@ -2836,6 +2800,16 @@
 
   Observable.prototype.reduce = Observable.prototype.fold;
 
+  Bacon.fromPoll = function(delay, poll) {
+    return withDescription(Bacon, "fromPoll", delay, poll, Bacon.fromBinder((function(handler) {
+      var id;
+      id = Bacon.scheduler.setInterval(handler, delay);
+      return function() {
+        return Bacon.scheduler.clearInterval(id);
+      };
+    }), poll));
+  };
+
   Bacon.EventStream.prototype.merge = function(right) {
     var left;
     assertEventStream(right);
@@ -2957,6 +2931,15 @@
     })(this))));
   };
 
+  Bacon.interval = function(delay, value) {
+    if (value == null) {
+      value = {};
+    }
+    return withDescription(Bacon, "interval", delay, value, Bacon.fromPoll(delay, function() {
+      return nextEvent(value);
+    }));
+  };
+
   Bacon.$ = {};
 
   Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
@@ -2985,6 +2968,14 @@
       return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, slice.call(args).concat([event.log()])) : void 0 : void 0;
     });
     return this;
+  };
+
+  Bacon.repeatedly = function(delay, values) {
+    var index;
+    index = 0;
+    return withDescription(Bacon, "repeatedly", delay, values, Bacon.fromPoll(delay, function() {
+      return values[index++ % values.length];
+    }));
   };
 
   Bacon.repeat = function(generator) {
@@ -3082,6 +3073,22 @@
     }));
   };
 
+  Bacon.sequentially = function(delay, values) {
+    var index;
+    index = 0;
+    return withDescription(Bacon, "sequentially", delay, values, Bacon.fromPoll(delay, function() {
+      var value;
+      value = values[index++];
+      if (index < values.length) {
+        return value;
+      } else if (index === values.length) {
+        return [value, endEvent()];
+      } else {
+        return endEvent();
+      }
+    }));
+  };
+
   Bacon.Observable.prototype.skip = function(count) {
     return withDescription(this, "skip", count, this.withHandler(function(event) {
       if (!event.hasValue()) {
@@ -3104,6 +3111,7 @@
   Bacon.EventStream.prototype.skipWhile = function() {
     var args, f, ok;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     ok = false;
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "skipWhile", f, this.withHandler(function(event) {
@@ -3167,6 +3175,7 @@
   Bacon.Observable.prototype.takeWhile = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    assertObservableIsProperty(f);
     return convertArgsToFunction(this, f, args, function(f) {
       return withDescription(this, "takeWhile", f, this.withHandler(function(event) {
         if (event.filter(f)) {
