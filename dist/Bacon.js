@@ -2685,6 +2685,17 @@
     }));
   };
 
+  Bacon.Observable.prototype.doError = function() {
+    var f;
+    f = makeFunctionArgs(arguments);
+    return withDescription(this, "doError", f, this.withHandler(function(event) {
+      if (event.isError()) {
+        f(event.error);
+      }
+      return this.push(event);
+    }));
+  };
+
   Bacon.Observable.prototype.endOnError = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
