@@ -610,6 +610,11 @@ useful for debugging, but also for stuff like calling the
 also use a property-extractor string instead of a function, as in
 `".preventDefault"`.
 
+<a name="observable-doerror"></a>
+[`observable.doError(f)`](#observable-doerror "observable.doError(f)") returns a stream/property where the function f
+is executed for each error, before dispatching to subscribers.
+That is, same as [`doAction`](#observable-doaction) but for errors.
+
 <a name="observable-not"></a>
 [`observable.not()`](#observable-not "observable.not(@ : Obserable[A]) : Observable[Bool]") returns a stream/property that inverts boolean values
 
