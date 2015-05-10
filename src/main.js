@@ -24,6 +24,7 @@
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: fold
 // build-dependencies: frompoll
+// build-dependencies: groupby
 // build-dependencies: holdwhen
 // build-dependencies: interval
 // build-dependencies: jquery
