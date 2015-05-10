@@ -60,6 +60,10 @@ title "EventStream::mergeAll(stream1, stream2, stream3, stream4)"
 createNObservable 500, ->
   Bacon.mergeAll(eventStream(), eventStream(), eventStream(), eventStream())
 
+title "EventStream::groupBy(keyF, limitF)"
+createNObservable 500, ->
+  Bacon.sequentially(0, [1,2,3,4]).groupBy((x) -> x)
+
 diamond = (src, width, depth) ->
   if depth == 0
     src
