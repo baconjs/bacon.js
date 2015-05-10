@@ -928,6 +928,46 @@ For example:
     --> Bacon.once(1).times(-1)
 """
 
+doc.fn "observable.groupBy(@ : Observable[A], keyF[, limitF]) : Observable[Observable[A]]", """
+Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
+stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
+and the original event causing the stream to start as parameters.
+
+Calculator for grouped consecutive values until group is cancelled:
+
+    var events = [
+      {id: 1, type: "add", val: 3 },
+      {id: 2, type: "add", val: -1 },
+      {id: 1, type: "add", val: 2 },
+      {id: 2, type: "cancel"},
+      {id: 3, type: "add", val: 2 },
+      {id: 3, type: "cancel"},
+      {id: 1, type: "add", val: 1 },
+      {id: 1, type: "add", val: 2 },
+      {id: 1, type: "cancel"}
+    ]
+
+    function keyF(event) {
+      return event.id
+    }
+
+    function limitF(groupedStream, groupStartingEvent) {
+      var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
+      var adds = groupedStream.filter(function(x) { return x.type === "add" })
+      adds.takeUntil(cancel).map(".val")
+    }
+
+    Bacon.sequentially(2, events)
+      .groupBy(keyF, limitF)
+      .flatMap(function(groupedStream) {
+        return groupedStream.fold(0, function(acc, x) { return acc + x })
+      })
+      .onValue(function(sum) {
+        console.log(sum)
+        // returns [-1, 2, 8] in an order
+      })
+"""
+
 doc.subsection "EventStream"
 doc.fn "Bacon.EventStream", "a stream of events. See methods below."
 

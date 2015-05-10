@@ -901,6 +901,10 @@ For example:
     console.log(obs.toString())
     --> Bacon.once(1).times(-1)
 
+<a name="observable-groupby"></a>
+[`observable.groupBy(keyF [, limitF])`](#observable-groupby "observable.groupBy(@ : Observable[A], keyF[, limitF]) : Observable[Observable[A]]") Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
+stream life.
+
 EventStream
 -----------
 
