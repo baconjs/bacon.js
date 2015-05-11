@@ -7,7 +7,7 @@ describe "EventStream.bufferWithTime", ->
     expectStreamTimings(
       -> atGivenTimes([[0, "a"], [3, "b"], [5, "c"]]).bufferWithTime(t(2))
       [[2, ["a"]], [4, ["b"]], [6, ["c"]]]
-      unstable
+      semiunstable
     )
   describe "works with empty stream", ->
     expectStreamEvents(

@@ -55,12 +55,12 @@ describe "Property.sampledBy(stream)", ->
       ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]))
-      [1, 1, 2], unstable)
+      [1, 1, 2], semiunstable)
     expectPropertyEvents(
       ->
         p = series(5, [1, 2]).toProperty()
         p.sampledBy(series(3, [0, 0, 0, 0]).toProperty())
-      [1, 1, 2], unstable)
+      [1, 1, 2], semiunstable)
   describe "works with stream of functions", ->
     f = ->
     expectStreamEvents(
@@ -71,7 +71,7 @@ describe "Property.sampledBy(stream)", ->
   describe "works with synchronous sampler stream", ->
     expectStreamEvents(
       -> Bacon.constant(1).sampledBy(fromArray([1,2,3]))
-      [1,1,1], unstable)
+      [1,1,1], semiunstable)
     expectStreamEvents(
       -> later(1, 1).toProperty().sampledBy(fromArray([1,2,3]))
       [])
@@ -126,7 +126,7 @@ describe "Property.sample", ->
       ->
         prop = series(2, [1, error(), 2]).toProperty()
         prop.sample(t(5)).take(2)
-      [error(), 1, 2], unstable)
+      [error(), 1, 2], semiunstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       ->

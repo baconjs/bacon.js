@@ -7,7 +7,7 @@ describe "EventStream.merge", ->
         left = series(1, [1, error(), 2, 3])
         right = series(1, [4, 5, 6]).delay(t(4))
         left.merge(right)
-      [1, error(), 2, 3, 4, 5, 6], unstable)
+      [1, error(), 2, 3, 4, 5, 6], semiunstable)
   describe "respects subscriber return value", ->
     expectStreamEvents(
       ->
@@ -38,7 +38,7 @@ describe "Bacon.mergeAll", ->
           series(3, [1, 2])
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2))])
-      [1, 3, 5, 2, 4, 6], unstable)
+      [1, 3, 5, 2, 4, 6], semiunstable)
   describe ("supports n-ary syntax"), ->
     expectStreamEvents(
       ->
@@ -46,7 +46,7 @@ describe "Bacon.mergeAll", ->
           series(3, [1, 2])
           series(3, [3, 4]).delay(t(1))
           series(3, [5, 6]).delay(t(2)))
-      [1, 3, 5, 2, 4, 6], unstable)
+      [1, 3, 5, 2, 4, 6], semiunstable)
   describe "works with a single stream", ->
     expectStreamEvents(
       -> Bacon.mergeAll([once(1)])

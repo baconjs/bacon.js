@@ -21,7 +21,7 @@ describe "EventStream.skipDuplicates", ->
   describe "works with synchrounous sources", ->
     expectStreamEvents(
       -> fromArray([1, 2, 2, 3, 1]).skipDuplicates()
-    [1, 2, 3, 1], unstable)
+    [1, 2, 3, 1], semiunstable)
   
   it "toString", ->
     expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")

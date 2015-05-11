@@ -7,7 +7,7 @@ describe "EventStream.takeUntil", ->
         src = repeat(3, [1, 2, 3])
         stopper = repeat(7, ["stop!"])
         src.takeUntil(stopper)
-      [1, 2], unstable)
+      [1, 2], semiunstable)
   describe "works on self-derived stopper", ->
     expectStreamEvents(
       ->
@@ -30,14 +30,14 @@ describe "EventStream.takeUntil", ->
         src = repeat(2, [1, error(), 2, 3])
         stopper = mergeAll(repeat(7, ["stop!"]), repeat(1, [error()]))
         src.takeUntil(stopper)
-      [1, error(), 2], unstable)
+      [1, error(), 2], semiunstable)
   describe "works with Property as stopper", ->
     expectStreamEvents(
       ->
         src = repeat(3, [1, 2, 3])
         stopper = repeat(7, ["stop!"]).toProperty()
         src.takeUntil(stopper)
-      [1, 2], unstable)
+      [1, 2], semiunstable)
   describe "considers Property init value as stopper", ->
     expectStreamEvents(
       ->

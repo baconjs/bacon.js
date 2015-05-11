@@ -1,3 +1,12 @@
+# Some streams are (semi)unstable when testing with verifySwitching2.
+# Generally, all flatMap-based streams are at least semi-unstable because flatMap discards
+# child streams on unsubscribe.
+#
+# semiunstable=events may be lost if subscribers are removed altogether between events
+# unstable=events may be inconsistent for subscribers that are added between events
+
+unstable = {unstable:true, semiunstable:true}
+semiunstable = {semiunstable:true}
 
 atGivenTimes = (timesAndValues) ->
   startTime = Bacon.scheduler.now()
@@ -38,12 +47,13 @@ expectStreamTimings = (src, expectedEventsAndTimings, options) ->
       @push e
   expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
 
-expectStreamEvents = (src, expectedEvents, {unstable} = {}) ->
+expectStreamEvents = (src, expectedEvents, {unstable, semiunstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
   verifyLateEval src, expectedEvents
   if not unstable
     verifySwitching src, expectedEvents unless browser
     verifySwitchingWithUnsub src, expectedEvents unless browser
+  if not (unstable or semiunstable)
     verifySwitchingAggressively src, expectedEvents
 
 expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->

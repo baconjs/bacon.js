@@ -10,7 +10,7 @@ describe "Bacon.when", ->
         Bacon.when(
           [as, bs], (a,b) ->  a + b,
           [as],     (a)   ->  a)
-      ['a', 'ab', 'a', 'ab', 'ab', 'ab'], unstable)
+      ['a', 'ab', 'a', 'ab', 'ab', 'ab'], semiunstable)
   describe "consider the join patterns from top to bottom", ->
     expectStreamEvents(
       ->
@@ -32,7 +32,7 @@ describe "Bacon.when", ->
           [as, bs, cs], (a,b,c) ->  a + b + c,
           [as, bs],     (a,b) ->  a + b,
           [as],         (a)   ->  a)
-      ['a', 'ab', 'a', 'abc', 'abc', 'ab'], unstable)
+      ['a', 'ab', 'a', 'abc', 'abc', 'ab'], semiunstable)
   describe "does'nt synchronize on properties", ->
     expectStreamEvents(
       ->
@@ -57,7 +57,7 @@ describe "Bacon.when", ->
         Bacon.when(
           [as, bs, cs], (a,b,c) ->  a + b + c,
           [as],         (a)   ->  a)
-      ['a', 'ab0', 'a', 'ab1', 'ab2', 'ab3'], unstable)
+      ['a', 'ab0', 'a', 'ab1', 'ab2', 'ab3'], semiunstable)
   it "Rejects patterns with Properties only", -> expectError("At least one EventStream required", ->
     Bacon.when([Bacon.constant()], ->))
   describe "doesn't output before properties have values", ->
@@ -104,7 +104,7 @@ describe "Bacon.when", ->
         Bacon.when(
           [hs, hs, os], (h1,h2,o) ->  [h1,h2,o],
           [cs, os],    (c,o) -> [c,o])
-      [['h', 'h', 'o'], ['c', 'o'], ['h', 'h', 'o'], ['c', 'o']], unstable)
+      [['h', 'h', 'o'], ['c', 'o'], ['h', 'h', 'o'], ['c', 'o']], semiunstable)
   describe "works with multiples of properties", ->
     expectStreamEvents(
       ->
