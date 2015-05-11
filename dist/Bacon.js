@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.56';
+  Bacon.version = '0.7.57';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2363,11 +2363,15 @@
 
     Bus.prototype.subscribeAll = function(newSink) {
       var j, len1, ref, subscription;
-      this.sink = newSink;
-      ref = cloneArray(this.subscriptions);
-      for (j = 0, len1 = ref.length; j < len1; j++) {
-        subscription = ref[j];
-        this.subscribeInput(subscription);
+      if (this.ended) {
+        newSink(endEvent());
+      } else {
+        this.sink = newSink;
+        ref = cloneArray(this.subscriptions);
+        for (j = 0, len1 = ref.length; j < len1; j++) {
+          subscription = ref[j];
+          this.subscribeInput(subscription);
+        }
       }
       return this.unsubAll;
     };
