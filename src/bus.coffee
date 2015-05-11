@@ -12,9 +12,12 @@ class Bus extends EventStream
     undefined
 
   subscribeAll: (newSink) =>
-    @sink = newSink
-    for subscription in cloneArray(@subscriptions)
-      @subscribeInput(subscription)
+    if @ended
+      newSink endEvent()
+    else
+      @sink = newSink
+      for subscription in cloneArray(@subscriptions)
+        @subscribeInput(subscription)
     @unsubAll
 
   guardedSink: (input) => (event) =>

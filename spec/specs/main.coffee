@@ -448,3 +448,16 @@ describe "Integration tests", ->
           bus
         [1]
       )
+    describe "Calling Bus.end() in onValue", ->
+      it "works correctly in combination with takeUntil (#517)", (done) ->
+        values = []
+        bus = new (Bacon.Bus)
+        s = once(1).merge(Bacon.later(10, 2))
+        ends = bus.mapEnd()
+        s.takeUntil(ends).onValue (value) ->
+          values.push value
+          bus.end()
+        verify = ->
+          expect(values).to.deep.equal([1])
+          done()
+        Bacon.scheduler.setTimeout verify, 20
