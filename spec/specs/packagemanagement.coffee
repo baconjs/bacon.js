@@ -7,4 +7,7 @@ describe "Package management", ->
   it "Component", ->
     verifyJson "component.json"
   it "Bower", ->
-    verifyJson "bower.json"
+    bowerJson = require('bower-json')
+    json = verifyJson "bower.json"
+    bowerJson.validate(json)
+

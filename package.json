@@ -58,7 +58,8 @@
     "sinon": "^1.12.2",
     "uglify-js": "^2.4.16",
     "bluebird": "^2",
-    "when": "^3.6.4"
+    "when": "^3.6.4",
+    "bower-json": "^0.4"
   },
   "repository": {
     "type": "git",
