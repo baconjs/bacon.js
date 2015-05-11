@@ -1,3 +1,7 @@
+## 0.7.58
+
+- Fix #582, bower.json format
+
 ## 0.7.57
 
 - Fix #517, bus should bounce End event when subscribing after end() call
