@@ -59,10 +59,6 @@ describe "Bacon.Bus", ->
     bus.onValue((x) -> values.push(x))
     expect(values).to.deep.equal(["x", "y"])
 
-  it "handles end() calls even when there are no subscribers", ->
-    bus = new Bacon.Bus()
-    bus.end()
-
   it "throws if a non-observable is plugged", ->
     expect(-> new Bacon.Bus().plug(undefined)).to.throw()
 
@@ -113,7 +109,7 @@ describe "Bacon.Bus", ->
     busB.end()
     busA.push('foo')
     expect(failed).to.equal(false)
-
+  
   it "respects end() calls before subscribers", ->
     failed = false
     bus = new Bacon.Bus()
