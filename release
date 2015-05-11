@@ -4,6 +4,7 @@ if [ -z $1 ]; then
   echo "usage: release <version>"
   exit 1
 fi
+
 version=$1
 files="component.json package.json bower.json"
 echo "Releasing with version $version"
@@ -14,7 +15,11 @@ git pull --rebase
 echo "Building"
 npm install
 npm test
-node ./test-individually.js
+
+if [ -z $2 ] ; then
+  node ./test-individually.js
+fi
+
 ./build
 
 echo "Updating files"
