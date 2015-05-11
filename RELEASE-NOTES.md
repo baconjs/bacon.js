@@ -1,4 +1,4 @@
-## 0.7.53
+## 0.7.54
 
 - Fix #580: stack overflow with fromArray using large arrays
 - Throw an exception with a helpful error message if the user calls `filter(EventStream)`,
