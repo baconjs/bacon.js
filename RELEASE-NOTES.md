@@ -1,3 +1,7 @@
+## 0.7.56
+
+- Ignore extra files in bower
+
 ## 0.7.55
 
 - Fix #572: Bus respects end() calls before subscribers
