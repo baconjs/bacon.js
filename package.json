@@ -35,6 +35,8 @@
   "devDependencies": {
     "babel": "^4.5.5",
     "benchmark": "1.0.0",
+    "bluebird": "^2",
+    "bower-json": "^0.4",
     "browserify": "^9.0.3",
     "chai": "^2.1.0",
     "coffee-script": "^1.9.1",
@@ -49,6 +51,7 @@
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-eslint": "^7.0.1",
+    "grunt-jsonlint": "^1.0.4",
     "grunt-shell": "^1.1.2",
     "jasmine-node": "^1.14.5",
     "jsstana": "^0.1.5",
@@ -57,9 +60,7 @@
     "shelljs": "^0.3",
     "sinon": "^1.12.2",
     "uglify-js": "^2.4.16",
-    "bluebird": "^2",
-    "when": "^3.6.4",
-    "bower-json": "^0.4"
+    "when": "^3.6.4"
   },
   "repository": {
     "type": "git",
