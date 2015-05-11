@@ -10,7 +10,7 @@ files="component.json package.json bower.json"
 echo "Releasing with version $version"
 
 echo "Pulling from origin"
-git pull --rebase
+git pull --ff-only --no-rebase origin
 
 echo "Building"
 npm install
