@@ -7,9 +7,11 @@ module.exports = (grunt) ->
       bacon: [ 'src/*.coffee' ]
       options:
         configFile: 'coffeelint.json'
-
+    jsonlint:
+      bacon:
+        src: ['*.json']
     eslint:
-      bacon: [ 'src/*.js' ]
+      bacon: ['src/*.js']
       options:
         configFile: '.eslintrc'
     shell:
@@ -31,10 +33,11 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-coffeelint'
   grunt.loadNpmTasks 'grunt-eslint'
   grunt.loadNpmTasks 'grunt-shell'
+  grunt.loadNpmTasks 'grunt-jsonlint'
 
   grunt.registerTask 'build', ['shell:build']
 
-  grunt.registerTask 'default', ['coffeelint', 'eslint', 'build', 'readme']
+  grunt.registerTask 'default', ['coffeelint', 'jsonlint', 'eslint', 'build', 'readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
     fs = require 'fs'
