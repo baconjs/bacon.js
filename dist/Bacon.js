@@ -2886,22 +2886,33 @@
     } else {
       i = 0;
       return new EventStream(describe(Bacon, "fromArray", values), function(sink) {
-        var push, reply, unsubd;
+        var push, pushNeeded, pushing, reply, unsubd;
         unsubd = false;
         reply = Bacon.more;
+        pushing = false;
+        pushNeeded = false;
         push = function() {
           var value;
-          if ((reply !== Bacon.noMore) && !unsubd) {
-            value = values[i++];
-            reply = sink(toEvent(value));
-            if (reply !== Bacon.noMore) {
-              if (i === values.length) {
-                return sink(endEvent());
-              } else {
-                return UpdateBarrier.afterTransaction(push);
+          pushNeeded = true;
+          if (pushing) {
+            return;
+          }
+          pushing = true;
+          while (pushNeeded) {
+            pushNeeded = false;
+            if ((reply !== Bacon.noMore) && !unsubd) {
+              value = values[i++];
+              reply = sink(toEvent(value));
+              if (reply !== Bacon.noMore) {
+                if (i === values.length) {
+                  sink(endEvent());
+                } else {
+                  UpdateBarrier.afterTransaction(push);
+                }
               }
             }
           }
+          return pushing = false;
         };
         push();
         return function() {
