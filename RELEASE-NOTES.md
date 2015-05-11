@@ -1,3 +1,7 @@
+## 0.7.55
+
+- Fix #572: Bus respects end() calls before subscribers
+
 ## 0.7.54
 
 - Fix #580: stack overflow with fromArray using large arrays
