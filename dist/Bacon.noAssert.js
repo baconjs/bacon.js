@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.54';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2192,7 +2192,9 @@
             return typeof this.sink === 'function' ? this.sink(endEvent()) : void 0;
         };
         Bus.prototype.push = function (value) {
-            return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            if (!this.ended) {
+                return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            }
         };
         Bus.prototype.error = function (error) {
             return typeof this.sink === 'function' ? this.sink(new Error(error)) : void 0;
