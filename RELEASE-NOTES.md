@@ -1,3 +1,7 @@
+## 0.7.57
+
+- Fix #517, bus should bounce End event when subscribing after end() call
+
 ## 0.7.56
 
 - Ignore extra files in bower
