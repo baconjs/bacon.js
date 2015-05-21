@@ -15,7 +15,7 @@ describe "EventStream.last", ->
         s.onValue (value) ->
           throw "testing" if value == "lol" # special string that will be catched by TickScheduler
         s
-      ["wut"], unstable)
+      ["wut"], semiunstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1,2,3,4]).last()

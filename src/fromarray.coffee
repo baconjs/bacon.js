@@ -9,14 +9,24 @@ Bacon.fromArray = (values) ->
     new EventStream describe(Bacon, "fromArray", values), (sink) ->
       unsubd = false
       reply = Bacon.more
+      pushing = false
+      pushNeeded = false
       push = ->
-        if (reply != Bacon.noMore) and !unsubd
-          value = values[i++]
-          reply = sink(toEvent(value))
-          if reply != Bacon.noMore
-            if i == values.length
-              sink(endEvent())
-            else
-              UpdateBarrier.afterTransaction push
+        pushNeeded = true
+        if pushing
+          return
+        pushing = true
+        while pushNeeded
+          pushNeeded = false
+          if (reply != Bacon.noMore) and !unsubd
+            value = values[i++]
+            reply = sink(toEvent(value))
+            if reply != Bacon.noMore
+              if i == values.length
+                sink(endEvent())
+              else
+                UpdateBarrier.afterTransaction push
+        pushing = false
+
       push()
       -> unsubd = true

@@ -7,7 +7,7 @@ describe "EventStream.concat", ->
         left = series(2, [1, error(), 2, 3])
         right = series(1, [4, 5, 6])
         left.concat(right)
-      [1, error(), 2, 3, 4, 5, 6], unstable)
+      [1, error(), 2, 3, 4, 5, 6], semiunstable)
   describe "respects subscriber return value when providing events from left stream", ->
     expectStreamEvents(
       ->
@@ -45,7 +45,7 @@ describe "EventStream.concat", ->
   describe "works with Bacon.once() and fromArray()", ->
     expectStreamEvents(
       -> once(1).concat(fromArray([2, 3]))
-      [1, 2, 3], unstable)
+      [1, 2, 3], semiunstable)
   it "toString", ->
     expect(Bacon.never().concat(Bacon.never()).toString()).to.equal("Bacon.never().concat(Bacon.never())")
 

@@ -59,10 +59,6 @@ describe "Bacon.Bus", ->
     bus.onValue((x) -> values.push(x))
     expect(values).to.deep.equal(["x", "y"])
 
-  it "handles end() calls even when there are no subscribers", ->
-    bus = new Bacon.Bus()
-    bus.end()
-
   it "throws if a non-observable is plugged", ->
     expect(-> new Bacon.Bus().plug(undefined)).to.throw()
 
@@ -94,6 +90,49 @@ describe "Bacon.Bus", ->
     bus.onValue(->)
     expect(plugged).to.deep.equal(false)
 
+  it "respects end() even events comes from plugged stream", ->
+    failed = false
+    busA = new Bacon.Bus()
+    busB = new Bacon.Bus()
+    busB.onValue(-> failed = true;)
+    busB.plug(busA)
+    busB.end()
+    busA.push('foo')
+    expect(failed).to.equal(false)
+
+  it "does not plug after end(), second variant", ->
+    failed = false
+    busA = new Bacon.Bus()
+    busB = new Bacon.Bus()
+    busB.onValue(-> failed = true;)
+    busB.plug(busA)
+    busB.end()
+    busA.push('foo')
+    expect(failed).to.equal(false)
+  
+  it "respects end() calls before subscribers", ->
+    failed = false
+    bus = new Bacon.Bus()
+    bus.end()
+    bus.onValue(-> failed = true;)
+    bus.push('foo')
+    expect(failed).to.deep.equal(false)
+
+  it "bounces End event to new subscribers after end() called, with subscribers", ->
+    called = false
+    bus = new Bacon.Bus()
+    bus.onValue ->
+    bus.end()
+    bus.onEnd(-> called = true)
+    expect(called).to.equal(true)
+
+  it "bounces End event to new subscribers after end() called, without subscribers", ->
+    called = false
+    bus = new Bacon.Bus()
+    bus.end()
+    bus.onEnd(-> called = true)
+    expect(called).to.equal(true)
+
   it "returns unplug function from plug", ->
     values = []
     bus = new Bacon.Bus()
@@ -117,5 +156,3 @@ describe "Bacon.Bus", ->
     expect(o).to.deep.equal(["foo"])
   it "toString", ->
     expect(new Bacon.Bus().toString()).to.equal("Bacon.Bus()")
-
-

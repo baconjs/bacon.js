@@ -3,7 +3,7 @@ describe "EventStream.flatMapConcat", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMapConcat((value) ->
         series(t(2), [value, error(), value]))
-      [1, error(), 1, 2, error(), 2], unstable)
+      [1, error(), 1, 2, error(), 2], semiunstable)
   describe "Respects function construction rules", ->
     expectStreamEvents(
       -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")

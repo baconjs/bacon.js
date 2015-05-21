@@ -23,7 +23,7 @@ describe "EventStream.debounceImmediate(delay)", ->
   describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
     expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).debounceImmediate(t(3))
-      [[2, 1], [6, 3]], unstable)
+      [[2, 1], [6, 3]], semiunstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3, 4]).debounceImmediate(t(3))

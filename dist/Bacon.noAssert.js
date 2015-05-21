@@ -2133,11 +2133,15 @@
         };
         Bus.prototype.subscribeAll = function (newSink) {
             var j, len1, ref, subscription;
-            this.sink = newSink;
-            ref = cloneArray(this.subscriptions);
-            for (j = 0, len1 = ref.length; j < len1; j++) {
-                subscription = ref[j];
-                this.subscribeInput(subscription);
+            if (this.ended) {
+                newSink(endEvent());
+            } else {
+                this.sink = newSink;
+                ref = cloneArray(this.subscriptions);
+                for (j = 0, len1 = ref.length; j < len1; j++) {
+                    subscription = ref[j];
+                    this.subscribeInput(subscription);
+                }
             }
             return this.unsubAll;
         };
@@ -2192,7 +2196,9 @@
             return typeof this.sink === 'function' ? this.sink(endEvent()) : void 0;
         };
         Bus.prototype.push = function (value) {
-            return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            if (!this.ended) {
+                return typeof this.sink === 'function' ? this.sink(nextEvent(value)) : void 0;
+            }
         };
         Bus.prototype.error = function (error) {
             return typeof this.sink === 'function' ? this.sink(new Error(error)) : void 0;
@@ -2639,22 +2645,33 @@
         } else {
             i = 0;
             return new EventStream(describe(Bacon, 'fromArray', values), function (sink) {
-                var push, reply, unsubd;
+                var push, pushNeeded, pushing, reply, unsubd;
                 unsubd = false;
                 reply = Bacon.more;
+                pushing = false;
+                pushNeeded = false;
                 push = function () {
                     var value;
-                    if (reply !== Bacon.noMore && !unsubd) {
-                        value = values[i++];
-                        reply = sink(toEvent(value));
-                        if (reply !== Bacon.noMore) {
-                            if (i === values.length) {
-                                return sink(endEvent());
-                            } else {
-                                return UpdateBarrier.afterTransaction(push);
+                    pushNeeded = true;
+                    if (pushing) {
+                        return;
+                    }
+                    pushing = true;
+                    while (pushNeeded) {
+                        pushNeeded = false;
+                        if (reply !== Bacon.noMore && !unsubd) {
+                            value = values[i++];
+                            reply = sink(toEvent(value));
+                            if (reply !== Bacon.noMore) {
+                                if (i === values.length) {
+                                    sink(endEvent());
+                                } else {
+                                    UpdateBarrier.afterTransaction(push);
+                                }
                             }
                         }
                     }
+                    return pushing = false;
                 };
                 push();
                 return function () {

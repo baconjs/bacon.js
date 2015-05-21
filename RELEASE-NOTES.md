@@ -1,5 +1,22 @@
-## NEXT
+## 0.7.58
 
+- Fix #582, bower.json format
+
+## 0.7.57
+
+- Fix #517, bus should bounce End event when subscribing after end() call
+
+## 0.7.56
+
+- Ignore extra files in bower
+
+## 0.7.55
+
+- Fix #572: Bus respects end() calls before subscribers
+
+## 0.7.54
+
+- Fix #580: stack overflow with fromArray using large arrays
 - Throw an exception with a helpful error message if the user calls `filter(EventStream)`,
   `takeWhile(EventStream)` or `skipWhile(EventStream)`
 

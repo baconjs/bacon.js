@@ -15,6 +15,12 @@ describe "Bacon.fromArray", ->
     expectStreamEvents(
       -> Bacon.fromArray([error(), 1])
       [error(), 1])
+  it "doesn't use recursion", ->
+    Bacon.fromArray([1..50000]).onValue ->
+  it "is synchronous", ->
+    counter = 0
+    Bacon.fromArray([1..50000]).onValue -> counter++
+    expect(counter).to.equal(50000)
   it "toString", ->
     expect(Bacon.fromArray([1,2]).toString()).to.equal("Bacon.fromArray([1,2])")
   it "doesn't mutate the given array, toString works after subscribe (bug fix)", ->

@@ -8,10 +8,6 @@ mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
 sc = TickScheduler()
 Bacon.scheduler = sc
-# Some streams are unstable when testing with verifySwitching2.
-# Generally, all flatMap-based streams are unstable because flatMap discards
-# child streams on unsubscribe.
-unstable = {unstable:true}
 expectError = (errorText, f) ->
   expect(f).to.throw(Error, errorText)
 

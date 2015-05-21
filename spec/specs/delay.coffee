@@ -6,14 +6,14 @@ describe "EventStream.delay", ->
         left = series(2, [1, 2, 3])
         right = series(1, [error(), 4, 5, 6]).delay(t(6))
         mergeAll(left, right)
-      [error(), 1, 2, 3, 4, 5, 6], unstable)
+      [error(), 1, 2, 3, 4, 5, 6], semiunstable)
   describe "works with synchronous streams", ->
     expectStreamEvents(
       ->
         left = fromArray([1, 2, 3])
         right = fromArray([4, 5, 6]).delay(t(6))
         mergeAll(left, right)
-      [1, 2, 3, 4, 5, 6], unstable)
+      [1, 2, 3, 4, 5, 6], semiunstable)
   it "toString", ->
     expect(Bacon.never().delay(1).toString()).to.equal("Bacon.never().delay(1)")
 
@@ -28,7 +28,7 @@ describe "Property.delay", ->
         series(2, [1,2,3])
           .toProperty()
           .delay(t(2)).changes().takeUntil(later(t(5)))
-      [1], unstable)
+      [1], semiunstable)
   describe "does not delay initial value", ->
     expectPropertyEvents(
       -> series(3, [1]).toProperty(0).delay(1).takeUntil(later(t(2)))
