@@ -1,3 +1,7 @@
+## 0.7.59
+
+- Add `doError()` (#581)
+
 ## 0.7.58
 
 - Fix #582, bower.json format
