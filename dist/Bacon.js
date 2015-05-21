@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.58';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2686,6 +2686,17 @@
     return withDescription(this, "doAction", f, this.withHandler(function(event) {
       if (event.hasValue()) {
         f(event.value());
+      }
+      return this.push(event);
+    }));
+  };
+
+  Bacon.Observable.prototype.doError = function() {
+    var f;
+    f = makeFunctionArgs(arguments);
+    return withDescription(this, "doError", f, this.withHandler(function(event) {
+      if (event.isError()) {
+        f(event.error);
       }
       return this.push(event);
     }));

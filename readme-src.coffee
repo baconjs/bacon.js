@@ -614,6 +614,12 @@ also use a property-extractor string instead of a function, as in
 `".preventDefault"`.
 """
 
+doc.fn "observable.doError(f)", """
+returns a stream/property where the function f
+is executed for each error, before dispatching to subscribers.
+That is, same as `doAction` but for errors.
+"""
+
 doc.fn "observable.not(@ : Obserable[A]) : Observable[Bool]", """
 returns a stream/property that inverts boolean values
 """

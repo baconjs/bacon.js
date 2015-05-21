@@ -11,6 +11,7 @@
 // build-dependencies: delay
 // build-dependencies: diff
 // build-dependencies: doaction
+// build-dependencies: doerror
 // build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: factories
