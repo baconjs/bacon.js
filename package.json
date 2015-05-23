@@ -28,9 +28,7 @@
       "url": "https://twitter.com/xflowwolf"
     }
   ],
-  "licenses": [
-    "MIT"
-  ],
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "babel": "^4.5.5",
