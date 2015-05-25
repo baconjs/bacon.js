@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.59';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2827,74 +2827,6 @@
     }), poll));
   };
 
-  Bacon.EventStream.prototype.merge = function(right) {
-    var left;
-    assertEventStream(right);
-    left = this;
-    return withDescription(left, "merge", right, Bacon.mergeAll(this, right));
-  };
-
-  Bacon.mergeAll = function() {
-    var streams;
-    streams = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    if (isArray(streams[0])) {
-      streams = streams[0];
-    }
-    if (streams.length) {
-      return new EventStream(describe.apply(null, [Bacon, "mergeAll"].concat(slice.call(streams))), function(sink) {
-        var ends, sinks, smartSink;
-        ends = 0;
-        smartSink = function(obs) {
-          return function(unsubBoth) {
-            return obs.dispatcher.subscribe(function(event) {
-              var reply;
-              if (event.isEnd()) {
-                ends++;
-                if (ends === streams.length) {
-                  return sink(endEvent());
-                } else {
-                  return Bacon.more;
-                }
-              } else {
-                reply = sink(event);
-                if (reply === Bacon.noMore) {
-                  unsubBoth();
-                }
-                return reply;
-              }
-            });
-          };
-        };
-        sinks = _.map(smartSink, streams);
-        return new Bacon.CompositeUnsubscribe(sinks).unsubscribe;
-      });
-    } else {
-      return Bacon.never();
-    }
-  };
-
-  Bacon.Observable.prototype.take = function(count) {
-    if (count <= 0) {
-      return Bacon.never();
-    }
-    return withDescription(this, "take", count, this.withHandler(function(event) {
-      if (!event.hasValue()) {
-        return this.push(event);
-      } else {
-        count--;
-        if (count > 0) {
-          return this.push(event);
-        } else {
-          if (count === 0) {
-            this.push(event);
-          }
-          this.push(endEvent());
-          return Bacon.noMore;
-        }
-      }
-    }));
-  };
-
   Bacon.fromArray = function(values) {
     var i;
     assertArray(values);
@@ -2940,23 +2872,42 @@
   };
 
   Bacon.EventStream.prototype.holdWhen = function(valve) {
-    var putToHold, releaseHold, valve_;
-    valve_ = valve.startWith(false);
-    releaseHold = valve_.filter(function(x) {
-      return !x;
-    });
-    putToHold = valve_.filter(_.id);
-    return withDescription(this, "holdWhen", valve, this.filter(false).merge(valve_.flatMapConcat((function(_this) {
-      return function(shouldHold) {
-        if (!shouldHold) {
-          return _this.takeUntil(putToHold);
-        } else {
-          return _this.scan([], (function(xs, x) {
-            return xs.concat([x]);
-          })).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray);
-        }
+    var bufferedValues, combined, onHold;
+    onHold = false;
+    bufferedValues = [];
+    combined = Bacon.when([this], function(value) {
+      return {
+        value: value,
+        hasValue: true
       };
-    })(this))));
+    }, [valve.toEventStream().skipDuplicates()], function(value) {
+      return {
+        newOnHold: value
+      };
+    });
+    return withDescription(this, "holdWhen", valve, combined.flatMap(function(arg) {
+      var hasValue, newOnHold, toSend, value;
+      value = arg.value, newOnHold = arg.newOnHold, hasValue = arg.hasValue;
+      if (newOnHold != null) {
+        onHold = newOnHold;
+      }
+      if (hasValue) {
+        if (!onHold) {
+          return Bacon.once(value);
+        } else {
+          bufferedValues.push(value);
+          return Bacon.never();
+        }
+      } else {
+        if (onHold) {
+          return Bacon.never();
+        } else {
+          toSend = bufferedValues;
+          bufferedValues = [];
+          return Bacon.fromArray(toSend);
+        }
+      }
+    }));
   };
 
   Bacon.interval = function(delay, value) {
@@ -2996,6 +2947,52 @@
       return typeof console !== "undefined" && console !== null ? typeof console.log === "function" ? console.log.apply(console, slice.call(args).concat([event.log()])) : void 0 : void 0;
     });
     return this;
+  };
+
+  Bacon.EventStream.prototype.merge = function(right) {
+    var left;
+    assertEventStream(right);
+    left = this;
+    return withDescription(left, "merge", right, Bacon.mergeAll(this, right));
+  };
+
+  Bacon.mergeAll = function() {
+    var streams;
+    streams = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    if (isArray(streams[0])) {
+      streams = streams[0];
+    }
+    if (streams.length) {
+      return new EventStream(describe.apply(null, [Bacon, "mergeAll"].concat(slice.call(streams))), function(sink) {
+        var ends, sinks, smartSink;
+        ends = 0;
+        smartSink = function(obs) {
+          return function(unsubBoth) {
+            return obs.dispatcher.subscribe(function(event) {
+              var reply;
+              if (event.isEnd()) {
+                ends++;
+                if (ends === streams.length) {
+                  return sink(endEvent());
+                } else {
+                  return Bacon.more;
+                }
+              } else {
+                reply = sink(event);
+                if (reply === Bacon.noMore) {
+                  unsubBoth();
+                }
+                return reply;
+              }
+            });
+          };
+        };
+        sinks = _.map(smartSink, streams);
+        return new Bacon.CompositeUnsubscribe(sinks).unsubscribe;
+      });
+    } else {
+      return Bacon.never();
+    }
   };
 
   Bacon.repeatedly = function(delay, values) {
@@ -3126,6 +3123,28 @@
         return Bacon.more;
       } else {
         return this.push(event);
+      }
+    }));
+  };
+
+  Bacon.Observable.prototype.take = function(count) {
+    if (count <= 0) {
+      return Bacon.never();
+    }
+    return withDescription(this, "take", count, this.withHandler(function(event) {
+      if (!event.hasValue()) {
+        return this.push(event);
+      } else {
+        count--;
+        if (count > 0) {
+          return this.push(event);
+        } else {
+          if (count === 0) {
+            this.push(event);
+          }
+          this.push(endEvent());
+          return Bacon.noMore;
+        }
       }
     }));
   };
