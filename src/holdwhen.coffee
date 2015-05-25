@@ -1,21 +1,26 @@
-# build-dependencies: core
-# build-dependencies: flatmapconcat
-# build-dependencies: merge
-# build-dependencies: takeuntil
-# build-dependencies: scan
-# build-dependencies: take
-# build-dependencies: sample
 # build-dependencies: fromarray
+# build-dependencies: when
+# build-dependencies: once
+# build-dependencies: skipduplicates
 
 Bacon.EventStream :: holdWhen = (valve) ->
-  valve_ = valve.startWith(false)
-  releaseHold = valve_.filter (x) -> !x
-  putToHold = valve_.filter _.id
-
-  withDescription(this, "holdWhen", valve,
-    # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
-    @filter(false).merge valve_.flatMapConcat (shouldHold) =>
-      unless shouldHold
-        @takeUntil(putToHold)
+  onHold = false
+  bufferedValues = []
+  combined = Bacon.when(
+    [this], (value) -> { value: value, hasValue: true },
+    [valve.toEventStream().skipDuplicates()], (value) -> { newOnHold: value })
+  withDescription this, "holdWhen", valve, combined.flatMap ({ value, newOnHold, hasValue }) ->
+      onHold = newOnHold if newOnHold?
+      if hasValue
+        if !onHold
+          Bacon.once(value)
+        else
+          bufferedValues.push(value)
+          Bacon.never()
       else
-        @scan([], ((xs,x) -> xs.concat([x]))).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+        if onHold
+          Bacon.never()
+        else
+          toSend = bufferedValues
+          bufferedValues = []
+          Bacon.fromArray(toSend)
