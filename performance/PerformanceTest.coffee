@@ -1,3 +1,4 @@
+#!/usr/bin/env coffee
 Benchmark = require('benchmark')
 Bacon = (require "../dist/Bacon").Bacon
 
@@ -87,6 +88,9 @@ cases = {
   'EventStream.toProperty': ->
     f.withGenerator (gen) ->
       gen.stream().toProperty()
+  'EventStream.holdWhen': ->
+    f.withGenerator (gen) ->
+      gen.stream().holdWhen(gen.stream().map(false))
 }
 
 includeCase = (key) ->
