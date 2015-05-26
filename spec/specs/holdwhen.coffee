@@ -45,6 +45,12 @@ describe "EventStream.holdWhen", ->
         source.holdWhen(flag).fold(0, ((x,y) -> x+1), { eager: true})
       [count-1])
 
+  describe "Works with Bacon.once()", -> 
+    expectStreamEvents(
+      ->
+        Bacon.once(2).
+          holdWhen(Bacon.later(1000, false).toProperty(true))
+      [2])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")

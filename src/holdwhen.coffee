@@ -1,21 +1,34 @@
-# build-dependencies: core
-# build-dependencies: flatmapconcat
-# build-dependencies: merge
-# build-dependencies: takeuntil
-# build-dependencies: scan
-# build-dependencies: take
-# build-dependencies: sample
 # build-dependencies: fromarray
+# build-dependencies: when
+# build-dependencies: once
 
 Bacon.EventStream :: holdWhen = (valve) ->
-  valve_ = valve.startWith(false)
-  releaseHold = valve_.filter (x) -> !x
-  putToHold = valve_.filter _.id
-
-  withDescription(this, "holdWhen", valve,
-    # the filter(false) thing is added just to keep the subscription active all the time (improves stability with some streams)
-    @filter(false).merge valve_.flatMapConcat (shouldHold) =>
-      unless shouldHold
-        @takeUntil(putToHold)
+  composite = new CompositeUnsubscribe()
+  onHold = false
+  bufferedValues = []
+  src = this
+  new EventStream describe(this, "holdWhen", valve), (sink) ->
+    endIfBothEnded = (unsub) ->
+      unsub()
+      sink endEvent() if composite.empty()
+    composite.add (unsubAll, unsubMe) -> src.subscribe (event) ->
+      if onHold and event.hasValue()
+        bufferedValues.push(event.value())
+      else if event.isEnd() && bufferedValues.length
+        endIfBothEnded(unsubMe)
       else
-        @scan([], ((xs,x) -> xs.concat([x]))).sampledBy(releaseHold).take(1).flatMap(Bacon.fromArray))
+        sink(event)
+    composite.add (unsubAll, unsubMe) -> valve.subscribe (event) ->
+      if event.hasValue()
+        onHold = event.value()
+        if !onHold
+          toSend = bufferedValues
+          bufferedValues = []
+          _.each toSend, (index, value) -> 
+            sink nextEvent(value)
+      else if event.isEnd()
+        endIfBothEnded(unsubMe)
+      else
+        sink(event)
+    composite.unsubscribe
+
