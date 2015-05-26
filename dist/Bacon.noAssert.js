@@ -1,5 +1,5 @@
 (function () {
-    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDescription, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
+    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
             for (var key in parent) {
                 if (hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -485,10 +485,8 @@
             return new Desc(context, method, args);
         }
     };
-    withDescription = function () {
-        var desc, j, obs;
-        desc = 2 <= arguments.length ? slice.call(arguments, 0, j = arguments.length - 1) : (j = 0, []), obs = arguments[j++];
-        obs.desc = describe.apply(null, desc);
+    withDesc = function (desc, obs) {
+        obs.desc = desc;
         return obs;
     };
     findDeps = function (x) {
@@ -907,7 +905,8 @@
             return this;
         };
         Observable.prototype.withDescription = function () {
-            return withDescription.apply(null, slice.call(arguments).concat([this]));
+            this.desc = describe.apply(null, arguments);
+            return this;
         };
         Observable.prototype.toString = function () {
             if (this._name) {
@@ -1121,7 +1120,7 @@
                 return initValue_;
             });
             disp = this.dispatcher;
-            return new Property(describe(this, 'toProperty', initValue_), function (sink) {
+            return new Property(new Bacon.Desc(this, 'toProperty', [initValue_]), function (sink) {
                 var initSent, reply, sendInit, unsub;
                 initSent = false;
                 unsub = nop;
@@ -1167,7 +1166,7 @@
             return this;
         };
         EventStream.prototype.withHandler = function (handler) {
-            return new EventStream(describe(this, 'withHandler', handler), this.dispatcher.subscribe, handler);
+            return new EventStream(new Bacon.Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler);
         };
         return EventStream;
     }(Observable);
@@ -1235,10 +1234,7 @@
         }) && containsDuplicateDeps(_.map(function (s) {
             return s.obs;
         }, sources));
-        return resultStream = new EventStream(describe.apply(null, [
-            Bacon,
-            'when'
-        ].concat(slice.call(patterns))), function (sink) {
+        return resultStream = new EventStream(new Bacon.Desc(Bacon, 'when', patterns), function (sink) {
             var cannotMatch, cannotSync, ends, match, nonFlattened, part, triggers;
             triggers = [];
             ends = false;
@@ -1419,14 +1415,11 @@
             }
             return results;
         }();
-        return withDescription.apply(null, [
-            Bacon,
-            'groupSimultaneous'
-        ].concat(slice.call(streams), [Bacon.when(sources, function () {
-                var xs;
-                xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-                return xs;
-            })]));
+        return withDesc(new Bacon.Desc(Bacon, 'groupSimultaneous', streams), Bacon.when(sources, function () {
+            var xs;
+            xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+            return xs;
+        }));
     };
     PropertyDispatcher = function (superClass) {
         extend(PropertyDispatcher, superClass);
@@ -1494,7 +1487,7 @@
             registerObs(this);
         }
         Property.prototype.changes = function () {
-            return new EventStream(describe(this, 'changes'), function (_this) {
+            return new EventStream(new Bacon.Desc(this, 'changes', []), function (_this) {
                 return function (sink) {
                     return _this.dispatcher.subscribe(function (event) {
                         if (!event.isInitial()) {
@@ -1505,13 +1498,13 @@
             }(this));
         };
         Property.prototype.withHandler = function (handler) {
-            return new Property(describe(this, 'withHandler', handler), this.dispatcher.subscribe, handler);
+            return new Property(new Bacon.Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler);
         };
         Property.prototype.toProperty = function () {
             return this;
         };
         Property.prototype.toEventStream = function () {
-            return new EventStream(describe(this, 'toEventStream'), function (_this) {
+            return new EventStream(new Bacon.Desc(this, 'toEventStream', []), function (_this) {
                 return function (sink) {
                     return _this.dispatcher.subscribe(function (event) {
                         if (event.isInitial()) {
@@ -1526,7 +1519,7 @@
     }(Observable);
     Bacon.Property = Property;
     Bacon.constant = function (value) {
-        return new Property(describe(Bacon, 'constant', value), function (sink) {
+        return new Property(new Bacon.Desc(Bacon, 'constant', [value]), function (sink) {
             sink(initialEvent(value));
             sink(endEvent());
             return nop;
@@ -1536,7 +1529,10 @@
         if (eventTransformer == null) {
             eventTransformer = _.id;
         }
-        return new EventStream(describe(Bacon, 'fromBinder', binder, eventTransformer), function (sink) {
+        return new EventStream(new Bacon.Desc(Bacon, 'fromBinder', [
+            binder,
+            eventTransformer
+        ]), function (sink) {
             var shouldUnbind, unbind, unbinder, unbound;
             unbound = false;
             shouldUnbind = false;
@@ -1609,7 +1605,10 @@
     Bacon.fromEventTarget = function (target, eventName, eventTransformer) {
         var ref, sub, unsub;
         ref = findHandlerMethods(target), sub = ref[0], unsub = ref[1];
-        return withDescription(Bacon, 'fromEvent', target, eventName, Bacon.fromBinder(function (handler) {
+        return withDesc(new Bacon.Desc(Bacon, 'fromEvent', [
+            target,
+            eventName
+        ]), Bacon.fromBinder(function (handler) {
             sub.call(target, eventName, handler);
             return function () {
                 return unsub.call(target, eventName, handler);
@@ -1621,7 +1620,7 @@
         var args, p;
         p = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
         return convertArgsToFunction(this, p, args, function (f) {
-            return withDescription(this, 'map', f, this.withHandler(function (event) {
+            return withDesc(new Bacon.Desc(this, 'map', [f]), this.withHandler(function (event) {
                 return this.push(event.fmap(f));
             }));
         });
@@ -1648,14 +1647,11 @@
                 }
                 return results;
             }();
-            return withDescription.apply(null, [
-                Bacon,
-                'combineAsArray'
-            ].concat(slice.call(streams), [Bacon.when(sources, function () {
-                    var xs;
-                    xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-                    return xs;
-                }).toProperty()]));
+            return withDesc(new Bacon.Desc(Bacon, 'combineAsArray', streams), Bacon.when(sources, function () {
+                var xs;
+                xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+                return xs;
+            }).toProperty());
         } else {
             return Bacon.constant([]);
         }
@@ -1668,13 +1664,9 @@
     Bacon.combineWith = function () {
         var f, streams;
         f = arguments[0], streams = 2 <= arguments.length ? slice.call(arguments, 1) : [];
-        return withDescription.apply(null, [
-            Bacon,
-            'combineWith',
-            f
-        ].concat(slice.call(streams), [Bacon.combineAsArray(streams).map(function (values) {
-                return f.apply(null, values);
-            })]));
+        return withDesc(new Bacon.Desc(Bacon, 'combineWith', [f].concat(slice.call(streams))), Bacon.combineAsArray(streams).map(function (values) {
+            return f.apply(null, values);
+        }));
     };
     Bacon.combineTemplate = function (template) {
         var applyStreamValue, combinator, compile, compileTemplate, constantValue, current, funcs, mkContext, setValue, streams;
@@ -1741,24 +1733,30 @@
             }
             return rootContext;
         };
-        return withDescription(Bacon, 'combineTemplate', template, Bacon.combineAsArray(streams).map(combinator));
+        return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), Bacon.combineAsArray(streams).map(combinator));
     };
     Bacon.Observable.prototype.combine = function (other, f) {
         var combinator;
         combinator = toCombinator(f);
-        return withDescription(this, 'combine', other, f, Bacon.combineAsArray(this, other).map(function (values) {
+        return withDesc(new Bacon.Desc(this, 'combine', [
+            other,
+            f
+        ]), Bacon.combineAsArray(this, other).map(function (values) {
             return combinator(values[0], values[1]);
         }));
     };
     Bacon.Observable.prototype.decode = function (cases) {
-        return withDescription(this, 'decode', cases, this.combine(Bacon.combineTemplate(cases), function (key, values) {
+        return withDesc(new Bacon.Desc(this, 'decode', [cases]), this.combine(Bacon.combineTemplate(cases), function (key, values) {
             return values[key];
         }));
     };
     Bacon.Observable.prototype.withStateMachine = function (initState, f) {
         var state;
         state = initState;
-        return withDescription(this, 'withStateMachine', initState, f, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'withStateMachine', [
+            initState,
+            f
+        ]), this.withHandler(function (event) {
             var fromF, j, len1, newState, output, outputs, reply;
             fromF = f(state, event);
             newState = fromF[0], outputs = fromF[1];
@@ -1780,7 +1778,7 @@
                 return a === b;
             };
         }
-        return withDescription(this, 'skipDuplicates', this.withStateMachine(None, function (prev, event) {
+        return withDesc(new Bacon.Desc(this, 'skipDuplicates', []), this.withStateMachine(None, function (prev, event) {
             if (!event.hasValue()) {
                 return [
                     prev,
@@ -1800,24 +1798,24 @@
         }));
     };
     Bacon.Observable.prototype.awaiting = function (other) {
-        return withDescription(this, 'awaiting', other, Bacon.groupSimultaneous(this, other).map(function (arg) {
+        return withDesc(new Bacon.Desc(this, 'awaiting', [other]), Bacon.groupSimultaneous(this, other).map(function (arg) {
             var myValues, otherValues;
             myValues = arg[0], otherValues = arg[1];
             return otherValues.length === 0;
         }).toProperty(false).skipDuplicates());
     };
     Bacon.Observable.prototype.not = function () {
-        return withDescription(this, 'not', this.map(function (x) {
+        return withDesc(new Bacon.Desc(this, 'not', []), this.map(function (x) {
             return !x;
         }));
     };
     Bacon.Property.prototype.and = function (other) {
-        return withDescription(this, 'and', other, this.combine(other, function (x, y) {
+        return withDesc(new Bacon.Desc(this, 'and', [other]), this.combine(other, function (x, y) {
             return x && y;
         }));
     };
     Bacon.Property.prototype.or = function (other) {
-        return withDescription(this, 'or', other, this.combine(other, function (x, y) {
+        return withDesc(new Bacon.Desc(this, 'or', [other]), this.combine(other, function (x, y) {
             return x || y;
         }));
     };
@@ -1839,10 +1837,10 @@
         }
     };
     Bacon.EventStream.prototype.bufferWithTime = function (delay) {
-        return withDescription(this, 'bufferWithTime', delay, this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
+        return withDesc(new Bacon.Desc(this, 'bufferWithTime', [delay]), this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
     };
     Bacon.EventStream.prototype.bufferWithCount = function (count) {
-        return withDescription(this, 'bufferWithCount', count, this.bufferWithTimeOrCount(void 0, count));
+        return withDesc(new Bacon.Desc(this, 'bufferWithCount', [count]), this.bufferWithTimeOrCount(void 0, count));
     };
     Bacon.EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
         var flushOrSchedule;
@@ -1853,7 +1851,10 @@
                 return buffer.schedule();
             }
         };
-        return withDescription(this, 'bufferWithTimeOrCount', delay, count, this.buffer(delay, flushOrSchedule, flushOrSchedule));
+        return withDesc(new Bacon.Desc(this, 'bufferWithTimeOrCount', [
+            delay,
+            count
+        ]), this.buffer(delay, flushOrSchedule, flushOrSchedule));
     };
     Bacon.EventStream.prototype.buffer = function (delay, onInput, onFlush) {
         var buffer, delayMs, reply;
@@ -1904,7 +1905,7 @@
                 return Bacon.scheduler.setTimeout(f, delayMs);
             };
         }
-        return withDescription(this, 'buffer', this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'buffer', []), this.withHandler(function (event) {
             buffer.push = function (_this) {
                 return function (event) {
                     return _this.push(event);
@@ -1928,7 +1929,7 @@
         var args, f;
         f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
         return convertArgsToFunction(this, f, args, function (f) {
-            return withDescription(this, 'filter', f, this.withHandler(function (event) {
+            return withDesc(new Bacon.Desc(this, 'filter', [f]), this.withHandler(function (event) {
                 if (event.filter(f)) {
                     return this.push(event);
                 } else {
@@ -1938,7 +1939,7 @@
         });
     };
     Bacon.once = function (value) {
-        return new EventStream(describe(Bacon, 'once', value), function (sink) {
+        return new EventStream(new Desc(Bacon, 'once', [value]), function (sink) {
             sink(toEvent(value));
             sink(endEvent());
             return nop;
@@ -1947,7 +1948,7 @@
     Bacon.EventStream.prototype.concat = function (right) {
         var left;
         left = this;
-        return new EventStream(describe(left, 'concat', right), function (sink) {
+        return new EventStream(new Bacon.Desc(left, 'concat', [right]), function (sink) {
             var unsubLeft, unsubRight;
             unsubRight = nop;
             unsubLeft = left.dispatcher.subscribe(function (e) {
@@ -1973,7 +1974,7 @@
         var childDeps, result, rootDep;
         rootDep = [root];
         childDeps = [];
-        result = new EventStream(describe(root, 'flatMap' + (firstOnly ? 'First' : ''), f), function (sink) {
+        result = new EventStream(new Bacon.Desc(root, 'flatMap' + (firstOnly ? 'First' : ''), [f]), function (sink) {
             var checkEnd, checkQueue, composite, queue, spawn;
             composite = new CompositeUnsubscribe();
             queue = [];
@@ -2063,20 +2064,16 @@
     Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function () {
         var args, limit;
         limit = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
-        return withDescription.apply(null, [
-            this,
-            'flatMapWithConcurrencyLimit',
-            limit
-        ].concat(slice.call(args), [flatMap_(this, makeSpawner(args), false, limit)]));
+        return withDesc(new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(slice.call(args))), flatMap_(this, makeSpawner(args), false, limit));
     };
     Bacon.Observable.prototype.flatMapConcat = function () {
-        return withDescription.apply(null, [
-            this,
-            'flatMapConcat'
-        ].concat(slice.call(arguments), [this.flatMapWithConcurrencyLimit.apply(this, [1].concat(slice.call(arguments)))]));
+        return withDesc(new Bacon.Desc(this, 'flatMapConcat', Array.prototype.slice.call(arguments, 0)), this.flatMapWithConcurrencyLimit.apply(this, [1].concat(slice.call(arguments))));
     };
     Bacon.later = function (delay, value) {
-        return withDescription(Bacon, 'later', delay, value, Bacon.fromBinder(function (sink) {
+        return withDesc(new Bacon.Desc(Bacon, 'later', [
+            delay,
+            value
+        ]), Bacon.fromBinder(function (sink) {
             var id, sender;
             sender = function () {
                 return sink([
@@ -2091,7 +2088,7 @@
         }));
     };
     Bacon.Observable.prototype.bufferingThrottle = function (minimumInterval) {
-        return withDescription(this, 'bufferingThrottle', minimumInterval, this.flatMapConcat(function (x) {
+        return withDesc(new Bacon.Desc(this, 'bufferingThrottle', [minimumInterval]), this.flatMapConcat(function (x) {
             return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
         }));
     };
@@ -2107,7 +2104,7 @@
             this.sink = void 0;
             this.subscriptions = [];
             this.ended = false;
-            Bus.__super__.constructor.call(this, describe(Bacon, 'Bus'), this.subscribeAll);
+            Bus.__super__.constructor.call(this, new Bacon.Desc(Bacon, 'Bus', []), this.subscribeAll);
         }
         Bus.prototype.unsubAll = function () {
             var j, len1, ref, sub;
@@ -2202,11 +2199,7 @@
             stream = partiallyApplied(wrapped, [function (values, callback) {
                     return f.apply(null, slice.call(values).concat([callback]));
                 }]);
-            return withDescription.apply(null, [
-                Bacon,
-                desc,
-                f
-            ].concat(slice.call(args), [Bacon.combineAsArray(args).flatMap(stream)]));
+            return withDesc(new Bacon.Desc(Bacon, desc, [f].concat(slice.call(args))), Bacon.combineAsArray(args).flatMap(stream));
         });
     };
     Bacon.fromCallback = liftCallback('fromCallback', function () {
@@ -2265,7 +2258,7 @@
     Bacon.Observable.prototype.mapEnd = function () {
         var f;
         f = makeFunctionArgs(arguments);
-        return withDescription(this, 'mapEnd', f, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'mapEnd', [f]), this.withHandler(function (event) {
             if (event.isEnd()) {
                 this.push(nextEvent(f(event)));
                 this.push(endEvent());
@@ -2276,7 +2269,7 @@
         }));
     };
     Bacon.Observable.prototype.skipErrors = function () {
-        return withDescription(this, 'skipErrors', this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'skipErrors', []), this.withHandler(function (event) {
             if (event.isError()) {
                 return Bacon.more;
             } else {
@@ -2287,7 +2280,7 @@
     Bacon.EventStream.prototype.takeUntil = function (stopper) {
         var endMarker;
         endMarker = {};
-        return withDescription(this, 'takeUntil', stopper, Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'takeUntil', [stopper]), Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function (event) {
             var data, j, len1, ref, reply, value;
             if (!event.hasValue()) {
                 return this.push(event);
@@ -2313,43 +2306,41 @@
     Bacon.Property.prototype.takeUntil = function (stopper) {
         var changes;
         changes = this.changes().takeUntil(stopper);
-        return withDescription(this, 'takeUntil', stopper, addPropertyInitValueToStream(this, changes));
+        return withDesc(new Bacon.Desc(this, 'takeUntil', [stopper]), addPropertyInitValueToStream(this, changes));
     };
     Bacon.Observable.prototype.flatMapLatest = function () {
         var f, stream;
         f = makeSpawner(arguments);
         stream = this.toEventStream();
-        return withDescription(this, 'flatMapLatest', f, stream.flatMap(function (value) {
+        return withDesc(new Bacon.Desc(this, 'flatMapLatest', [f]), stream.flatMap(function (value) {
             return makeObservable(f(value)).takeUntil(stream);
         }));
     };
-    Bacon.Property.prototype.delayChanges = function () {
-        var desc, f, j;
-        desc = 2 <= arguments.length ? slice.call(arguments, 0, j = arguments.length - 1) : (j = 0, []), f = arguments[j++];
-        return withDescription.apply(null, [this].concat(slice.call(desc), [addPropertyInitValueToStream(this, f(this.changes()))]));
+    Bacon.Property.prototype.delayChanges = function (desc, f) {
+        return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
     };
     Bacon.EventStream.prototype.delay = function (delay) {
-        return withDescription(this, 'delay', delay, this.flatMap(function (value) {
+        return withDesc(new Bacon.Desc(this, 'delay', [delay]), this.flatMap(function (value) {
             return Bacon.later(delay, value);
         }));
     };
     Bacon.Property.prototype.delay = function (delay) {
-        return this.delayChanges('delay', delay, function (changes) {
+        return this.delayChanges(new Bacon.Desc(this, 'delay', [delay]), function (changes) {
             return changes.delay(delay);
         });
     };
     Bacon.EventStream.prototype.debounce = function (delay) {
-        return withDescription(this, 'debounce', delay, this.flatMapLatest(function (value) {
+        return withDesc(new Bacon.Desc(this, 'debounce', [delay]), this.flatMapLatest(function (value) {
             return Bacon.later(delay, value);
         }));
     };
     Bacon.Property.prototype.debounce = function (delay) {
-        return this.delayChanges('debounce', delay, function (changes) {
+        return this.delayChanges(new Bacon.Desc(this, 'debounce', [delay]), function (changes) {
             return changes.debounce(delay);
         });
     };
     Bacon.EventStream.prototype.debounceImmediate = function (delay) {
-        return withDescription(this, 'debounceImmediate', delay, this.flatMapFirst(function (value) {
+        return withDesc(new Bacon.Desc(this, 'debounceImmediate', [delay]), this.flatMapFirst(function (value) {
             return Bacon.once(value).concat(Bacon.later(delay).filter(false));
         }));
     };
@@ -2407,11 +2398,17 @@
                 return unsub;
             };
         }(this);
-        return resultProperty = new Property(describe(this, 'scan', seed, f), subscribe);
+        return resultProperty = new Property(new Bacon.Desc(this, 'scan', [
+            seed,
+            f
+        ]), subscribe);
     };
     Bacon.Observable.prototype.diff = function (start, f) {
         f = toCombinator(f);
-        return withDescription(this, 'diff', start, f, this.scan([start], function (prevTuple, next) {
+        return withDesc(new Bacon.Desc(this, 'diff', [
+            start,
+            f
+        ]), this.scan([start], function (prevTuple, next) {
             return [
                 next,
                 f(prevTuple[0], next)
@@ -2425,7 +2422,7 @@
     Bacon.Observable.prototype.doAction = function () {
         var f;
         f = makeFunctionArgs(arguments);
-        return withDescription(this, 'doAction', f, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'doAction', [f]), this.withHandler(function (event) {
             if (event.hasValue()) {
                 f(event.value());
             }
@@ -2435,7 +2432,7 @@
     Bacon.Observable.prototype.doError = function () {
         var f;
         f = makeFunctionArgs(arguments);
-        return withDescription(this, 'doError', f, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'doError', [f]), this.withHandler(function (event) {
             if (event.isError()) {
                 f(event.error);
             }
@@ -2449,7 +2446,7 @@
             f = true;
         }
         return convertArgsToFunction(this, f, args, function (f) {
-            return withDescription(this, 'endOnError', this.withHandler(function (event) {
+            return withDesc(new Bacon.Desc(this, 'endOnError', []), this.withHandler(function (event) {
                 if (event.isError() && f(event.error)) {
                     this.push(event);
                     return this.push(endEvent());
@@ -2460,7 +2457,7 @@
         });
     };
     Observable.prototype.errors = function () {
-        return withDescription(this, 'errors', this.filter(function () {
+        return withDesc(new Bacon.Desc(this, 'errors', []), this.filter(function () {
             return false;
         }));
     };
@@ -2471,7 +2468,7 @@
         ];
     };
     Bacon.fromPromise = function (promise, abort) {
-        return withDescription(Bacon, 'fromPromise', promise, Bacon.fromBinder(function (handler) {
+        return withDesc(new Bacon.Desc(Bacon, 'fromPromise', [promise]), Bacon.fromBinder(function (handler) {
             var ref;
             if ((ref = promise.then(handler, function (e) {
                     return handler(new Error(e));
@@ -2490,7 +2487,7 @@
     Bacon.Observable.prototype.mapError = function () {
         var f;
         f = makeFunctionArgs(arguments);
-        return withDescription(this, 'mapError', f, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'mapError', [f]), this.withHandler(function (event) {
             if (event.isError()) {
                 return this.push(nextEvent(f(event.error)));
             } else {
@@ -2499,7 +2496,7 @@
         }));
     };
     Bacon.Observable.prototype.flatMapError = function (fn) {
-        return withDescription(this, 'flatMapError', fn, this.mapError(function (err) {
+        return withDesc(new Bacon.Desc(this, 'flatMapError', [fn]), this.mapError(function (err) {
             return new Error(err);
         }).flatMap(function (x) {
             if (x instanceof Error) {
@@ -2510,7 +2507,10 @@
         }));
     };
     Bacon.EventStream.prototype.sampledBy = function (sampler, combinator) {
-        return withDescription(this, 'sampledBy', sampler, combinator, this.toProperty().sampledBy(sampler, combinator));
+        return withDesc(new Bacon.Desc(this, 'sampledBy', [
+            sampler,
+            combinator
+        ]), this.toProperty().sampledBy(sampler, combinator));
     };
     Bacon.Property.prototype.sampledBy = function (sampler, combinator) {
         var lazy, result, samplerSource, stream, thisSource;
@@ -2529,10 +2529,13 @@
             samplerSource
         ], combinator);
         result = sampler instanceof Property ? stream.toProperty() : stream;
-        return withDescription(this, 'sampledBy', sampler, combinator, result);
+        return withDesc(new Bacon.Desc(this, 'sampledBy', [
+            sampler,
+            combinator
+        ]), result);
     };
     Bacon.Property.prototype.sample = function (interval) {
-        return withDescription(this, 'sample', interval, this.sampledBy(Bacon.interval(interval, {})));
+        return withDesc(new Bacon.Desc(this, 'sample', [interval]), this.sampledBy(Bacon.interval(interval, {})));
     };
     Bacon.Observable.prototype.map = function () {
         var args, p;
@@ -2541,18 +2544,24 @@
             return p.sampledBy(this, former);
         } else {
             return convertArgsToFunction(this, p, args, function (f) {
-                return withDescription(this, 'map', f, this.withHandler(function (event) {
+                return withDesc(new Bacon.Desc(this, 'map', [f]), this.withHandler(function (event) {
                     return this.push(event.fmap(f));
                 }));
             });
         }
     };
     Bacon.Observable.prototype.fold = function (seed, f) {
-        return withDescription(this, 'fold', seed, f, this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty()));
+        return withDesc(new Bacon.Desc(this, 'fold', [
+            seed,
+            f
+        ]), this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty()));
     };
     Observable.prototype.reduce = Observable.prototype.fold;
     Bacon.fromPoll = function (delay, poll) {
-        return withDescription(Bacon, 'fromPoll', delay, poll, Bacon.fromBinder(function (handler) {
+        return withDesc(new Bacon.Desc(Bacon, 'fromPoll', [
+            delay,
+            poll
+        ]), Bacon.fromBinder(function (handler) {
             var id;
             id = Bacon.scheduler.setInterval(handler, delay);
             return function () {
@@ -2563,10 +2572,10 @@
     Bacon.fromArray = function (values) {
         var i;
         if (!values.length) {
-            return withDescription(Bacon, 'fromArray', values, Bacon.never());
+            return withDesc(new Bacon.Desc(Bacon, 'fromArray', values), Bacon.never());
         } else {
             i = 0;
-            return new EventStream(describe(Bacon, 'fromArray', values), function (sink) {
+            return new EventStream(new Bacon.Desc(Bacon, 'fromArray', [values]), function (sink) {
                 var push, pushNeeded, pushing, reply, unsubd;
                 unsubd = false;
                 reply = Bacon.more;
@@ -2608,7 +2617,7 @@
         onHold = false;
         bufferedValues = [];
         src = this;
-        return new EventStream(describe(this, 'holdWhen', valve), function (sink) {
+        return new EventStream(new Bacon.Desc(this, 'holdWhen', [valve]), function (sink) {
             var endIfBothEnded;
             endIfBothEnded = function (unsub) {
                 unsub();
@@ -2653,7 +2662,10 @@
         if (value == null) {
             value = {};
         }
-        return withDescription(Bacon, 'interval', delay, value, Bacon.fromPoll(delay, function () {
+        return withDesc(new Bacon.Desc(Bacon, 'interval', [
+            delay,
+            value
+        ]), Bacon.fromPoll(delay, function () {
             return nextEvent(value);
         }));
     };
@@ -2666,7 +2678,7 @@
                 void 0
             ], eventTransformer = ref[0], selector = ref[1];
         }
-        return withDescription(this.selector || this, 'asEventStream', eventName, Bacon.fromBinder(function (_this) {
+        return withDesc(new Bacon.Desc(this.selector || this, 'asEventStream', [eventName]), Bacon.fromBinder(function (_this) {
             return function (handler) {
                 _this.on(eventName, selector, handler);
                 return function () {
@@ -2689,7 +2701,7 @@
     Bacon.EventStream.prototype.merge = function (right) {
         var left;
         left = this;
-        return withDescription(left, 'merge', right, Bacon.mergeAll(this, right));
+        return withDesc(new Bacon.Desc(left, 'merge', [right]), Bacon.mergeAll(this, right));
     };
     Bacon.mergeAll = function () {
         var streams;
@@ -2698,10 +2710,7 @@
             streams = streams[0];
         }
         if (streams.length) {
-            return new EventStream(describe.apply(null, [
-                Bacon,
-                'mergeAll'
-            ].concat(slice.call(streams))), function (sink) {
+            return new EventStream(new Bacon.Desc(Bacon, 'mergeAll', streams), function (sink) {
                 var ends, sinks, smartSink;
                 ends = 0;
                 smartSink = function (obs) {
@@ -2735,7 +2744,10 @@
     Bacon.repeatedly = function (delay, values) {
         var index;
         index = 0;
-        return withDescription(Bacon, 'repeatedly', delay, values, Bacon.fromPoll(delay, function () {
+        return withDesc(new Bacon.Desc(Bacon, 'repeatedly', [
+            delay,
+            values
+        ]), Bacon.fromPoll(delay, function () {
             return values[index++ % values.length];
         }));
     };
@@ -2795,7 +2807,7 @@
         };
         finished = false;
         error = null;
-        return withDescription(Bacon, 'retry', options, Bacon.repeat(function () {
+        return withDesc(new Bacon.Desc(Bacon, 'retry', [options]), Bacon.repeat(function () {
             var context, pause, valueStream;
             if (finished) {
                 return null;
@@ -2835,7 +2847,10 @@
     Bacon.sequentially = function (delay, values) {
         var index;
         index = 0;
-        return withDescription(Bacon, 'sequentially', delay, values, Bacon.fromPoll(delay, function () {
+        return withDesc(new Bacon.Desc(Bacon, 'sequentially', [
+            delay,
+            values
+        ]), Bacon.fromPoll(delay, function () {
             var value;
             value = values[index++];
             if (index < values.length) {
@@ -2851,7 +2866,7 @@
         }));
     };
     Bacon.Observable.prototype.skip = function (count) {
-        return withDescription(this, 'skip', count, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'skip', [count]), this.withHandler(function (event) {
             if (!event.hasValue()) {
                 return this.push(event);
             } else if (count > 0) {
@@ -2866,7 +2881,7 @@
         if (count <= 0) {
             return Bacon.never();
         }
-        return withDescription(this, 'take', count, this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'take', [count]), this.withHandler(function (event) {
             if (!event.hasValue()) {
                 return this.push(event);
             } else {
@@ -2886,14 +2901,14 @@
     Bacon.EventStream.prototype.skipUntil = function (starter) {
         var started;
         started = starter.take(1).map(true).toProperty(false);
-        return withDescription(this, 'skipUntil', starter, this.filter(started));
+        return withDesc(new Bacon.Desc(this, 'skipUntil', [starter]), this.filter(started));
     };
     Bacon.EventStream.prototype.skipWhile = function () {
         var args, f, ok;
         f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
         ok = false;
         return convertArgsToFunction(this, f, args, function (f) {
-            return withDescription(this, 'skipWhile', f, this.withHandler(function (event) {
+            return withDesc(new Bacon.Desc(this, 'skipWhile', [f]), this.withHandler(function (event) {
                 if (ok || !event.hasValue() || !f(event.value())) {
                     if (event.hasValue()) {
                         ok = true;
@@ -2909,7 +2924,10 @@
         if (minValues == null) {
             minValues = 0;
         }
-        return withDescription(this, 'slidingWindow', n, minValues, this.scan([], function (window, value) {
+        return withDesc(new Bacon.Desc(this, 'slidingWindow', [
+            n,
+            minValues
+        ]), this.scan([], function (window, value) {
             return window.concat([value]).slice(-n);
         }).filter(function (values) {
             return values.length >= minValues;
@@ -2937,18 +2955,18 @@
         return void 0;
     };
     Bacon.Property.prototype.startWith = function (seed) {
-        return withDescription(this, 'startWith', seed, this.scan(seed, function (prev, next) {
+        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), this.scan(seed, function (prev, next) {
             return next;
         }));
     };
     Bacon.EventStream.prototype.startWith = function (seed) {
-        return withDescription(this, 'startWith', seed, Bacon.once(seed).concat(this));
+        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), Bacon.once(seed).concat(this));
     };
     Bacon.Observable.prototype.takeWhile = function () {
         var args, f;
         f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
         return convertArgsToFunction(this, f, args, function (f) {
-            return withDescription(this, 'takeWhile', f, this.withHandler(function (event) {
+            return withDesc(new Bacon.Desc(this, 'takeWhile', [f]), this.withHandler(function (event) {
                 if (event.filter(f)) {
                     return this.push(event);
                 } else {
@@ -2982,13 +3000,9 @@
             patterns[i] = lateBindFirst(patterns[i]);
             i = i - 2;
         }
-        return withDescription.apply(null, [
-            Bacon,
-            'update',
-            initial
-        ].concat(slice.call(patterns), [Bacon.when.apply(Bacon, patterns).scan(initial, function (x, f) {
-                return f(x);
-            })]));
+        return withDesc(new Bacon.Desc(Bacon, 'update', [initial].concat(slice.call(patterns))), Bacon.when.apply(Bacon, patterns).scan(initial, function (x, f) {
+            return f(x);
+        }));
     };
     Bacon.zipAsArray = function () {
         var streams;
@@ -2996,14 +3010,11 @@
         if (isArray(streams[0])) {
             streams = streams[0];
         }
-        return withDescription.apply(null, [
-            Bacon,
-            'zipAsArray'
-        ].concat(slice.call(streams), [Bacon.zipWith(streams, function () {
-                var xs;
-                xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-                return xs;
-            })]));
+        return withDesc(new Bacon.Desc(Bacon, 'zipAsArray', streams), Bacon.zipWith(streams, function () {
+            var xs;
+            xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+            return xs;
+        }));
     };
     Bacon.zipWith = function () {
         var f, ref1, streams;
@@ -3017,27 +3028,23 @@
         streams = _.map(function (s) {
             return s.toEventStream();
         }, streams);
-        return withDescription.apply(null, [
-            Bacon,
-            'zipWith',
-            f
-        ].concat(slice.call(streams), [Bacon.when(streams, f)]));
+        return withDesc(new Bacon.Desc(Bacon, 'zipWith', [f].concat(slice.call(streams))), Bacon.when(streams, f));
     };
     Bacon.Observable.prototype.zip = function (other, f) {
         if (f == null) {
             f = Array;
         }
-        return withDescription(this, 'zip', other, Bacon.zipWith([
+        return withDesc(new Bacon.Desc(this, 'zip', [other]), Bacon.zipWith([
             this,
             other
         ], f));
     };
     Bacon.Observable.prototype.first = function () {
-        return withDescription(this, 'first', this.take(1));
+        return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
     Bacon.Observable.prototype.last = function () {
         var lastEvent;
-        return withDescription(this, 'last', this.withHandler(function (event) {
+        return withDesc(new Bacon.Desc(this, 'last', []), this.withHandler(function (event) {
             if (event.isEnd()) {
                 if (lastEvent) {
                     this.push(lastEvent);
@@ -3050,12 +3057,12 @@
         }));
     };
     Bacon.EventStream.prototype.throttle = function (delay) {
-        return withDescription(this, 'throttle', delay, this.bufferWithTime(delay).map(function (values) {
+        return withDesc(new Bacon.Desc(this, 'throttle', [delay]), this.bufferWithTime(delay).map(function (values) {
             return values[values.length - 1];
         }));
     };
     Bacon.Property.prototype.throttle = function (delay) {
-        return this.delayChanges('throttle', delay, function (changes) {
+        return this.delayChanges(new Bacon.Desc(this, 'throttle', [delay]), function (changes) {
             return changes.throttle(delay);
         });
     };
