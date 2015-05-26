@@ -1,3 +1,7 @@
+## 0.7.60
+
+- Re-impl holdWhen for better performance. Fix "never-ending valve" case on the way.
+
 ## 0.7.59
 
 - Add `doError()` (#581)
