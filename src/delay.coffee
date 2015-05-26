@@ -3,7 +3,7 @@
 # build-dependencies: delaychanges
 
 Bacon.EventStream :: delay = (delay) ->
-  withDescription(this, "delay", delay, @flatMap (value) ->
+  withDesc(new Bacon.Desc(this, "delay", [delay]), @flatMap (value) ->
     Bacon.later delay, value)
 
-Bacon.Property :: delay = (delay) -> @delayChanges("delay", delay, (changes) -> changes.delay(delay))
+Bacon.Property :: delay = (delay) -> @delayChanges(new Bacon.Desc(this, "delay", [delay]), (changes) -> changes.delay(delay))

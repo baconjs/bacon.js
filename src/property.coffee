@@ -68,19 +68,19 @@ class Property extends Observable
     @dispatcher = new PropertyDispatcher(this, subscribe, handler)
     registerObs(this)
 
-  changes: -> new EventStream describe(this, "changes"), (sink) =>
+  changes: -> new EventStream (new Bacon.Desc(this, "changes", [])), (sink) =>
     @dispatcher.subscribe (event) ->
       sink event unless event.isInitial()
 
   withHandler: (handler) ->
-    new Property describe(this, "withHandler", handler), @dispatcher.subscribe, handler
+    new Property (new Bacon.Desc(this, "withHandler", [handler])), @dispatcher.subscribe, handler
 
   toProperty: ->
     assertNoArguments(arguments)
     this
 
   toEventStream: ->
-    new EventStream describe(this, "toEventStream"), (sink) =>
+    new EventStream (new Bacon.Desc(this, "toEventStream", [])), (sink) =>
       @dispatcher.subscribe (event) ->
         event = event.toNext() if event.isInitial()
         sink event
@@ -88,7 +88,7 @@ class Property extends Observable
 Bacon.Property = Property
 
 Bacon.constant = (value) ->
-  new Property describe(Bacon, "constant", value), (sink) ->
+  new Property (new Bacon.Desc(Bacon, "constant", [value])), (sink) ->
     sink (initialEvent value)
     sink (endEvent())
     nop

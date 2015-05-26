@@ -2,7 +2,7 @@
 
 Bacon.Observable :: withStateMachine = (initState, f) ->
   state = initState
-  withDescription(this, "withStateMachine", initState, f, @withHandler (event) ->
+  withDesc(new Bacon.Desc(this, "withStateMachine", [initState, f]), @withHandler (event) ->
     fromF = f(state, event)
     [newState, outputs] = fromF
     state = newState

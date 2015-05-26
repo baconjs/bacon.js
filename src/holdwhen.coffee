@@ -7,7 +7,7 @@ Bacon.EventStream :: holdWhen = (valve) ->
   onHold = false
   bufferedValues = []
   src = this
-  new EventStream describe(this, "holdWhen", valve), (sink) ->
+  new EventStream (new Bacon.Desc(this, "holdWhen", [valve])), (sink) ->
     endIfBothEnded = (unsub) ->
       unsub()
       sink endEvent() if composite.empty()

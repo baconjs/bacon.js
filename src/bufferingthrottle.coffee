@@ -3,7 +3,7 @@
 # build-dependencies: flatmapconcat, later
 
 Bacon.Observable :: bufferingThrottle = (minimumInterval) ->
-  withDescription(this, "bufferingThrottle", minimumInterval,
+  withDesc(new Bacon.Desc(this, "bufferingThrottle", [minimumInterval]),
     @flatMapConcat (x) ->
       Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false)))
 

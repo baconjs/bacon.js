@@ -2,5 +2,5 @@
 
 Bacon.EventStream :: skipUntil = (starter) ->
   started = starter.take(1).map(true).toProperty(false)
-  withDescription(this, "skipUntil", starter, @filter(started))
+  withDesc(new Bacon.Desc(this, "skipUntil", [starter]), @filter(started))
 

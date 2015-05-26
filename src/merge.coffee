@@ -4,13 +4,13 @@
 Bacon.EventStream :: merge = (right) ->
   assertEventStream(right)
   left = this
-  withDescription(left, "merge", right, Bacon.mergeAll(this, right))
+  withDesc(new Bacon.Desc(left, "merge", [right]), Bacon.mergeAll(this, right))
 
 Bacon.mergeAll = (streams...) ->
   if isArray streams[0]
     streams = streams[0]
   if streams.length
-    new EventStream describe(Bacon, "mergeAll", streams...), (sink) ->
+    new EventStream (new Bacon.Desc(Bacon, "mergeAll", streams)), (sink) ->
       ends = 0
       smartSink = (obs) -> (unsubBoth) -> obs.dispatcher.subscribe (event) ->
         if event.isEnd()

@@ -38,7 +38,7 @@ Bacon.when = ->
   sources = _.map Source.fromObservable, sources
   needsBarrier = (_.any sources, (s) -> s.flatten) and (containsDuplicateDeps (_.map ((s) -> s.obs), sources))
 
-  resultStream = new EventStream describe(Bacon, "when", patterns...), (sink) ->
+  resultStream = new EventStream (new Bacon.Desc(Bacon, "when", patterns)), (sink) ->
     triggers = []
     ends = false
     match = (p) ->

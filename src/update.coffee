@@ -8,4 +8,4 @@ Bacon.update = (initial, patterns...) ->
       patterns[i] = do (x = patterns[i]) -> (-> x)
     patterns[i] = lateBindFirst patterns[i]
     i = i - 2
-  withDescription(Bacon, "update", initial, patterns..., Bacon.when(patterns...).scan initial, ((x,f) -> f x))
+  withDesc(new Bacon.Desc(Bacon, "update", [initial, patterns...]), Bacon.when(patterns...).scan initial, ((x,f) -> f x))

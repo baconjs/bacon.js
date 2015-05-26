@@ -10,7 +10,7 @@ Bacon.retry = (options) ->
 
   finished = false
   error = null
-  withDescription Bacon, "retry", options, Bacon.repeat ->
+  withDesc new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat ->
     if finished
       null # end it
     else

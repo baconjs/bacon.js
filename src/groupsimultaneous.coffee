@@ -6,4 +6,4 @@ Bacon.groupSimultaneous = (streams...) ->
     streams = streams[0]
   sources = for s in streams
     new BufferingSource(s)
-  withDescription(Bacon, "groupSimultaneous", streams..., Bacon.when(sources, ((xs...) -> xs)))
+  withDesc(new Bacon.Desc(Bacon, "groupSimultaneous", streams), Bacon.when(sources, ((xs...) -> xs)))

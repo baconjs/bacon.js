@@ -2,7 +2,7 @@
 
 Bacon.EventStream :: concat = (right) ->
   left = this
-  new EventStream describe(left, "concat", right), (sink) ->
+  new EventStream (new Bacon.Desc(left, "concat", [right])), (sink) ->
     unsubRight = nop
     unsubLeft = left.dispatcher.subscribe (e) ->
       if e.isEnd()

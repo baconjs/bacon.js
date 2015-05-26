@@ -36,4 +36,4 @@ Bacon.Observable :: scan = (seed, f) ->
         sink event unless reply == Bacon.noMore
     UpdateBarrier.whenDoneWith resultProperty, sendInit
     unsub
-  resultProperty = new Property describe(this, "scan", seed, f), subscribe
+  resultProperty = new Property (new Bacon.Desc(this, "scan", [seed, f])), subscribe

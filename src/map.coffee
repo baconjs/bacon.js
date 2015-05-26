@@ -3,5 +3,5 @@
 
 Bacon.Observable :: map = (p, args...) ->
   convertArgsToFunction this, p, args, (f) ->
-    withDescription(this, "map", f, @withHandler (event) ->
+    withDesc(new Bacon.Desc(this, "map", [f]), @withHandler (event) ->
       @push event.fmap(f))

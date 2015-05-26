@@ -4,7 +4,7 @@
 
 # eventTransformer - should return one value or one or many events
 Bacon.fromBinder = (binder, eventTransformer = _.id) ->
-  new EventStream describe(Bacon, "fromBinder", binder, eventTransformer), (sink) ->
+  new EventStream (new Bacon.Desc(Bacon, "fromBinder", [binder, eventTransformer])), (sink) ->
     unbound = false
     shouldUnbind = false
     unbind = ->
@@ -62,7 +62,7 @@ findHandlerMethods = (target) ->
 
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
   [sub, unsub] = findHandlerMethods target
-  withDescription(Bacon, "fromEvent", target, eventName, Bacon.fromBinder (handler) ->
+  withDesc(new Bacon.Desc(Bacon, "fromEvent", [target, eventName]), Bacon.fromBinder (handler) ->
     sub.call(target, eventName, handler)
     -> unsub.call(target, eventName, handler)
   , eventTransformer)

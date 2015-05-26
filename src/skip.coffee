@@ -1,7 +1,7 @@
 # build-dependencies: core
 
 Bacon.Observable :: skip = (count) ->
-  withDescription(this, "skip", count, @withHandler (event) ->
+  withDesc(new Bacon.Desc(this, "skip", [count]), @withHandler (event) ->
     unless event.hasValue()
       @push event
     else if (count > 0)

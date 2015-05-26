@@ -2,10 +2,10 @@
 # build-dependencies: eventstream, property
 
 Bacon.EventStream :: bufferWithTime = (delay) ->
-  withDescription(this, "bufferWithTime", delay, @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
+  withDesc(new Bacon.Desc(this, "bufferWithTime", [delay]), @bufferWithTimeOrCount(delay, Number.MAX_VALUE))
 
 Bacon.EventStream :: bufferWithCount = (count) ->
-  withDescription(this, "bufferWithCount", count, @bufferWithTimeOrCount(undefined, count))
+  withDesc(new Bacon.Desc(this, "bufferWithCount", [count]), @bufferWithTimeOrCount(undefined, count))
 
 Bacon.EventStream :: bufferWithTimeOrCount = (delay, count) ->
   flushOrSchedule = (buffer) ->
@@ -13,7 +13,7 @@ Bacon.EventStream :: bufferWithTimeOrCount = (delay, count) ->
       buffer.flush()
     else if (delay != undefined)
       buffer.schedule()
-  withDescription(this, "bufferWithTimeOrCount", delay, count, @buffer(delay, flushOrSchedule, flushOrSchedule))
+  withDesc(new Bacon.Desc(this, "bufferWithTimeOrCount", [delay, count]), @buffer(delay, flushOrSchedule, flushOrSchedule))
 
 Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
   buffer = {
@@ -46,7 +46,7 @@ Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
     delay = (f) ->
       #console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
       Bacon.scheduler.setTimeout(f, delayMs)
-  withDescription(this, "buffer", @withHandler (event) ->
+  withDesc(new Bacon.Desc(this, "buffer", []), @withHandler (event) ->
     buffer.push = (event) => @push(event)
     if event.isError()
       reply = @push event

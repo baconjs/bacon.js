@@ -1,2 +1,2 @@
 # build-dependencies: filter
-Observable :: errors = -> withDescription(this, "errors", @filter(-> false))
+Observable :: errors = -> withDesc(new Bacon.Desc(this, "errors", []), @filter(-> false))

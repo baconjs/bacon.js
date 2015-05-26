@@ -6,7 +6,7 @@
 
 Bacon.EventStream :: takeUntil = (stopper) ->
   endMarker = {}
-  withDescription(this, "takeUntil", stopper, Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.skipErrors())
+  withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), Bacon.groupSimultaneous(@mapEnd(endMarker), stopper.skipErrors())
     .withHandler((event) ->
       unless event.hasValue()
         @push event
@@ -27,6 +27,6 @@ Bacon.EventStream :: takeUntil = (stopper) ->
 
 Bacon.Property :: takeUntil = (stopper) ->
   changes = @changes().takeUntil(stopper)
-  withDescription(this, "takeUntil", stopper,
+  withDesc(new Bacon.Desc(this, "takeUntil", [stopper]),
     addPropertyInitValueToStream(this, changes))
 

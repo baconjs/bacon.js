@@ -2,7 +2,7 @@
 
 Bacon.sequentially = (delay, values) ->
   index = 0
-  withDescription(Bacon, "sequentially", delay, values, Bacon.fromPoll delay, ->
+  withDesc(new Bacon.Desc(Bacon, "sequentially", [delay, values]), Bacon.fromPoll delay, ->
     value = values[index++]
     if index < values.length
       value

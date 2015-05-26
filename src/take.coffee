@@ -2,7 +2,7 @@
 
 Bacon.Observable :: take = (count) ->
   return Bacon.never() if count <= 0
-  withDescription(this, "take", count, @withHandler (event) ->
+  withDesc(new Bacon.Desc(this, "take", [count]), @withHandler (event) ->
     unless event.hasValue()
       @push event
     else

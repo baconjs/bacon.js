@@ -3,7 +3,7 @@
 
 Bacon.Observable :: diff = (start, f) ->
   f = toCombinator(f)
-  withDescription(this, "diff", start, f,
+  withDesc(new Bacon.Desc(this, "diff", [start, f]),
     @scan([start], (prevTuple, next) ->
       [next, f(prevTuple[0], next)])
     .filter((tuple) -> tuple.length == 2)

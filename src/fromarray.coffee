@@ -3,10 +3,10 @@
 Bacon.fromArray = (values) ->
   assertArray values
   if !values.length
-    withDescription(Bacon, "fromArray", values, Bacon.never())
+    withDesc(new Bacon.Desc(Bacon, "fromArray", values), Bacon.never())
   else
     i = 0
-    new EventStream describe(Bacon, "fromArray", values), (sink) ->
+    new EventStream (new Bacon.Desc(Bacon, "fromArray", [values])), (sink) ->
       unsubd = false
       reply = Bacon.more
       pushing = false

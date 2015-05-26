@@ -5,7 +5,7 @@ class Bus extends EventStream
     @sink = undefined
     @subscriptions = []
     @ended = false
-    super(describe(Bacon, "Bus"), @subscribeAll)
+    super(new Bacon.Desc(Bacon, "Bus", []), @subscribeAll)
 
   unsubAll: =>
     sub.unsub?() for sub in @subscriptions

@@ -2,5 +2,5 @@
 
 Bacon.repeatedly = (delay, values) ->
   index = 0
-  withDescription(Bacon, "repeatedly", delay, values, Bacon.fromPoll(delay, -> values[index++ % values.length]))
+  withDesc(new Bacon.Desc(Bacon, "repeatedly", [delay, values]), Bacon.fromPoll(delay, -> values[index++ % values.length]))
 

@@ -15,7 +15,7 @@ class EventStream extends Observable
   toProperty: (initValue_) ->
     initValue = if arguments.length == 0 then None else toOption(-> initValue_)
     disp = @dispatcher
-    new Property(describe(this, "toProperty", initValue_),
+    new Property((new Bacon.Desc(this, "toProperty", [initValue_])),
       (sink) ->
         initSent = false
         unsub = nop
@@ -48,7 +48,7 @@ class EventStream extends Observable
   toEventStream: -> this
 
   withHandler: (handler) ->
-    new EventStream describe(this, "withHandler", handler), @dispatcher.subscribe, handler
+    new EventStream (new Bacon.Desc(this, "withHandler", [handler])), @dispatcher.subscribe, handler
 
 Bacon.EventStream = EventStream
 

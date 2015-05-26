@@ -13,8 +13,8 @@ describe = (context, method, args...) ->
   else
     new Desc(context, method, args)
 
-withDescription = (desc..., obs) ->
-  obs.desc = describe(desc...)
+withDesc = (desc, obs) ->
+  obs.desc = desc
   obs
 
 findDeps = (x) ->

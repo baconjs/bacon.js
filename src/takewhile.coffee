@@ -3,7 +3,7 @@
 Bacon.Observable :: takeWhile = (f, args...) ->
   assertObservableIsProperty(f)
   convertArgsToFunction this, f, args, (f) ->
-    withDescription(this, "takeWhile", f, @withHandler (event) ->
+    withDesc(new Bacon.Desc(this, "takeWhile", [f]), @withHandler (event) ->
       if event.filter(f)
         @push event
       else

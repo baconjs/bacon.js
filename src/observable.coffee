@@ -43,7 +43,8 @@ class Observable
     this
 
   withDescription: ->
-    withDescription(arguments..., this)
+    @desc = describe(arguments...)
+    this
 
   toString: ->
     if @_name

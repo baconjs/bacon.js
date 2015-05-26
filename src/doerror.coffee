@@ -2,6 +2,6 @@
 
 Bacon.Observable :: doError = ->
   f = makeFunctionArgs(arguments)
-  withDescription(this, "doError", f, @withHandler (event) ->
+  withDesc(new Bacon.Desc(this, "doError", [f]), @withHandler (event) ->
     f(event.error) if event.isError()
     @push event)

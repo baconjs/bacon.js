@@ -10,14 +10,14 @@ Bacon.combineAsArray = (streams...) ->
   if streams.length
     sources = for s in streams
       new Source(s, true)
-    withDescription(Bacon, "combineAsArray", streams..., Bacon.when(sources, ((xs...) -> xs)).toProperty())
+    withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), Bacon.when(sources, ((xs...) -> xs)).toProperty())
   else
     Bacon.constant([])
 
 Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
 
 Bacon.combineWith = (f, streams...) ->
-  withDescription(Bacon, "combineWith", f, streams..., Bacon.combineAsArray(streams).map (values) -> f(values...))
+  withDesc(new Bacon.Desc(Bacon, "combineWith", [f, streams...]), Bacon.combineAsArray(streams).map (values) -> f(values...))
 
 Bacon.combineTemplate = (template) ->
   funcs = []
@@ -50,13 +50,13 @@ Bacon.combineTemplate = (template) ->
     for f in funcs
       f(ctxStack, values)
     rootContext
-  withDescription(Bacon, "combineTemplate", template, Bacon.combineAsArray(streams).map(combinator))
+  withDesc(new Bacon.Desc(Bacon, "combineTemplate", [template]), Bacon.combineAsArray(streams).map(combinator))
 
 Bacon.Observable :: combine = (other, f) ->
   combinator = toCombinator(f)
-  withDescription(this, "combine", other, f,
+  withDesc(new Bacon.Desc(this, "combine", [other, f]),
     Bacon.combineAsArray(this, other)
       .map (values) ->
         combinator(values[0], values[1]))
 
-Bacon.Observable :: decode = (cases) -> withDescription(this, "decode", cases, @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
+Bacon.Observable :: decode = (cases) -> withDesc(new Bacon.Desc(this, "decode", [cases]), @combine(Bacon.combineTemplate(cases), (key, values) -> values[key]))
