@@ -86,7 +86,7 @@ describe "Bacon.Bus", ->
     plugged = false
     bus = new Bacon.Bus()
     bus.end()
-    bus.plug(new Bacon.EventStream((sink) -> plugged = true; (->)))
+    bus.plug(new Bacon.EventStream([], (sink) -> plugged = true; (->)))
     bus.onValue(->)
     expect(plugged).to.deep.equal(false)
 

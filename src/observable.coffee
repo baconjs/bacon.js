@@ -9,9 +9,8 @@ idCounter = 0
 registerObs = ->
 
 class Observable
-  constructor: (desc) ->
+  constructor: (@desc) ->
     @id = ++idCounter
-    withDescription(desc, this)
     @initialDesc = @desc
 
   subscribe: (sink) ->
@@ -44,7 +43,7 @@ class Observable
     this
 
   withDescription: ->
-    describe(arguments...).apply(this)
+    withDescription(arguments..., this)
 
   toString: ->
     if @_name

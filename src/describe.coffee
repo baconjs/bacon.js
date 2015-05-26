@@ -4,9 +4,6 @@ class Desc
   constructor: (@context, @method, @args) ->
   deps: ->
     @cached or= findDeps([@context].concat(@args))
-  apply: (obs) ->
-    obs.desc = this
-    obs
   toString: ->
     _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
 
@@ -17,7 +14,8 @@ describe = (context, method, args...) ->
     new Desc(context, method, args)
 
 withDescription = (desc..., obs) ->
-  describe(desc...).apply(obs)
+  obs.desc = describe(desc...)
+  obs
 
 findDeps = (x) ->
   if isArray(x)
@@ -28,3 +26,6 @@ findDeps = (x) ->
     [x.obs]
   else
     []
+
+Bacon.Desc = Desc
+Bacon.Desc.empty = new Bacon.Desc("", "", [])

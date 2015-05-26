@@ -63,10 +63,6 @@ class PropertyDispatcher extends Dispatcher
 
 class Property extends Observable
   constructor: (desc, subscribe, handler) ->
-    if _.isFunction(desc)
-      handler = subscribe
-      subscribe = desc
-      desc = []
     super(desc)
     assertFunction(subscribe)
     @dispatcher = new PropertyDispatcher(this, subscribe, handler)

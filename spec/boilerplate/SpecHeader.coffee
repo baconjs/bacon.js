@@ -58,7 +58,7 @@ skip = (count, obs) ->
 toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(-> x)
 
 fromBinder = Bacon.fromBinder || (binder, eventTransformer = Bacon._.id) ->
-  new Bacon.EventStream (sink) ->
+  new Bacon.EventStream noDesc, (sink) ->
     unbound = false
     shouldUnbind = false
     unbind = ->
@@ -114,7 +114,7 @@ fromArray = Bacon.fromArray || (values) ->
     Bacon.never()
   else
     i = 0
-    new Bacon.EventStream (sink) ->
+    new Bacon.EventStream noDesc, (sink) ->
       unsubd = false
       reply = Bacon.more
       push = ->
@@ -130,7 +130,7 @@ fromArray = Bacon.fromArray || (values) ->
       -> unsubd = true
 
 once = Bacon.once || (value) ->
-  new Bacon.EventStream (sink) ->
+  new Bacon.EventStream noDesc, (sink) ->
     sink (toEvent(value))
     sink (new Bacon.End())
     ->
@@ -143,7 +143,7 @@ mergeAll = Bacon.mergeAll || (streams...) ->
   if isArray streams[0]
     streams = streams[0]
   if streams.length
-    new Bacon.EventStream (sink) ->
+    new Bacon.EventStream noDesc, (sink) ->
       ends = 0
       smartSink = (obs) -> (unsubBoth) -> obs.dispatcher.subscribe (event) ->
         if event.isEnd()
@@ -196,6 +196,7 @@ testSideEffects = (wrapper, method) ->
 
 t = @t = (time) -> time
 seqs = []
+noDesc = Bacon.Desc.empty
 
 verifyCleanup = ->
   for seq in seqs
