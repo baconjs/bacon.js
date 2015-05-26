@@ -1,4 +1,4 @@
-# build-dependencies: startwith, filter, delay, interval
+# build-dependencies: startwith, filter, delay, interval, take, bus
 
 describe "EventStream.holdWhen", ->
   describe "Keeps events on hold when a property is true", ->
@@ -15,6 +15,12 @@ describe "EventStream.holdWhen", ->
         valve = series(2, [true, false, true]).delay(1).toProperty()
         src.holdWhen(valve)
       [[2, 1], [5, 2], [6, 3]])
+  describe "Ends properly with never-ending valve", ->
+    expectStreamEvents(
+      ->
+        valve = new Bacon.Bus()
+        series(2, [1,2,3]).holdWhen(valve)
+      [1,2,3])
   describe "Supports truthy init value for property", ->
     expectStreamTimings(
       ->
