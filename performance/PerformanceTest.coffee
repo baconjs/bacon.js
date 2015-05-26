@@ -49,45 +49,59 @@ f =
 
 suite = new Benchmark.Suite
 
-suite.add 'diamond', ->
-  f.withGenerator(((gen) ->
-    s = f.diamond(gen.stream(), 3, 5)
-    s.onValue ->
-    s
-  ),1)
-suite.add 'combo', ->
-  f.withGenerator(((gen) ->
-    s = f.combineTemplate(gen, 4, 4)
-    s.onValue ->
-    s), 1)
-suite.add 'zip', ->
-  f.withGenerator (gen) ->
-    f.zip(gen)
-suite.add 'flatMap', ->
-  f.withGenerator (gen) ->
-    gen.stream().flatMap (x) ->
-      gen.stream().take(3)
-suite.add 'Bacon.combineTemplate.sample', ->
-  f.withGenerator (gen) ->
-    f.combineTemplate(gen, 5, 1)
-      .sampledBy(f.everyNth(10, gen.stream()))
-suite.add 'Bacon.combineTemplate (deep)', ->
-  f.withGenerator (gen) ->
-    f.combineTemplate(gen, 3, 3)
-suite.add 'Bacon.combineTemplate', ->
-  f.withGenerator (gen) ->
-    f.combineTemplate(gen, 5, 1)
-suite.add 'EventStream.map', ->
-  f.withGenerator (gen) ->
-    gen.stream().map((x) -> x * 2)
-suite.add 'EventStream.scan', ->
-  f.withGenerator (gen) ->
-    gen.stream().scan(0, (x,y) -> x+y)
-suite.add 'EventStream.toProperty', ->
-  f.withGenerator (gen) ->
-    gen.stream().toProperty()
+cases = {
+  'diamond': ->
+    f.withGenerator(((gen) ->
+      s = f.diamond(gen.stream(), 3, 5)
+      s.onValue ->
+      s
+    ),1)
+  'combo': ->
+    f.withGenerator(((gen) ->
+      s = f.combineTemplate(gen, 4, 4)
+      s.onValue ->
+      s), 1)
+  'zip': ->
+    f.withGenerator (gen) ->
+      f.zip(gen)
+  'flatMap': ->
+    f.withGenerator (gen) ->
+      gen.stream().flatMap (x) ->
+        gen.stream().take(3)
+  'Bacon.combineTemplate.sample': ->
+    f.withGenerator (gen) ->
+      f.combineTemplate(gen, 5, 1)
+        .sampledBy(f.everyNth(10, gen.stream()))
+  'Bacon.combineTemplate (deep)': ->
+    f.withGenerator (gen) ->
+      f.combineTemplate(gen, 3, 3)
+  'Bacon.combineTemplate': ->
+    f.withGenerator (gen) ->
+      f.combineTemplate(gen, 5, 1)
+  'EventStream.map': ->
+    f.withGenerator (gen) ->
+      gen.stream().map((x) -> x * 2)
+  'EventStream.scan': ->
+    f.withGenerator (gen) ->
+      gen.stream().scan(0, (x,y) -> x+y)
+  'EventStream.toProperty': ->
+    f.withGenerator (gen) ->
+      gen.stream().toProperty()
+}
+
+includeCase = (key) ->
+  args = process.argv.slice(2)
+  if args.length
+    _.any args, (arg) -> 
+      key.toLowerCase().indexOf(arg.toLowerCase()) >= 0
+  else
+    true
+
+for own key, value of cases
+  suite.add key, value if includeCase(key)
+
 suite.on 'cycle', (event) ->
-  console.log(String(event.target))
-.on "error", (error) ->
-  console.log(error)
-.run({ 'async': false })
+    console.log(String(event.target))
+  .on "error", (error) ->
+    console.log(error)
+  .run({ 'async': false })
