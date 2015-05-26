@@ -2614,40 +2614,51 @@
         }
     };
     Bacon.EventStream.prototype.holdWhen = function (valve) {
-        var bufferedValues, combined, onHold;
+        var bufferedValues, composite, onHold, src;
+        composite = new CompositeUnsubscribe();
         onHold = false;
         bufferedValues = [];
-        combined = Bacon.when([this], function (value) {
-            return {
-                value: value,
-                hasValue: true
+        src = this;
+        return new EventStream(describe(this, 'holdWhen', valve), function (sink) {
+            var endIfBothEnded;
+            endIfBothEnded = function (unsub) {
+                unsub();
+                if (composite.empty()) {
+                    return sink(endEvent());
+                }
             };
-        }, [valve.toEventStream().skipDuplicates()], function (value) {
-            return { newOnHold: value };
+            composite.add(function (unsubAll, unsubMe) {
+                return src.subscribe(function (event) {
+                    if (onHold && event.hasValue()) {
+                        return bufferedValues.push(event.value());
+                    } else if (event.isEnd() && bufferedValues.length) {
+                        return endIfBothEnded(unsubMe);
+                    } else {
+                        return sink(event);
+                    }
+                });
+            });
+            composite.add(function (unsubAll, unsubMe) {
+                return valve.subscribe(function (event) {
+                    var toSend;
+                    if (event.hasValue()) {
+                        onHold = event.value();
+                        if (!onHold) {
+                            toSend = bufferedValues;
+                            bufferedValues = [];
+                            return _.each(toSend, function (index, value) {
+                                return sink(nextEvent(value));
+                            });
+                        }
+                    } else if (event.isEnd()) {
+                        return endIfBothEnded(unsubMe);
+                    } else {
+                        return sink(event);
+                    }
+                });
+            });
+            return composite.unsubscribe;
         });
-        return withDescription(this, 'holdWhen', valve, combined.flatMap(function (arg) {
-            var hasValue, newOnHold, toSend, value;
-            value = arg.value, newOnHold = arg.newOnHold, hasValue = arg.hasValue;
-            if (newOnHold != null) {
-                onHold = newOnHold;
-            }
-            if (hasValue) {
-                if (!onHold) {
-                    return Bacon.once(value);
-                } else {
-                    bufferedValues.push(value);
-                    return Bacon.never();
-                }
-            } else {
-                if (onHold) {
-                    return Bacon.never();
-                } else {
-                    toSend = bufferedValues;
-                    bufferedValues = [];
-                    return Bacon.fromArray(toSend);
-                }
-            }
-        }));
     };
     Bacon.interval = function (delay, value) {
         if (value == null) {
