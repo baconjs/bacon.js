@@ -65,6 +65,8 @@ cases = {
   'zip': ->
     f.withGenerator (gen) ->
       f.zip(gen)
+  'Creating streams': ->
+    Bacon.once()
   'EventStream passthrough': ->
     f.withGenerator (gen) ->
       gen.stream()
