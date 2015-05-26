@@ -65,10 +65,16 @@ cases = {
   'zip': ->
     f.withGenerator (gen) ->
       f.zip(gen)
-  'flatMap': ->
+  'EventStream passthrough': ->
+    f.withGenerator (gen) ->
+      gen.stream()
+  'EventStream.map': ->
+    f.withGenerator (gen) ->
+      gen.stream().map((x) -> x * 2)
+  'EventStream.flatMap': ->
     f.withGenerator (gen) ->
       gen.stream().flatMap (x) ->
-        gen.stream().take(3)
+        Bacon.once(x * 2)
   'Bacon.combineTemplate.sample': ->
     f.withGenerator (gen) ->
       f.combineTemplate(gen, 5, 1)
@@ -79,9 +85,6 @@ cases = {
   'Bacon.combineTemplate': ->
     f.withGenerator (gen) ->
       f.combineTemplate(gen, 5, 1)
-  'EventStream.map': ->
-    f.withGenerator (gen) ->
-      gen.stream().map((x) -> x * 2)
   'EventStream.scan': ->
     f.withGenerator (gen) ->
       gen.stream().scan(0, (x,y) -> x+y)
