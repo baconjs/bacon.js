@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.60';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -542,16 +542,10 @@
       this.context = context1;
       this.method = method1;
       this.args = args1;
-      this.cached = void 0;
     }
 
     Desc.prototype.deps = function() {
       return this.cached || (this.cached = findDeps([this.context].concat(this.args)));
-    };
-
-    Desc.prototype.apply = function(obs) {
-      obs.desc = this;
-      return obs;
     };
 
     Desc.prototype.toString = function() {
@@ -575,7 +569,8 @@
   withDescription = function() {
     var desc, j, obs;
     desc = 2 <= arguments.length ? slice.call(arguments, 0, j = arguments.length - 1) : (j = 0, []), obs = arguments[j++];
-    return describe.apply(null, desc).apply(obs);
+    obs.desc = describe.apply(null, desc);
+    return obs;
   };
 
   findDeps = function(x) {
@@ -589,6 +584,10 @@
       return [];
     }
   };
+
+  Bacon.Desc = Desc;
+
+  Bacon.Desc.empty = new Bacon.Desc("", "", []);
 
   withMethodCallSupport = function(wrapped) {
     return function() {
@@ -1027,9 +1026,9 @@
   registerObs = function() {};
 
   Observable = (function() {
-    function Observable(desc) {
+    function Observable(desc1) {
+      this.desc = desc1;
       this.id = ++idCounter;
-      withDescription(desc, this);
       this.initialDesc = this.desc;
     }
 
@@ -1083,7 +1082,7 @@
     };
 
     Observable.prototype.withDescription = function() {
-      return describe.apply(null, arguments).apply(this);
+      return withDescription.apply(null, slice.call(arguments).concat([this]));
     };
 
     Observable.prototype.toString = function() {
@@ -1196,6 +1195,14 @@
   Bacon.CompositeUnsubscribe = CompositeUnsubscribe;
 
   Dispatcher = (function() {
+    Dispatcher.prototype.pushing = false;
+
+    Dispatcher.prototype.ended = false;
+
+    Dispatcher.prototype.prevError = void 0;
+
+    Dispatcher.prototype.unsubSrc = void 0;
+
     function Dispatcher(_subscribe, _handleEvent) {
       this._subscribe = _subscribe;
       this._handleEvent = _handleEvent;
@@ -1203,10 +1210,6 @@
       this.handleEvent = bind(this.handleEvent, this);
       this.subscriptions = [];
       this.queue = [];
-      this.pushing = false;
-      this.ended = false;
-      this.prevError = void 0;
-      this.unsubSrc = void 0;
     }
 
     Dispatcher.prototype.hasSubscribers = function() {
@@ -1316,15 +1319,12 @@
 
   })();
 
+  Bacon.Dispatcher = Dispatcher;
+
   EventStream = (function(superClass) {
     extend(EventStream, superClass);
 
     function EventStream(desc, subscribe, handler) {
-      if (_.isFunction(desc)) {
-        handler = subscribe;
-        subscribe = desc;
-        desc = [];
-      }
       EventStream.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
       this.dispatcher = new Dispatcher(subscribe, handler);
@@ -1720,11 +1720,6 @@
     extend(Property, superClass);
 
     function Property(desc, subscribe, handler) {
-      if (_.isFunction(desc)) {
-        handler = subscribe;
-        subscribe = desc;
-        desc = [];
-      }
       Property.__super__.constructor.call(this, desc);
       assertFunction(subscribe);
       this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
