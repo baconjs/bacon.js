@@ -2,7 +2,6 @@
 
 class Desc
   constructor: (@context, @method, @args) ->
-    @cached = undefined
   deps: ->
     @cached or= findDeps([@context].concat(@args))
   apply: (obs) ->

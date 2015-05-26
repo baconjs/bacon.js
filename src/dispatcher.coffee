@@ -2,13 +2,14 @@
 # build-dependencies: updatebarrier
 
 class Dispatcher
+  pushing: false,
+  ended: false,
+  prevError: undefined,
+  unsubSrc: undefined,
+
   constructor: (@_subscribe, @_handleEvent) ->
     @subscriptions = []
     @queue = []
-    @pushing = false
-    @ended = false
-    @prevError = undefined
-    @unsubSrc = undefined
 
   hasSubscribers: ->
     @subscriptions.length > 0
@@ -77,4 +78,4 @@ class Dispatcher
         @removeSub subscription
         @unsubscribeFromSource() unless @hasSubscribers()
 
-
+Bacon.Dispatcher = Dispatcher
