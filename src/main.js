@@ -12,6 +12,7 @@
 // build-dependencies: diff
 // build-dependencies: doaction
 // build-dependencies: doerror
+// build-dependencies: dolog
 // build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: factories

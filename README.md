@@ -788,6 +788,10 @@ or just
 myStream.log()
 ```
 
+<a name="observable-dolog"></a>
+[`observable.doLog()`](#observable-dolog "observable.doLog()") Behaves like [`observable.log`](#observable-log) but does not subscribe to the event stream. You
+can think of [`doLog`](#observable-dolog) as a variant of [`doAction`](#observable-doaction).
+
 <a name="observable-combine"></a>
 [`observable.combine(property2, f)`](#observable-combine "observable.combine(property2, f)") combines the latest values of the two
 streams or properties using a two-arg function. Similarly to [`scan`](#observable-scan), you can use a
