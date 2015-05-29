@@ -29,18 +29,18 @@ describe "Observable.doLog", ->
       console.log = (args...) -> loggedValues = args
       Bacon.constant(1).doLog(true).onValue(->)
     expect(loggedValues[0]).to.equal(true)
-  it "logs Error events as strings", (done) ->
+  it "logs Error events as strings", ->
     loggedValues = undefined
     preservingLog ->
       console.log = (args...) -> loggedValues = args
-      new Bacon.Error('err').doLog(true).onValue(->)
-    expect(loggedValues).to.equal(true)
-  it "logs End events as strings", (done) ->
+      once(Bacon.Error('err')).doLog(true).onValue(->)
+    expect(loggedValues).to.deep.equal [true, '<end>']
+  it "logs End events as strings", ->
     loggedValues = undefined
     preservingLog ->
       console.log = (args...) -> loggedValues = args
-      new Bacon.End().doLog(true).onValue(->)
-    expect(loggedValues).to.equal(true)
+      once(new Bacon.End()).doLog(true).onValue(->)
+    expect(loggedValues).to.deep.equal [true, '<end>']
   it "toString", ->
     expect(Bacon.never().doLog().toString()).to.equal("Bacon.never().doLog()")
 
