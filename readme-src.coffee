@@ -805,6 +805,11 @@ myStream.log()
 ```
 """
 
+doc.fn "observable.doLog()", """
+Behaves like `log` but does not subscribe to the event stream. You
+can think of `doLog` as a variant of `doAction`.
+"""
+
 doc.fn "observable.combine(property2, f)", """
 combines the latest values of the two
 streams or properties using a two-arg function. Similarly to `scan`, you can use a
