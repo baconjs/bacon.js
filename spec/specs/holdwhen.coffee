@@ -45,24 +45,30 @@ describe "EventStream.holdWhen", ->
         source.holdWhen(flag).fold(0, ((x,y) -> x+1), { eager: true})
       [count-1])
 
-  describe "Works with Bacon.once()", ->
+  describe "Works with synchronous sources", ->
     expectStreamTimings(
       ->
         Bacon.once("2").
           holdWhen(Bacon.later(1000, false).toProperty(true))
       [[1000, "2"]])
-  describe "Works with Bacon.once(), case 2", ->
+  describe "Works with synchronous sources, case 2", ->
     expectStreamTimings(
       ->
         Bacon.once(2).
           holdWhen(Bacon.once(true))
       [])
-  describe "Works with Bacon.once(), case 3", ->
+  describe "Works with synchronous sources, case 3", ->
     expectStreamTimings(
       ->
         Bacon.once("2").
           holdWhen(Bacon.constant(false))
       [[0, "2"]])
+  describe "Works with synchronous sources, case 4", ->
+    expectStreamTimings(
+      ->
+        Bacon.fromArray([new Bacon.Error(), "2"]).
+          holdWhen(later(20, false).startWith(true))
+      [error(), [20, "2"]])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
