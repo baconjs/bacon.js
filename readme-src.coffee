@@ -806,8 +806,11 @@ myStream.log()
 """
 
 doc.fn "observable.doLog()", """
-Behaves like `log` but does not subscribe to the event stream. You
-can think of `doLog` as a variant of `doAction`.
+logs each value of the Observable to the console. doLog() behaves like `log`
+but does not subscribe to the event stream. You can think of doLog() as a
+logger function that – unlike log() – is safe to use in production. doLog() is
+safe, because it does not cause the same surprising side-effects as log()
+does.
 """
 
 doc.fn "observable.combine(property2, f)", """

@@ -789,8 +789,11 @@ myStream.log()
 ```
 
 <a name="observable-dolog"></a>
-[`observable.doLog()`](#observable-dolog "observable.doLog()") Behaves like [`observable.log`](#observable-log) but does not subscribe to the event stream. You
-can think of [`doLog`](#observable-dolog) as a variant of [`doAction`](#observable-doaction).
+[`observable.doLog()`](#observable-dolog "observable.doLog()") logs each value of the Observable to the console. doLog() behaves like [`log`](#observable-log)
+but does not subscribe to the event stream. You can think of doLog() as a
+logger function that – unlike log() – is safe to use in production. doLog() is
+safe, because it does not cause the same surprising side-effects as log()
+does.
 
 <a name="observable-combine"></a>
 [`observable.combine(property2, f)`](#observable-combine "observable.combine(property2, f)") combines the latest values of the two
