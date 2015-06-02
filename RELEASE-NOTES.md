@@ -1,3 +1,9 @@
+## 0.7 61
+
+- Add `doLog`
+- Fix holdWhen with synchrnous sources (#597)
+- Performance improvements
+
 ## 0.7.60
 
 - Re-impl holdWhen for better performance. Fix "never-ending valve" case on the way.
