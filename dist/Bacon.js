@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.61';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2694,6 +2694,19 @@
     }));
   };
 
+  Bacon.Observable.prototype.doLog = function() {
+    var args;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    return withDesc(new Bacon.Desc(this, "doLog", args), this.withHandler(function(event) {
+      if (typeof console !== "undefined" && console !== null) {
+        if (typeof console.log === "function") {
+          console.log.apply(console, slice.call(args).concat([event.log()]));
+        }
+      }
+      return this.push(event);
+    }));
+  };
+
   Bacon.Observable.prototype.endOnError = function() {
     var args, f;
     f = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
@@ -2864,30 +2877,22 @@
   };
 
   Bacon.EventStream.prototype.holdWhen = function(valve) {
-    var bufferedValues, composite, onHold, src;
+    var bufferedValues, composite, onHold, src, subscribed;
     composite = new CompositeUnsubscribe();
     onHold = false;
     bufferedValues = [];
+    subscribed = false;
     src = this;
     return new EventStream(new Bacon.Desc(this, "holdWhen", [valve]), function(sink) {
       var endIfBothEnded;
       endIfBothEnded = function(unsub) {
-        unsub();
-        if (composite.empty()) {
+        if (typeof unsub === "function") {
+          unsub();
+        }
+        if (composite.empty() && subscribed) {
           return sink(endEvent());
         }
       };
-      composite.add(function(unsubAll, unsubMe) {
-        return src.subscribe(function(event) {
-          if (onHold && event.hasValue()) {
-            return bufferedValues.push(event.value());
-          } else if (event.isEnd() && bufferedValues.length) {
-            return endIfBothEnded(unsubMe);
-          } else {
-            return sink(event);
-          }
-        });
-      });
       composite.add(function(unsubAll, unsubMe) {
         return valve.subscribe(function(event) {
           var toSend;
@@ -2907,6 +2912,19 @@
           }
         });
       });
+      composite.add(function(unsubAll, unsubMe) {
+        return src.subscribe(function(event) {
+          if (onHold && event.hasValue()) {
+            return bufferedValues.push(event.value());
+          } else if (event.isEnd() && bufferedValues.length) {
+            return endIfBothEnded(unsubMe);
+          } else {
+            return sink(event);
+          }
+        });
+      });
+      subscribed = true;
+      endIfBothEnded();
       return composite.unsubscribe;
     });
   };
