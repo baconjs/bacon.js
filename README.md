@@ -1813,7 +1813,8 @@ Run browser (without testem):
 
 Run performance tests:
 
-    coffee performance/PerformanceTest.coffee
+    performance/PerformanceTest.coffee
+    performance/PerformanceTest.coffee flatmap
 
 Run memory usage tests:
 
