@@ -1,5 +1,25 @@
 # build-dependencies: property
 
+describe "EventStream constructor", ->
+  it "Works with subscribe function only", ->
+    values = []
+    subscribe = (sink) ->
+      sink(new Bacon.Next(-> "hello"))
+      sink(new Bacon.End())
+      ->
+    s = new Bacon.EventStream(subscribe)
+    s.onValue((x) -> values.push(x))
+    expect(values).to.deep.equal(["hello"])
+  it "Supports Desc argument", ->
+    values = []
+    subscribe = (sink) ->
+      sink(new Bacon.Next(-> "hello"))
+      sink(new Bacon.End())
+      ->
+    s = new Bacon.EventStream(new Bacon.Desc([]), subscribe)
+    s.onValue((x) -> values.push(x))
+    expect(values).to.deep.equal(["hello"])
+
 describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
     expectPropertyEvents(

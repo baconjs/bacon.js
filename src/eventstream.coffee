@@ -7,6 +7,10 @@
 
 class EventStream extends Observable
   constructor: (desc, subscribe, handler) ->
+    if _.isFunction desc
+      handler = subscribe
+      subscribe = desc
+      desc = Desc.empty
     super(desc)
     assertFunction subscribe
     @dispatcher = new Dispatcher(subscribe, handler)
