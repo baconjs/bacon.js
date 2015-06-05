@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.62';
+    Bacon.version = '0.7.63';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -1110,6 +1110,11 @@
     EventStream = function (superClass) {
         extend(EventStream, superClass);
         function EventStream(desc, subscribe, handler) {
+            if (_.isFunction(desc)) {
+                handler = subscribe;
+                subscribe = desc;
+                desc = Desc.empty;
+            }
             EventStream.__super__.constructor.call(this, desc);
             this.dispatcher = new Dispatcher(subscribe, handler);
             registerObs(this);
