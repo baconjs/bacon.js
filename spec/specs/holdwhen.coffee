@@ -1,4 +1,4 @@
-# build-dependencies: startwith, filter, delay, interval, take, bus
+# build-dependencies: startwith, filter, delay, interval, take, bus, mapEnd, map, merge
 
 describe "EventStream.holdWhen", ->
   describe "Keeps events on hold when a property is true", ->
@@ -69,6 +69,14 @@ describe "EventStream.holdWhen", ->
         Bacon.fromArray([new Bacon.Error(), "2"]).
           holdWhen(later(20, false).startWith(true))
       [error(), [20, "2"]])
+  describe.only "Sends the entire buffer even if valve ends", -> 
+    expectStreamEvents(
+      ->
+        left = series(1, [1, 2, 3, 4, 5])
+        bufferedRight = series(1, [6, 7, 8, 9, 10]).
+            holdWhen(left.map(true).startWith(true).mapEnd(false))
+        left.merge(bufferedRight)
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
