@@ -41,7 +41,7 @@ describe "Bacon.fromPromise", ->
       dispose()
       success("a")
       expect(events).to.deep.equal([])
-    
+
     it "should support custom event transformer", ->
       transformer = (value) -> [value.toUpperCase(), new Bacon.End]
       events = []
@@ -57,7 +57,7 @@ describe "Bacon.fromPromise", ->
       dispose()
       delete promise.abort
       expect(isAborted).to.deep.equal(true)
-    
+
     it "should not abort ajax promise on unsub, if abort flag is not set", ->
       isAborted = false
       promise.abort = ->
