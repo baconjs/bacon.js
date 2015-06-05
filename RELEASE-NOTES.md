@@ -1,3 +1,7 @@
+## 0.7.62
+
+- Support custom eventTranformer in fromPromise
+
 ## 0.7 61
 
 - Add `doLog`
