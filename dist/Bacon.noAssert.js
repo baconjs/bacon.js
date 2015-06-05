@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.61';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2479,7 +2479,10 @@
             endEvent()
         ];
     };
-    Bacon.fromPromise = function (promise, abort) {
+    Bacon.fromPromise = function (promise, abort, eventTransformer) {
+        if (eventTransformer == null) {
+            eventTransformer = valueAndEnd;
+        }
         return withDesc(new Bacon.Desc(Bacon, 'fromPromise', [promise]), Bacon.fromBinder(function (handler) {
             var ref;
             if ((ref = promise.then(handler, function (e) {
@@ -2494,7 +2497,7 @@
                     return typeof promise.abort === 'function' ? promise.abort() : void 0;
                 }
             };
-        }, valueAndEnd));
+        }, eventTransformer));
     };
     Bacon.Observable.prototype.mapError = function () {
         var f;

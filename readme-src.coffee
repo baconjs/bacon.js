@@ -167,9 +167,11 @@ $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 ```
 """
 
-doc.fn "Bacon.fromPromise(promise : Promise[A] [, abort : boolean]) : EventStream[A]", """
+doc.fn "Bacon.fromPromise(promise : Promise[A] [, abort : boolean][, eventTransformer]) : EventStream[A]", """
 creates an EventStream from a Promise object such as JQuery Ajax.
-This stream will contain a single value or an error, followed immediately by stream end.  You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
+This stream will contain a single value or an error, followed immediately by stream end.  
+You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
+You can also pass an optional function that transforms the promise value into Events. The default is to transform the value into `[new Bacon.Next(value), new Bacon.End()]`.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 """
 
