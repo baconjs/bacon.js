@@ -19,7 +19,7 @@ Bacon.EventStream :: holdWhen = (valve) ->
         if !onHold
           toSend = bufferedValues
           bufferedValues = []
-          _.each toSend, (index, value) ->
+          for value in toSend
             sink nextEvent(value)
       else if event.isEnd()
         endIfBothEnded(unsubMe)
