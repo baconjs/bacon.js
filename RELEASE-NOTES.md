@@ -1,3 +1,11 @@
+## 0.7.64
+
+- Fix #594: _.each, holdWhen in case there's extra stuff in Array prototype
+
+## 0.7.63
+
+- Restored legacy constructor support in EventStream (removed in 0.7.61)
+
 ## 0.7.62
 
 - Support custom eventTranformer in fromPromise
