@@ -18,7 +18,6 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
       value = eventTransformer.apply(this, args)
       unless isArray(value) and _.last(value) instanceof Event
         value = [value]
-        
       reply = Bacon.more
       for event in value
         reply = sink(event = toEvent(event))
