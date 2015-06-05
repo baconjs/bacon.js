@@ -25,7 +25,7 @@ _ = {
   map: (f, xs) ->
     f(x) for x in xs
   each: (xs, f) ->
-    for key, value of xs
+    for own key, value of xs
       f(key, value)
     undefined
   toArray: (xs) -> if isArray(xs) then xs else [xs]
