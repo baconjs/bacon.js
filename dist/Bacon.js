@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.64';
+  Bacon.version = '0.7.65';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2903,16 +2903,19 @@
         }
       };
       composite.add(function(unsubAll, unsubMe) {
-        return valve.subscribe(function(event) {
-          var toSend;
+        return valve.subscribeInternal(function(event) {
+          var j, len1, results, toSend, value;
           if (event.hasValue()) {
             onHold = event.value();
             if (!onHold) {
               toSend = bufferedValues;
               bufferedValues = [];
-              return _.each(toSend, function(index, value) {
-                return sink(nextEvent(value));
-              });
+              results = [];
+              for (j = 0, len1 = toSend.length; j < len1; j++) {
+                value = toSend[j];
+                results.push(sink(nextEvent(value)));
+              }
+              return results;
             }
           } else if (event.isEnd()) {
             return endIfBothEnded(unsubMe);
@@ -2922,7 +2925,7 @@
         });
       });
       composite.add(function(unsubAll, unsubMe) {
-        return src.subscribe(function(event) {
+        return src.subscribeInternal(function(event) {
           if (onHold && event.hasValue()) {
             return bufferedValues.push(event.value());
           } else if (event.isEnd() && bufferedValues.length) {

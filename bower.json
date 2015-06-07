@@ -1,6 +1,6 @@
 {
   "name": "bacon",
-  "version": "0.7.64",
+  "version": "0.7.65",
   "main": "dist/Bacon.js",
   "ignore": [
     ".*",
