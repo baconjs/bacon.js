@@ -1,3 +1,7 @@
+## 0.7.65
+
+- Fix `holdWhen` in a special case
+
 ## 0.7.64
 
 - Fix #594: _.each, holdWhen in case there's extra stuff in Array prototype
