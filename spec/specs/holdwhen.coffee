@@ -69,7 +69,7 @@ describe "EventStream.holdWhen", ->
         Bacon.fromArray([new Bacon.Error(), "2"]).
           holdWhen(later(20, false).startWith(true))
       [error(), [20, "2"]])
-  describe.only "Sends the entire buffer even if valve ends", -> 
+  describe "Sends the entire buffer even if valve ends", -> 
     expectStreamEvents(
       ->
         left = series(1, [1, 2, 3, 4, 5])
