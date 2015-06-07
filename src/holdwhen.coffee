@@ -13,7 +13,7 @@ Bacon.EventStream :: holdWhen = (valve) ->
       unsub?()
       if composite.empty() && subscribed
         sink endEvent()
-    composite.add (unsubAll, unsubMe) -> valve.subscribe (event) ->
+    composite.add (unsubAll, unsubMe) -> valve.subscribeInternal (event) ->
       if event.hasValue()
         onHold = event.value()
         if !onHold
@@ -25,7 +25,7 @@ Bacon.EventStream :: holdWhen = (valve) ->
         endIfBothEnded(unsubMe)
       else
         sink(event)
-    composite.add (unsubAll, unsubMe) -> src.subscribe (event) ->
+    composite.add (unsubAll, unsubMe) -> src.subscribeInternal (event) ->
       if onHold and event.hasValue()
         bufferedValues.push(event.value())
       else if event.isEnd() && bufferedValues.length
