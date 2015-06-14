@@ -1,6 +1,7 @@
 // build-dependencies: awaiting
 // build-dependencies: boolean
 // build-dependencies: buffer
+// build-dependencies: bufferingconcat
 // build-dependencies: bufferingthrottle
 // build-dependencies: bus
 // build-dependencies: callback
