@@ -1,4 +1,4 @@
-# build-dependencies: bus
+# build-dependencies: bus, merge
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->
@@ -22,6 +22,10 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> fromArray([1,2,3]).scan(0, ((x,y)->x+y))
       [0,1,3,6], unstable)
+  describe "works with merged synchronous streams", ->
+    expectPropertyEvents(
+      -> Bacon.mergeAll(once(1), once(2)).scan(0, (a,b) -> a+b)
+      [0,1,3], unstable)
   describe "calls accumulator function once per value", ->
     describe "(simple case)", ->
       count = 0

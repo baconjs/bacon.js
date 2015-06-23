@@ -5,6 +5,14 @@ describe "EventStream.zip", ->
     expectStreamEvents(
       -> series(1, [1, 2, 3]).zip(series(1, ['a', 'b', 'c']))
       [[1, 'a'], [2, 'b'], [3, 'c']])
+  describe "works with synchronous sources", ->
+    expectStreamEvents(
+      -> fromArray([1, 2, 3]).zip(fromArray(['a', 'b', 'c']))
+      [[1, 'a'], [2, 'b'], [3, 'c']])
+  describe "works with synchronous sources", ->
+    expectStreamEvents(
+      -> fromArray([1, 2, 3]).zip(fromArray(['a', 'b', 'c']))
+      [[1, 'a'], [2, 'b'], [3, 'c']])
   describe "passes through errors", ->
     expectStreamEvents(
       -> series(2, [1, error(), 2]).zip(series(2, ['a', 'b']).delay(1))
