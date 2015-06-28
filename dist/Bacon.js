@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.65';
+  Bacon.version = '0.7.66';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2839,6 +2839,32 @@
         return Bacon.scheduler.clearInterval(id);
       };
     }), poll));
+  };
+
+  Bacon.Observable.prototype.groupBy = function(keyF, limitF) {
+    var src, streams;
+    if (limitF == null) {
+      limitF = Bacon._.id;
+    }
+    streams = {};
+    src = this;
+    return src.filter(function(x) {
+      return !streams[keyF(x)];
+    }).map(function(x) {
+      var data, key, limited, similar;
+      key = keyF(x);
+      similar = src.filter(function(x) {
+        return keyF(x) === key;
+      });
+      data = Bacon.once(x).concat(similar);
+      limited = limitF(data, x).withHandler(function(event) {
+        this.push(event);
+        if (event.isEnd()) {
+          return delete streams[key];
+        }
+      });
+      return streams[key] = limited;
+    });
   };
 
   Bacon.fromArray = function(values) {
