@@ -1,3 +1,7 @@
+## 0.7.66
+
+- Add `groupBy` (#611)
+
 ## 0.7.65
 
 - Fix `holdWhen` in a special case
