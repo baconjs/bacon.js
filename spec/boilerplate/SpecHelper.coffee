@@ -171,7 +171,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
     globalEnded = false
     subNext = ->
       unsub = null
-      newSink = -> 
+      newSink = ->
         ended = false
         noMoreExpected = false
         usedUnsub = false
@@ -204,7 +204,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
   describe description, ->
     src = null
     events = []
-    before -> 
+    before ->
       src = srcF()
       expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
@@ -219,11 +219,12 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
   describe "(switching aggressively)", ->
     src = null
     events = []
-    before -> 
+    unsub = null
+    before ->
       src = srcF()
       expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
-      newSink = -> 
+      newSink = ->
         unsub = null
         (event) ->
           if event.isEnd()
@@ -231,7 +232,8 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
           else
             expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
             events.push(toValue(event))
-            unsub() if unsub?
+            if unsub?
+              unsub()
             unsub = src.subscribe(newSink())
             Bacon.noMore
       unsub = src.subscribe(newSink())

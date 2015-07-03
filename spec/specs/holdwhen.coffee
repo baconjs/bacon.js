@@ -7,14 +7,14 @@ describe "EventStream.holdWhen", ->
         src = series(2, [1,2,3,4])
         valve = series(2, [true, false, true, false]).delay(1).toProperty()
         src.holdWhen(valve)
-      [[2, 1], [5, 2], [6, 3], [9, 4]])
+      [[2, 1], [5, 2], [6, 3], [9, 4]], semiunstable)
   describe "Holds forever when the property ends with truthy value", ->
     expectStreamTimings(
       ->
         src = series(2, [1,2,3,4])
         valve = series(2, [true, false, true]).delay(1).toProperty()
         src.holdWhen(valve)
-      [[2, 1], [5, 2], [6, 3]])
+      [[2, 1], [5, 2], [6, 3]], semiunstable)
   describe "Ends properly with never-ending valve", ->
     expectStreamEvents(
       ->
@@ -27,7 +27,7 @@ describe "EventStream.holdWhen", ->
         src = series(2, [1,2])
         valve = series(2, [false]).delay(1).toProperty(true)
         src.holdWhen(valve)
-      [[3, 1], [4, 2]])
+      [[3, 1], [4, 2]], semiunstable)
   describe "Works with array values", ->
     expectStreamEvents(
       ->

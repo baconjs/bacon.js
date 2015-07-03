@@ -26,16 +26,16 @@ describe "EventStream.groupBy", ->
     expectStreamEvents(
       ->
         flattenAndMerge series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id)
-      [1,2,2,3,1,2,2,3])
+      [1,2,2,3,1,2,2,3], semiunstable)
   describe "with limiting function", ->
     expectStreamEvents(
       ->
         flattenAndConcat series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, (x) -> x.take(2))
-      [[2,2],[1,1],[2,2],[3,3]])
+      [[2,2],[1,1],[2,2],[3,3]], semiunstable)
     expectStreamEvents(
       ->
         flattenAndMerge series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, (x) -> x.take(2))
-      [1,2,2,3,1,2,2,3])
+      [1,2,2,3,1,2,2,3], semiunstable)
   describe "when mapping all values to same key", ->
     expectStreamEvents(
       ->
@@ -79,4 +79,4 @@ describe "EventStream.groupBy", ->
         series(2, events)
           .groupBy(keyF, limitF)
           .flatMap((groupStream) -> groupStream.fold(0, (acc, x) -> acc + x))
-      [-1, 2, 8])
+      [-1, 2, 8], semiunstable)

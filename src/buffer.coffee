@@ -10,6 +10,7 @@ Bacon.EventStream :: bufferWithCount = (count) ->
 Bacon.EventStream :: bufferWithTimeOrCount = (delay, count) ->
   flushOrSchedule = (buffer) ->
     if buffer.values.length == count
+      #console.log Bacon.scheduler.now() + ": count-flush"
       buffer.flush()
     else if (delay != undefined)
       buffer.schedule()
@@ -26,8 +27,9 @@ Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
         @scheduled = null
       if @values.length > 0
         #console.log Bacon.scheduler.now() + ": flush " + @values
-        reply = @push nextEvent(@values)
+        valuesToPush = @values
         @values = []
+        reply = @push nextEvent(valuesToPush)
         if @end?
           @push @end
         else if reply != Bacon.noMore
@@ -53,6 +55,7 @@ Bacon.EventStream :: buffer = (delay, onInput = nop, onFlush = nop) ->
     else if event.isEnd()
       buffer.end = event
       unless buffer.scheduled
+        #console.log Bacon.scheduler.now() + ": end-flush"
         buffer.flush()
     else
       buffer.values.push(event.value())

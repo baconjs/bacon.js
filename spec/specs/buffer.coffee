@@ -17,12 +17,12 @@ describe "EventStream.bufferWithTime", ->
     fast = (f) -> sc.setTimeout(f, 0)
     expectStreamTimings(
       -> atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(fast)
-      [[0, ["a"]], [2, ["b"]]])
+      [[0, ["a"]], [2, ["b"]]], semiunstable)
   describe "works with synchronous defer-function", ->
     sync = (f) -> f()
     expectStreamTimings(
       -> atGivenTimes([[0, "a"], [2, "b"]]).bufferWithTime(sync)
-      [[0, ["a"]], [2, ["b"]]])
+      [[0, ["a"]], [2, ["b"]]], semiunstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> series(2, [1,2,3]).bufferWithTime(t(7))
@@ -54,7 +54,7 @@ describe "EventStream.bufferWithTimeOrCount", ->
   describe "flushes correctly when scheduled and count-based times overlap", ->
     expectStreamEvents(
       -> take(3, repeatedly(1, [1,2,3,4,5]).bufferWithTimeOrCount(5, 5))
-      [[1,2,3,4,5],[1,2,3,4],[5, 1,2,3,4]])
+      [[1,2,3,4,5],[1,2,3,4],[5, 1,2,3,4]], semiunstable)
 
   it "toString", ->
     expect(Bacon.never().bufferWithTimeOrCount(1, 2).toString()).to.equal("Bacon.never().bufferWithTimeOrCount(1,2)")
