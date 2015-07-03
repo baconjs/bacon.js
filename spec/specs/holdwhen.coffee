@@ -85,14 +85,10 @@ describe "EventStream.holdWhen", ->
             holdWhen(left.map(true).startWith(true).mapEnd(false))
         left.merge(bufferedRight)
       [1, 2, 3, 4, 5, 6], unstable)
-  describe "Intermittent subscriber (#613)", ->
+  describe "In combination with .toProperty", ->
     expectPropertyEvents(
-      ->
-        src = series(1, [1,2,3]).map(Bacon._.id)
-        result = src.holdWhen(Bacon.constant(false)).toProperty(0)
-        result.take(1).onValue(->)
-        result
-      [0,1,2,3])
+      -> later(1,1).holdWhen(Bacon.constant(false)).toProperty(0)
+      [0,1])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
