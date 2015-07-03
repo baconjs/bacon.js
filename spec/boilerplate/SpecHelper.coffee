@@ -56,13 +56,15 @@ expectStreamEvents = (src, expectedEvents, {unstable, semiunstable} = {}) ->
   if not (unstable or semiunstable)
     verifySwitchingAggressively src, expectedEvents
 
-expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
+expectPropertyEvents = (src, expectedEvents, {unstable, semiunstable, extraCheck} = {}) ->
   expect(expectedEvents.length > 0).to.deep.equal(true, "at least one expected event is specified")
   verifyPSingleSubscriber src, expectedEvents, extraCheck
   verifyPLateEval src, expectedEvents
   if not unstable
     verifyPIntermittentSubscriber src, expectedEvents
     verifyPSwitching src, justValues(expectedEvents)
+  if not (unstable or semiunstable)
+    verifyPSwitchingAggressively src, justValues(expectedEvents)
 
 verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
   verifyPropertyWith "(single subscriber)", srcF, expectedEvents, ((src, events, done) ->
@@ -112,6 +114,38 @@ verifyPSwitching = (srcF, expectedEvents) ->
             if event.isInitial()
               events.push(event.value())
             Bacon.noMore
+
+verifyPSwitchingAggressively = (srcF, expectedEvents, done) ->
+  describe "(switching aggressively)", ->
+    src = null
+    events = []
+    idCounter = 0
+    before -> src = srcF()
+    before (done) ->
+      unsub = null
+      newSink = ->
+        myId = ++idCounter
+        #console.log "new sub", myId
+        unsub = null
+        gotMine = false
+        (event) ->
+          #console.log "at", Bacon.scheduler.now(), "got", event, "for", myId
+          if event.isEnd() and myId == idCounter
+            done()
+          else if event.hasValue()
+            if gotMine
+              #console.log "  -> ditch it"
+              if unsub?
+                unsub()
+              unsub = src.subscribe(newSink())
+              Bacon.noMore
+            else
+              #console.log "  -> take it"
+              gotMine = true
+              events.push(toValue(event))
+      unsub = src.subscribe(newSink())
+    it "outputs expected value in order", ->
+      expect(events).to.deep.equal(toValues(expectedEvents))
 
 verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) ->
   describe description, ->
@@ -276,6 +310,7 @@ toValue = (x) ->
 
 justValues = (xs) ->
   Bacon._.filter hasValue, xs
+
 hasValue = (x) ->
   toValue(x) != "<error>"
 

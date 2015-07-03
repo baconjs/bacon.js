@@ -10,7 +10,7 @@ describe "Bacon.update", ->
           0,
           [reset], 0,
           [incr], (i,c) -> i+c)
-      [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3])
+      [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3], semiunstable)
 
   describe "Correctly handles multiple arguments in parameter list, and synchronous sources", ->
     expectPropertyEvents(

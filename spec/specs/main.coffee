@@ -124,7 +124,7 @@ describe "Integration tests", ->
             Bacon.once 'f' + values
 
           Bacon.combineAsArray(f, b).map(".0")
-        ["f0,0","f1,1"])
+        ["f0,0","f1,1"], semiunstable)
 
     it "Works with flatMap source spawning fromArrays", ->
       result = []

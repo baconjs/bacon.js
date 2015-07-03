@@ -112,7 +112,7 @@ describe "Property.takeUntil", ->
         src = repeat(2, [1, error(), 3])
         stopper = repeat(5, ["stop!"])
         src.toProperty(0).takeUntil(stopper)
-      [0, 1, error()])
+      [0, 1, error()], semiunstable)
   it "works with synchronous error (fix #447)", ->
     errors = []
     once(new Bacon.Error("fail")).toProperty()
