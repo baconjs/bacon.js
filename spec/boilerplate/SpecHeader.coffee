@@ -196,7 +196,7 @@ testSideEffects = (wrapper, method) ->
 
 t = @t = (time) -> time
 seqs = []
-noDesc = Bacon.Desc.empty
+noDesc = Bacon.Desc?.empty
 
 verifyCleanup = ->
   for seq in seqs
