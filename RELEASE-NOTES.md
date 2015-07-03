@@ -1,3 +1,11 @@
+## 0.7.68
+
+- Fix bug in `scan`
+
+## 0.7.67
+
+- Fix bug in `holdWhen` (#613)
+
 ## 0.7.66
 
 - Add `groupBy` (#611)
