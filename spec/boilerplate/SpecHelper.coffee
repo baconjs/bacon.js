@@ -61,6 +61,7 @@ expectPropertyEvents = (src, expectedEvents, {unstable, extraCheck} = {}) ->
   verifyPSingleSubscriber src, expectedEvents, extraCheck
   verifyPLateEval src, expectedEvents
   if not unstable
+    verifyPIntermittentSubscriber src, expectedEvents
     verifyPSwitching src, justValues(expectedEvents)
 
 verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
@@ -85,6 +86,15 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
 
 verifyPLateEval = (srcF, expectedEvents) ->
   verifyPropertyWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
+    src.subscribe (event) -> 
+      if event.isEnd()
+        done()
+      else
+        events.push(event)
+
+verifyPIntermittentSubscriber = (srcF, expectedEvents) ->
+  verifyPropertyWith "(with intermittent subscriber)", srcF, expectedEvents, (src, events, done) ->
+    take(1, src).subscribe(->)
     src.subscribe (event) -> 
       if event.isEnd()
         done()

@@ -14,7 +14,7 @@ describe "EventStream.withStateMachine", ->
 describe "Property.withStateMachine", ->
   describe "runs state machine on the stream", ->
     expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty().withStateMachine(0, (sum, event) ->
+      -> series(1, [1,2,3]).toProperty().withStateMachine(0, (sum, event) ->
         if event.hasValue()
           [sum + event.value(), []]
         else if event.isEnd()
