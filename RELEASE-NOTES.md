@@ -1,3 +1,7 @@
+## 0.7.69
+
+- Fix bug in `bufferWithTime` (possible double flush)
+
 ## 0.7.68
 
 - Fix bug in `scan`
