@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.67';
+    Bacon.version = '0.7.68';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2352,9 +2352,10 @@
         }));
     };
     Bacon.Observable.prototype.scan = function (seed, f) {
-        var acc, resultProperty, subscribe;
+        var acc, initHandled, resultProperty, subscribe;
         f = toCombinator(f);
         acc = toOption(seed);
+        initHandled = false;
         subscribe = function (_this) {
             return function (sink) {
                 var initSent, reply, sendInit, unsub;
@@ -2364,7 +2365,7 @@
                 sendInit = function () {
                     if (!initSent) {
                         return acc.forEach(function (value) {
-                            initSent = true;
+                            initSent = initHandled = true;
                             reply = sink(new Initial(function () {
                                 return value;
                             }));
@@ -2378,13 +2379,13 @@
                 unsub = _this.dispatcher.subscribe(function (event) {
                     var next, prev;
                     if (event.hasValue()) {
-                        if (initSent && event.isInitial()) {
+                        if (initHandled && event.isInitial()) {
                             return Bacon.more;
                         } else {
                             if (!event.isInitial()) {
                                 sendInit();
                             }
-                            initSent = true;
+                            initSent = initHandled = true;
                             prev = acc.getOrElse(void 0);
                             next = f(prev, event.value());
                             acc = new Some(next);
