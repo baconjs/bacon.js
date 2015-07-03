@@ -92,7 +92,7 @@ describe "EventStream.holdWhen", ->
         result = src.holdWhen(Bacon.constant(false)).toProperty(0)
         result.take(1).onValue(->)
         result
-      [1,2,3])
+      [0,1,2,3])
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")

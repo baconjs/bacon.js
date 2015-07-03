@@ -3,12 +3,12 @@
 # build-dependencies: once
 
 Bacon.EventStream :: holdWhen = (valve) ->
-  composite = new CompositeUnsubscribe()
   onHold = false
   bufferedValues = []
-  subscribed = false
   src = this
   new EventStream (new Bacon.Desc(this, "holdWhen", [valve])), (sink) ->
+    composite = new CompositeUnsubscribe()
+    subscribed = false
     endIfBothEnded = (unsub) ->
       unsub?()
       if composite.empty() && subscribed
