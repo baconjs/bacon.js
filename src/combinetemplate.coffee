@@ -8,17 +8,17 @@ Bacon.combineTemplate = (template) ->
   applyStreamValue = (key, index) -> (ctxStack, values) -> setValue(ctxStack, key, values[index])
   constantValue = (key, value) -> (ctxStack) -> setValue(ctxStack, key, value)
   mkContext = (template) -> if isArray(template) then [] else {}
+  pushContext = (key, value) -> (ctxStack) ->
+    newContext = mkContext(value)
+    setValue(ctxStack, key, newContext)
+    ctxStack.push(newContext)
   compile = (key, value) ->
     if (isObservable(value))
       streams.push(value)
       funcs.push(applyStreamValue(key, streams.length - 1))
     else if (value == Object(value) and typeof value != "function" and !(value instanceof RegExp) and !(value instanceof Date))
-      pushContext = (key) -> (ctxStack) ->
-        newContext = mkContext(value)
-        setValue(ctxStack, key, newContext)
-        ctxStack.push(newContext)
       popContext = (ctxStack) -> ctxStack.pop()
-      funcs.push(pushContext(key))
+      funcs.push(pushContext(key, value))
       compileTemplate(value)
       funcs.push(popContext)
     else
