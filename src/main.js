@@ -5,9 +5,11 @@
 // build-dependencies: bus
 // build-dependencies: callback
 // build-dependencies: combine
+// build-dependencies: combinetemplate
 // build-dependencies: concat
 // build-dependencies: core
 // build-dependencies: debounce
+// build-dependencies: decode
 // build-dependencies: delay
 // build-dependencies: diff
 // build-dependencies: doaction
