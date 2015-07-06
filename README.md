@@ -728,10 +728,13 @@ This would result to following elements in the result stream:
     3 - 2 = 1
 
 <a name="observable-zip"></a>
-[`observable.zip(other, f)`](#observable-zip "observable.zip(other, f)") return an EventStream with elements
+[`observable.zip(other [, f])`](#observable-zip "observable.zip(other [, f])") return an EventStream with elements
 pair-wise lined up with events from this and the other stream.
 A zipped stream will publish only when it has a value from each
 stream and will only produce values up to when any single stream ends.
+
+The given function `f` is used to create the result value from value in the two
+source streams. If no function is given, the values are zipped into an array.
 
 Be careful not to have too much "drift" between streams. If one stream
 produces many more values than some other excessive buffering will

@@ -1,7 +1,11 @@
 # build-dependencies: skip, delay
 
 describe "EventStream.zip", ->
-  describe "pairwise combines values from two streams", ->
+  describe "pairwise combines values from two streams using given combinator function", ->
+    expectStreamEvents(
+      -> series(1, [1, 2, 3]).zip(series(1, ['a', 'b', 'c']), (x,y) -> x+y)
+      ['1a', '2b', '3c'])
+  describe "zips as array if no combinator is given", ->
     expectStreamEvents(
       -> series(1, [1, 2, 3]).zip(series(1, ['a', 'b', 'c']))
       [[1, 'a'], [2, 'b'], [3, 'c']])
