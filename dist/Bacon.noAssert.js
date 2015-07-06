@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.69';
+    Bacon.version = '0.7.70';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -1327,7 +1327,6 @@
                         var reply;
                         reply = flushWhileTriggers();
                         if (ends) {
-                            ends = false;
                             if (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
                                 reply = Bacon.noMore;
                                 sink(endEvent());
@@ -1675,73 +1674,6 @@
             return f.apply(null, values);
         }));
     };
-    Bacon.combineTemplate = function (template) {
-        var applyStreamValue, combinator, compile, compileTemplate, constantValue, current, funcs, mkContext, setValue, streams;
-        funcs = [];
-        streams = [];
-        current = function (ctxStack) {
-            return ctxStack[ctxStack.length - 1];
-        };
-        setValue = function (ctxStack, key, value) {
-            return current(ctxStack)[key] = value;
-        };
-        applyStreamValue = function (key, index) {
-            return function (ctxStack, values) {
-                return setValue(ctxStack, key, values[index]);
-            };
-        };
-        constantValue = function (key, value) {
-            return function (ctxStack) {
-                return setValue(ctxStack, key, value);
-            };
-        };
-        mkContext = function (template) {
-            if (isArray(template)) {
-                return [];
-            } else {
-                return {};
-            }
-        };
-        compile = function (key, value) {
-            var popContext, pushContext;
-            if (isObservable(value)) {
-                streams.push(value);
-                return funcs.push(applyStreamValue(key, streams.length - 1));
-            } else if (value === Object(value) && typeof value !== 'function' && !(value instanceof RegExp) && !(value instanceof Date)) {
-                pushContext = function (key) {
-                    return function (ctxStack) {
-                        var newContext;
-                        newContext = mkContext(value);
-                        setValue(ctxStack, key, newContext);
-                        return ctxStack.push(newContext);
-                    };
-                };
-                popContext = function (ctxStack) {
-                    return ctxStack.pop();
-                };
-                funcs.push(pushContext(key));
-                compileTemplate(value);
-                return funcs.push(popContext);
-            } else {
-                return funcs.push(constantValue(key, value));
-            }
-        };
-        compileTemplate = function (template) {
-            return _.each(template, compile);
-        };
-        compileTemplate(template);
-        combinator = function (values) {
-            var ctxStack, f, j, len1, rootContext;
-            rootContext = mkContext(template);
-            ctxStack = [rootContext];
-            for (j = 0, len1 = funcs.length; j < len1; j++) {
-                f = funcs[j];
-                f(ctxStack, values);
-            }
-            return rootContext;
-        };
-        return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), Bacon.combineAsArray(streams).map(combinator));
-    };
     Bacon.Observable.prototype.combine = function (other, f) {
         var combinator;
         combinator = toCombinator(f);
@@ -1750,11 +1682,6 @@
             f
         ]), Bacon.combineAsArray(this, other).map(function (values) {
             return combinator(values[0], values[1]);
-        }));
-    };
-    Bacon.Observable.prototype.decode = function (cases) {
-        return withDesc(new Bacon.Desc(this, 'decode', [cases]), this.combine(Bacon.combineTemplate(cases), function (key, values) {
-            return values[key];
         }));
     };
     Bacon.Observable.prototype.withStateMachine = function (initState, f) {
@@ -2242,6 +2169,73 @@
             ];
         });
     });
+    Bacon.combineTemplate = function (template) {
+        var applyStreamValue, combinator, compile, compileTemplate, constantValue, current, funcs, mkContext, pushContext, setValue, streams;
+        funcs = [];
+        streams = [];
+        current = function (ctxStack) {
+            return ctxStack[ctxStack.length - 1];
+        };
+        setValue = function (ctxStack, key, value) {
+            return current(ctxStack)[key] = value;
+        };
+        applyStreamValue = function (key, index) {
+            return function (ctxStack, values) {
+                return setValue(ctxStack, key, values[index]);
+            };
+        };
+        constantValue = function (key, value) {
+            return function (ctxStack) {
+                return setValue(ctxStack, key, value);
+            };
+        };
+        mkContext = function (template) {
+            if (isArray(template)) {
+                return [];
+            } else {
+                return {};
+            }
+        };
+        pushContext = function (key, value) {
+            return function (ctxStack) {
+                var newContext;
+                newContext = mkContext(value);
+                setValue(ctxStack, key, newContext);
+                return ctxStack.push(newContext);
+            };
+        };
+        compile = function (key, value) {
+            var popContext;
+            if (isObservable(value)) {
+                streams.push(value);
+                return funcs.push(applyStreamValue(key, streams.length - 1));
+            } else if (value === Object(value) && typeof value !== 'function' && !(value instanceof RegExp) && !(value instanceof Date)) {
+                popContext = function (ctxStack) {
+                    return ctxStack.pop();
+                };
+                funcs.push(pushContext(key, value));
+                compileTemplate(value);
+                return funcs.push(popContext);
+            } else {
+                return funcs.push(constantValue(key, value));
+            }
+        };
+        compileTemplate = function (template) {
+            return _.each(template, compile);
+        };
+        compileTemplate(template);
+        combinator = function (values) {
+            var ctxStack, f, j, len1, rootContext;
+            rootContext = mkContext(template);
+            ctxStack = [rootContext];
+            for (j = 0, len1 = funcs.length; j < len1; j++) {
+                f = funcs[j];
+                f(ctxStack, values);
+            }
+            return rootContext;
+        };
+        return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), Bacon.combineAsArray(streams).map(combinator));
+    };
     addPropertyInitValueToStream = function (property, stream) {
         var justInitValue;
         justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
@@ -2350,6 +2344,11 @@
     Bacon.EventStream.prototype.debounceImmediate = function (delay) {
         return withDesc(new Bacon.Desc(this, 'debounceImmediate', [delay]), this.flatMapFirst(function (value) {
             return Bacon.once(value).concat(Bacon.later(delay).filter(false));
+        }));
+    };
+    Bacon.Observable.prototype.decode = function (cases) {
+        return withDesc(new Bacon.Desc(this, 'decode', [cases]), this.combine(Bacon.combineTemplate(cases), function (key, values) {
+            return values[key];
         }));
     };
     Bacon.Observable.prototype.scan = function (seed, f) {
