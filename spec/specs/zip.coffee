@@ -25,6 +25,18 @@ describe "EventStream.zip", ->
     expectStreamEvents(
       -> series(1, [1]).zip(series(1, ['a', 'b', 'c']))
       [[1, 'a']])
+  describe "works with endless right stream", ->
+    expectStreamEvents(
+      -> series(1, [1]).zip(repeatedly(1, [1]), add)
+      [2])
+  describe "works with endless left stream", ->
+    expectStreamEvents(
+      -> repeatedly(1, [1]).zip(series(1, [1]), add)
+      [2])
+  describe "works with synchronous left and endless right stream", ->
+    expectStreamEvents(
+      -> fromArray([1, 2]).zip(repeatedly(1, [1]), add)
+      [2, 3])
   describe "can zip an observable with itself", ->
     expectStreamEvents(
       ->

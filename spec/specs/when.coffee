@@ -122,7 +122,16 @@ describe "Bacon.when", ->
         xs = once "x"
         ys = once "y"
         Bacon.when(
-          [xs, ys], (x, y) -> x + y
+          [xs, ys], add
+        )
+      ["xy"])
+  describe "works with endless sources", ->
+    expectStreamEvents(
+      ->
+        xs = repeatedly(1, ["x"])
+        ys = once "y"
+        Bacon.when(
+          [xs, ys], add
         )
       ["xy"])
   it "toString", ->

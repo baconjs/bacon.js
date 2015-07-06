@@ -66,6 +66,7 @@ Bacon.when = ->
               events = (sources[i.index].consume() for i in p.ixs)
               reply = sink trigger.e.apply ->
                 values = (event.value() for event in events)
+                #console.log "flushing values", values
                 p.f(values...)
               if triggers.length
                 triggers = _.filter nonFlattened, triggers
@@ -79,8 +80,9 @@ Bacon.when = ->
         #console.log "flushing", _.toString(resultStream)
         reply = flushWhileTriggers()
         if ends
-          ends = false
+          #console.log "ends detected"
           if  _.all(sources, cannotSync) or _.all(pats, cannotMatch)
+            #console.log "actually ending"
             reply = Bacon.noMore
             sink endEvent()
         unsubAll() if reply == Bacon.noMore
@@ -88,12 +90,14 @@ Bacon.when = ->
         reply
       source.subscribe (e) ->
         if e.isEnd()
+          #console.log "got end"
           ends = true
           source.markEnded()
           flushLater()
         else if e.isError()
           reply = sink e
         else
+          #console.log "got value", e.value()
           source.push e
           if source.sync
             #console.log "queuing", e.toString(), _.toString(resultStream)
