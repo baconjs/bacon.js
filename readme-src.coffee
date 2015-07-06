@@ -954,7 +954,7 @@ Calculator for grouped consecutive values until group is cancelled:
     function limitF(groupedStream, groupStartingEvent) {
       var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
       var adds = groupedStream.filter(function(x) { return x.type === "add" })
-      adds.takeUntil(cancel).map(".val")
+      return adds.takeUntil(cancel).map(".val")
     }
 
     Bacon.sequentially(2, events)
