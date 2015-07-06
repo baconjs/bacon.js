@@ -1,3 +1,7 @@
+## 0.7.70
+
+- Fix `zip`, `Bacon.when` with endless streams (#610)
+
 ## 0.7.69
 
 - Fix bug in `bufferWithTime` (possible double flush)
