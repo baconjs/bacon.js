@@ -9,9 +9,8 @@ Bacon.combineTemplate = (template) ->
   constantValue = (key, value) -> (ctxStack) -> setValue(ctxStack, key, value)
   mkContext = (template) -> if isArray(template) then [] else {}
   pushContext = (key, value) -> (ctxStack) ->
-    newContext = mkContext(value)
-    setValue(ctxStack, key, newContext)
-    ctxStack.push(newContext)
+    setValue(ctxStack, key, value)
+    ctxStack.push(value)
   compile = (key, value) ->
     if (isObservable(value))
       streams.push(value)
