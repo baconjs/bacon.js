@@ -1,3 +1,5 @@
+# build-dependencies: slidingwindow
+
 describe "combineTemplate", ->
   describe "combines streams and properties according to a template object", ->
     expectPropertyEvents(
@@ -85,3 +87,11 @@ describe "combineTemplate", ->
       expect(foo1).to.have.property('do')
       expect(foo2).to.be.instanceof(Foo)
       expect(foo2).to.have.property('do')
+  it "does not mutate original template objects", ->
+    value = {key: fromArray([1, 2])}
+
+    Bacon
+      .combineTemplate(value)
+      .slidingWindow(2, 2)
+      .onValue ([first, second]) ->
+        expect(first).to.not.equal(second)
