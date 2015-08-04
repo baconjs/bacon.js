@@ -429,24 +429,39 @@ created by [`map`](#observable-map), [`combine`](#combining-multiple-streams-and
 Common methods in EventStreams and Properties
 ---------------------------------------------
 
-Both EventStream and Property share the Observable interface, and hence
-share a lot of methods. Common methods are listed below.
+Both EventStream and Property share the Observable interface, and hence share a lot of methods.
+Methods typically return observables so that methods can be chained; exceptions are noted.
+Common methods are listed below.
+
+<a name="observable-subscribe"></a>
+[`observable.subscribe(f)`](#observable-subscribe "observable.subscribe(f)") subscribes given handler function to event stream. Function will receive Event objects (see below).
+The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
+You can also unsubscribe by returning [`Bacon.noMore`](#bacon-nomore) from the handler function as a reply 
+to an Event.
+`stream.subscribe` and `property.subscribe` behave similarly, except that the latter also
+pushes the initial value of the property, in case there is one.
 
 <a name="observable-onvalue"></a>
 [`observable.onValue(f)`](#observable-onvalue "observable.onValue(@ : Observable[A], f : A -> void) : Unsubscriber") subscribes a given handler function to the observable. Function will be called for each new value.
 This is the simplest way to assign a side-effect to an observable. The difference
 to the `subscribe` method is that the actual stream values are
 received, instead of [`Event`](#event) objects.
-[`stream.onValue`](#stream-onvalue) and [`property.onValue`](#property-onvalue) behave similarly, except that the latter also
+The [Function Construction rules](#function-construction-rules) below apply here.
+Just like `subscribe`, this method returns a function for unsubscribing.
+`stream.onValue` and `property.onValue` behave similarly, except that the latter also
 pushes the initial value of the property, in case there is one.
 
+<a name="observable-onvalues"></a>
+[`observable.onValues(f)`](#observable-onvalues "observable.onValues(f)") like [`onValue`](#stream-onvalue), but splits the value (assuming its an
+array) as function arguments to `f`.
+
 <a name="observable-onerror"></a>
-[`observable.onError(f)`](#observable-onerror "observable.onError(@ : Observable[A], f : Error -> void) : Unsubscriber") subscribes a callback to error events. The function
-will be called for each error in the stream.
+[`observable.onError(f)`](#observable-onerror "observable.onError(@ : Observable[A], f : Error -> void) : Unsubscriber") subscribes a callback to error events. The function will be called for each error in the stream.
+Just like `subscribe`, this method returns a function for unsubscribing.
 
 <a name="observable-onend"></a>
-[`observable.onEnd(f)`](#observable-onend "observable.onEnd(f : -> void) : Unsubscriber") subscribes a callback to stream end. The function will
-be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
+[`observable.onEnd(f)`](#observable-onend "observable.onEnd(f : -> void) : Unsubscriber") subscribes a callback to stream end. The function will be called when the stream ends.
+Just like `subscribe`, this method returns a function for unsubscribing.
 
 <a name="observable-topromise"></a>
 [`observable.toPromise([PromiseCtr])`](#observable-topromise "observable.toPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the last event coming from an Observable.
@@ -506,21 +521,29 @@ property extractor string (like ".isValuable") instead. Just like with
 property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
 at the time of the event.
 
+<a name="observable-skipduplicates"></a>
+[`observable.skipDuplicates(isEqual)`](#observable-skipduplicates "observable.skipDuplicates([isEqual])") drops consecutive equal elements. So,
+from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
+checking by default. If the isEqual argument is supplied, checks by calling
+isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+use the isEqual function from [underscore.js](http://underscorejs.org/)
+like `stream.skipDuplicates(_.isEqual)`.
+
+<a name="observable-take"></a>
+[`observable.take(n)`](#observable-take "observable.take(@ : Observable[A], n : Number) : Observable[A]") takes at most n values from the stream and then ends the stream. If the stream has
+fewer than n values then it is unaffected.
+Equal to [`Bacon.never()`](#bacon-never) if `n <= 0`.
+
+<a name="observable-takeuntil"></a>
+[`observable.takeUntil(stream)`](#observable-takeuntil "observable.takeUntil(@ : Observable[A], stream : EventStream[B]) : Observable[A]") takes elements from source until a Next event appears in the other stream.
+If other stream ends without value, it is ignored.
+
 <a name="observable-takewhile"></a>
 [`observable.takeWhile(f)`](#observable-takewhile "observable.takeWhile(@ : Observable[A], f : A -> Bool) : Observable[A]") takes while given predicate function holds true, and then ends.
 [Function Construction rules](#function-construction-rules) apply.
 
 <a name="observable-takewhile-property"></a>
 [`observable.takeWhile(property)`](#observable-takewhile-property "observable.takeWhile(property)") takes values while the value of a property holds true, and then ends.
-
-<a name="observable-take"></a>
-[`observable.take(n)`](#observable-take "observable.take(@ : Observable[A], n : Number) : Observable[A]") takes at most n elements from the stream.
-Equal to [`Bacon.never()`](#bacon-never) if `n <= 0`.
-
-<a name="observable-takeuntil"></a>
-[`observable.takeUntil(stream)`](#observable-takeuntil "observable.takeUntil(@ : Observable[A], stream : EventStream[B]) : Observable[A]") takes elements from source until a Next event
-appears in the other stream. If other stream ends without value, it is
-ignored
 
 <a name="observable-first"></a>
 [`observable.first()`](#observable-first "observable.first(@ : Observable[A]) : Observable[A]") takes the first element from the stream. Essentially `observable.take(1)`.
@@ -949,34 +972,6 @@ EventStream
 <a name="bacon-eventstream"></a>
 [`Bacon.EventStream`](#bacon-eventstream "Bacon.EventStream") a stream of events. See methods below.
 
-<a name="stream-subscribe"></a>
-[`stream.subscribe(f)`](#stream-subscribe "stream.subscribe(f)") subscribes given handler function to
-event stream. Function will receive Event objects (see below).
-The subscribe() call returns a `unsubscribe` function that you can
-call to unsubscribe. You can also unsubscribe by returning
-[`Bacon.noMore`](#bacon-nomore) from the handler function as a reply to an Event.
-
-<a name="stream-onvalue"></a>
-[`stream.onValue(f)`](#stream-onvalue "stream.onValue(f)") subscribes a given handler function to event
-stream. Function will be called for each new value in the stream. This
-is the simplest way to assign a side-effect to a stream. The difference
-to the `subscribe` method is that the actual stream values are
-received, instead of [`Event`](#event) objects.
-The [Function Construction rules](#function-construction-rules) below apply here.
-Just like `subscribe`, this method returns a function for unsubscribing.
-
-<a name="stream-onvalues"></a>
-[`stream.onValues(f)`](#stream-onvalues "stream.onValues(f)") like [`onValue`](#stream-onvalue), but splits the value (assuming its an
-array) as function arguments to `f`.
-
-<a name="stream-skipduplicates"></a>
-[`stream.skipDuplicates(isEqual)`](#stream-skipduplicates "stream.skipDuplicates([isEqual])") drops consecutive equal elements. So,
-from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
-checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
-use the isEqual function from [underscore.js](http://underscorejs.org/)
-like `stream.skipDuplicates(_.isEqual)`.
-
 <a name="stream-concat"></a>
 [`stream.concat(otherStream)`](#stream-concat "stream.concat(otherStream)") concatenates two streams into one stream so that
 it will deliver events from `stream` until it ends and then deliver
@@ -1058,22 +1053,6 @@ have an initial value. The current value stays as its last value after the strea
 <a name="bacon-constant"></a>
 [`Bacon.constant(x)`](#bacon-constant "Bacon.constant(x)") creates a constant property with value x.
 
-<a name="property-subscribe"></a>
-[`property.subscribe(f)`](#property-subscribe "property.subscribe(f)") subscribes a handler function to property. If there's
-a current value, an [`Initial`](#bacon-initial) event will be pushed immediately. [`Next`](#bacon-next)
-event will be pushed on updates and an [`Bacon.End`](#bacon-end) event in case the source
-EventStream ends. Returns a function that you call to unsubscribe.
-
-<a name="property-onvalue"></a>
-[`property.onValue(f)`](#property-onvalue "property.onValue(f)") similar to [`stream.onValue`](#stream-onvalue), except that also
-pushes the initial value of the property, in case there is one.
-See [Function Construction rules](#function-construction-rules) below for different forms of calling this method.
-Just like `subscribe`, this method returns a function for unsubscribing.
-
-<a name="property-onvalues"></a>
-[`property.onValues(f)`](#property-onvalues "property.onValues(f)") like onValue, but splits the value (assuming its an
-array) as function arguments to `f`
-
 <a name="property-assign"></a>
 [`property.assign(obj, method [, param...])`](#property-assign "property.assign(obj, method [, param...])") calls the method of the given
 object with each value of this Property. You can optionally supply
@@ -1116,13 +1095,6 @@ property.
 events. The result values will be formed using the given function
 `f(propertyValue, samplerValue)`. You can use a method name (such as
 ".concat") instead of a function too.
-
-<a name="property-skipduplicates"></a>
-[`property.skipDuplicates(isEqual)`](#property-skipduplicates "property.skipDuplicates([isEqual])") drops consecutive equal elements. So,
-from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
-checking by default. If the `isEqual` argument is supplied, checks by calling
-`isEqual(oldValue, newValue)`. The old name for this method was
-`distinctUntilChanged`.
 
 <a name="property-changes"></a>
 [`property.changes()`](#property-changes "property.changes()") returns an [`EventStream`](#eventstream) of property value changes.
