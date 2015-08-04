@@ -405,8 +405,18 @@ doc.fn "Bacon.more", """The opaque value `sink` function may return. See `Bacon.
 
 doc.subsection "Common methods in EventStreams and Properties"
 doc.text """
-Both EventStream and Property share the Observable interface, and hence
-share a lot of methods. Common methods are listed below.
+Both EventStream and Property share the Observable interface, and hence share a lot of methods.
+Methods typically return observables so that methods can be chained; exceptions are noted.
+Common methods are listed below.
+"""
+
+doc.fn "observable.subscribe(f)", """
+subscribes given handler function to event stream. Function will receive Event objects (see below).
+The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
+You can also unsubscribe by returning `Bacon.noMore` from the handler function as a reply 
+to an Event.
+`stream.subscribe` and `property.subscribe` behave similarly, except that the latter also
+pushes the initial value of the property, in case there is one.
 """
 
 doc.fn "observable.onValue(@ : Observable[A], f : A -> void) : Unsubscriber", """
@@ -414,18 +424,25 @@ subscribes a given handler function to the observable. Function will be called f
 This is the simplest way to assign a side-effect to an observable. The difference
 to the `subscribe` method is that the actual stream values are
 received, instead of `Event` objects.
+The [Function Construction rules](#function-construction-rules) below apply here.
+Just like `subscribe`, this method returns a function for unsubscribing.
 `stream.onValue` and `property.onValue` behave similarly, except that the latter also
 pushes the initial value of the property, in case there is one.
 """
 
+doc.fn "observable.onValues(f)", """
+like [`onValue`](#stream-onvalue), but splits the value (assuming its an
+array) as function arguments to `f`.
+"""
+
 doc.fn "observable.onError(@ : Observable[A], f : Error -> void) : Unsubscriber", """
-subscribes a callback to error events. The function
-will be called for each error in the stream.
+subscribes a callback to error events. The function will be called for each error in the stream.
+Just like `subscribe`, this method returns a function for unsubscribing.
 """
 
 doc.fn "observable.onEnd(f : -> void) : Unsubscriber", """
-subscribes a callback to stream end. The function will
-be called when the stream ends. Just like `subscribe`, this method returns a function for unsubscribing.
+subscribes a callback to stream end. The function will be called when the stream ends.
+Just like `subscribe`, this method returns a function for unsubscribing.
 """
 
 doc.fn "observable.toPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]", """
@@ -496,6 +513,26 @@ property. Event will be included in output [if and only if](http://en.wikipedia.
 at the time of the event.
 """
 
+doc.fn "observable.skipDuplicates([isEqual])", """
+drops consecutive equal elements. So,
+from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
+checking by default. If the isEqual argument is supplied, checks by calling
+isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+use the isEqual function from [underscore.js](http://underscorejs.org/)
+like `stream.skipDuplicates(_.isEqual)`.
+"""
+
+doc.fn "observable.take(@ : Observable[A], n : Number) : Observable[A]", """
+takes at most n values from the stream and then ends the stream. If the stream has
+fewer than n values then it is unaffected.
+Equal to `Bacon.never()` if `n <= 0`.
+"""
+
+doc.fn "observable.takeUntil(@ : Observable[A], stream : EventStream[B]) : Observable[A]", """
+takes elements from source until a Next event appears in the other stream.
+If other stream ends without value, it is ignored.
+"""
+
 doc.fn "observable.takeWhile(@ : Observable[A], f : A -> Bool) : Observable[A]", """
 takes while given predicate function holds true, and then ends.
 [Function Construction rules](#function-construction-rules) apply.
@@ -503,17 +540,6 @@ takes while given predicate function holds true, and then ends.
 
 doc.fnOverload "observable.takeWhile(property)", "property", """
 takes values while the value of a property holds true, and then ends.
-"""
-
-doc.fn "observable.take(@ : Observable[A], n : Number) : Observable[A]", """
-takes at most n elements from the stream.
-Equal to `Bacon.never()` if `n <= 0`.
-"""
-
-doc.fn "observable.takeUntil(@ : Observable[A], stream : EventStream[B]) : Observable[A]", """
-takes elements from source until a Next event
-appears in the other stream. If other stream ends without value, it is
-ignored
 """
 
 doc.fn "observable.first(@ : Observable[A]) : Observable[A]", """
@@ -974,38 +1000,6 @@ Calculator for grouped consecutive values until group is cancelled:
 doc.subsection "EventStream"
 doc.fn "Bacon.EventStream", "a stream of events. See methods below."
 
-doc.fn "stream.subscribe(f)", """
-subscribes given handler function to
-event stream. Function will receive Event objects (see below).
-The subscribe() call returns a `unsubscribe` function that you can
-call to unsubscribe. You can also unsubscribe by returning
-`Bacon.noMore` from the handler function as a reply to an Event.
-"""
-
-doc.fn "stream.onValue(f)", """
-subscribes a given handler function to event
-stream. Function will be called for each new value in the stream. This
-is the simplest way to assign a side-effect to a stream. The difference
-to the `subscribe` method is that the actual stream values are
-received, instead of `Event` objects.
-The [Function Construction rules](#function-construction-rules) below apply here.
-Just like `subscribe`, this method returns a function for unsubscribing.
-"""
-
-doc.fn "stream.onValues(f)", """
-like [`onValue`](#stream-onvalue), but splits the value (assuming its an
-array) as function arguments to `f`.
-"""
-
-doc.fn "stream.skipDuplicates([isEqual])", """
-drops consecutive equal elements. So,
-from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
-checking by default. If the isEqual argument is supplied, checks by calling
-isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
-use the isEqual function from [underscore.js](http://underscorejs.org/)
-like `stream.skipDuplicates(_.isEqual)`.
-"""
-
 doc.fn "stream.concat(otherStream)", """
 concatenates two streams into one stream so that
 it will deliver events from `stream` until it ends and then deliver
@@ -1111,25 +1105,6 @@ doc.fn "Bacon.constant(x)", """
 creates a constant property with value x.
 """
 
-doc.fn "property.subscribe(f)", """
-subscribes a handler function to property. If there's
-a current value, an `Initial` event will be pushed immediately. `Next`
-event will be pushed on updates and an `Bacon.End` event in case the source
-EventStream ends. Returns a function that you call to unsubscribe.
-"""
-
-doc.fn "property.onValue(f)", """
-similar to `stream.onValue`, except that also
-pushes the initial value of the property, in case there is one.
-See [Function Construction rules](#function-construction-rules) below for different forms of calling this method.
-Just like `subscribe`, this method returns a function for unsubscribing.
-"""
-
-doc.fn "property.onValues(f)", """
-like onValue, but splits the value (assuming its an
-array) as function arguments to `f`
-"""
-
 doc.fn "property.assign(obj, method [, param...])", """
 calls the method of the given
 object with each value of this Property. You can optionally supply
@@ -1176,14 +1151,6 @@ samples the property on stream
 events. The result values will be formed using the given function
 `f(propertyValue, samplerValue)`. You can use a method name (such as
 ".concat") instead of a function too.
-"""
-
-doc.fn "property.skipDuplicates([isEqual])", """
-drops consecutive equal elements. So,
-from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
-checking by default. If the `isEqual` argument is supplied, checks by calling
-`isEqual(oldValue, newValue)`. The old name for this method was
-`distinctUntilChanged`.
 """
 
 doc.fn "property.changes()", """
