@@ -17,6 +17,8 @@ Bacon.combineAsArray = (streams...) ->
 Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
 
 Bacon.combineWith = (f, streams...) ->
+  if (streams.length == 1 and isArray(streams[0]))
+    streams = streams[0]
   withDesc(new Bacon.Desc(Bacon, "combineWith", [f, streams...]), Bacon.combineAsArray(streams).map (values) -> f(values...))
 
 Bacon.Observable :: combine = (other, f) ->

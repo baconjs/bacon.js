@@ -155,6 +155,13 @@ describe "Bacon.combineWith", ->
       ->
         Bacon.combineWith(-> 1)
       [1])
+  describe "works with streams provided as an array", ->
+    expectPropertyEvents(
+      ->
+        f = Math.max
+        Bacon.combineWith(f, [Bacon.constant(0), Bacon.constant(1)])
+      [1]
+    )
   it "toString", ->
     expect(Bacon.combineWith((->), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())")
 
