@@ -1208,6 +1208,16 @@ Bacon.combineWith(sum3, p1, p2, p3)
 ```
 """
 
+doc.fnOverload "Bacon.combineWith(f, streams)", "streams-array", """
+like above, but with streams provided as a single array as opposed to a list
+of arguments.
+
+```js
+streams = [Bacon.constant(1), Bacon.constant(2)]
+Bacon.combineWith(Math.max, streams)
+```
+"""
+
 doc.fn "Bacon.combineTemplate(template)", """
 combines Properties, EventStreams and
 constant values using a template

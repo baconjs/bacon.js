@@ -1145,6 +1145,15 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 
+<a name="bacon-combinewith-streams-array"></a>
+[`Bacon.combineWith(f, streams)`](#bacon-combinewith-streams-array "Bacon.combineWith(f, streams)") like above, but with streams provided as a single array as opposed to a list
+of arguments.
+
+```js
+streams = [Bacon.constant(1), Bacon.constant(2)]
+Bacon.combineWith(Math.max, streams)
+```
+
 <a name="bacon-combinetemplate"></a>
 [`Bacon.combineTemplate(template)`](#bacon-combinetemplate "Bacon.combineTemplate(template)") combines Properties, EventStreams and
 constant values using a template
