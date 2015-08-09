@@ -9,6 +9,8 @@ Bacon.zipAsArray = (streams...) ->
 Bacon.zipWith = (f, streams...) ->
   unless _.isFunction(f)
     [streams, f] = [f, streams[0]]
+  if isArray(streams[0])
+    streams = streams[0]
   streams = _.map(((s) -> s.toEventStream()), streams)
   withDesc(new Bacon.Desc(Bacon, "zipWith", [f, streams...]), Bacon.when(streams, f))
 

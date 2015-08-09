@@ -99,6 +99,13 @@ describe "Bacon.zipWith", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipWith([obs, obs.skip(1), obs.skip(2)], ((x,y,z) -> (x + y + z)))
     [1 + 2 + 3, 2 + 3 + 4])
+  describe "accepts array of streams as last param too", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        f = ((x,y,z) -> (x + y + z))
+        Bacon.zipWith(f, [obs, obs.skip(1), obs.skip(2)])
+    [1 + 2 + 3, 2 + 3 + 4])
   describe "supports n-ary syntax", ->
     expectStreamEvents(
       ->
