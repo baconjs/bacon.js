@@ -1306,15 +1306,12 @@ function to combine the n values from n streams, instead of returning them in an
 """
 
 doc.fnOverload "Bacon.zipWith(f, stream1, stream1 ...)", "f-first-varargs", """
-just like above, but with streams
-provided as a list of arguments as opposed to a single array.
+like above
 """
 
 doc.fnOverload "Bacon.zipWith(stream1, stream1 ..., f)", "varargs-f-last", """
-just like above, but with streams
-provided as a list of arguments as opposed to a single array.
+like above
 """
-
 
 doc.fn "Bacon.onValues(a, b [, c...], f)", """
 is a shorthand for combining multiple

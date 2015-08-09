@@ -1236,12 +1236,10 @@ function to combine the n values from n streams, instead of returning them in an
 function to combine the n values from n streams, instead of returning them in an Array.
 
 <a name="bacon-zipwith-f-first-varargs"></a>
-[`Bacon.zipWith(f, stream1, stream1...)`](#bacon-zipwith-f-first-varargs "Bacon.zipWith(f, stream1, stream1 ...)") just like above, but with streams
-provided as a list of arguments as opposed to a single array.
+[`Bacon.zipWith(f, stream1, stream1...)`](#bacon-zipwith-f-first-varargs "Bacon.zipWith(f, stream1, stream1 ...)") like above
 
 <a name="bacon-zipwith-varargs-f-last"></a>
-[`Bacon.zipWith(stream1, stream1..., f)`](#bacon-zipwith-varargs-f-last "Bacon.zipWith(stream1, stream1 ..., f)") just like above, but with streams
-provided as a list of arguments as opposed to a single array.
+[`Bacon.zipWith(stream1, stream1..., f)`](#bacon-zipwith-varargs-f-last "Bacon.zipWith(stream1, stream1 ..., f)") like above
 
 <a name="bacon-onvalues"></a>
 [`Bacon.onValues(a, b [, c...], f)`](#bacon-onvalues "Bacon.onValues(a, b [, c...], f)") is a shorthand for combining multiple
