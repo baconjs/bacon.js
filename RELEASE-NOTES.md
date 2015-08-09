@@ -1,3 +1,7 @@
+## 0.7.71
+
+- make zipWith, combineWith signatures consistent, allow 4 variations in each
+
 ## 0.7.70
 
 - Fix `zip`, `Bacon.when` with endless streams (#610)

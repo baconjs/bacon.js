@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     slice = [].slice,
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.70';
+  Bacon.version = '0.7.71';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1858,12 +1858,25 @@
     });
   };
 
+  argumentsToObservables = function(args) {
+    if (isArray(args[0])) {
+      return args[0];
+    } else {
+      return Array.prototype.slice.call(args);
+    }
+  };
+
+  argumentsToObservablesAndFunction = function(args) {
+    if (_.isFunction(args[0])) {
+      return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];
+    } else {
+      return [argumentsToObservables(Array.prototype.slice.call(args, 0, args.length - 1)), _.last(args)];
+    }
+  };
+
   Bacon.combineAsArray = function() {
     var index, j, len1, s, sources, stream, streams;
-    streams = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    if (streams.length === 1 && isArray(streams[0])) {
-      streams = streams[0];
-    }
+    streams = argumentsToObservables(arguments);
     for (index = j = 0, len1 = streams.length; j < len1; index = ++j) {
       stream = streams[index];
       if (!(isObservable(stream))) {
@@ -1897,8 +1910,8 @@
   };
 
   Bacon.combineWith = function() {
-    var f, streams;
-    f = arguments[0], streams = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    var f, ref, streams;
+    ref = argumentsToObservablesAndFunction(arguments), streams = ref[0], f = ref[1];
     return withDesc(new Bacon.Desc(Bacon, "combineWith", [f].concat(slice.call(streams))), Bacon.combineAsArray(streams).map(function(values) {
       return f.apply(null, values);
     }));
@@ -3016,10 +3029,7 @@
 
   Bacon.mergeAll = function() {
     var streams;
-    streams = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    if (isArray(streams[0])) {
-      streams = streams[0];
-    }
+    streams = argumentsToObservables(arguments);
     if (streams.length) {
       return new EventStream(new Bacon.Desc(Bacon, "mergeAll", streams), function(sink) {
         var ends, sinks, smartSink;
@@ -3324,10 +3334,7 @@
 
   Bacon.zipAsArray = function() {
     var streams;
-    streams = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-    if (isArray(streams[0])) {
-      streams = streams[0];
-    }
+    streams = argumentsToObservables(arguments);
     return withDesc(new Bacon.Desc(Bacon, "zipAsArray", streams), Bacon.zipWith(streams, function() {
       var xs;
       xs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
@@ -3337,10 +3344,7 @@
 
   Bacon.zipWith = function() {
     var f, ref1, streams;
-    f = arguments[0], streams = 2 <= arguments.length ? slice.call(arguments, 1) : [];
-    if (!_.isFunction(f)) {
-      ref1 = [f, streams[0]], streams = ref1[0], f = ref1[1];
-    }
+    ref1 = argumentsToObservablesAndFunction(arguments), streams = ref1[0], f = ref1[1];
     streams = _.map((function(s) {
       return s.toEventStream();
     }), streams);
