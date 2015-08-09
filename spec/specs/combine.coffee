@@ -162,6 +162,11 @@ describe "Bacon.combineWith", ->
         Bacon.combineWith(f, [Bacon.constant(0), Bacon.constant(1)])
       [1]
     )
+  describe "works with empty array", ->
+    expectPropertyEvents(
+      -> Bacon.combineWith((-> 1), [])
+      [1]
+    )
   it "toString", ->
     expect(Bacon.combineWith((->), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())")
 
