@@ -1,10 +1,9 @@
 # build-dependencies: core, source, map
-# build-dependencies: functionconstruction
+# build-dependencies: functionconstruction, argumentstoobservables
 # build-dependencies: when
 
-Bacon.combineAsArray = (streams...) ->
-  if (streams.length == 1 and isArray(streams[0]))
-    streams = streams[0]
+Bacon.combineAsArray = ->
+  streams = argumentsToObservables(arguments)
   for stream, index in streams
     streams[index] = Bacon.constant(stream) unless (isObservable(stream))
   if streams.length
@@ -16,9 +15,8 @@ Bacon.combineAsArray = (streams...) ->
 
 Bacon.onValues = (streams..., f) -> Bacon.combineAsArray(streams).onValues(f)
 
-Bacon.combineWith = (f, streams...) ->
-  if (streams.length == 1 and isArray(streams[0]))
-    streams = streams[0]
+Bacon.combineWith = ->
+  [streams, f] = argumentsToObservablesAndFunction(arguments)
   withDesc(new Bacon.Desc(Bacon, "combineWith", [f, streams...]), Bacon.combineAsArray(streams).map (values) -> f(values...))
 
 Bacon.Observable :: combine = (other, f) ->

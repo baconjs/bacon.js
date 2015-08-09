@@ -155,11 +155,25 @@ describe "Bacon.combineWith", ->
       ->
         Bacon.combineWith(-> 1)
       [1])
-  describe "works with streams provided as an array", ->
+  describe "works with streams provided as an array as first arg", ->
     expectPropertyEvents(
       ->
         f = Math.max
         Bacon.combineWith(f, [Bacon.constant(0), Bacon.constant(1)])
+      [1]
+    )
+  describe "works with streams provided as an array as second arg", ->
+    expectPropertyEvents(
+      ->
+        f = Math.max
+        Bacon.combineWith([Bacon.constant(0), Bacon.constant(1)], f)
+      [1]
+    )
+  describe "works with streams provided as arguments and function as last argument", ->
+    expectPropertyEvents(
+      ->
+        f = Math.max
+        Bacon.combineWith(Bacon.constant(0), Bacon.constant(1), f)
       [1]
     )
   describe "works with empty array", ->

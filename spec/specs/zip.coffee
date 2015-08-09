@@ -113,6 +113,13 @@ describe "Bacon.zipWith", ->
         f = ((x,y,z) -> (x + y + z))
         Bacon.zipWith(f, obs, obs.skip(1), obs.skip(2))
     [1 + 2 + 3, 2 + 3 + 4])
+  describe "supports n-ary syntax, reverse", ->
+    expectStreamEvents(
+      ->
+        obs = series(1, [1, 2, 3, 4])
+        f = ((x,y,z) -> (x + y + z))
+        Bacon.zipWith(obs, obs.skip(1), obs.skip(2), f)
+    [1 + 2 + 3, 2 + 3 + 4])
   describe "works with single stream", ->
     expectStreamEvents(
       ->

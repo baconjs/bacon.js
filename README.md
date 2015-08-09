@@ -1154,6 +1154,12 @@ streams = [Bacon.constant(1), Bacon.constant(2)]
 Bacon.combineWith(Math.max, streams)
 ```
 
+<a name="bacon-combinewith-streams-array-f-last"></a>
+[`Bacon.combineWith(streams, f)`](#bacon-combinewith-streams-array-f-last "Bacon.combineWith(streams, f)") like above
+
+<a name="bacon-combinewith-f-last"></a>
+[`Bacon.combineWith(stream1, stream2..., f)`](#bacon-combinewith-f-last "Bacon.combineWith(stream1, stream2 ..., f)") like above
+
 <a name="bacon-combinetemplate"></a>
 [`Bacon.combineTemplate(template)`](#bacon-combinetemplate "Bacon.combineTemplate(template)") combines Properties, EventStreams and
 constant values using a template
@@ -1225,8 +1231,16 @@ provided as a list of arguments as opposed to a single array.
 [`Bacon.zipWith(streams, f)`](#bacon-zipwith "Bacon.zipWith(streams, f)") like [`zipAsArray`](#bacon-zipasarray) but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
 
-<a name="bacon-zipwith-f"></a>
-[`Bacon.zipWith(f, stream1, stream1...)`](#bacon-zipwith-f "Bacon.zipWith(f, stream1, stream1 ...)") just like above, but with streams
+<a name="bacon-zipwith-f-first"></a>
+[`Bacon.zipWith(f, streams)`](#bacon-zipwith-f-first "Bacon.zipWith(f, streams)") like [`zipAsArray`](#bacon-zipasarray) but uses the given n-ary
+function to combine the n values from n streams, instead of returning them in an Array.
+
+<a name="bacon-zipwith-f-first-varargs"></a>
+[`Bacon.zipWith(f, stream1, stream1...)`](#bacon-zipwith-f-first-varargs "Bacon.zipWith(f, stream1, stream1 ...)") just like above, but with streams
+provided as a list of arguments as opposed to a single array.
+
+<a name="bacon-zipwith-varargs-f-last"></a>
+[`Bacon.zipWith(stream1, stream1..., f)`](#bacon-zipwith-varargs-f-last "Bacon.zipWith(stream1, stream1 ..., f)") just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 
 <a name="bacon-onvalues"></a>

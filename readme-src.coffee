@@ -1218,6 +1218,12 @@ Bacon.combineWith(Math.max, streams)
 ```
 """
 
+doc.fnOverload "Bacon.combineWith(streams, f)", "streams-array-f-last", """
+like above"""
+
+doc.fnOverload "Bacon.combineWith(stream1, stream2 ..., f)", "f-last", """
+like above"""
+
 doc.fn "Bacon.combineTemplate(template)", """
 combines Properties, EventStreams and
 constant values using a template
@@ -1294,10 +1300,21 @@ like `zipAsArray` but uses the given n-ary
 function to combine the n values from n streams, instead of returning them in an Array.
 """
 
-doc.fnOverload "Bacon.zipWith(f, stream1, stream1 ...)", "f", """
+doc.fnOverload "Bacon.zipWith(f, streams)", "f-first", """
+like `zipAsArray` but uses the given n-ary
+function to combine the n values from n streams, instead of returning them in an Array.
+"""
+
+doc.fnOverload "Bacon.zipWith(f, stream1, stream1 ...)", "f-first-varargs", """
 just like above, but with streams
 provided as a list of arguments as opposed to a single array.
 """
+
+doc.fnOverload "Bacon.zipWith(stream1, stream1 ..., f)", "varargs-f-last", """
+just like above, but with streams
+provided as a list of arguments as opposed to a single array.
+"""
+
 
 doc.fn "Bacon.onValues(a, b [, c...], f)", """
 is a shorthand for combining multiple

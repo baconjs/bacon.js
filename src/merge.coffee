@@ -1,4 +1,4 @@
-# build-dependencies: core
+# build-dependencies: core, argumentstoobservables
 # build-dependencies: compositeunsubscribe
 
 Bacon.EventStream :: merge = (right) ->
@@ -6,9 +6,8 @@ Bacon.EventStream :: merge = (right) ->
   left = this
   withDesc(new Bacon.Desc(left, "merge", [right]), Bacon.mergeAll(this, right))
 
-Bacon.mergeAll = (streams...) ->
-  if isArray streams[0]
-    streams = streams[0]
+Bacon.mergeAll = ->
+  streams = argumentsToObservables(arguments)
   if streams.length
     new EventStream (new Bacon.Desc(Bacon, "mergeAll", streams)), (sink) ->
       ends = 0
