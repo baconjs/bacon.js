@@ -91,7 +91,7 @@ clicks.onValue(function() { alert("you clicked the h1 element") })
 But you can do neater stuff too. The Bacon of bacon.js is in that you can transform,
 filter and combine these streams in a multitude of ways (see API below). The methods [`map`](#observable-map),
 [`filter`](#observable-filter), for example, are similar to same functions in functional list programming
-(like [Underscore](http://documentcloud.github.com/underscore/)). So, if you say
+(like [Underscore](http://underscorejs.org/)). So, if you say
 
 ```js
 var plus = $("#plus").asEventStream("click").map(1)
