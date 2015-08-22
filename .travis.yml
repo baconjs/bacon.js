@@ -16,7 +16,7 @@ before_script:
 
 script:
   - npm test
-  - grunt readme && git diff README.md --exit-code
+  - grunt readme && git diff --exit-code README.md
 
 notifications:
   flowdock: 3853ef33f6943539cbbed913648575be
