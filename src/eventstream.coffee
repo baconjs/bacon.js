@@ -7,6 +7,8 @@
 
 class EventStream extends Observable
   constructor: (desc, subscribe, handler) ->
+    if this not instanceof EventStream
+      return new EventStream(desc, subscribe, handler)
     if _.isFunction desc
       handler = subscribe
       subscribe = desc

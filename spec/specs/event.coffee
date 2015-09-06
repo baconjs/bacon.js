@@ -1,4 +1,10 @@
 describe "Bacon.Event", ->
+  it "can be instatiated without new", ->
+    expect(Bacon.Event()).to.be.an.instanceof(Bacon.Event)
+    expect(Bacon.Initial()).to.be.an.instanceof(Bacon.Initial)
+    expect(Bacon.Next()).to.be.an.instanceof(Bacon.Next)
+    expect(Bacon.End()).to.be.an.instanceof(Bacon.End)
+    expect(Bacon.Error()).to.be.an.instanceof(Bacon.Error)
   describe "String presentations", ->
     describe "Initial(1).toString", -> 
       it "is 1", ->

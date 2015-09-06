@@ -1,6 +1,8 @@
 # build-dependencies: filter, map
 
 describe "Bacon.Bus", ->
+  it "can be instatiated without new", ->
+    expect(Bacon.Bus()).to.be.an.instanceof(Bacon.Bus)
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
     values = []

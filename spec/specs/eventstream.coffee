@@ -1,6 +1,10 @@
 # build-dependencies: property
 
 describe "EventStream constructor", ->
+  it "Can be instantiated without new", ->
+    subscribe = (sink) -> (->)
+    s = Bacon.EventStream(subscribe)
+    expect(s).to.be.an.instanceof(Bacon.EventStream)
   it "Works with subscribe function only", ->
     values = []
     subscribe = (sink) ->

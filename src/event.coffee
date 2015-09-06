@@ -4,6 +4,8 @@ eventIdCounter = 0
 
 class Event
   constructor: ->
+    if this not instanceof Event
+      return new Event
     @id = (++eventIdCounter)
   isEvent: -> true
   isEnd: -> false
@@ -17,6 +19,8 @@ class Event
 
 class Next extends Event
   constructor: (valueF, eager) ->
+    if this not instanceof Next
+      return new Next(valueF, eager)
     super()
     if !eager && _.isFunction(valueF) || valueF instanceof Next
       @valueF = valueF
@@ -47,19 +51,29 @@ class Next extends Event
   log: -> @value()
 
 class Initial extends Next
+  constructor: (valueF, eager) ->
+    if this not instanceof Initial
+      return new Initial(valueF, eager)
+    super(valueF, eager)
   isInitial: -> true
   isNext: -> false
   apply: (value) -> new Initial(value)
   toNext: -> new Next(this)
 
 class End extends Event
+  constructor: ->
+    if this not instanceof End
+      return new End
   isEnd: -> true
   fmap: -> this
   apply: -> this
   toString: -> "<end>"
 
 class Error extends Event
-  constructor: (@error) ->
+  constructor: (error) ->
+    if this not instanceof Error
+      return new Error(error)
+    @error = error
   isError: -> true
   fmap: -> this
   apply: -> this

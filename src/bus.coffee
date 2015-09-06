@@ -2,6 +2,8 @@
 #
 class Bus extends EventStream
   constructor: ->
+    if this not instanceof Bus
+      return new Bus()
     @sink = undefined
     @subscriptions = []
     @ended = false
