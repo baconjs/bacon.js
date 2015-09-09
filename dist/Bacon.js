@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.72';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -3442,7 +3442,9 @@ if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) 
     define([], function() {
       return Bacon;
     });
-    this.Bacon = Bacon;
+    if (typeof this !== "undefined" && this !== null) {
+      this.Bacon = Bacon;
+    }
   } else if ((typeof module !== "undefined" && module !== null) && (module.exports != null)) {
     module.exports = Bacon;
     Bacon.Bacon = Bacon;
