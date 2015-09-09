@@ -1,5 +1,9 @@
 ## 0.7.72
 
+- fix #621: loading fails with webpack in some configurations
+
+## 0.7.72
+
 - support new-less constructors in EventStream, Bus, Next, Initial, End, Error
 
 ## 0.7.71
