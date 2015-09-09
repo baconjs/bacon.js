@@ -12,6 +12,7 @@ class Observable
   constructor: (@desc) ->
     @id = ++idCounter
     @initialDesc = @desc
+    @_isObservable = true
 
   subscribe: (sink) ->
     UpdateBarrier.wrappedSubscribe(this, sink)
