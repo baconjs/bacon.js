@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.71';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -62,7 +62,7 @@
   };
 
   isObservable = function(x) {
-    return x instanceof Observable;
+    return !!x._isObservable;
   };
 
   assertArray = function(xs) {
@@ -258,10 +258,11 @@
             for (key in obj) {
               if (!hasProp.call(obj, key)) continue;
               value = (function() {
+                var error1;
                 try {
                   return obj[key];
-                } catch (_error) {
-                  ex = _error;
+                } catch (error1) {
+                  ex = error1;
                   return ex;
                 }
               })();
@@ -798,6 +799,9 @@
 
   Event = (function() {
     function Event() {
+      if (!(this instanceof Event)) {
+        return new Event;
+      }
       this.id = ++eventIdCounter;
     }
 
@@ -845,6 +849,9 @@
     extend(Next, superClass);
 
     function Next(valueF, eager) {
+      if (!(this instanceof Next)) {
+        return new Next(valueF, eager);
+      }
       Next.__super__.constructor.call(this);
       if (!eager && _.isFunction(valueF) || valueF instanceof Next) {
         this.valueF = valueF;
@@ -912,8 +919,11 @@
   Initial = (function(superClass) {
     extend(Initial, superClass);
 
-    function Initial() {
-      return Initial.__super__.constructor.apply(this, arguments);
+    function Initial(valueF, eager) {
+      if (!(this instanceof Initial)) {
+        return new Initial(valueF, eager);
+      }
+      Initial.__super__.constructor.call(this, valueF, eager);
     }
 
     Initial.prototype.isInitial = function() {
@@ -940,7 +950,9 @@
     extend(End, superClass);
 
     function End() {
-      return End.__super__.constructor.apply(this, arguments);
+      if (!(this instanceof End)) {
+        return new End;
+      }
     }
 
     End.prototype.isEnd = function() {
@@ -966,8 +978,11 @@
   Error = (function(superClass) {
     extend(Error, superClass);
 
-    function Error(error1) {
-      this.error = error1;
+    function Error(error) {
+      if (!(this instanceof Error)) {
+        return new Error(error);
+      }
+      this.error = error;
     }
 
     Error.prototype.isError = function() {
@@ -1029,6 +1044,7 @@
       this.desc = desc1;
       this.id = ++idCounter;
       this.initialDesc = this.desc;
+      this._isObservable = true;
     }
 
     Observable.prototype.subscribe = function(sink) {
@@ -1228,7 +1244,7 @@
     };
 
     Dispatcher.prototype.pushToSubscriptions = function(event) {
-      var e, j, len1, reply, sub, tmp;
+      var e, error1, j, len1, reply, sub, tmp;
       try {
         tmp = this.subscriptions;
         for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1239,8 +1255,8 @@
           }
         }
         return true;
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         this.pushing = false;
         this.queue = [];
         throw e;
@@ -1325,6 +1341,9 @@
     extend(EventStream, superClass);
 
     function EventStream(desc, subscribe, handler) {
+      if (!(this instanceof EventStream)) {
+        return new EventStream(desc, subscribe, handler);
+      }
       if (_.isFunction(desc)) {
         handler = subscribe;
         subscribe = desc;
@@ -2282,6 +2301,9 @@
       this.guardedSink = bind(this.guardedSink, this);
       this.subscribeAll = bind(this.subscribeAll, this);
       this.unsubAll = bind(this.unsubAll, this);
+      if (!(this instanceof Bus)) {
+        return new Bus();
+      }
       this.sink = void 0;
       this.subscriptions = [];
       this.ended = false;
