@@ -4,8 +4,6 @@ eventIdCounter = 0
 
 class Event
   constructor: ->
-    if this not instanceof Event
-      return new Event
     @id = (++eventIdCounter)
   isEvent: -> true
   isEnd: -> false
