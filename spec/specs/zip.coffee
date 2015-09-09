@@ -71,6 +71,13 @@ describe "Bacon.zipAsArray", ->
         obs = series(1, [1, 2, 3, 4])
         Bacon.zipAsArray(obs, obs.skip(1), Bacon.constant(5))
     [[1 , 2, 5]])
+  describe "fires for Property events too (unlike Bacon.when)", ->
+    expectStreamEvents(
+      ->
+        stream = series(1, [1, 2, 3, 4])
+        prop = series(1, [2, 3, 4, 5]).toProperty()
+        Bacon.zipAsArray(stream, prop)
+    [[1,2], [2,3], [3,4], [4,5]], { semiunstable })
   describe "works with single stream", ->
     expectStreamEvents(
       ->
