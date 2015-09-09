@@ -1,3 +1,7 @@
+## 0.7.72
+
+- support new-less constructors in EventStream, Bus, Next, Initial, End, Error
+
 ## 0.7.71
 
 - make zipWith, combineWith signatures consistent, allow 4 variations in each
