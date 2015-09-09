@@ -773,6 +773,8 @@ x.zip(y, function(x, y) { return x + y })
 # produces values 4, 6
 ```
 
+See also [`zipWith`](#bacon-zipwith) and [`zipAsArray`](#bacon-zipasarray) for zipping more than 2 sources.
+
 <a name="observable-slidingwindow"></a>
 [`observable.slidingWindow(max [, min])`](#observable-slidingwindow "observable.slidingWindow(max[, min])") returns a Property that represents a
 "sliding window" into the history of the values of the Observable. The

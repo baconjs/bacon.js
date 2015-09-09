@@ -789,6 +789,8 @@ x.zip(y, function(x, y) { return x + y })
 
 # produces values 4, 6
 ```
+
+See also `zipWith` and `zipAsArray` for zipping more than 2 sources.
 """
 
 doc.fn "observable.slidingWindow(max[, min])", """
