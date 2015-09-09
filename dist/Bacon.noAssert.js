@@ -690,9 +690,6 @@
     eventIdCounter = 0;
     Event = function () {
         function Event() {
-            if (!(this instanceof Event)) {
-                return new Event();
-            }
             this.id = ++eventIdCounter;
         }
         Event.prototype.isEvent = function () {

@@ -1,6 +1,5 @@
 describe "Bacon.Event", ->
   it "can be instatiated without new", ->
-    expect(Bacon.Event()).to.be.an.instanceof(Bacon.Event)
     expect(Bacon.Initial()).to.be.an.instanceof(Bacon.Initial)
     expect(Bacon.Next()).to.be.an.instanceof(Bacon.Next)
     expect(Bacon.End()).to.be.an.instanceof(Bacon.End)
