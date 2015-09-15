@@ -21,6 +21,10 @@ describe "Bacon.update", ->
           0,
           [one, two],  (i, a, b) -> [i,a,b])
       [0, [0,1,2]], unstable)
+  describe "Works with naked streams (not wrapped in array)", ->
+    expectPropertyEvents(
+      -> Bacon.update(2, once(1), (a,b) -> a + b)
+      [2, 3], unstable)
   it "Rejects patterns with Properties only", -> expectError("At least one EventStream required", ->
     Bacon.update(0, [Bacon.constant()], ->))
   it "toString", ->
