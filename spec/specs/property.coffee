@@ -45,6 +45,11 @@ describe "Property.toProperty", ->
       fail()
     catch e
 
+describe "Property.subscribe", ->
+  it "asserts that argument is function", ->
+    f = -> Bacon.never().toProperty().subscribe("a string")
+    expect(f).to.throw(Error)
+
 describe "Property.changes", ->
   describe "sends property change events", ->
     expectStreamEvents(

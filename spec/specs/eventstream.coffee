@@ -83,6 +83,11 @@ describe "Observable.withDescription", ->
     expect(description.context).to.equal(Bacon)
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
+    
+describe "EventStream.subscribe", ->
+  it "asserts that argument is function", ->
+    f = -> Bacon.never().subscribe("a string")
+    expect(f).to.throw(Error)
 
 describe "EventStream.onValue", testSideEffects(once, "onValue")
 describe "EventStream.forEach", testSideEffects(once, "forEach")
