@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, symbolObservable, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     slice = [].slice,
@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.75';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -80,6 +80,8 @@
       throw new Exception("not a string : " + x);
     }
   };
+
+  symbolObservable = Symbol && Symbol.observable ? Symbol.observable : Symbol && typeof Symbol["for"] === 'function' ? Symbol["for"]('observable') : '@@observable';
 
   _ = {
     indexOf: Array.prototype.indexOf ? function(xs, x) {
@@ -258,10 +260,11 @@
             for (key in obj) {
               if (!hasProp.call(obj, key)) continue;
               value = (function() {
+                var error1;
                 try {
                   return obj[key];
-                } catch (_error) {
-                  ex = _error;
+                } catch (error1) {
+                  ex = error1;
                   return ex;
                 }
               })();
@@ -1118,6 +1121,10 @@
 
   Observable.prototype.inspect = Observable.prototype.toString;
 
+  Observable.prototype[symbolObservable] = function() {
+    return this;
+  };
+
   Bacon.Observable = Observable;
 
   CompositeUnsubscribe = (function() {
@@ -1239,7 +1246,7 @@
     };
 
     Dispatcher.prototype.pushToSubscriptions = function(event) {
-      var e, j, len1, reply, sub, tmp;
+      var e, error1, j, len1, reply, sub, tmp;
       try {
         tmp = this.subscriptions;
         for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1250,8 +1257,8 @@
           }
         }
         return true;
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         this.pushing = false;
         this.queue = [];
         throw e;
@@ -3327,11 +3334,11 @@
 
   Bacon["try"] = function(f) {
     return function(value) {
-      var e;
+      var e, error1;
       try {
         return Bacon.once(f(value));
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         return new Bacon.Error(e);
       }
     };
@@ -3453,6 +3460,29 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
 
 Observable.prototype.toPromise = function (PromiseCtr) {
   return this.last().firstToPromise(PromiseCtr);
+};
+
+function ESObservable(observable) {
+  this.observable = observable;
+}
+
+ESObservable.prototype.subscribe = function (observer) {
+  var cancel = this.observable.subscribe(function (event) {
+    if (event.isError()) {
+      if (observer.error) observer.error(event.error);
+      cancel();
+    } else if (event.isEnd()) {
+      if (observer.complete) observer.complete();
+      cancel();
+    } else if (observer.next) {
+      observer.next(event.value());
+    }
+  });
+  return cancel;
+};
+
+Bacon.Observable.prototype[symbol('observable')] = function () {
+  return new ESObservable(this);
 };
 
 if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
