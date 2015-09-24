@@ -66,3 +66,4 @@
 
 // ES7 observable:
 // build-dependencies: esobservable
+// build-dependencies: fromesobservable

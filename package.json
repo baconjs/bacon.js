@@ -31,6 +31,7 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
+    "@reactivex/rxjs": "^5.0.0-alpha.1",
     "babel": "^4.5.5",
     "benchmark": "1.0.0",
     "bluebird": "^2",
