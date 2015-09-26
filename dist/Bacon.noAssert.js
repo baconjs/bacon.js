@@ -1,5 +1,5 @@
 (function () {
-    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, symbolObservable, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
+    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, symbol, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
             for (var key in parent) {
                 if (hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -40,7 +40,15 @@
     isObservable = function (x) {
         return x instanceof Observable;
     };
-    symbolObservable = Symbol && Symbol.observable ? Symbol.observable : Symbol && typeof Symbol['for'] === 'function' ? Symbol['for']('observable') : '@@observable';
+    symbol = function (key) {
+        if (typeof Symbol !== 'undefined' && Symbol[key]) {
+            return Symbol.observable;
+        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
+            return Symbol['for'](key);
+        } else {
+            return '@@' + key;
+        }
+    };
     _ = {
         indexOf: Array.prototype.indexOf ? function (xs, x) {
             return xs.indexOf(x);
@@ -938,9 +946,6 @@
     Observable.prototype.assign = Observable.prototype.onValue;
     Observable.prototype.forEach = Observable.prototype.onValue;
     Observable.prototype.inspect = Observable.prototype.toString;
-    Observable.prototype[symbolObservable] = function () {
-        return this;
-    };
     Bacon.Observable = Observable;
     CompositeUnsubscribe = function () {
         function CompositeUnsubscribe(ss) {
@@ -3218,8 +3223,8 @@
     };
     Bacon.fromESObservable = function (_observable) {
         var observable;
-        if (_observable[symbolObservable]) {
-            observable = _observable[symbolObservable]();
+        if (_observable[symbol('observable')]) {
+            observable = _observable[symbol('observable')]();
         } else {
             observable = observable;
         }

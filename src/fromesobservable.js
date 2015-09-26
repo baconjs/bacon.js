@@ -2,8 +2,8 @@
 
 Bacon.fromESObservable = function(_observable) {
   var observable;
-  if (_observable[symbolObservable]) {
-    observable = _observable[symbolObservable]();
+  if (_observable[symbol("observable")]) {
+    observable = _observable[symbol("observable")]();
   } else {
     observable = observable;
   }

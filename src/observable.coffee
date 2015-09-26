@@ -59,6 +59,4 @@ Observable :: assign = Observable :: onValue
 Observable :: forEach = Observable :: onValue
 Observable :: inspect = Observable :: toString
 
-Observable.prototype[symbolObservable] = -> this
-
 Bacon.Observable = Observable
