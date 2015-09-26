@@ -26,7 +26,7 @@
     },
     "newlines_after_classes": {
         "value": 3,
-        "level": "error"
+        "level": "ignore"
     },
     "no_empty_param_list": {
         "level": "error"
@@ -49,4 +49,3 @@
         "level": "error"
     }
 }
-
