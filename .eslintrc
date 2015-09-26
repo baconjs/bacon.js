@@ -9,7 +9,8 @@
     "Exception": true,
     "nextEvent": true,
     "endEvent": true,
-    "withDescription": true
+    "withDescription": true,
+    "withDesc": true
   },
   "rules": {
     "strict": 0
