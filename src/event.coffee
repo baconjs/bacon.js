@@ -61,7 +61,7 @@ class Initial extends Next
 class End extends Event
   constructor: ->
     if this not instanceof End
-      return new End
+      return new End()
   isEnd: -> true
   fmap: -> this
   apply: -> this

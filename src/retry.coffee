@@ -17,9 +17,7 @@ Bacon.retry = (options) ->
       valueStream = -> source().endOnError().withHandler (event) ->
         if event.isError()
           error = event
-          if isRetryable(error.error) and retries > 0
-            # will retry
-          else
+          unless isRetryable(error.error) and retries > 0
             finished = true # no more retries
             @push event # push final error to subscriber
         else
