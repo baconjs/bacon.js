@@ -52,6 +52,7 @@
 // build-dependencies: take
 // build-dependencies: takewhile
 // build-dependencies: takeuntil
+// build-dependencies: try
 // build-dependencies: update
 // build-dependencies: when
 // build-dependencies: zip

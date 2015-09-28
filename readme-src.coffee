@@ -1532,12 +1532,18 @@ Especially [`map`](#observable-map) doesn't do so. If you want to map things
 and wrap caught errors into Error events, you can do the following:
 
 ```js
-var source, dangerousFunction // <- your stuff
-wrapped = source.flatMap(function(x) {
-  try
-    return dangerousFunction(x)
-  catch (e)
-    return new Bacon.Error(e)
+wrapped = source.flatMap(Bacon.try(dangerousOperation))
+```
+
+For example, you can use `Bacon.try` to handle JSON parse errors:
+
+```js
+var jsonStream = Bacon
+  .once('{"this is invalid json"')
+  .flatMap(Bacon.try(JSON.parse))
+
+jsonStream.onError(function(err) {
+  console.error("Failed to parse JSON", err)
 })
 ```
 
