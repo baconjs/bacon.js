@@ -33,11 +33,14 @@
   "devDependencies": {
     "babel": "^4.5.5",
     "benchmark": "1.0.0",
+    "bluebird": "^2",
+    "bower-json": "^0.4",
     "browserify": "^9.0.3",
     "chai": "^2.1.0",
     "coffee-script": "^1.9.1",
     "coffeeify": "^1.0.0",
     "coffeelint": "^1.9.2",
+    "es6-promise": "^3.0.2",
     "escodegen": "^1.6.1",
     "esprima": "^2.0.0",
     "estraverse": "^1.9.1",
@@ -54,10 +57,7 @@
     "mocha": "^2.1.0",
     "shelljs": "^0.3",
     "sinon": "^1.12.2",
-    "uglify-js": "^2.4.16",
-    "bluebird": "^2",
-    "when": "^3.6.4",
-    "bower-json": "^0.4"
+    "uglify-js": "^2.4.16"
   },
   "repository": {
     "type": "git",
