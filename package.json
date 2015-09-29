@@ -52,6 +52,7 @@
     "grunt-eslint": "^7.0.1",
     "grunt-shell": "^1.1.2",
     "jasmine-node": "^1.14.5",
+    "jquery": "^2.1.4",
     "jsstana": "^0.1.5",
     "lodash": "^3.3.1",
     "mocha": "^2.1.0",
