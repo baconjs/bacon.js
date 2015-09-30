@@ -5,27 +5,27 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <script src="../lib/jquery.js"></script>
-    <script src="../lib/underscore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
     <script src="../dist/Bacon.js"></script>
     <script>
       function isEmpty(s) { return s.length == 0 }
 
       function always(value) { return function() { return value }}
 
-      function keyCodeIs(keyCode) { 
+      function keyCodeIs(keyCode) {
         return function(event) { return event.keyCode == keyCode }
       }
 
-      function keyDownEvents(keyCode) { 
+      function keyDownEvents(keyCode) {
         return $(document).asEventStream("keydown").filter(keyCodeIs(keyCode))
       }
 
-      function keyUpEvents(keyCode) { 
+      function keyUpEvents(keyCode) {
         return $(document).asEventStream("keyup").filter(keyCodeIs(keyCode))
       }
 
-      function keyStateProperty(keyCode) { 
+      function keyStateProperty(keyCode) {
         return keyDownEvents(keyCode).map(always("DOWN"))
           .merge(keyUpEvents(keyCode).map(always("UP")))
           .toProperty("UP")
@@ -77,7 +77,7 @@
 
         // Strikeout (skip/take) example
         function strikeout () {
-          $("#batter-up .ump-call").text("Strike three, you're out!") 
+          $("#batter-up .ump-call").text("Strike three, you're out!")
         }
 
         $("#batter-up button")

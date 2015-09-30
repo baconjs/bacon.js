@@ -4,7 +4,7 @@
   <title>Mocha Tests</title>
   <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
   <script src="../node_modules/mocha/mocha.js"></script>
-  <script src="../lib/jquery.js"></script>
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
   <script>
     mocha.setup('bdd');
   </script>
@@ -15,10 +15,10 @@
   <script src="bundle.js"></script>
   <script>
     $(function() {
-      if (window.mochaPhantomJS) { 
-        mochaPhantomJS.run(); 
+      if (window.mochaPhantomJS) {
+        mochaPhantomJS.run();
       } else {
-        mocha.run(); 
+        mocha.run();
       }
     })
   </script>

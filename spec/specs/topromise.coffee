@@ -1,5 +1,5 @@
 # build-dependencies: frompromise
-require('when/es6-shim/Promise')
+require('es6-promise').polyfill()
 Bluebird = require "bluebird"
 
 describe "firstToPromise", ->
@@ -19,7 +19,7 @@ describe "toPromise", ->
   it "picks the last event from Observable, later", ->
     later(3, "foobar").toPromise().then (x) ->
       expect(x).to.equal("foobar")
-  
+
   it "works with synchronous sources", ->
     fromArray([1,2,3]).toPromise().then (x) ->
       expect(x).to.equal(3)
