@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.73';
+    Bacon.version = '0.7.74';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -2903,8 +2903,7 @@
                     return source().endOnError().withHandler(function (event) {
                         if (event.isError()) {
                             error = event;
-                            if (isRetryable(error.error) && retries > 0) {
-                            } else {
+                            if (!(isRetryable(error.error) && retries > 0)) {
                                 finished = true;
                                 return this.push(event);
                             }
@@ -3062,6 +3061,17 @@
                 }
             }));
         });
+    };
+    Bacon['try'] = function (f) {
+        return function (value) {
+            var e;
+            try {
+                return Bacon.once(f(value));
+            } catch (_error) {
+                e = _error;
+                return new Bacon.Error(e);
+            }
+        };
     };
     Bacon.update = function () {
         var i, initial, lateBindFirst, patterns;
