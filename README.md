@@ -209,7 +209,7 @@ $("#my-div").asEventStream("click", function(event, args) { return args[0] })
 
 <a name="bacon-frompromise"></a>
 [`Bacon.fromPromise(promise [, abort] [, eventTransformer])`](#bacon-frompromise "Bacon.fromPromise(promise : Promise[A] [, abort : boolean][, eventTransformer]) : EventStream[A]") creates an EventStream from a Promise object such as JQuery Ajax.
-This stream will contain a single value or an error, followed immediately by stream end.  
+This stream will contain a single value or an error, followed immediately by stream end.
 You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
 You can also pass an optional function that transforms the promise value into Events. The default is to transform the value into `[new Bacon.Next(value), new Bacon.End()]`.
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
@@ -436,7 +436,7 @@ Common methods are listed below.
 <a name="observable-subscribe"></a>
 [`observable.subscribe(f)`](#observable-subscribe "observable.subscribe(f)") subscribes given handler function to event stream. Function will receive Event objects (see below).
 The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
-You can also unsubscribe by returning [`Bacon.noMore`](#bacon-nomore) from the handler function as a reply 
+You can also unsubscribe by returning [`Bacon.noMore`](#bacon-nomore) from the handler function as a reply
 to an Event.
 `stream.subscribe` and `property.subscribe` behave similarly, except that the latter also
 pushes the initial value of the property, in case there is one.
@@ -1460,12 +1460,18 @@ Especially [`map`](#observable-map) doesn't do so. If you want to map things
 and wrap caught errors into Error events, you can do the following:
 
 ```js
-var source, dangerousFunction // <- your stuff
-wrapped = source.flatMap(function(x) {
-  try
-    return dangerousFunction(x)
-  catch (e)
-    return new Bacon.Error(e)
+wrapped = source.flatMap(Bacon.try(dangerousOperation))
+```
+
+For example, you can use `Bacon.try` to handle JSON parse errors:
+
+```js
+var jsonStream = Bacon
+  .once('{"this is invalid json"')
+  .flatMap(Bacon.try(JSON.parse))
+
+jsonStream.onError(function(err) {
+  console.error("Failed to parse JSON", err)
 })
 ```
 
@@ -1538,7 +1544,7 @@ Bacon.when([a,b,c], combine)
 Note that [`Bacon.when`](#bacon-when) does not trigger updates for events from Properties though;
 if you use a Property in your pattern, its value will be just sampled when all the
 other sources (EventStreams) have a value. This is useful when you need a value of a Property
-in your calculations. If you want your pattern to fire for a Property too, you can 
+in your calculations. If you want your pattern to fire for a Property too, you can
 convert it into an EventStream using [`property.changes()`](#property-changes) or [`property.toEventStream()`](#property-toeventstream)
 
 <a name="bacon-update"></a>

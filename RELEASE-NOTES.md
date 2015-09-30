@@ -1,3 +1,7 @@
+## NEXT
+
+- Add `Bacon.try`
+
 ## 0.7.72
 
 - fix #621: loading fails with webpack in some configurations
