@@ -1,4 +1,4 @@
-## NEXT
+## 0.7.74
 
 - Add `Bacon.try`
 
