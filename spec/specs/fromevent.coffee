@@ -54,17 +54,36 @@ describe "Bacon.fromEvent", ->
     dispose()
     expect(emitter.listeners("click").length).to.deep.equal(0)
 
-  mockSource = {
+  onOffSource = -> {
     on: (type, callback) -> callback(type)
-    off: (callback) -> 
+    off: (callback) -> this.cleaned = true
   }
 
   it "should create EventStream from on/off event", ->
     values = []
-    take(1, Bacon.fromEvent(mockSource, "test")).onValue (value) ->
+    src = onOffSource()
+    take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
       values.push(value)
+    expect(values).to.deep.equal ["test"]
+    expect(src.cleaned).to.equal(true)
+  
+  bindUnbindSource = -> {
+    bind: (type, callback) -> callback(type)
+    unbind: (callback) -> this.cleaned = true
+    on: -> throw "bait method"
+    addEventListener: -> throw "bait method"
+    addListener: -> throw "bait method"
+  }
+
+  it "should create EventStream from bind/unbind event", ->
+    values = []
+    src = bindUnbindSource()
+    take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
+      values.push(value)
+    expect(values).to.deep.equal ["test"]
+    expect(src.cleaned).to.equal(true)
 
   it "toString", ->
-    expect(Bacon.fromEvent(mockSource, "click").toString()).to.equal("Bacon.fromEvent({on:function,off:function},click)")
+    expect(Bacon.fromEvent(onOffSource(), "click").toString()).to.equal("Bacon.fromEvent({on:function,off:function},click)")
 
 
