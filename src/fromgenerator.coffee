@@ -1,4 +1,4 @@
-# build-dependencies: factories, _, event
+# build-dependencies: frombinder, _, event
 
 Bacon.fromGenerator = (generator) ->
   Bacon.fromBinder (sink) ->

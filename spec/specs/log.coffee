@@ -1,4 +1,4 @@
-# build-dependencies: factories
+# build-dependencies: eventstream, property
 
 describe "Observable.log", ->
   preservingLog = (f) ->

@@ -62,5 +62,3 @@ Bacon.never = ->
   new EventStream describe(Bacon, "never"), (sink) ->
     sink (endEvent())
     nop
-
-

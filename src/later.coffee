@@ -1,4 +1,4 @@
-# build-dependencies: factories
+# build-dependencies: frombinder
 Bacon.later = (delay, value) ->
   withDesc new Bacon.Desc(Bacon, "later", [delay, value]), Bacon.fromBinder (sink) ->
     sender = -> sink [value, endEvent()]

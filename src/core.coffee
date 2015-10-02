@@ -5,6 +5,6 @@
 # build-dependencies: observable
 # build-dependencies: eventstream
 # build-dependencies: property
-# build-dependencies: factories
+# build-dependencies: frombinder
 # build-dependencies: describe
 # build-dependencies: functionconstruction

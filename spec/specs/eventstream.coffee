@@ -91,3 +91,8 @@ describe "EventStream.subscribe", ->
 
 describe "EventStream.onValue", testSideEffects(once, "onValue")
 describe "EventStream.forEach", testSideEffects(once, "forEach")
+describe "Bacon.never", ->
+  describe "should send just end", ->
+    expectStreamEvents(
+      -> Bacon.never()
+      [])

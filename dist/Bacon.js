@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '0.7.74';
+  Bacon.version = '<version>';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -1835,33 +1835,6 @@
     });
   };
 
-  eventMethods = [["addEventListener", "removeEventListener"], ["addListener", "removeListener"], ["on", "off"], ["bind", "unbind"]];
-
-  findHandlerMethods = function(target) {
-    var j, len1, methodPair, pair;
-    for (j = 0, len1 = eventMethods.length; j < len1; j++) {
-      pair = eventMethods[j];
-      methodPair = [target[pair[0]], target[pair[1]]];
-      if (methodPair[0] && methodPair[1]) {
-        return methodPair;
-      }
-    }
-    throw new Error("No suitable event methods in " + target);
-  };
-
-  Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-    var ref, sub, unsub;
-    ref = findHandlerMethods(target), sub = ref[0], unsub = ref[1];
-    return withDesc(new Bacon.Desc(Bacon, "fromEvent", [target, eventName]), Bacon.fromBinder(function(handler) {
-      sub.call(target, eventName, handler);
-      return function() {
-        return unsub.call(target, eventName, handler);
-      };
-    }, eventTransformer));
-  };
-
-  Bacon.fromEvent = Bacon.fromEventTarget;
-
   Bacon.Observable.prototype.map = function() {
     var args, p;
     p = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
@@ -2768,31 +2741,6 @@
     }));
   };
 
-  valueAndEnd = (function(value) {
-    return [value, endEvent()];
-  });
-
-  Bacon.fromPromise = function(promise, abort, eventTransformer) {
-    if (eventTransformer == null) {
-      eventTransformer = valueAndEnd;
-    }
-    return withDesc(new Bacon.Desc(Bacon, "fromPromise", [promise]), Bacon.fromBinder(function(handler) {
-      var ref;
-      if ((ref = promise.then(handler, function(e) {
-        return handler(new Error(e));
-      })) != null) {
-        if (typeof ref.done === "function") {
-          ref.done();
-        }
-      }
-      return function() {
-        if (abort) {
-          return typeof promise.abort === "function" ? promise.abort() : void 0;
-        }
-      };
-    }, eventTransformer));
-  };
-
   Bacon.Observable.prototype.mapError = function() {
     var f;
     f = makeFunctionArgs(arguments);
@@ -2862,6 +2810,33 @@
 
   Observable.prototype.reduce = Observable.prototype.fold;
 
+  eventMethods = [["addEventListener", "removeEventListener"], ["addListener", "removeListener"], ["on", "off"], ["bind", "unbind"]];
+
+  findHandlerMethods = function(target) {
+    var j, len1, methodPair, pair;
+    for (j = 0, len1 = eventMethods.length; j < len1; j++) {
+      pair = eventMethods[j];
+      methodPair = [target[pair[0]], target[pair[1]]];
+      if (methodPair[0] && methodPair[1]) {
+        return methodPair;
+      }
+    }
+    throw new Error("No suitable event methods in " + target);
+  };
+
+  Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
+    var ref, sub, unsub;
+    ref = findHandlerMethods(target), sub = ref[0], unsub = ref[1];
+    return withDesc(new Bacon.Desc(Bacon, "fromEvent", [target, eventName]), Bacon.fromBinder(function(handler) {
+      sub.call(target, eventName, handler);
+      return function() {
+        return unsub.call(target, eventName, handler);
+      };
+    }, eventTransformer));
+  };
+
+  Bacon.fromEvent = Bacon.fromEventTarget;
+
   Bacon.fromPoll = function(delay, poll) {
     return withDesc(new Bacon.Desc(Bacon, "fromPoll", [delay, poll]), Bacon.fromBinder((function(handler) {
       var id;
@@ -2870,6 +2845,31 @@
         return Bacon.scheduler.clearInterval(id);
       };
     }), poll));
+  };
+
+  valueAndEnd = (function(value) {
+    return [value, endEvent()];
+  });
+
+  Bacon.fromPromise = function(promise, abort, eventTransformer) {
+    if (eventTransformer == null) {
+      eventTransformer = valueAndEnd;
+    }
+    return withDesc(new Bacon.Desc(Bacon, "fromPromise", [promise]), Bacon.fromBinder(function(handler) {
+      var ref;
+      if ((ref = promise.then(handler, function(e) {
+        return handler(new Error(e));
+      })) != null) {
+        if (typeof ref.done === "function") {
+          ref.done();
+        }
+      }
+      return function() {
+        if (abort) {
+          return typeof promise.abort === "function" ? promise.abort() : void 0;
+        }
+      };
+    }, eventTransformer));
   };
 
   Bacon.Observable.prototype.groupBy = function(keyF, limitF) {

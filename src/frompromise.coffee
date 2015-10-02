@@ -1,4 +1,4 @@
-# build-dependencies: factories
+# build-dependencies: frombinder
 # build-dependencies: event
 # build-dependencies: describe
 

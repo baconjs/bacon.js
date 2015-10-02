@@ -1,4 +1,4 @@
-# build-dependencies: scheduler, factories
+# build-dependencies: scheduler, frombinder
 
 Bacon.fromPoll = (delay, poll) ->
   withDesc(new Bacon.Desc(Bacon, "fromPoll", [delay, poll]),

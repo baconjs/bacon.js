@@ -1,4 +1,4 @@
-# build-dependencies: core, factories
+# build-dependencies: core, frombinder
 
 # eventTransformer - defaults to returning the first argument to handler
 Bacon.$ = {}
