@@ -67,6 +67,15 @@ describe "Bacon.fromEvent", ->
     expect(values).to.deep.equal ["test"]
     expect(src.cleaned).to.equal(true)
   
+  it "should create EventStream even if removeListener method missing", ->
+    values = []
+    src = {
+      addListener: (type, callback) -> callback(type)
+    }
+    take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
+      values.push(value)
+    expect(values).to.deep.equal ["test"]
+  
   bindUnbindSource = -> {
     bind: (type, callback) -> callback(type)
     unbind: (callback) -> this.cleaned = true
