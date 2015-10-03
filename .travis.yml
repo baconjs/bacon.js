@@ -6,7 +6,9 @@ node_js:
   - "4.0"
   - "4.1"
 
-before_install: npm conf set strict-ssl false
+before_install:
+  - npm install -g npm@'>=2.11'
+  - npm conf set strict-ssl false
 
 after_install:
   - sudo npm install -g phantomjs grunt-cli
