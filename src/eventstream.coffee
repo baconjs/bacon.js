@@ -6,6 +6,8 @@
 # build-dependencies: helpers
 
 class EventStream extends Observable
+  _isEventStream: true
+
   constructor: (desc, subscribe, handler) ->
     if this not instanceof EventStream
       return new EventStream(desc, subscribe, handler)

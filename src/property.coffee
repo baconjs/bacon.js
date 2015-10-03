@@ -62,6 +62,8 @@ class PropertyDispatcher extends Dispatcher
 
 
 class Property extends Observable
+  _isProperty: true
+
   constructor: (desc, subscribe, handler) ->
     super(desc)
     assertFunction(subscribe)

@@ -1,4 +1,6 @@
 class Some
+  _isSome: true
+
   constructor: (@value) ->
   getOrElse: -> @value
   get: -> @value
@@ -17,6 +19,7 @@ class Some
   toString: -> @inspect()
 
 None = {
+  _isNone: true
   getOrElse: (value) -> value
   filter: -> None
   map: -> None
@@ -28,7 +31,7 @@ None = {
 }
 
 toOption = (v) ->
-  if v instanceof Some or v == None
+  if v?._isSome or v?._isNone
     v
   else
     new Some(v)

@@ -56,7 +56,7 @@ _ = {
   cached: (f) ->
     value = None
     ->
-      if value == None
+      if value?._isNone
         value = f()
         f = undefined
       value

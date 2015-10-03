@@ -24,7 +24,7 @@ flatMap_ = (root, f, firstOnly, limit) ->
           checkEnd(unsubMe)
           Bacon.noMore
         else
-          if event instanceof Initial
+          if event?._isInitial
             # To support Property as the spawned stream
             event = event.toNext()
           reply = sink event

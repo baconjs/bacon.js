@@ -50,7 +50,7 @@ makeFunction = (f, args) ->
   makeFunction_(f, args...)
 
 convertArgsToFunction = (obs, f, args, method) ->
-  if f instanceof Property
+  if f?._isProperty
     sampled = f.sampledBy(obs, (p,s) -> [p,s])
     method.call(sampled, ([p, s]) -> p)
       .map(([p, s]) -> s)

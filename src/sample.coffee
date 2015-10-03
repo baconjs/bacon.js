@@ -15,7 +15,7 @@ Bacon.Property :: sampledBy = (sampler, combinator) ->
   thisSource = new Source(this, false, lazy)
   samplerSource = new Source(sampler, true, lazy)
   stream = Bacon.when([thisSource, samplerSource], combinator)
-  result = if sampler instanceof Property then stream.toProperty() else stream
+  result = if sampler?._isProperty then stream.toProperty() else stream
   withDesc(new Bacon.Desc(this, "sampledBy", [sampler, combinator]), result)
 
 Bacon.Property :: sample = (interval) ->
@@ -23,7 +23,7 @@ Bacon.Property :: sample = (interval) ->
     @sampledBy Bacon.interval(interval, {}))
 
 Bacon.Observable :: map = (p, args...) ->
-  if (p instanceof Property)
+  if (p?._isProperty)
     p.sampledBy(this, former)
   else
     convertArgsToFunction this, p, args, (f) ->

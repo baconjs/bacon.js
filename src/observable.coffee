@@ -9,6 +9,8 @@ idCounter = 0
 registerObs = ->
 
 class Observable
+  _isObservable: true
+
   constructor: (@desc) ->
     @id = ++idCounter
     @initialDesc = @desc
