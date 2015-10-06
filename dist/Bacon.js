@@ -11,7 +11,7 @@
     }
   };
 
-  Bacon.version = '<version>';
+  Bacon.version = '0.7.75';
 
   Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 
@@ -2813,12 +2813,19 @@
   eventMethods = [["addEventListener", "removeEventListener"], ["addListener", "removeListener"], ["on", "off"], ["bind", "unbind"]];
 
   findHandlerMethods = function(target) {
-    var j, len1, methodPair, pair;
+    var addListener, j, k, len1, len2, methodPair, pair;
     for (j = 0, len1 = eventMethods.length; j < len1; j++) {
       pair = eventMethods[j];
       methodPair = [target[pair[0]], target[pair[1]]];
       if (methodPair[0] && methodPair[1]) {
         return methodPair;
+      }
+    }
+    for (k = 0, len2 = eventMethods.length; k < len2; k++) {
+      pair = eventMethods[k];
+      addListener = target[pair[0]];
+      if (addListener) {
+        return [addListener, function() {}];
       }
     }
     throw new Error("No suitable event methods in " + target);
