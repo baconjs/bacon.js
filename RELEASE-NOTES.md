@@ -1,3 +1,7 @@
+## 0.7.75
+
+- Bacon.fromEvent works even if there's no "unbind" method available (#638)
+
 ## 0.7.74
 
 - Add `Bacon.try`
