@@ -68,7 +68,9 @@ var main = function(options){
     comments: false,
     whitelist: [
       "es6.arrowFunctions",
-      "es6.properties.shorthand"
+      "es6.properties.shorthand",
+      "es6.parameters",
+      "es6.spread"
     ]
   };
 
@@ -141,4 +143,3 @@ if (require.main === module) {
 }
 
 exports.main = main;
-
