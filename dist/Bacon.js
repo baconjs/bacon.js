@@ -2888,32 +2888,6 @@
     }, eventTransformer));
   };
 
-  Bacon.Observable.prototype.groupBy = function(keyF, limitF) {
-    var src, streams;
-    if (limitF == null) {
-      limitF = Bacon._.id;
-    }
-    streams = {};
-    src = this;
-    return src.filter(function(x) {
-      return !streams[keyF(x)];
-    }).map(function(x) {
-      var data, key, limited, similar;
-      key = keyF(x);
-      similar = src.filter(function(x) {
-        return keyF(x) === key;
-      });
-      data = Bacon.once(x).concat(similar);
-      limited = limitF(data, x).withHandler(function(event) {
-        this.push(event);
-        if (event.isEnd()) {
-          return delete streams[key];
-        }
-      });
-      return streams[key] = limited;
-    });
-  };
-
   Bacon.spy = function(spy) {
     return spys.push(spy);
   };
@@ -2966,6 +2940,29 @@ Bacon.Observable.prototype.first = function () {
   return withDesc(new Bacon.Desc(this, "first", []), this.take(1));
 };
 
+Bacon.Observable.prototype.groupBy = function (keyF, limitF) {
+  if (limitF == null) limitF = Bacon._.id;
+  var streams = {};
+  var src = this;
+  return src.filter(function (x) {
+    return !streams[keyF(x)];
+  }).map(function (x) {
+    var key = keyF(x);
+    var similar = src.filter(function (x) {
+      return keyF(x) === key;
+    });
+    var data = Bacon.once(x).concat(similar);
+    var limited = limitF(data, x).withHandler(function (event) {
+      this.push(event);
+      if (event.isEnd()) {
+        return delete streams[key];
+      }
+    });
+    streams[key] = limited;
+    return limited;
+  });
+};
+
 Bacon.fromArray = function (values) {
   assertArray(values);
   if (!values.length) {
@@ -2997,12 +2994,14 @@ Bacon.fromArray = function (values) {
             }
           }
         }
-        return pushing = false;
+        pushing = false;
+        return pushing;
       };
 
       push();
       return function () {
-        return unsubd = true;
+        unsubd = true;
+        return unsubd;
       };
     });
   }
