@@ -3083,22 +3083,6 @@
     }));
   };
 
-  Bacon.sequentially = function(delay, values) {
-    var index;
-    index = 0;
-    return withDesc(new Bacon.Desc(Bacon, "sequentially", [delay, values]), Bacon.fromPoll(delay, function() {
-      var value;
-      value = values[index++];
-      if (index < values.length) {
-        return value;
-      } else if (index === values.length) {
-        return [value, endEvent()];
-      } else {
-        return endEvent();
-      }
-    }));
-  };
-
   Bacon.spy = function(spy) {
     return spys.push(spy);
   };
@@ -3277,6 +3261,20 @@ Bacon.retry = function (options) {
       return pause.concat(Bacon.once().flatMap(valueStream));
     } else {
       return valueStream();
+    }
+  }));
+};
+
+Bacon.sequentially = function (delay, values) {
+  var index = 0;
+  return withDesc(new Bacon.Desc(Bacon, "sequentially", [delay, values]), Bacon.fromPoll(delay, function () {
+    var value = values[index++];
+    if (index < values.length) {
+      return value;
+    } else if (index === values.length) {
+      return [value, endEvent()];
+    } else {
+      return endEvent();
     }
   }));
 };
