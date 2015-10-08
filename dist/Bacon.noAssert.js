@@ -2779,14 +2779,6 @@
             return nextEvent(value);
         }));
     };
-    Bacon.Observable.prototype.log = function () {
-        var args;
-        args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-        this.subscribe(function (event) {
-            return typeof console !== 'undefined' && console !== null ? typeof console.log === 'function' ? console.log.apply(console, slice.call(args).concat([event.log()])) : void 0 : void 0;
-        });
-        return this;
-    };
     Bacon.spy = function (spy) {
         return spys.push(spy);
     };
@@ -2874,6 +2866,17 @@
                 lastEvent = event;
             }
         }));
+    };
+    Bacon.Observable.prototype.log = function () {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+        this.subscribe(function (event) {
+            if (typeof console !== 'undefined' && typeof console.log === 'function') {
+                console.log.apply(console, args.concat([event.log()]));
+            }
+        });
+        return this;
     };
     Bacon.EventStream.prototype.merge = function (right) {
         var left = this;
@@ -3045,8 +3048,8 @@
     };
     Bacon.EventStream.prototype.skipWhile = function (f) {
         var ok = false;
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+            args[_key2 - 1] = arguments[_key2];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'skipWhile', [f]), this.withHandler(function (event) {
@@ -3083,8 +3086,8 @@
         return withDesc(new Bacon.Desc(this, 'startWith', [seed]), Bacon.once(seed).concat(this));
     };
     Bacon.Observable.prototype.takeWhile = function (f) {
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            args[_key2 - 1] = arguments[_key2];
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+            args[_key3 - 1] = arguments[_key3];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'takeWhile', [f]), this.withHandler(function (event) {
@@ -3144,16 +3147,16 @@
         var _Bacon;
         function lateBindFirst(f) {
             return function () {
-                for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-                    args[_key4] = arguments[_key4];
+                for (var _len5 = arguments.length, args = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+                    args[_key5] = arguments[_key5];
                 }
                 return function (i) {
                     return f.apply(undefined, _toConsumableArray([i].concat(args)));
                 };
             };
         }
-        for (var _len3 = arguments.length, patterns = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            patterns[_key3 - 1] = arguments[_key3];
+        for (var _len4 = arguments.length, patterns = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+            patterns[_key4 - 1] = arguments[_key4];
         }
         var i = patterns.length - 1;
         while (i > 0) {
@@ -3168,20 +3171,20 @@
         }));
     };
     Bacon.zipAsArray = function () {
-        for (var _len5 = arguments.length, args = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-            args[_key5] = arguments[_key5];
+        for (var _len6 = arguments.length, args = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+            args[_key6] = arguments[_key6];
         }
         var streams = argumentsToObservables(args);
         return withDesc(new Bacon.Desc(Bacon, 'zipAsArray', streams), Bacon.zipWith(streams, function () {
-            for (var _len6 = arguments.length, xs = Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-                xs[_key6] = arguments[_key6];
+            for (var _len7 = arguments.length, xs = Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
+                xs[_key7] = arguments[_key7];
             }
             return xs;
         }));
     };
     Bacon.zipWith = function () {
-        for (var _len7 = arguments.length, args = Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
-            args[_key7] = arguments[_key7];
+        for (var _len8 = arguments.length, args = Array(_len8), _key8 = 0; _key8 < _len8; _key8++) {
+            args[_key8] = arguments[_key8];
         }
         var observablesAndFunction = argumentsToObservablesAndFunction(args);
         var streams = observablesAndFunction[0];

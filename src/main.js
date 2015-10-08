@@ -31,7 +31,6 @@
 // build-dependencies: holdwhen
 // build-dependencies: interval
 // build-dependencies: later
-// build-dependencies: log
 // build-dependencies: maperror
 // build-dependencies: mapend
 // build-dependencies: once
@@ -47,6 +46,7 @@
 // build-dependencies: first
 // build-dependencies: jquery
 // build-dependencies: last
+// build-dependencies: log
 // build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
