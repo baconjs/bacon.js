@@ -1,5 +1,5 @@
 (function () {
-    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
+    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, symbol, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
             for (var key in parent) {
                 if (hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.75';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -39,6 +39,15 @@
     };
     isObservable = function (x) {
         return x instanceof Observable;
+    };
+    symbol = function (key) {
+        if (typeof Symbol !== 'undefined' && Symbol[key]) {
+            return Symbol.observable;
+        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
+            return Symbol['for'](key);
+        } else {
+            return '@@' + key;
+        }
     };
     _ = {
         indexOf: Array.prototype.indexOf ? function (xs, x) {
@@ -219,10 +228,11 @@
                             if (!hasProp.call(obj, key))
                                 continue;
                             value = function () {
+                                var error1;
                                 try {
                                     return obj[key];
-                                } catch (_error) {
-                                    ex = _error;
+                                } catch (error1) {
+                                    ex = error1;
                                     return ex;
                                 }
                             }();
@@ -1039,7 +1049,7 @@
             return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
         };
         Dispatcher.prototype.pushToSubscriptions = function (event) {
-            var e, j, len1, reply, sub, tmp;
+            var e, error1, j, len1, reply, sub, tmp;
             try {
                 tmp = this.subscriptions;
                 for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1050,8 +1060,8 @@
                     }
                 }
                 return true;
-            } catch (_error) {
-                e = _error;
+            } catch (error1) {
+                e = error1;
                 this.pushing = false;
                 this.queue = [];
                 throw e;
@@ -3075,11 +3085,11 @@
     };
     Bacon['try'] = function (f) {
         return function (value) {
-            var e;
+            var e, error1;
             try {
                 return Bacon.once(f(value));
-            } catch (_error) {
-                e = _error;
+            } catch (error1) {
+                e = error1;
                 return new Bacon.Error(e);
             }
         };
@@ -3188,6 +3198,58 @@
     };
     Observable.prototype.toPromise = function (PromiseCtr) {
         return this.last().firstToPromise(PromiseCtr);
+    };
+    function ESObservable(observable) {
+        this.observable = observable;
+    }
+    ESObservable.prototype.subscribe = function (observer) {
+        var cancel = this.observable.subscribe(function (event) {
+            if (event.isError()) {
+                if (observer.error)
+                    observer.error(event.error);
+                cancel();
+            } else if (event.isEnd()) {
+                if (observer.complete)
+                    observer.complete();
+                cancel();
+            } else if (observer.next) {
+                observer.next(event.value());
+            }
+        });
+        return cancel;
+    };
+    Bacon.Observable.prototype[symbol('observable')] = function () {
+        return new ESObservable(this);
+    };
+    Bacon.fromESObservable = function (_observable) {
+        var observable;
+        if (_observable[symbol('observable')]) {
+            observable = _observable[symbol('observable')]();
+        } else {
+            observable = observable;
+        }
+        var desc = new Bacon.Desc(Bacon, 'fromESObservable', [observable]);
+        return new Bacon.EventStream(desc, function (sink) {
+            var cancel = observable.subscribe({
+                error: function () {
+                    sink(new Bacon.Error());
+                    sink(new Bacon.End());
+                },
+                next: function (value) {
+                    sink(new Bacon.Next(value, true));
+                },
+                complete: function () {
+                    sink(new Bacon.End());
+                }
+            });
+            if (cancel.unsubscribe) {
+                return function () {
+                    cancel.unsubscribe();
+                };
+            } else {
+                return cancel;
+            }
+        });
     };
     if (typeof define !== 'undefined' && define !== null && define.amd != null) {
         define([], function () {

@@ -13,3 +13,10 @@ isObservable = (x) -> x instanceof Observable
 assertArray = (xs) -> throw new Exception("not an array : " + xs) unless isArray(xs)
 assertNoArguments = (args) -> assert "no arguments supported", args.length == 0
 assertString = (x) -> throw new Exception("not a string : " + x) unless typeof x == "string"
+symbol = (key) ->
+  if typeof Symbol != 'undefined' && Symbol[key]
+    Symbol.observable
+  else if typeof Symbol != 'undefined' && typeof Symbol.for == 'function'
+    Symbol.for(key)
+  else
+    "@@#{key}"

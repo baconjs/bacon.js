@@ -63,3 +63,7 @@
 // build-dependencies: last
 // build-dependencies: throttle
 // build-dependencies: topromise
+
+// ES7 observable:
+// build-dependencies: esobservable
+// build-dependencies: fromesobservable
