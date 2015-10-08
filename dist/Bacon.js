@@ -3014,15 +3014,6 @@
     });
   };
 
-  Bacon.interval = function(delay, value) {
-    if (value == null) {
-      value = {};
-    }
-    return withDesc(new Bacon.Desc(Bacon, "interval", [delay, value]), Bacon.fromPoll(delay, function() {
-      return nextEvent(value);
-    }));
-  };
-
   Bacon.spy = function(spy) {
     return spys.push(spy);
   };
@@ -3073,6 +3064,15 @@ Bacon.Observable.prototype.take = function (count) {
 
 Bacon.Observable.prototype.first = function () {
   return withDesc(new Bacon.Desc(this, "first", []), this.take(1));
+};
+
+Bacon.interval = function (delay, value) {
+  if (!(typeof value !== "undefined" && value !== null)) {
+    value = {};
+  }
+  return withDesc(new Bacon.Desc(Bacon, "interval", [delay, value]), Bacon.fromPoll(delay, function () {
+    return nextEvent(value);
+  }));
 };
 
 Bacon.$ = {};

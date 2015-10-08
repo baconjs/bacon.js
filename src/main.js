@@ -29,7 +29,6 @@
 // build-dependencies: frompromise
 // build-dependencies: groupby
 // build-dependencies: holdwhen
-// build-dependencies: interval
 // build-dependencies: later
 // build-dependencies: maperror
 // build-dependencies: mapend
@@ -44,6 +43,7 @@
 
 // ES6 pieces:
 // build-dependencies: first
+// build-dependencies: interval
 // build-dependencies: jquery
 // build-dependencies: last
 // build-dependencies: log
