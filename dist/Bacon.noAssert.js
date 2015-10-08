@@ -2827,16 +2827,6 @@
             return Bacon.never();
         }
     };
-    Bacon.repeatedly = function (delay, values) {
-        var index;
-        index = 0;
-        return withDesc(new Bacon.Desc(Bacon, 'repeatedly', [
-            delay,
-            values
-        ]), Bacon.fromPoll(delay, function () {
-            return values[index++ % values.length];
-        }));
-    };
     Bacon.spy = function (spy) {
         return spys.push(spy);
     };
@@ -2923,6 +2913,15 @@
             } else {
                 lastEvent = event;
             }
+        }));
+    };
+    Bacon.repeatedly = function (delay, values) {
+        var index = 0;
+        return withDesc(new Bacon.Desc(Bacon, 'repeatedly', [
+            delay,
+            values
+        ]), Bacon.fromPoll(delay, function () {
+            return values[index++ % values.length];
         }));
     };
     Bacon.repeat = function (generator) {

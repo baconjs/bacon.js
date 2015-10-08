@@ -36,7 +36,6 @@
 // build-dependencies: mapend
 // build-dependencies: merge
 // build-dependencies: once
-// build-dependencies: repeatedly
 // build-dependencies: sample
 // build-dependencies: scan
 // build-dependencies: skipduplicates
@@ -49,6 +48,7 @@
 // build-dependencies: first
 // build-dependencies: jquery
 // build-dependencies: last
+// build-dependencies: repeatedly
 // build-dependencies: retry
 // build-dependencies: sequentially
 // build-dependencies: skip
