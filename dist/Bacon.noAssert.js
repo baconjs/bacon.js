@@ -2969,31 +2969,39 @@
             }));
         });
     };
-    Bacon.update = function () {
-        var i, initial, lateBindFirst, patterns;
-        initial = arguments[0], patterns = 2 <= arguments.length ? slice.call(arguments, 1) : [];
-        lateBindFirst = function (f) {
+    function _toConsumableArray(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
+                arr2[i] = arr[i];
+            return arr2;
+        } else {
+            return Array.from(arr);
+        }
+    }
+    Bacon.update = function (initial) {
+        var _Bacon;
+        function lateBindFirst(f) {
             return function () {
-                var args;
-                args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+                for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                    args[_key2] = arguments[_key2];
+                }
                 return function (i) {
-                    return f.apply(null, [i].concat(args));
+                    return f.apply(undefined, _toConsumableArray([i].concat(args)));
                 };
             };
-        };
-        i = patterns.length - 1;
+        }
+        for (var _len = arguments.length, patterns = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            patterns[_key - 1] = arguments[_key];
+        }
+        var i = patterns.length - 1;
         while (i > 0) {
             if (!(patterns[i] instanceof Function)) {
-                patterns[i] = function (x) {
-                    return function () {
-                        return x;
-                    };
-                }(patterns[i]);
+                patterns[i] = _.always(patterns[i]);
             }
             patterns[i] = lateBindFirst(patterns[i]);
             i = i - 2;
         }
-        return withDesc(new Bacon.Desc(Bacon, 'update', [initial].concat(slice.call(patterns))), Bacon.when.apply(Bacon, patterns).scan(initial, function (x, f) {
+        return withDesc(new Bacon.Desc(Bacon, 'update', [initial].concat(patterns)), (_Bacon = Bacon).when.apply(_Bacon, patterns).scan(initial, function (x, f) {
             return f(x);
         }));
     };
@@ -3166,20 +3174,20 @@
         };
     };
     Bacon.zipAsArray = function () {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
+        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+            args[_key3] = arguments[_key3];
         }
         var streams = argumentsToObservables(args);
         return withDesc(new Bacon.Desc(Bacon, 'zipAsArray', streams), Bacon.zipWith(streams, function () {
-            for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                xs[_key2] = arguments[_key2];
+            for (var _len4 = arguments.length, xs = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+                xs[_key4] = arguments[_key4];
             }
             return xs;
         }));
     };
     Bacon.zipWith = function () {
-        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-            args[_key3] = arguments[_key3];
+        for (var _len5 = arguments.length, args = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+            args[_key5] = arguments[_key5];
         }
         var observablesAndFunction = argumentsToObservablesAndFunction(args);
         var streams = observablesAndFunction[0];

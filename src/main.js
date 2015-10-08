@@ -51,7 +51,6 @@
 // build-dependencies: take
 // build-dependencies: takewhile
 // build-dependencies: takeuntil
-// build-dependencies: update
 // build-dependencies: when
 
 // ES6 pieces:
@@ -62,4 +61,5 @@
 // build-dependencies: throttle
 // build-dependencies: topromise
 // build-dependencies: try
+// build-dependencies: update
 // build-dependencies: zip
