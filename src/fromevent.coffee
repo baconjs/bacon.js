@@ -29,7 +29,13 @@ findHandlerMethods = (target) ->
     return methodPair if methodPair[0] and methodPair[1]
   for pair in eventMethods
     addListener = target[pair[0]]
-    return [addListener, ->] if addListener
+    if addListener
+      removeListener = ->
+      for pair in eventMethods
+        if target[pair[1]]
+          removeListener = target[pair[1]]
+          break
+      return [addListener, removeListener]
   throw new Error("No suitable event methods in " + target)
 
 Bacon.fromEventTarget = (target, eventName, eventTransformer) ->
