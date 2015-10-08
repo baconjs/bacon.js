@@ -43,7 +43,6 @@
 // build-dependencies: skipduplicates
 // build-dependencies: skiperrors
 // build-dependencies: spy
-// build-dependencies: take
 // build-dependencies: takeuntil
 // build-dependencies: when
 
@@ -57,6 +56,7 @@
 // build-dependencies: skipwhile
 // build-dependencies: slidingwindow
 // build-dependencies: startwith
+// build-dependencies: take
 // build-dependencies: takewhile
 // build-dependencies: throttle
 // build-dependencies: topromise

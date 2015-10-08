@@ -3123,29 +3123,29 @@
     return void 0;
   };
 
-  Bacon.Observable.prototype.take = function(count) {
-    if (count <= 0) {
-      return Bacon.never();
-    }
-    return withDesc(new Bacon.Desc(this, "take", [count]), this.withHandler(function(event) {
-      if (!event.hasValue()) {
+  function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+Bacon.Observable.prototype.take = function (count) {
+  if (count <= 0) {
+    return Bacon.never();
+  }
+  return withDesc(new Bacon.Desc(this, "take", [count]), this.withHandler(function (event) {
+    if (!event.hasValue()) {
+      return this.push(event);
+    } else {
+      count--;
+      if (count > 0) {
         return this.push(event);
       } else {
-        count--;
-        if (count > 0) {
-          return this.push(event);
-        } else {
-          if (count === 0) {
-            this.push(event);
-          }
-          this.push(endEvent());
-          return Bacon.noMore;
+        if (count === 0) {
+          this.push(event);
         }
+        this.push(endEvent());
+        return Bacon.noMore;
       }
-    }));
-  };
-
-  function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+    }
+  }));
+};
 
 Bacon.Observable.prototype.first = function () {
   return withDesc(new Bacon.Desc(this, "first", []), this.take(1));

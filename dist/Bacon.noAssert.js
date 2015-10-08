@@ -2879,6 +2879,15 @@
         }
         return void 0;
     };
+    function _toConsumableArray(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
+                arr2[i] = arr[i];
+            return arr2;
+        } else {
+            return Array.from(arr);
+        }
+    }
     Bacon.Observable.prototype.take = function (count) {
         if (count <= 0) {
             return Bacon.never();
@@ -2900,15 +2909,6 @@
             }
         }));
     };
-    function _toConsumableArray(arr) {
-        if (Array.isArray(arr)) {
-            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
-                arr2[i] = arr[i];
-            return arr2;
-        } else {
-            return Array.from(arr);
-        }
-    }
     Bacon.Observable.prototype.first = function () {
         return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
