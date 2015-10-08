@@ -3159,17 +3159,6 @@
     });
   };
 
-  Bacon.Observable.prototype.slidingWindow = function(n, minValues) {
-    if (minValues == null) {
-      minValues = 0;
-    }
-    return withDesc(new Bacon.Desc(this, "slidingWindow", [n, minValues]), this.scan([], (function(window, value) {
-      return window.concat([value]).slice(-n);
-    })).filter((function(values) {
-      return values.length >= minValues;
-    })));
-  };
-
   Bacon.spy = function(spy) {
     return spys.push(spy);
   };
@@ -3327,6 +3316,17 @@ Bacon.retry = function (options) {
     } else {
       return valueStream();
     }
+  }));
+};
+
+Bacon.Observable.prototype.slidingWindow = function (n, minValues) {
+  if (minValues == null) {
+    minValues = 0;
+  }
+  return withDesc(new Bacon.Desc(this, "slidingWindow", [n, minValues]), this.scan([], function (window, value) {
+    return window.concat([value]).slice(-n);
+  }).filter(function (values) {
+    return values.length >= minValues;
   }));
 };
 
