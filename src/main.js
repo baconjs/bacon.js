@@ -34,7 +34,6 @@
 // build-dependencies: log
 // build-dependencies: maperror
 // build-dependencies: mapend
-// build-dependencies: merge
 // build-dependencies: once
 // build-dependencies: sample
 // build-dependencies: scan
@@ -48,6 +47,7 @@
 // build-dependencies: first
 // build-dependencies: jquery
 // build-dependencies: last
+// build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
 // build-dependencies: sequentially
