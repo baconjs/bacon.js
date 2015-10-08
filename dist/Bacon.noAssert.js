@@ -2947,14 +2947,6 @@
         }
         return void 0;
     };
-    Bacon.Property.prototype.startWith = function (seed) {
-        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), this.scan(seed, function (prev, next) {
-            return next;
-        }));
-    };
-    Bacon.EventStream.prototype.startWith = function (seed) {
-        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), Bacon.once(seed).concat(this));
-    };
     function _toConsumableArray(arr) {
         if (Array.isArray(arr)) {
             for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
@@ -3088,6 +3080,14 @@
                 return valueStream();
             }
         }));
+    };
+    Bacon.Property.prototype.startWith = function (seed) {
+        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), this.scan(seed, function (prev, next) {
+            return next;
+        }));
+    };
+    Bacon.EventStream.prototype.startWith = function (seed) {
+        return withDesc(new Bacon.Desc(this, 'startWith', [seed]), Bacon.once(seed).concat(this));
     };
     Bacon.Observable.prototype.takeWhile = function (f) {
         for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
