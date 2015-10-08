@@ -1,7 +1,9 @@
 {
   "ecmaFeatures": {
     "arrowFunctions": true,
-    "objectLiteralShorthandProperties": true
+    "objectLiteralShorthandProperties": true,
+    "restParams": true,
+    "spread": true
   },
   "globals": {
     "Bacon": true,
