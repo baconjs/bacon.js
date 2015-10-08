@@ -40,11 +40,8 @@
 // build-dependencies: sample
 // build-dependencies: scan
 // build-dependencies: sequentially
-// build-dependencies: skip
 // build-dependencies: skipduplicates
 // build-dependencies: skiperrors
-// build-dependencies: skipuntil
-// build-dependencies: skipwhile
 // build-dependencies: spy
 // build-dependencies: take
 // build-dependencies: takeuntil
@@ -55,6 +52,9 @@
 // build-dependencies: jquery
 // build-dependencies: last
 // build-dependencies: retry
+// build-dependencies: skip
+// build-dependencies: skipuntil
+// build-dependencies: skipwhile
 // build-dependencies: slidingwindow
 // build-dependencies: startwith
 // build-dependencies: takewhile
