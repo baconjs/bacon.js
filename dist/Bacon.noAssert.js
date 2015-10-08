@@ -1,5 +1,5 @@
 (function () {
-    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, ref, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
+    var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport, hasProp = {}.hasOwnProperty, extend = function (child, parent) {
             for (var key in parent) {
                 if (hasProp.call(parent, key))
                     child[key] = parent[key];
@@ -2779,27 +2779,6 @@
             return nextEvent(value);
         }));
     };
-    Bacon.$ = {};
-    Bacon.$.asEventStream = function (eventName, selector, eventTransformer) {
-        var ref;
-        if (_.isFunction(selector)) {
-            ref = [
-                selector,
-                void 0
-            ], eventTransformer = ref[0], selector = ref[1];
-        }
-        return withDesc(new Bacon.Desc(this.selector || this, 'asEventStream', [eventName]), Bacon.fromBinder(function (_this) {
-            return function (handler) {
-                _this.on(eventName, selector, handler);
-                return function () {
-                    return _this.off(eventName, selector, handler);
-                };
-            };
-        }(this), eventTransformer));
-    };
-    if ((ref = typeof jQuery !== 'undefined' && jQuery !== null ? jQuery : typeof Zepto !== 'undefined' && Zepto !== null ? Zepto : void 0) != null) {
-        ref.fn.asEventStream = Bacon.$.asEventStream;
-    }
     Bacon.Observable.prototype.log = function () {
         var args;
         args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
@@ -3113,6 +3092,26 @@
     Bacon.Observable.prototype.first = function () {
         return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
+    Bacon.$ = {};
+    Bacon.$.asEventStream = function (eventName, selector, eventTransformer) {
+        var _this = this;
+        if (_.isFunction(selector)) {
+            eventTransformer = selector;
+            selector = undefined;
+        }
+        return withDesc(new Bacon.Desc(this.selector || this, 'asEventStream', [eventName]), Bacon.fromBinder(function (handler) {
+            _this.on(eventName, selector, handler);
+            return function () {
+                return _this.off(eventName, selector, handler);
+            };
+        }), eventTransformer);
+    };
+    if (typeof jQuery !== 'undefined' && jQuery) {
+        jQuery.fn.asEventStream = Bacon.$.asEventStream;
+    }
+    if (typeof Zepto !== 'undefined' && Zepto) {
+        Zepto.fn.asEventStream = Bacon.$.asEventStream;
+    }
     Bacon.Observable.prototype.last = function () {
         var lastEvent;
         return withDesc(new Bacon.Desc(this, 'last', []), this.withHandler(function (event) {
@@ -3138,7 +3137,7 @@
         });
     };
     Observable.prototype.firstToPromise = function (PromiseCtr) {
-        var _this = this;
+        var _this2 = this;
         if (typeof PromiseCtr !== 'function') {
             if (typeof Promise === 'function') {
                 PromiseCtr = Promise;
@@ -3147,7 +3146,7 @@
             }
         }
         return new PromiseCtr(function (resolve, reject) {
-            return _this.subscribe(function (event) {
+            return _this2.subscribe(function (event) {
                 if (event.hasValue()) {
                     resolve(event.value());
                 }

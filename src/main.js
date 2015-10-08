@@ -30,7 +30,6 @@
 // build-dependencies: groupby
 // build-dependencies: holdwhen
 // build-dependencies: interval
-// build-dependencies: jquery
 // build-dependencies: later
 // build-dependencies: log
 // build-dependencies: maperror
@@ -58,6 +57,7 @@
 
 // ES6 pieces:
 // build-dependencies: first
+// build-dependencies: jquery
 // build-dependencies: last
 // build-dependencies: throttle
 // build-dependencies: topromise
