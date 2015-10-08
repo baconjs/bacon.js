@@ -53,13 +53,13 @@
 // build-dependencies: take
 // build-dependencies: takewhile
 // build-dependencies: takeuntil
-// build-dependencies: try
 // build-dependencies: update
 // build-dependencies: when
 
 // ES6 pieces:
-// build-dependencies: zip
 // build-dependencies: first
 // build-dependencies: last
 // build-dependencies: throttle
 // build-dependencies: topromise
+// build-dependencies: try
+// build-dependencies: zip

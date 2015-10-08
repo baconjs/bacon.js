@@ -3334,18 +3334,6 @@
     });
   };
 
-  Bacon["try"] = function(f) {
-    return function(value) {
-      var e, error1;
-      try {
-        return Bacon.once(f(value));
-      } catch (error1) {
-        e = error1;
-        return new Bacon.Error(e);
-      }
-    };
-  };
-
   Bacon.update = function() {
     var i, initial, lateBindFirst, patterns;
     initial = arguments[0], patterns = 2 <= arguments.length ? slice.call(arguments, 1) : [];
@@ -3376,40 +3364,6 @@
   };
 
   
-
-Bacon.zipAsArray = function () {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  var streams = argumentsToObservables(args);
-  return withDesc(new Bacon.Desc(Bacon, "zipAsArray", streams), Bacon.zipWith(streams, function () {
-    for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      xs[_key2] = arguments[_key2];
-    }
-
-    return xs;
-  }));
-};
-
-Bacon.zipWith = function () {
-  for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-    args[_key3] = arguments[_key3];
-  }
-
-  var observablesAndFunction = argumentsToObservablesAndFunction(args);
-  var streams = observablesAndFunction[0];
-  var f = observablesAndFunction[1];
-
-  streams = _.map(function (s) {
-    return s.toEventStream();
-  }, streams);
-  return withDesc(new Bacon.Desc(Bacon, "zipWith", [f].concat(streams)), Bacon.when(streams, f));
-};
-
-Bacon.Observable.prototype.zip = function (other, f) {
-  return withDesc(new Bacon.Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
-};
 
 Bacon.Observable.prototype.first = function () {
   return withDesc(new Bacon.Desc(this, "first", []), this.take(1));
@@ -3470,6 +3424,50 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
 
 Observable.prototype.toPromise = function (PromiseCtr) {
   return this.last().firstToPromise(PromiseCtr);
+};
+
+Bacon.try = function (f) {
+  return function (value) {
+    try {
+      return Bacon.once(f(value));
+    } catch (e) {
+      return new Bacon.Error(e);
+    }
+  };
+};
+
+Bacon.zipAsArray = function () {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var streams = argumentsToObservables(args);
+  return withDesc(new Bacon.Desc(Bacon, "zipAsArray", streams), Bacon.zipWith(streams, function () {
+    for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      xs[_key2] = arguments[_key2];
+    }
+
+    return xs;
+  }));
+};
+
+Bacon.zipWith = function () {
+  for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+    args[_key3] = arguments[_key3];
+  }
+
+  var observablesAndFunction = argumentsToObservablesAndFunction(args);
+  var streams = observablesAndFunction[0];
+  var f = observablesAndFunction[1];
+
+  streams = _.map(function (s) {
+    return s.toEventStream();
+  }, streams);
+  return withDesc(new Bacon.Desc(Bacon, "zipWith", [f].concat(streams)), Bacon.when(streams, f));
+};
+
+Bacon.Observable.prototype.zip = function (other, f) {
+  return withDesc(new Bacon.Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
 };
 
 if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
