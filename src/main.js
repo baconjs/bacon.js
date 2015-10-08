@@ -37,7 +37,6 @@
 // build-dependencies: merge
 // build-dependencies: once
 // build-dependencies: repeatedly
-// build-dependencies: retry
 // build-dependencies: sample
 // build-dependencies: scan
 // build-dependencies: sequentially
@@ -59,6 +58,7 @@
 // build-dependencies: first
 // build-dependencies: jquery
 // build-dependencies: last
+// build-dependencies: retry
 // build-dependencies: throttle
 // build-dependencies: topromise
 // build-dependencies: try
