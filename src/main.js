@@ -49,7 +49,6 @@
 // build-dependencies: spy
 // build-dependencies: startwith
 // build-dependencies: take
-// build-dependencies: takewhile
 // build-dependencies: takeuntil
 // build-dependencies: when
 
@@ -58,6 +57,7 @@
 // build-dependencies: jquery
 // build-dependencies: last
 // build-dependencies: retry
+// build-dependencies: takewhile
 // build-dependencies: throttle
 // build-dependencies: topromise
 // build-dependencies: try
