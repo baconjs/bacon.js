@@ -67,14 +67,6 @@ describe "Bacon.fromEvent", ->
     expect(values).to.deep.equal ["test"]
     expect(src.cleaned).to.equal(true)
   
-  it "should create EventStream from on/removeListener source (like Socket.IO server)", ->
-    values = []
-    src = socketIoSource()
-    take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
-      values.push(value)
-    expect(values).to.deep.equal ["test"]
-    expect(src.cleaned).to.equal(true)
-  
   it "should create EventStream even if removeListener method missing", ->
     values = []
     src = {
@@ -83,11 +75,6 @@ describe "Bacon.fromEvent", ->
     take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
       values.push(value)
     expect(values).to.deep.equal ["test"]
-  
-  socketIoSource = -> {
-    on: (type, callback) -> callback(type)
-    removeListener: (callback) -> this.cleaned = true
-  }
   
   bindUnbindSource = -> {
     bind: (type, callback) -> callback(type)
