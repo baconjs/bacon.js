@@ -1,5 +1,5 @@
 (function() {
-  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, registerObs, spys, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
+  var Bacon, BufferingSource, Bus, CompositeUnsubscribe, ConsumingSource, Desc, Dispatcher, End, Error, Event, EventStream, Exception, Initial, Next, None, Observable, Property, PropertyDispatcher, Some, Source, UpdateBarrier, _, addPropertyInitValueToStream, argumentsToObservables, argumentsToObservablesAndFunction, assert, assertArray, assertEventStream, assertFunction, assertNoArguments, assertObservable, assertObservableIsProperty, assertString, cloneArray, constantToFunction, containsDuplicateDeps, convertArgsToFunction, describe, endEvent, eventIdCounter, eventMethods, findDeps, findHandlerMethods, flatMap_, former, idCounter, initialEvent, isArray, isFieldKey, isObservable, latter, liftCallback, makeFunction, makeFunctionArgs, makeFunction_, makeObservable, makeSpawner, nextEvent, nop, partiallyApplied, recursionDepth, registerObs, spys, symbol, toCombinator, toEvent, toFieldExtractor, toFieldKey, toOption, toSimpleExtractor, valueAndEnd, withDesc, withMethodCallSupport,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     slice = [].slice,
@@ -78,6 +78,16 @@
   assertString = function(x) {
     if (typeof x !== "string") {
       throw new Exception("not a string : " + x);
+    }
+  };
+
+  symbol = function(key) {
+    if (typeof Symbol !== 'undefined' && Symbol[key]) {
+      return Symbol.observable;
+    } else if (typeof Symbol !== 'undefined' && typeof Symbol["for"] === 'function') {
+      return Symbol["for"](key);
+    } else {
+      return "@@" + key;
     }
   };
 
@@ -258,11 +268,10 @@
             for (key in obj) {
               if (!hasProp.call(obj, key)) continue;
               value = (function() {
-                var error1;
                 try {
                   return obj[key];
-                } catch (error1) {
-                  ex = error1;
+                } catch (_error) {
+                  ex = _error;
                   return ex;
                 }
               })();
@@ -1240,7 +1249,7 @@
     };
 
     Dispatcher.prototype.pushToSubscriptions = function(event) {
-      var e, error1, j, len1, reply, sub, tmp;
+      var e, j, len1, reply, sub, tmp;
       try {
         tmp = this.subscriptions;
         for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1251,8 +1260,8 @@
           }
         }
         return true;
-      } catch (error1) {
-        e = error1;
+      } catch (_error) {
+        e = _error;
         this.pushing = false;
         this.queue = [];
         throw e;
@@ -2814,7 +2823,7 @@
   eventMethods = [["addEventListener", "removeEventListener"], ["addListener", "removeListener"], ["on", "off"], ["bind", "unbind"]];
 
   findHandlerMethods = function(target) {
-    var addListener, j, k, l, len1, len2, len3, methodPair, pair, removeListener;
+    var addListener, j, k, len1, len2, methodPair, pair;
     for (j = 0, len1 = eventMethods.length; j < len1; j++) {
       pair = eventMethods[j];
       methodPair = [target[pair[0]], target[pair[1]]];
@@ -2826,15 +2835,7 @@
       pair = eventMethods[k];
       addListener = target[pair[0]];
       if (addListener) {
-        removeListener = function() {};
-        for (l = 0, len3 = eventMethods.length; l < len3; l++) {
-          pair = eventMethods[l];
-          if (target[pair[1]]) {
-            removeListener = target[pair[1]];
-            break;
-          }
-        }
-        return [addListener, removeListener];
+        return [addListener, function() {}];
       }
     }
     throw new Error("No suitable event methods in " + target);
@@ -3469,6 +3470,62 @@ Bacon.zipWith = function () {
 
 Bacon.Observable.prototype.zip = function (other, f) {
   return withDesc(new Bacon.Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
+};
+
+function ESObservable(observable) {
+  this.observable = observable;
+}
+
+ESObservable.prototype.subscribe = function (observer) {
+  var cancel = this.observable.subscribe(function (event) {
+    if (event.isError()) {
+      if (observer.error) observer.error(event.error);
+      cancel();
+    } else if (event.isEnd()) {
+      if (observer.complete) observer.complete();
+      cancel();
+    } else if (observer.next) {
+      observer.next(event.value());
+    }
+  });
+  return cancel;
+};
+
+Bacon.Observable.prototype[symbol('observable')] = function () {
+  return new ESObservable(this);
+};
+
+Bacon.fromESObservable = function (_observable) {
+  var observable;
+  if (_observable[symbol("observable")]) {
+    observable = _observable[symbol("observable")]();
+  } else {
+    observable = observable;
+  }
+
+  var desc = new Bacon.Desc(Bacon, "fromESObservable", [observable]);
+  return new Bacon.EventStream(desc, function (sink) {
+    var cancel = observable.subscribe({
+      error: function () {
+        sink(new Bacon.Error());
+        sink(new Bacon.End());
+      },
+      next: function (value) {
+        sink(new Bacon.Next(value, true));
+      },
+      complete: function () {
+        sink(new Bacon.End());
+      }
+    });
+
+    if (cancel.unsubscribe) {
+      return function () {
+        cancel.unsubscribe();
+      };
+    } else {
+      return cancel;
+    }
+  });
 };
 
 if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {

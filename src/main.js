@@ -63,3 +63,7 @@
 // build-dependencies: try
 // build-dependencies: update
 // build-dependencies: zip
+
+// ES7 observable:
+// build-dependencies: esobservable
+// build-dependencies: fromesobservable
