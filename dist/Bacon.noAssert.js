@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '<version>';
+    Bacon.version = '0.7.76';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -219,11 +219,10 @@
                             if (!hasProp.call(obj, key))
                                 continue;
                             value = function () {
-                                var error1;
                                 try {
                                     return obj[key];
-                                } catch (error1) {
-                                    ex = error1;
+                                } catch (_error) {
+                                    ex = _error;
                                     return ex;
                                 }
                             }();
@@ -1040,7 +1039,7 @@
             return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
         };
         Dispatcher.prototype.pushToSubscriptions = function (event) {
-            var e, error1, j, len1, reply, sub, tmp;
+            var e, j, len1, reply, sub, tmp;
             try {
                 tmp = this.subscriptions;
                 for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1051,8 +1050,8 @@
                     }
                 }
                 return true;
-            } catch (error1) {
-                e = error1;
+            } catch (_error) {
+                e = _error;
                 this.pushing = false;
                 this.queue = [];
                 throw e;
@@ -2426,6 +2425,16 @@
             return this.push(event);
         }));
     };
+    Bacon.Observable.prototype.doEnd = function () {
+        var f;
+        f = makeFunctionArgs(arguments);
+        return withDesc(new Bacon.Desc(this, 'doEnd', [f]), this.withHandler(function (event) {
+            if (event.isEnd()) {
+                f();
+            }
+            return this.push(event);
+        }));
+    };
     Bacon.Observable.prototype.doError = function () {
         var f;
         f = makeFunctionArgs(arguments);
@@ -2562,7 +2571,7 @@
         ]
     ];
     findHandlerMethods = function (target) {
-        var addListener, j, k, l, len1, len2, len3, methodPair, pair, removeListener;
+        var addListener, j, k, len1, len2, methodPair, pair;
         for (j = 0, len1 = eventMethods.length; j < len1; j++) {
             pair = eventMethods[j];
             methodPair = [
@@ -2577,18 +2586,10 @@
             pair = eventMethods[k];
             addListener = target[pair[0]];
             if (addListener) {
-                removeListener = function () {
-                };
-                for (l = 0, len3 = eventMethods.length; l < len3; l++) {
-                    pair = eventMethods[l];
-                    if (target[pair[1]]) {
-                        removeListener = target[pair[1]];
-                        break;
-                    }
-                }
                 return [
                     addListener,
-                    removeListener
+                    function () {
+                    }
                 ];
             }
         }
