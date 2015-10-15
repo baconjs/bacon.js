@@ -360,7 +360,7 @@ describe "Integration tests", ->
         a.flatMap((x) -> Bacon.once(x))), ["lolbal"]
     verifyWhileDispatching "with awaiting", (->
         a = Bacon.constant(1)
-        s = a.awaiting(a.map(->))), [true]
+        s = a.awaiting(a.map(->))), [false]
     verifyWhileDispatching "with concat", (->
         s = Bacon.once(1).concat(Bacon.once(2))), [1,2]
     verifyWhileDispatching "with Property.delay", (->

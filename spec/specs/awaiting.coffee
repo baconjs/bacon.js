@@ -28,7 +28,7 @@ describe "Property.awaiting(other)", ->
       ->
         p = Bacon.constant(1)
         p.awaiting(p)
-      [false], unstable)
+      [false])
   describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]))
@@ -38,10 +38,10 @@ describe "Property.awaiting(other)", ->
       ->
         p = Bacon.constant(1)
         p.awaiting(p.map())
-      [false], unstable)
+      [false])
   describe "works for awaiting self.flatMap", ->
     expectPropertyEvents(
       ->
         p = Bacon.constant(1)
-        p.awaiting(p.flatMap(->))
-      [false], unstable)
+        p.awaiting(p.flatMap((x) -> once(x)))
+      [true, false], unstable)
