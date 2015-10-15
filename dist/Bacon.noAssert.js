@@ -21,7 +21,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.76';
+    Bacon.version = '<version>';
     Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     nop = function () {
     };
@@ -1142,8 +1142,9 @@
             });
             disp = this.dispatcher;
             return new Property(new Bacon.Desc(this, 'toProperty', [initValue_]), function (sink) {
-                var initSent, reply, sendInit, unsub;
+                var initSent, reply, sendInit, subbed, unsub;
                 initSent = false;
+                subbed = false;
                 unsub = nop;
                 reply = Bacon.more;
                 sendInit = function () {
@@ -1160,7 +1161,12 @@
                 };
                 unsub = disp.subscribe(function (event) {
                     if (event.hasValue()) {
-                        if (initSent && event.isInitial()) {
+                        if (event.isInitial() && !subbed) {
+                            initValue = new Some(function (_this) {
+                                return function () {
+                                    return event.value();
+                                };
+                            }(this));
                             return Bacon.more;
                         } else {
                             if (!event.isInitial()) {
@@ -1179,6 +1185,7 @@
                         }
                     }
                 });
+                subbed = true;
                 sendInit();
                 return unsub;
             });
