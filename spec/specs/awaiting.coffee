@@ -39,6 +39,16 @@ describe "Property.awaiting(other)", ->
         p = Bacon.constant(1)
         p.awaiting(p.map())
       [false])
+    expectPropertyEvents(
+      ->
+        p = Bacon.constant(1)
+        p.map().awaiting(p.map())
+      [false])
+    expectPropertyEvents(
+      ->
+        p = Bacon.constant(1)
+        p.map().awaiting(p)
+      [false])
   describe "works for awaiting self.flatMap", ->
     expectPropertyEvents(
       ->
