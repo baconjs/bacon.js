@@ -25,7 +25,6 @@
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: fold
 // build-dependencies: frombinder
-// build-dependencies: fromevent
 // build-dependencies: later
 // build-dependencies: maperror
 // build-dependencies: mapend
@@ -39,6 +38,7 @@
 
 // ES6 pieces:
 // build-dependencies: first
+// build-dependencies: fromevent
 // build-dependencies: frompoll
 // build-dependencies: frompromise
 // build-dependencies: groupby
