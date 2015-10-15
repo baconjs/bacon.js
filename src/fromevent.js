@@ -40,9 +40,7 @@ var findHandlerMethods = function(target) {
 };
 
 Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
-  var handlerMethods = findHandlerMethods(target);
-  var sub = handlerMethods[0];
-  var unsub = handlerMethods[1];
+  var [sub, unsub] = findHandlerMethods(target);
   var desc = new Bacon.Desc(Bacon, "fromEvent", [target, eventName]);
   return withDesc(desc, Bacon.fromBinder(function(handler) {
     sub.call(target, eventName, handler);
