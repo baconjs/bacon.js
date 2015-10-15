@@ -36,7 +36,6 @@
 // build-dependencies: scan
 // build-dependencies: skipduplicates
 // build-dependencies: skiperrors
-// build-dependencies: spy
 // build-dependencies: takeuntil
 // build-dependencies: when
 
@@ -56,6 +55,7 @@
 // build-dependencies: skipuntil
 // build-dependencies: skipwhile
 // build-dependencies: slidingwindow
+// build-dependencies: spy
 // build-dependencies: startwith
 // build-dependencies: take
 // build-dependencies: takewhile
