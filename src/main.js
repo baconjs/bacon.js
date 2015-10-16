@@ -28,7 +28,6 @@
 // build-dependencies: maperror
 // build-dependencies: mapend
 // build-dependencies: once
-// build-dependencies: sample
 // build-dependencies: scan
 // build-dependencies: skipduplicates
 // build-dependencies: skiperrors
@@ -50,6 +49,7 @@
 // build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
+// build-dependencies: sample
 // build-dependencies: sequentially
 // build-dependencies: skip
 // build-dependencies: skipuntil
