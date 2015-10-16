@@ -1,5 +1,4 @@
 // build-dependencies: awaiting
-// build-dependencies: boolean
 // build-dependencies: buffer
 // build-dependencies: bufferingthrottle
 // build-dependencies: bus
@@ -20,6 +19,7 @@
 // build-dependencies: when
 
 // ES6 pieces:
+// build-dependencies: boolean
 // build-dependencies: callback
 // build-dependencies: debounce
 // build-dependencies: decode
