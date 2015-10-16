@@ -15,7 +15,6 @@
 // build-dependencies: doaction
 // build-dependencies: doend
 // build-dependencies: doerror
-// build-dependencies: dolog
 // build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: flatmap
@@ -35,6 +34,7 @@
 // build-dependencies: when
 
 // ES6 pieces:
+// build-dependencies: dolog
 // build-dependencies: first
 // build-dependencies: fold
 // build-dependencies: fromevent
