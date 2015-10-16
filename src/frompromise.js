@@ -6,8 +6,7 @@ function valueAndEnd(value) {
   return [value, endEvent()];
 }
 
-Bacon.fromPromise = function(promise, abort, _eventTransformer) {
-  const eventTransformer = _eventTransformer || valueAndEnd;
+Bacon.fromPromise = function(promise, abort, eventTransformer=valueAndEnd) {
   return withDesc(new Bacon.Desc(Bacon, "fromPromise", [promise]), Bacon.fromBinder(function(handler) {
     const bound = promise.then(handler, (e) => handler(new Error(e)));
     if (bound && typeof bound.done === "function") {
