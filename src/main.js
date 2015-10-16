@@ -20,7 +20,6 @@
 // build-dependencies: once
 // build-dependencies: scan
 // build-dependencies: skipduplicates
-// build-dependencies: skiperrors
 // build-dependencies: when
 
 // ES6 pieces:
@@ -51,6 +50,7 @@
 // build-dependencies: sample
 // build-dependencies: sequentially
 // build-dependencies: skip
+// build-dependencies: skiperrors
 // build-dependencies: skipuntil
 // build-dependencies: skipwhile
 // build-dependencies: slidingwindow
