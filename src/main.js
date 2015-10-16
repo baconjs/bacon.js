@@ -8,7 +8,6 @@
 // build-dependencies: combinetemplate
 // build-dependencies: concat
 // build-dependencies: core
-// build-dependencies: diff
 // build-dependencies: flatmap
 // build-dependencies: flatmapconcat
 // build-dependencies: flatmaperror
@@ -25,6 +24,7 @@
 // build-dependencies: debounce
 // build-dependencies: decode
 // build-dependencies: delay
+// build-dependencies: diff
 // build-dependencies: doaction
 // build-dependencies: doend
 // build-dependencies: doerror
