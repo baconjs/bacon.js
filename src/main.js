@@ -12,7 +12,6 @@
 // build-dependencies: decode
 // build-dependencies: delay
 // build-dependencies: diff
-// build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: flatmap
 // build-dependencies: flatmapconcat
@@ -35,6 +34,7 @@
 // build-dependencies: doend
 // build-dependencies: doerror
 // build-dependencies: dolog
+// build-dependencies: endonerror
 // build-dependencies: first
 // build-dependencies: fold
 // build-dependencies: fromevent
