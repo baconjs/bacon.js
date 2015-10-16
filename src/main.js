@@ -16,7 +16,6 @@
 // build-dependencies: frombinder
 // build-dependencies: later
 // build-dependencies: maperror
-// build-dependencies: mapend
 // build-dependencies: once
 // build-dependencies: scan
 // build-dependencies: skipduplicates
@@ -44,6 +43,7 @@
 // build-dependencies: jquery
 // build-dependencies: last
 // build-dependencies: log
+// build-dependencies: mapend
 // build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
