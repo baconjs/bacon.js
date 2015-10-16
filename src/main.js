@@ -21,7 +21,6 @@
 // build-dependencies: scan
 // build-dependencies: skipduplicates
 // build-dependencies: skiperrors
-// build-dependencies: takeuntil
 // build-dependencies: when
 
 // ES6 pieces:
@@ -58,6 +57,7 @@
 // build-dependencies: spy
 // build-dependencies: startwith
 // build-dependencies: take
+// build-dependencies: takeuntil
 // build-dependencies: takewhile
 // build-dependencies: throttle
 // build-dependencies: topromise
