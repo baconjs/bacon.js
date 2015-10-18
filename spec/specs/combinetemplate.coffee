@@ -1,3 +1,5 @@
+# build-dependencies: slidingwindow
+
 describe "combineTemplate", ->
   describe "combines streams and properties according to a template object", ->
     expectPropertyEvents(
@@ -75,3 +77,21 @@ describe "combineTemplate", ->
       expect(x).to.deep.equal(value)
   it "toString", ->
     expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})")
+  it "uses original objects as values (bugfix #615)", ->
+    Foo = ->
+    Foo::do = ->
+
+    value = {foo1: new Foo(), foo2: Bacon.constant(new Foo())}
+    Bacon.combineTemplate(value).onValue ({foo1, foo2}) ->
+      expect(foo1).to.be.instanceof(Foo)
+      expect(foo1).to.have.property('do')
+      expect(foo2).to.be.instanceof(Foo)
+      expect(foo2).to.have.property('do')
+  it "does not mutate original template objects", ->
+    value = {key: fromArray([1, 2])}
+
+    Bacon
+      .combineTemplate(value)
+      .slidingWindow(2, 2)
+      .onValue ([first, second]) ->
+        expect(first).to.not.equal(second)
