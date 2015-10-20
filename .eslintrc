@@ -1,6 +1,9 @@
 {
   "ecmaFeatures": {
     "arrowFunctions": true,
+    "blockBindings": true,
+    "destructuring": true,
+    "defaultParams": true,
     "objectLiteralShorthandProperties": true,
     "restParams": true,
     "spread": true
