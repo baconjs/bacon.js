@@ -268,10 +268,11 @@
             for (key in obj) {
               if (!hasProp.call(obj, key)) continue;
               value = (function() {
+                var error1;
                 try {
                   return obj[key];
-                } catch (_error) {
-                  ex = _error;
+                } catch (error1) {
+                  ex = error1;
                   return ex;
                 }
               })();
@@ -1249,7 +1250,7 @@
     };
 
     Dispatcher.prototype.pushToSubscriptions = function(event) {
-      var e, j, len1, reply, sub, tmp;
+      var e, error1, j, len1, reply, sub, tmp;
       try {
         tmp = this.subscriptions;
         for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1260,8 +1261,8 @@
           }
         }
         return true;
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         this.pushing = false;
         this.queue = [];
         throw e;
@@ -1367,8 +1368,9 @@
       });
       disp = this.dispatcher;
       return new Property(new Bacon.Desc(this, "toProperty", [initValue_]), function(sink) {
-        var initSent, reply, sendInit, unsub;
+        var initSent, reply, sendInit, subbed, unsub;
         initSent = false;
+        subbed = false;
         unsub = nop;
         reply = Bacon.more;
         sendInit = function() {
@@ -1385,7 +1387,12 @@
         };
         unsub = disp.subscribe(function(event) {
           if (event.hasValue()) {
-            if (initSent && event.isInitial()) {
+            if (event.isInitial() && !subbed) {
+              initValue = new Some((function(_this) {
+                return function() {
+                  return event.value();
+                };
+              })(this));
               return Bacon.more;
             } else {
               if (!event.isInitial()) {
@@ -1404,6 +1411,7 @@
             }
           }
         });
+        subbed = true;
         sendInit();
         return unsub;
       });
@@ -2698,6 +2706,17 @@
     return withDesc(new Bacon.Desc(this, "doAction", [f]), this.withHandler(function(event) {
       if (event.hasValue()) {
         f(event.value());
+      }
+      return this.push(event);
+    }));
+  };
+
+  Bacon.Observable.prototype.doEnd = function() {
+    var f;
+    f = makeFunctionArgs(arguments);
+    return withDesc(new Bacon.Desc(this, "doEnd", [f]), this.withHandler(function(event) {
+      if (event.isEnd()) {
+        f();
       }
       return this.push(event);
     }));

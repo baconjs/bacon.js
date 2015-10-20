@@ -24,6 +24,7 @@ class EventStream extends Observable
     new Property((new Bacon.Desc(this, "toProperty", [initValue_])),
       (sink) ->
         initSent = false
+        subbed = false
         unsub = nop
         reply = Bacon.more
         sendInit = ->
@@ -34,9 +35,11 @@ class EventStream extends Observable
               if reply == Bacon.noMore
                 unsub()
                 unsub = nop
+
         unsub = disp.subscribe (event) ->
           if event.hasValue()
-            if (initSent and event.isInitial())
+            if (event.isInitial() && !subbed)
+              initValue = new Some(=> event.value())
               Bacon.more
             else
               sendInit() unless event.isInitial()
@@ -47,6 +50,7 @@ class EventStream extends Observable
             if event.isEnd()
               reply = sendInit()
             sink event unless reply == Bacon.noMore
+        subbed = true
         sendInit()
         unsub
     )

@@ -61,8 +61,8 @@ only. See instructions [here](#build).
 
 Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
 
-Visual Studio users can obtain version 0.7.16 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.16
+Visual Studio users can obtain version 0.7.76 via NuGet Packages
+    https://www.nuget.org/packages/Bacon.js/0.7.76
 
 """
 

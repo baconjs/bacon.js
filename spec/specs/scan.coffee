@@ -26,6 +26,10 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> Bacon.mergeAll(once(1), once(2)).scan(0, (a,b) -> a+b)
       [0,1,3], unstable)
+  describe "works with functions as values", ->
+    expectPropertyEvents(
+      -> series(1, [(-> 1), (-> 2)]).scan((-> 0), (a, b) -> b).map((f) -> f())
+    [0, 1, 2])
   describe "calls accumulator function once per value", ->
     describe "(simple case)", ->
       count = 0

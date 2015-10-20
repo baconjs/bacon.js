@@ -1,6 +1,6 @@
 {
   "name": "bacon",
-  "version": "0.7.75",
+  "version": "0.7.77",
   "main": "dist/Bacon.js",
   "repo": "raimohanska/bacon.js",
   "scripts": ["dist/Bacon.js"]

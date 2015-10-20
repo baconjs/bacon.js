@@ -1,3 +1,7 @@
+## 0.7.76
+
+- Add `doEnd` to complement `doAction` and `doError`
+
 ## 0.7.75
 
 - Bacon.fromEvent works even if there's no "unbind" method available (#638)

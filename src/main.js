@@ -13,6 +13,7 @@
 // build-dependencies: delay
 // build-dependencies: diff
 // build-dependencies: doaction
+// build-dependencies: doend
 // build-dependencies: doerror
 // build-dependencies: dolog
 // build-dependencies: endonerror
