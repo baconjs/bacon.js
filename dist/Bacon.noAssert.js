@@ -38,7 +38,7 @@
         return xs instanceof Array;
     };
     isObservable = function (x) {
-        return x instanceof Observable;
+        return x != null ? x._isObservable : void 0;
     };
     _ = {
         indexOf: Array.prototype.indexOf ? function (xs, x) {
@@ -183,7 +183,7 @@
             var value;
             value = None;
             return function () {
-                if (value === None) {
+                if (value != null ? value._isNone : void 0) {
                     value = f();
                     f = void 0;
                 }
@@ -219,11 +219,10 @@
                             if (!hasProp.call(obj, key))
                                 continue;
                             value = function () {
-                                var error1;
                                 try {
                                     return obj[key];
-                                } catch (error1) {
-                                    ex = error1;
+                                } catch (_error) {
+                                    ex = _error;
                                     return ex;
                                 }
                             }();
@@ -372,6 +371,7 @@
         };
     }();
     Source = function () {
+        Source.prototype._isSource = true;
         function Source(obs1, sync, lazy) {
             this.obs = obs1;
             this.sync = sync;
@@ -450,22 +450,23 @@
         return BufferingSource;
     }(Source);
     Source.isTrigger = function (s) {
-        if (s instanceof Source) {
+        if (s != null ? s._isSource : void 0) {
             return s.sync;
         } else {
-            return s instanceof EventStream;
+            return s != null ? s._isEventStream : void 0;
         }
     };
     Source.fromObservable = function (s) {
-        if (s instanceof Source) {
+        if (s != null ? s._isSource : void 0) {
             return s;
-        } else if (s instanceof Property) {
+        } else if (s != null ? s._isProperty : void 0) {
             return new Source(s, false);
         } else {
             return new ConsumingSource(s, true);
         }
     };
     Desc = function () {
+        Desc.prototype._isDesc = true;
         function Desc(context1, method1, args1) {
             this.context = context1;
             this.method = method1;
@@ -480,9 +481,9 @@
         return Desc;
     }();
     describe = function () {
-        var args, context, method;
+        var args, context, method, ref;
         context = arguments[0], method = arguments[1], args = 3 <= arguments.length ? slice.call(arguments, 2) : [];
-        if ((context || method) instanceof Desc) {
+        if ((ref = context || method) != null ? ref._isDesc : void 0) {
             return context || method;
         } else {
             return new Desc(context, method, args);
@@ -497,7 +498,7 @@
             return _.flatMap(findDeps, x);
         } else if (isObservable(x)) {
             return [x];
-        } else if (x instanceof Source) {
+        } else if (x != null ? x._isSource : void 0) {
             return [x.obs];
         } else {
             return [];
@@ -584,7 +585,7 @@
     };
     convertArgsToFunction = function (obs, f, args, method) {
         var sampled;
-        if (f instanceof Property) {
+        if (f != null ? f._isProperty : void 0) {
             sampled = f.sampledBy(obs, function (p, s) {
                 return [
                     p,
@@ -622,6 +623,7 @@
         return f.slice(1);
     };
     Some = function () {
+        Some.prototype._isSome = true;
         function Some(value1) {
             this.value = value1;
         }
@@ -657,6 +659,7 @@
         return Some;
     }();
     None = {
+        _isNone: true,
         getOrElse: function (value) {
             return value;
         },
@@ -680,16 +683,17 @@
         }
     };
     toOption = function (v) {
-        if (v instanceof Some || v === None) {
+        if ((v != null ? v._isSome : void 0) || (v != null ? v._isNone : void 0)) {
             return v;
         } else {
             return new Some(v);
         }
     };
-    Bacon.noMore = ['<no-more>'];
-    Bacon.more = ['<more>'];
+    Bacon.noMore = '<no-more>';
+    Bacon.more = '<more>';
     eventIdCounter = 0;
     Event = function () {
+        Event.prototype._isEvent = true;
         function Event() {
             this.id = ++eventIdCounter;
         }
@@ -724,12 +728,13 @@
     }();
     Next = function (superClass) {
         extend(Next, superClass);
+        Next.prototype._isNext = true;
         function Next(valueF, eager) {
             if (!(this instanceof Next)) {
                 return new Next(valueF, eager);
             }
             Next.__super__.constructor.call(this);
-            if (!eager && _.isFunction(valueF) || valueF instanceof Next) {
+            if (!eager && _.isFunction(valueF) || (valueF != null ? valueF._isNext : void 0)) {
                 this.valueF = valueF;
                 this.valueInternal = void 0;
             } else {
@@ -744,7 +749,8 @@
             return true;
         };
         Next.prototype.value = function () {
-            if (this.valueF instanceof Next) {
+            var ref;
+            if ((ref = this.valueF) != null ? ref._isNext : void 0) {
                 this.valueInternal = this.valueF.value();
                 this.valueF = void 0;
             } else if (this.valueF) {
@@ -783,6 +789,7 @@
     }(Event);
     Initial = function (superClass) {
         extend(Initial, superClass);
+        Initial.prototype._isInitial = true;
         function Initial(valueF, eager) {
             if (!(this instanceof Initial)) {
                 return new Initial(valueF, eager);
@@ -861,7 +868,7 @@
         return new End();
     };
     toEvent = function (x) {
-        if (x instanceof Event) {
+        if (x != null ? x._isEvent : void 0) {
             return x;
         } else {
             return nextEvent(x);
@@ -871,6 +878,7 @@
     registerObs = function () {
     };
     Observable = function () {
+        Observable.prototype._isObservable = true;
         function Observable(desc1) {
             this.desc = desc1;
             this.id = ++idCounter;
@@ -1040,7 +1048,7 @@
             return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
         };
         Dispatcher.prototype.pushToSubscriptions = function (event) {
-            var e, error1, j, len1, reply, sub, tmp;
+            var e, j, len1, reply, sub, tmp;
             try {
                 tmp = this.subscriptions;
                 for (j = 0, len1 = tmp.length; j < len1; j++) {
@@ -1051,8 +1059,8 @@
                     }
                 }
                 return true;
-            } catch (error1) {
-                e = error1;
+            } catch (_error) {
+                e = _error;
                 this.pushing = false;
                 this.queue = [];
                 throw e;
@@ -1123,6 +1131,7 @@
     Bacon.Dispatcher = Dispatcher;
     EventStream = function (superClass) {
         extend(EventStream, superClass);
+        EventStream.prototype._isEventStream = true;
         function EventStream(desc, subscribe, handler) {
             if (!(this instanceof EventStream)) {
                 return new EventStream(desc, subscribe, handler);
@@ -1509,6 +1518,7 @@
     }(Dispatcher);
     Property = function (superClass) {
         extend(Property, superClass);
+        Property.prototype._isProperty = true;
         function Property(desc, subscribe, handler) {
             Property.__super__.constructor.call(this, desc);
             this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
@@ -1575,10 +1585,10 @@
                 }
             };
             unbinder = binder(function () {
-                var args, event, j, len1, reply, value;
+                var args, event, j, len1, ref, reply, value;
                 args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
                 value = eventTransformer.apply(this, args);
-                if (!(isArray(value) && _.last(value) instanceof Event)) {
+                if (!(isArray(value) && ((ref = _.last(value)) != null ? ref._isEvent : void 0))) {
                     value = [value];
                 }
                 reply = Bacon.more;
@@ -1711,7 +1721,7 @@
                     prev,
                     [event]
                 ];
-            } else if (event.isInitial() || prev === None || !isEqual(prev.get(), event.value())) {
+            } else if (event.isInitial() || (prev != null ? prev._isNone : void 0) || !isEqual(prev.get(), event.value())) {
                 return [
                     new Some(event.value()),
                     [event]
@@ -1904,7 +1914,7 @@
                             checkEnd(unsubMe);
                             return Bacon.noMore;
                         } else {
-                            if (event instanceof Initial) {
+                            if (event != null ? event._isInitial : void 0) {
                                 event = event.toNext();
                             }
                             reply = sink(event);
@@ -2596,7 +2606,7 @@
             thisSource,
             samplerSource
         ], combinator);
-        var result = sampler instanceof Property ? stream.toProperty() : stream;
+        var result = sampler._isProperty ? stream.toProperty() : stream;
         return withDesc(new Bacon.Desc(this, 'sampledBy', [
             sampler,
             combinator
@@ -2606,7 +2616,7 @@
         return withDesc(new Bacon.Desc(this, 'sample', [interval]), this.sampledBy(Bacon.interval(interval, {})));
     };
     Bacon.Observable.prototype.map = function (p) {
-        if (p instanceof Property) {
+        if (p && p._isProperty) {
             return p.sampledBy(this, former);
         } else {
             for (var _len6 = arguments.length, args = Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {

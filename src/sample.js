@@ -19,7 +19,7 @@ Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
   var thisSource = new Source(this, false, lazy);
   var samplerSource = new Source(sampler, true, lazy);
   var stream = Bacon.when([thisSource, samplerSource], combinator);
-  var result = sampler instanceof Property ? stream.toProperty() : stream;
+  var result = sampler._isProperty ? stream.toProperty() : stream;
   return withDesc(new Bacon.Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 
@@ -30,7 +30,7 @@ Bacon.Property.prototype.sample = function(interval) {
 };
 
 Bacon.Observable.prototype.map = function(p, ...args) {
-  if (p instanceof Property) {
+  if (p && p._isProperty) {
     return p.sampledBy(this, former);
   } else {
     return convertArgsToFunction(this, p, args, function(f) {
