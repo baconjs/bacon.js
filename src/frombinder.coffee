@@ -16,7 +16,7 @@ Bacon.fromBinder = (binder, eventTransformer = _.id) ->
           shouldUnbind = true
     unbinder = binder (args...) ->
       value = eventTransformer.apply(this, args)
-      unless isArray(value) and _.last(value) instanceof Event
+      unless isArray(value) and _.last(value)?._isEvent
         value = [value]
       reply = Bacon.more
       for event in value

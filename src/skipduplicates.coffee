@@ -5,7 +5,7 @@ Bacon.Observable :: skipDuplicates = (isEqual = (a, b) -> a == b) ->
     @withStateMachine None, (prev, event) ->
       unless event.hasValue()
         [prev, [event]]
-      else if event.isInitial() or prev == None or !isEqual(prev.get(), event.value())
+      else if event.isInitial() or prev?._isNone or !isEqual(prev.get(), event.value())
         [new Some(event.value()), [event]]
       else
         [prev, []])
