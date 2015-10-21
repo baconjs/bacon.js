@@ -67,8 +67,12 @@ var main = function(options){
   var babelOptions = {
     comments: false,
     whitelist: [
+      "es3.memberExpressionLiterals",
+      "es3.propertyLiterals",
       "es6.arrowFunctions",
-      "es6.properties.shorthand",
+      "es6.blockScoping",
+      "es6.constants",
+      "es6.destructuring",
       "es6.parameters",
       "es6.spread"
     ]

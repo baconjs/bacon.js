@@ -1,7 +1,6 @@
 // build-dependencies: filter, map, once, concat, observable
 
-Bacon.Observable.prototype.groupBy = function(keyF, limitF) {
-  if (limitF == null) limitF = Bacon._.id;
+Bacon.Observable.prototype.groupBy = function(keyF, limitF = Bacon._.id) {
   var streams = {};
   var src = this;
   return src
