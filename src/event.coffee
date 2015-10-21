@@ -3,6 +3,8 @@
 eventIdCounter = 0
 
 class Event
+  _isEvent: true
+
   constructor: ->
     @id = (++eventIdCounter)
   isEvent: -> true
@@ -16,11 +18,13 @@ class Event
   log: -> @toString()
 
 class Next extends Event
+  _isNext: true
+
   constructor: (valueF, eager) ->
     if this not instanceof Next
       return new Next(valueF, eager)
     super()
-    if !eager && _.isFunction(valueF) || valueF instanceof Next
+    if !eager && _.isFunction(valueF) || valueF?._isNext
       @valueF = valueF
       @valueInternal = undefined
     else
@@ -29,7 +33,7 @@ class Next extends Event
   isNext: -> true
   hasValue: -> true
   value: ->
-    if @valueF instanceof Next
+    if @valueF?._isNext
       @valueInternal = @valueF.value()
       @valueF = undefined
     else if @valueF
@@ -49,6 +53,8 @@ class Next extends Event
   log: -> @value()
 
 class Initial extends Next
+  _isInitial: true
+
   constructor: (valueF, eager) ->
     if this not instanceof Initial
       return new Initial(valueF, eager)
@@ -87,5 +93,4 @@ Bacon.Error = Error
 initialEvent = (value) -> new Initial(value, true)
 nextEvent = (value) -> new Next(value, true)
 endEvent = -> new End()
-# instanceof more performant than x.?isEvent?()
-toEvent = (x) -> if x instanceof Event then x else nextEvent x
+toEvent = (x) -> if x?._isEvent then x else nextEvent x

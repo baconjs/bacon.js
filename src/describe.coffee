@@ -1,6 +1,8 @@
 # build-dependencies: _, source
 
 class Desc
+  _isDesc: true
+
   constructor: (@context, @method, @args) ->
   deps: ->
     @cached or= findDeps([@context].concat(@args))
@@ -8,7 +10,7 @@ class Desc
     _.toString(@context) + "." + _.toString(@method) + "(" + _.map(_.toString, @args) + ")"
 
 describe = (context, method, args...) ->
-  if (context or method) instanceof Desc
+  if (context or method)?._isDesc
     context or method
   else
     new Desc(context, method, args)
@@ -22,7 +24,7 @@ findDeps = (x) ->
     _.flatMap findDeps, x
   else if isObservable(x)
     [x]
-  else if x instanceof Source
+  else if x?._isSource
     [x.obs]
   else
     []

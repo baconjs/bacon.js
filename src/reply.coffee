@@ -1,2 +1,2 @@
-Bacon.noMore = ["<no-more>"]
-Bacon.more = ["<more>"]
+Bacon.noMore = "<no-more>"
+Bacon.more = "<more>"

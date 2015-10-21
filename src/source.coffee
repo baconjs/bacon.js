@@ -1,6 +1,8 @@
 # build-dependencies: _
 
 class Source
+  _isSource: true
+
   constructor: (@obs, @sync, @lazy = false) ->
     @queue = []
   subscribe: (sink) -> @obs.dispatcher.subscribe(sink)
@@ -34,15 +36,15 @@ class BufferingSource extends Source
   hasAtLeast: -> true
 
 Source.isTrigger = (s) ->
-  if s instanceof Source
+  if s?._isSource
     s.sync
   else
-    s instanceof EventStream
+    s?._isEventStream
 
 Source.fromObservable = (s) ->
-  if s instanceof Source
+  if s?._isSource
     s
-  else if s instanceof Property
+  else if s?._isProperty
     new Source(s, false)
   else
     new ConsumingSource(s, true)
