@@ -2,7 +2,6 @@
 // build-dependencies: buffer
 // build-dependencies: bufferingthrottle
 // build-dependencies: combine
-// build-dependencies: concat
 // build-dependencies: core
 // build-dependencies: frombinder
 // build-dependencies: once
@@ -14,6 +13,7 @@
 // build-dependencies: bus
 // build-dependencies: callback
 // build-dependencies: combinetemplate
+// build-dependencies: concat
 // build-dependencies: debounce
 // build-dependencies: decode
 // build-dependencies: delay
