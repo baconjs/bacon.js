@@ -1,9 +1,6 @@
 // build-dependencies: _
 // build-dependencies: updatebarrier
 
-// build-dependencies: _
-// build-dependencies: updatebarrier
-
 function Dispatcher(_subscribe, _handleEvent) {
   this._subscribe = _subscribe;
   this._handleEvent = _handleEvent;
