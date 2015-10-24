@@ -4,7 +4,6 @@
 // build-dependencies: combine
 // build-dependencies: concat
 // build-dependencies: core
-// build-dependencies: flatmap
 // build-dependencies: frombinder
 // build-dependencies: once
 // build-dependencies: skipduplicates
@@ -26,6 +25,7 @@
 // build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: first
+// build-dependencies: flatmap
 // build-dependencies: flatmapconcat
 // build-dependencies: flatmaperror
 // build-dependencies: flatmaplatest
