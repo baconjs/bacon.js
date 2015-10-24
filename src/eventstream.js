@@ -20,8 +20,8 @@ function EventStream(desc, subscribe, handler) {
   registerObs(this);
 }
 
-_.extendClass(EventStream, Observable);
-_.extend(EventStream.prototype, {
+inherit(EventStream, Observable);
+extend(EventStream.prototype, {
   _isEventStream: true,
 
   toProperty(initValue_) {

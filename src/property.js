@@ -16,8 +16,8 @@ function PropertyDispatcher(property, subscribe, handleEvent) {
   this.propertyEnded = false;
 }
 
-_.extendClass(PropertyDispatcher, Dispatcher);
-_.extend(PropertyDispatcher.prototype, {
+inherit(PropertyDispatcher, Dispatcher);
+extend(PropertyDispatcher.prototype, {
   push(event) {
     if (event.isEnd()) {
       this.propertyEnded = true;
@@ -84,8 +84,8 @@ function Property(desc, subscribe, handler) {
   registerObs(this);
 }
 
-_.extendClass(Property, Observable);
-_.extend(Property.prototype, {
+inherit(Property, Observable);
+extend(Property.prototype, {
   _isProperty: true,
 
   changes() {

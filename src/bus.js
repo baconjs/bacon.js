@@ -15,8 +15,8 @@ function Bus() {
   EventStream.call(this, new Bacon.Desc(Bacon, "Bus", []), this.subscribeAll);
 }
 
-_.extendClass(Bus, EventStream);
-_.extend(Bus.prototype, {
+inherit(Bus, EventStream);
+extend(Bus.prototype, {
   unsubAll() {
     var iterable = this.subscriptions;
     for (var i = 0, sub; i < iterable.length; i++) {

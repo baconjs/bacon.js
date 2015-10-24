@@ -6,7 +6,7 @@ function Desc(context, method, args) {
   this.args = args;
 }
 
-_.extend(Desc.prototype, {
+extend(Desc.prototype, {
   _isDesc: true,
   deps() {
     if (!this.cached) {

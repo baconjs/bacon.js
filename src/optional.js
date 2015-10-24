@@ -2,7 +2,7 @@ function Some(value) {
   this.value = value;
 }
 
-_.extend(Some.prototype, {
+extend(Some.prototype, {
   _isSome: true,
   getOrElse() { return this.value; },
   get() { return this.value; },

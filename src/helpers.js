@@ -41,3 +41,26 @@ var assertString = function(x) {
     throw new Exception("not a string : " + x);
   }
 };
+
+var extend = function(target) {
+  var length = arguments.length;
+  for (var i = 1; 1 < length ? i < length : i > length; 1 < length ? i++ : i--) {
+    for (var prop in arguments[i]) {
+      target[prop] = arguments[i][prop];
+    }
+  }
+  return target;
+};
+
+var inherit = function(child, parent) {
+  var hasProp = {}.hasOwnProperty;
+  var ctor = function() {};
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor();
+  for (var key in parent) {
+    if (hasProp.call(parent, key)) {
+      child[key] = parent[key];
+    }
+  }
+  return child;
+};

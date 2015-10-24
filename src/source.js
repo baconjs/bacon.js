@@ -7,7 +7,7 @@ function Source(obs, sync, lazy = false) {
   this.queue = [];
 }
 
-_.extend(Source.prototype, {
+extend(Source.prototype, {
   _isSource: true,
 
   subscribe(sink) { return this.obs.dispatcher.subscribe(sink); },
@@ -37,8 +37,8 @@ function ConsumingSource() {
   Source.apply(this, arguments);
 }
 
-_.extendClass(ConsumingSource, Source);
-_.extend(ConsumingSource.prototype, {
+inherit(ConsumingSource, Source);
+extend(ConsumingSource.prototype, {
   consume() { return this.queue.shift(); },
   push(x) { return this.queue.push(x); },
   mayHave(c) { return !this.ended || this.queue.length >= c; },
@@ -50,8 +50,8 @@ function BufferingSource(obs) {
   Source.call(this, obs, true);
 }
 
-_.extendClass(BufferingSource, Source);
-_.extend(BufferingSource.prototype, {
+inherit(BufferingSource, Source);
+extend(BufferingSource.prototype, {
   consume() {
     const values = this.queue;
     this.queue = [];

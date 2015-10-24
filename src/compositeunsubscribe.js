@@ -9,7 +9,7 @@ function CompositeUnsubscribe(ss = []) {
   }
 }
 
-_.extend(CompositeUnsubscribe.prototype, {
+extend(CompositeUnsubscribe.prototype, {
   add(subscription) {
     if (this.unsubscribed) { return; }
     var ended = false;

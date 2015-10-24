@@ -14,7 +14,7 @@ function Observable(desc) {
   this.initialDesc = this.desc;
 }
 
-_.extend(Observable.prototype, {
+extend(Observable.prototype, {
   _isObservable: true,
 
   subscribe(sink) {

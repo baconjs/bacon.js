@@ -33,7 +33,7 @@ function Next(valueF, eager) {
   }
 }
 
-_.extendClass(Next, Event);
+inherit(Next, Event);
 
 Next.prototype.isNext = function() { return true; };
 Next.prototype.hasValue = function() { return true; };
@@ -78,7 +78,7 @@ function Initial(valueF, eager) {
   Next.call(this, valueF, eager);
 }
 
-_.extendClass(Initial, Next);
+inherit(Initial, Next);
 Initial.prototype._isInitial = true;
 Initial.prototype.isInitial = function() { return true; };
 Initial.prototype.isNext = function() { return false; };
@@ -92,7 +92,7 @@ function End() {
   Event.call(this);
 }
 
-_.extendClass(End, Event);
+inherit(End, Event);
 End.prototype.isEnd = function() { return true; };
 End.prototype.fmap = function() { return this; };
 End.prototype.apply = function() { return this; };
@@ -107,7 +107,7 @@ function Error(error) {
   Event.call(this);
 }
 
-_.extendClass(Error, Event);
+inherit(Error, Event);
 Error.prototype.isError = function() { return true; };
 Error.prototype.fmap = function() { return this; };
 Error.prototype.apply = function() { return this; };
