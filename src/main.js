@@ -8,7 +8,6 @@
 // build-dependencies: flatmapconcat
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: frombinder
-// build-dependencies: later
 // build-dependencies: once
 // build-dependencies: skipduplicates
 // build-dependencies: when
@@ -40,6 +39,7 @@
 // build-dependencies: interval
 // build-dependencies: jquery
 // build-dependencies: last
+// build-dependencies: later
 // build-dependencies: log
 // build-dependencies: mapend
 // build-dependencies: maperror
