@@ -4,7 +4,6 @@
 // build-dependencies: reply
 // build-dependencies: observable
 // build-dependencies: eventstream
-// build-dependencies: propertydispatcher
 // build-dependencies: property
 // build-dependencies: frombinder
 // build-dependencies: describe
