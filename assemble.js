@@ -60,6 +60,9 @@ var main = function(options){
       "es6.destructuring",
       "es6.parameters",
       "es6.spread"
+    ],
+    loose: [
+      "es6.destructuring"
     ]
   };
 

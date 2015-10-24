@@ -1,8 +1,6 @@
 (function() {
 var _slice = Array.prototype.slice;
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
-
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 var Bacon = {
@@ -665,16 +663,12 @@ var convertArgsToFunction = function (obs, f, args, method) {
       return [p, s];
     });
     return method.call(sampled, function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 2);
-
+      var p = _ref[0];
+      var s = _ref[1];
+      return p;
+    }).map(function (_ref2) {
       var p = _ref2[0];
       var s = _ref2[1];
-      return p;
-    }).map(function (_ref3) {
-      var _ref32 = _slicedToArray(_ref3, 2);
-
-      var p = _ref32[0];
-      var s = _ref32[1];
       return s;
     });
   } else {
@@ -1802,10 +1796,8 @@ Bacon.onValues = function () {
 Bacon.combineWith = function () {
   var _argumentsToObservablesAndFunction = argumentsToObservablesAndFunction(arguments);
 
-  var _argumentsToObservablesAndFunction2 = _slicedToArray(_argumentsToObservablesAndFunction, 2);
-
-  var streams = _argumentsToObservablesAndFunction2[0];
-  var f = _argumentsToObservablesAndFunction2[1];
+  var streams = _argumentsToObservablesAndFunction[0];
+  var f = _argumentsToObservablesAndFunction[1];
 
   var desc = new Bacon.Desc(Bacon, "combineWith", [f].concat(_toConsumableArray(streams)));
   return withDesc(desc, Bacon.combineAsArray(streams).map(function (values) {
@@ -1826,11 +1818,8 @@ Bacon.Observable.prototype.withStateMachine = function (initState, f) {
   var desc = new Bacon.Desc(this, "withStateMachine", [initState, f]);
   return withDesc(desc, this.withHandler(function (event) {
     var fromF = f(state, event);
-
-    var _fromF = _slicedToArray(fromF, 2);
-
-    var newState = _fromF[0];
-    var outputs = _fromF[1];
+    var newState = fromF[0];
+    var outputs = fromF[1];
 
     state = newState;
     var reply = Bacon.more;
@@ -2454,10 +2443,8 @@ Bacon.EventStream.prototype.takeUntil = function (stopper) {
     } else {
       var _event$value = event.value();
 
-      var _event$value2 = _slicedToArray(_event$value, 2);
-
-      var data = _event$value2[0];
-      var stopper = _event$value2[1];
+      var data = _event$value[0];
+      var stopper = _event$value[1];
 
       if (stopper.length) {
         return this.push(endEvent());
@@ -2791,10 +2778,8 @@ var findHandlerMethods = function (target) {
 Bacon.fromEventTarget = function (target, eventName, eventTransformer) {
   var _findHandlerMethods = findHandlerMethods(target);
 
-  var _findHandlerMethods2 = _slicedToArray(_findHandlerMethods, 2);
-
-  var sub = _findHandlerMethods2[0];
-  var unsub = _findHandlerMethods2[1];
+  var sub = _findHandlerMethods[0];
+  var unsub = _findHandlerMethods[1];
 
   var desc = new Bacon.Desc(Bacon, "fromEvent", [target, eventName]);
   return withDesc(desc, Bacon.fromBinder(function (handler) {
