@@ -14,7 +14,6 @@
 // build-dependencies: later
 // build-dependencies: maperror
 // build-dependencies: once
-// build-dependencies: scan
 // build-dependencies: skipduplicates
 // build-dependencies: when
 
@@ -47,6 +46,7 @@
 // build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
+// build-dependencies: scan
 // build-dependencies: sample
 // build-dependencies: sequentially
 // build-dependencies: skip
