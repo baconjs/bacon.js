@@ -1,5 +1,4 @@
 // build-dependencies: awaiting
-// build-dependencies: combine
 // build-dependencies: core
 // build-dependencies: frombinder
 // build-dependencies: when
@@ -10,6 +9,7 @@
 // build-dependencies: bufferingthrottle
 // build-dependencies: bus
 // build-dependencies: callback
+// build-dependencies: combine
 // build-dependencies: combinetemplate
 // build-dependencies: concat
 // build-dependencies: debounce
