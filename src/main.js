@@ -1,7 +1,6 @@
 // build-dependencies: awaiting
 // build-dependencies: buffer
 // build-dependencies: bufferingthrottle
-// build-dependencies: bus
 // build-dependencies: combine
 // build-dependencies: concat
 // build-dependencies: core
@@ -16,6 +15,7 @@
 
 // ES6 pieces:
 // build-dependencies: boolean
+// build-dependencies: bus
 // build-dependencies: callback
 // build-dependencies: combinetemplate
 // build-dependencies: debounce

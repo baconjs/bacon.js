@@ -60,6 +60,18 @@ _ = {
         value = f()
         f = undefined
       value
+  extend: (target) ->
+    length = arguments.length
+    for i in [1...length]
+      target[prop] = arguments[i][prop] for prop of arguments[i]
+    target
+  extendClass: (child, parent) ->
+    ctor = ->
+    ctor.prototype = parent.prototype
+    child.prototype = new ctor()
+    child
+  bind: (fn, me) ->
+    -> fn.apply(me, arguments)
   isFunction: (f) -> typeof f == "function"
   toString: (obj) ->
     try
