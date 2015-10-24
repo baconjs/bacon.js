@@ -8,7 +8,7 @@
 // build-dependencies: core
 // build-dependencies: flatmap
 // build-dependencies: flatmapconcat
-// build-dependencies: flatmaperror
+
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: frombinder
 // build-dependencies: later
@@ -31,6 +31,7 @@
 // build-dependencies: endonerror
 // build-dependencies: errors
 // build-dependencies: first
+// build-dependencies: flatmaperror
 // build-dependencies: flatmaplatest
 // build-dependencies: fold
 // build-dependencies: fromevent
