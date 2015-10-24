@@ -1,5 +1,5 @@
 # build-dependencies: flatmap
 
-Bacon.Observable :: flatMapWithConcurrencyLimit = (limit, args...) ->
-  withDesc(new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit, args...]),
-    flatMap_ this, makeSpawner(args), false, limit)
+Bacon.Observable.prototype.flatMapWithConcurrencyLimit = (limit, args...) ->
+  desc = new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit, args...])
+  withDesc(desc, flatMap_ this, makeSpawner(args), false, limit)

@@ -5,7 +5,6 @@
 // build-dependencies: concat
 // build-dependencies: core
 // build-dependencies: flatmap
-// build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: frombinder
 // build-dependencies: once
 // build-dependencies: skipduplicates
@@ -30,6 +29,7 @@
 // build-dependencies: flatmapconcat
 // build-dependencies: flatmaperror
 // build-dependencies: flatmaplatest
+// build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: fold
 // build-dependencies: fromevent
 // build-dependencies: frompoll
