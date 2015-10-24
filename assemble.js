@@ -71,6 +71,7 @@ var main = function(options){
       "es3.propertyLiterals",
       "es6.arrowFunctions",
       "es6.blockScoping",
+      "es6.properties.shorthand",
       "es6.constants",
       "es6.destructuring",
       "es6.parameters",
