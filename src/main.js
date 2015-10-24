@@ -4,7 +4,6 @@
 // build-dependencies: combine
 // build-dependencies: core
 // build-dependencies: frombinder
-// build-dependencies: once
 // build-dependencies: skipduplicates
 // build-dependencies: when
 
@@ -44,6 +43,7 @@
 // build-dependencies: mapend
 // build-dependencies: maperror
 // build-dependencies: merge
+// build-dependencies: once
 // build-dependencies: repeatedly
 // build-dependencies: retry
 // build-dependencies: scan
