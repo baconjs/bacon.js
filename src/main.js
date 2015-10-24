@@ -1,6 +1,3 @@
-// build-dependencies: when
-
-// ES6 pieces:
 // build-dependencies: awaiting
 // build-dependencies: boolean
 // build-dependencies: buffer
@@ -63,4 +60,5 @@
 // build-dependencies: topromise
 // build-dependencies: try
 // build-dependencies: update
+// build-dependencies: when
 // build-dependencies: zip
