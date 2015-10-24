@@ -2,7 +2,6 @@
 // build-dependencies: combine
 // build-dependencies: core
 // build-dependencies: frombinder
-// build-dependencies: skipduplicates
 // build-dependencies: when
 
 // ES6 pieces:
@@ -50,6 +49,7 @@
 // build-dependencies: sample
 // build-dependencies: sequentially
 // build-dependencies: skip
+// build-dependencies: skipduplicates
 // build-dependencies: skiperrors
 // build-dependencies: skipuntil
 // build-dependencies: skipwhile
