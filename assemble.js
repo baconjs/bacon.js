@@ -12,7 +12,6 @@ var path = require("path");
 var Deps = require("./build-deps");
 var babel = require("babel");
 var assert = require("assert");
-var coffee = require("coffee-script");
 var uglifyjs = require("uglify-js");
 var esprima = require("esprima");
 var estraverse = require("estraverse");
@@ -26,8 +25,8 @@ var defaultNoAssert = path.join(__dirname, "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "dist", "Bacon.min.js");
 
 // Boilerplate: *header* and *footer*
-var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.coffee"), "utf-8");
-var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.coffee"), "utf-8");
+var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.js"), "utf-8");
+var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.js"), "utf-8");
 // 16 spaces
 var padding = "                ";
 
@@ -48,22 +47,7 @@ var main = function(options){
     });
   }
 
-  var [coffeePieces, esPieces] = Deps.splitPieces(pieces);
-  if (options.verbose) {
-    console.info(esPieces.length + " of " + (esPieces.length + coffeePieces.length) + " pieces are JavaScript");
-  }
-
-  // Coffee pieces
-  var coffeeOutput = [
-    header,
-    _.pluck(coffeePieces, "contents").join("\n"),
-    footer,
-  ].join("\n");
-  var coffeeTranspiled = coffee.compile(coffeeOutput);
-
-  // ES6 pieces
-
-  // let's be conservative with options:
+  // let's be conservative with Babel options:
   var babelOptions = {
     comments: false,
     whitelist: [
@@ -79,15 +63,9 @@ var main = function(options){
     ]
   };
 
-  var esOutput = _.pluck(esPieces, "contents").join("\n");
+  var esOutput = header + _.pluck(pieces, "contents").join("\n") + footer;
   var esTranspiled = babel.transform(esOutput, babelOptions);
-
-  // Combining
-  var whereToInsert = "if ((typeof define !== \"undefined\" && define !== null) && (define.amd != null))";
-
-  assert(coffeeTranspiled.indexOf(whereToInsert) !== -1, "whereToInsert needle should be in coffee part");
-  var esInsert = esTranspiled.code + "\n\n" + whereToInsert;
-  var output = coffeeTranspiled.replace(whereToInsert, esInsert);
+  var output = esTranspiled.code;
 
   // Stripping asserts
   function notAssertStatement(node) {
