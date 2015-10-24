@@ -66,9 +66,12 @@ _ = {
       target[prop] = arguments[i][prop] for prop of arguments[i]
     target
   extendClass: (child, parent) ->
+    hasProp = {}.hasOwnProperty
     ctor = ->
     ctor.prototype = parent.prototype
     child.prototype = new ctor()
+    for key of parent
+      child[key] = parent[key] if (hasProp.call(parent, key))
     child
   bind: (fn, me) ->
     -> fn.apply(me, arguments)
