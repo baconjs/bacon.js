@@ -8,11 +8,9 @@
 // build-dependencies: core
 // build-dependencies: flatmap
 // build-dependencies: flatmapconcat
-
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: frombinder
 // build-dependencies: later
-// build-dependencies: maperror
 // build-dependencies: once
 // build-dependencies: skipduplicates
 // build-dependencies: when
@@ -44,6 +42,7 @@
 // build-dependencies: last
 // build-dependencies: log
 // build-dependencies: mapend
+// build-dependencies: maperror
 // build-dependencies: merge
 // build-dependencies: repeatedly
 // build-dependencies: retry
