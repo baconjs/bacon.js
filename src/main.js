@@ -1,9 +1,7 @@
-// build-dependencies: awaiting
-// build-dependencies: core
-// build-dependencies: frombinder
 // build-dependencies: when
 
 // ES6 pieces:
+// build-dependencies: awaiting
 // build-dependencies: boolean
 // build-dependencies: buffer
 // build-dependencies: bufferingthrottle
@@ -12,6 +10,7 @@
 // build-dependencies: combine
 // build-dependencies: combinetemplate
 // build-dependencies: concat
+// build-dependencies: core
 // build-dependencies: debounce
 // build-dependencies: decode
 // build-dependencies: delay
@@ -29,6 +28,7 @@
 // build-dependencies: flatmaplatest
 // build-dependencies: flatmapwithconcurrencylimit
 // build-dependencies: fold
+// build-dependencies: frombinder
 // build-dependencies: fromevent
 // build-dependencies: frompoll
 // build-dependencies: frompromise
