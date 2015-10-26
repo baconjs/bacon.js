@@ -14,7 +14,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '<version>';
+    Bacon.version = '0.7.78';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2796,7 +2796,7 @@
             return function () {
                 return _this11.off(eventName, selector, handler);
             };
-        }), eventTransformer);
+        }, eventTransformer));
     };
     if (typeof jQuery !== 'undefined' && jQuery) {
         jQuery.fn.asEventStream = Bacon.$.asEventStream;
