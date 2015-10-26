@@ -11,7 +11,7 @@ Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
   return withDesc(new Bacon.Desc(this.selector || this, "asEventStream", [eventName]), Bacon.fromBinder((handler) => {
     this.on(eventName, selector, handler);
     return (() => this.off(eventName, selector, handler));
-  }), eventTransformer);
+  }, eventTransformer));
 };
 
 if (typeof jQuery !== "undefined" && jQuery) {
