@@ -5,6 +5,7 @@
     "destructuring": true,
     "defaultParams": true,
     "objectLiteralShorthandProperties": true,
+    "objectLiteralShorthandMethods": true,
     "restParams": true,
     "spread": true
   },
