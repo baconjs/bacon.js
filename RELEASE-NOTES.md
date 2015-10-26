@@ -1,3 +1,7 @@
+## 0.7.78
+
+- Fix #648: eventTransformer in asEventStream
+
 ## 0.7.76
 
 - Add `doEnd` to complement `doAction` and `doError`
