@@ -14,7 +14,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.78';
+    Bacon.version = '0.7.79';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -967,7 +967,7 @@
     Bacon.Observable = Observable;
     function CompositeUnsubscribe() {
         var ss = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-        this.unsubscribe = this.unsubscribe.bind(this);
+        this.unsubscribe = _.bind(this.unsubscribe, this);
         this.unsubscribed = false;
         this.subscriptions = [];
         this.starting = [];
