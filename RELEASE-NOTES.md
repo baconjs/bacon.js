@@ -1,3 +1,7 @@
+## 0.7.79
+
+- Fix IE8 compatibility (#650)
+
 ## 0.7.78
 
 - Fix #648: eventTransformer in asEventStream
