@@ -1,6 +1,8 @@
 describe "Package management", ->
+  return unless typeof window == 'undefined'
+
   fs = require("fs")
-  verifyJson = (fn) -> 
+  verifyJson = (fn) ->
     JSON.parse(fs.readFileSync("bower.json", "utf-8"))
   it "NPM", ->
     verifyJson "package.json"
@@ -10,4 +12,3 @@ describe "Package management", ->
     bowerJson = require('bower-json')
     json = verifyJson "bower.json"
     bowerJson.validate(json)
-
