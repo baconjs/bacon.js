@@ -36,6 +36,7 @@
     "bluebird": "^2",
     "bower-json": "^0.6.0",
     "browserify": "^11.2.0",
+    "browserstack-runner": "^0.3.8",
     "chai": "^3.3.0",
     "coffee-script": "^1.9.1",
     "coffeeify": "^1.0.0",

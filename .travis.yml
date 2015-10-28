@@ -1,29 +1,22 @@
 language: node_js
 sudo: false
-
 node_js:
-  - "0.10"
-  - "0.12"
-  - "4.0"
-  - "4.1"
-
+- '0.10'
+- '0.12'
+- '4.0'
+- '4.1'
 before_install:
-  - npm install -g npm@'>=2.11'
-  - npm conf set strict-ssl false
-
+- npm install -g npm@'>=2.11'
+- npm conf set strict-ssl false
 after_install:
-  - sudo npm install -g phantomjs grunt-cli
-
+- sudo npm install -g phantomjs grunt-cli
 before_script:
-  - phantomjs --version
-
+- phantomjs --version
 script:
-  - npm test
-  - grunt readme && git diff --exit-code README.md
-
+- npm test
+- grunt readme && git diff --exit-code README.md
 notifications:
   flowdock: 3853ef33f6943539cbbed913648575be
-
 branches:
   only:
-    - master
+  - master
