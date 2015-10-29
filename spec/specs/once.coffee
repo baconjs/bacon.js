@@ -14,7 +14,7 @@ describe "Bacon.once", ->
   it "Responds synchronously", ->
     values = []
     s = Bacon.once(1)
-    s.onValue(values.push.bind(values))
+    s.onValue((value) => values.push(value))
     expect(values).to.deep.equal([1])
-    s.onValue(values.push.bind(values))
+    s.onValue((value) => values.push(value))
     expect(values).to.deep.equal([1])
