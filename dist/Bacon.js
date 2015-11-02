@@ -9,7 +9,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.79';
+Bacon.version = '0.7.80';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -2358,7 +2358,7 @@ Bacon.combineTemplate = function (template) {
     if (isObservable(value)) {
       streams.push(value);
       return funcs.push(applyStreamValue(key, streams.length - 1));
-    } else if (value === Object(value) && typeof value !== "function" && !(value instanceof RegExp) && !(value instanceof Date)) {
+    } else if (value && (value.constructor == Object || value.constructor == Array)) {
       var popContext = function (ctxStack) {
         return ctxStack.pop();
       };
