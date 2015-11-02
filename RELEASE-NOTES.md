@@ -1,3 +1,7 @@
+## 0.7.80
+
+- Fix combineTemplate for objects with a prototype (#615)
+
 ## 0.7.79
 
 - Fix IE8 compatibility (#650)
