@@ -1964,7 +1964,7 @@ Bacon.js is not browser dependent, because it is not a UI library.
 
 I have personally used it Bacon.js with Chrome, Firefox, Safari, IE 6+, iPhone, iPad.
 
-Automatically tested on each commit on modern browsers and IE6+.
+Automatically tested on each commit on modern browsers.
 
 """
 
