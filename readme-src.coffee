@@ -1966,11 +1966,6 @@ I have personally used it Bacon.js with Chrome, Firefox, Safari, IE 6+, iPhone, 
 
 Automatically tested on each commit on modern browsers and IE6+.
 
-The full Bacon.js test suite is run on testling.ci with a wide range of browsers:
-
-[![browser support test report](http://ci.testling.com/baconjs/bacon.js.png)](http://ci.testling.com/baconjs/bacon.js)
-
-Results from those tests are quite unreliable, producing random failures, but the bottom line is that there are no outstanding compatibility issues.
 """
 
 doc.section "Node.js"

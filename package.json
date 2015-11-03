@@ -66,40 +66,6 @@
     "url": "https://github.com/baconjs/bacon.js.git"
   },
   "homepage": "https://github.com/baconjs/bacon.js",
-  "testling": {
-    "browsers": {
-      "ie": [
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
-      "ff": [
-        12,
-        17,
-        22
-      ],
-      "chrome": [
-        22
-      ],
-      "opera": [
-        12
-      ],
-      "safari": [
-        5.1,
-        6
-      ],
-      "iphone": [
-        6
-      ],
-      "ipad": [
-        6
-      ]
-    },
-    "harness": "mocha",
-    "files": "spec/CompatibilityTest.coffee"
-  },
   "scripts": {
     "test": "./runtests",
     "pre-publish": "grunt"
