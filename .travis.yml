@@ -3,8 +3,8 @@ sudo: false
 node_js:
 - '0.10'
 - '0.12'
-- '4.0'
-- '4.1'
+- '4.2'
+- '5.0'
 before_install:
 - npm install -g npm@'>=2.11'
 - npm conf set strict-ssl false
