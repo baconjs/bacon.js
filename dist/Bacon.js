@@ -294,6 +294,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   var waiters = {};
   var afters = [];
   var aftersIndex = 0;
+  var flushed = {};
 
   var afterTransaction = function (f) {
     if (rootEvent) {
@@ -321,6 +322,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     while (waiterObs.length > 0) {
       flushWaiters(0);
     }
+    flushed = {};
   };
 
   var flushWaiters = function (index) {
@@ -339,6 +341,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   };
 
   var flushDepsOf = function (obs) {
+    if (flushed[obs.id]) return;
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
       dep = deps[i];
@@ -349,6 +352,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
         flushDepsOf(dep);
       }
     }
+    flushed[obs.od] = true;
   };
 
   var inTransaction = function (event, context, f, args) {
