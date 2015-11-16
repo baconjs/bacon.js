@@ -23,7 +23,6 @@ extend(Bus.prototype, {
       sub = iterable[i];
       if (typeof sub.unsub === "function") { sub.unsub(); }
     }
-    return undefined;
   },
 
   subscribeAll(newSink) {

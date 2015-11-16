@@ -27,7 +27,7 @@ var toSimpleExtractor = function(args) {
   return function(key) {
     return function(value) {
       if (!(typeof value !== "undefined" && value !== null)) {
-        return undefined;
+        return
       } else {
         var fieldValue = value[key];
         if (_.isFunction(fieldValue)) {

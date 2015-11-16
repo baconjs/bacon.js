@@ -51,7 +51,6 @@ var _ = {
         f(key, value);
       }
     }
-    return undefined;
   },
   toArray(xs) { return isArray(xs) ? xs : [xs]; },
   contains(xs, x) { return _.indexOf(xs, x) !== -1; },

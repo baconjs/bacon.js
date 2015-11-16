@@ -33,7 +33,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     while (waiterObs.length > 0) {
       flushWaiters(0);
     }
-    return undefined;
   };
 
   var flushWaiters = function(index) {
@@ -49,7 +48,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       f = obsWaiters[i];
       f();
     }
-    return undefined;
   };
 
   var flushDepsOf = function(obs) {
@@ -62,7 +60,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
         flushWaiters(index);
       }
     }
-    return undefined;
   };
 
   var inTransaction = function(event, context, f, args) {
