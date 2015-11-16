@@ -164,7 +164,6 @@
                     f(key, value);
                 }
             }
-            return undefined;
         },
         toArray: function (xs) {
             return isArray(xs) ? xs : [xs];
@@ -317,7 +316,6 @@
             while (waiterObs.length > 0) {
                 flushWaiters(0);
             }
-            return undefined;
         };
         var flushWaiters = function (index) {
             var obs = waiterObs[index];
@@ -332,7 +330,6 @@
                 f = obsWaiters[i];
                 f();
             }
-            return undefined;
         };
         var flushDepsOf = function (obs) {
             var deps = obs.internalDeps();
@@ -344,7 +341,6 @@
                     flushWaiters(index);
                 }
             }
-            return undefined;
         };
         var inTransaction = function (event, context, f, args) {
             if (rootEvent) {
@@ -579,7 +575,7 @@
         return function (key) {
             return function (value) {
                 if (!(typeof value !== 'undefined' && value !== null)) {
-                    return undefined;
+                    return;
                 } else {
                     var fieldValue = value[key];
                     if (_.isFunction(fieldValue)) {
@@ -2037,7 +2033,6 @@
                     sub.unsub();
                 }
             }
-            return undefined;
         },
         subscribeAll: function (newSink) {
             if (this.ended) {

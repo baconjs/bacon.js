@@ -162,7 +162,6 @@ var _ = {
         f(key, value);
       }
     }
-    return undefined;
   },
   toArray: function (xs) {
     return isArray(xs) ? xs : [xs];
@@ -322,7 +321,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     while (waiterObs.length > 0) {
       flushWaiters(0);
     }
-    return undefined;
   };
 
   var flushWaiters = function (index) {
@@ -338,7 +336,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
       f = obsWaiters[i];
       f();
     }
-    return undefined;
   };
 
   var flushDepsOf = function (obs) {
@@ -351,7 +348,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
         flushWaiters(index);
       }
     }
-    return undefined;
   };
 
   var inTransaction = function (event, context, f, args) {
@@ -608,7 +604,7 @@ var toSimpleExtractor = function (args) {
   return function (key) {
     return function (value) {
       if (!(typeof value !== "undefined" && value !== null)) {
-        return undefined;
+        return;
       } else {
         var fieldValue = value[key];
         if (_.isFunction(fieldValue)) {
@@ -2193,7 +2189,6 @@ extend(Bus.prototype, {
         sub.unsub();
       }
     }
-    return undefined;
   },
 
   subscribeAll: function (newSink) {
