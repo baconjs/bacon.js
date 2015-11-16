@@ -238,6 +238,16 @@ describe "Integration tests", ->
            b = a.map (x) -> x
            a.combine(b, (x, y) -> x + y)
         [2, 4])
+    describe "in a double-diamond shaped combine() network", ->
+      expectPropertyEvents(
+        ->
+          a = series(1, [1,2])
+          b = a.map((x) -> "b"+x)
+          c = a.map((x) -> "c"+x)
+          d = Bacon.combineAsArray(b,c)
+          Bacon.combineAsArray(a,d)
+        [[1, ["b1", "c1"]], [2, ["b2", "c2"]]])
+
     describe "when filter is involved", ->
       expectPropertyEvents(
         ->
