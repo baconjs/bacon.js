@@ -53,7 +53,9 @@ suite = new Benchmark.Suite
 cases = {
   'diamond': ->
     f.withGenerator(((gen) ->
-      s = f.diamond(gen.stream(), 3, 5)
+      src = gen.stream()
+      tree = f.diamond(src, 1, 300)
+      s = f.diamond(tree, 4, 3)
       s.onValue ->
       s
     ),1)
