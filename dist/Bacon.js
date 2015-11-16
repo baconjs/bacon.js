@@ -342,10 +342,11 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
       dep = deps[i];
-      flushDepsOf(dep);
       if (waiters[dep.id]) {
         var index = _.indexOf(waiterObs, dep);
         flushWaiters(index);
+      } else {
+        flushDepsOf(dep);
       }
     }
   };
