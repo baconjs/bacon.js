@@ -14,7 +14,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.80';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -325,7 +325,9 @@
             var obsWaiters = waiters[obsId];
             waiterObs.splice(index, 1);
             delete waiters[obsId];
-            flushDepsOf(obs);
+            if (waiterObs.length > 0) {
+                flushDepsOf(obs);
+            }
             for (var i = 0, f; i < obsWaiters.length; i++) {
                 f = obsWaiters[i];
                 f();
