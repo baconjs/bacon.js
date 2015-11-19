@@ -64,7 +64,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
         flushDepsOf(dep);
       }
     }
-    flushed[obs.od] = true
+    flushed[obs.id] = true
   };
 
   var inTransaction = function(event, context, f, args) {
