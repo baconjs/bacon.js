@@ -99,4 +99,15 @@ cases = {
       gen.stream().holdWhen(gen.stream().map(false))
 }
 
-module.exports = cases
+
+_ = require "lodash"
+
+includeCase = (key) ->
+  args = process.argv.slice(2)
+  if args.length
+    _.any args, (arg) -> 
+      key.toLowerCase().indexOf(arg.toLowerCase()) >= 0
+  else
+    true
+
+module.exports = _.pick cases, (value, key) -> includeCase(key)
