@@ -346,7 +346,7 @@
                     flushDepsOf(dep);
                 }
             }
-            flushed[obs.od] = true;
+            flushed[obs.id] = true;
         };
         var inTransaction = function (event, context, f, args) {
             if (rootEvent) {
