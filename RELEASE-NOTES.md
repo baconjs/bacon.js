@@ -1,3 +1,7 @@
+## 0.7.81
+
+- Performance improvements for complex event graphs
+
 ## 0.7.80
 
 - Fix combineTemplate for objects with a prototype (#615)
