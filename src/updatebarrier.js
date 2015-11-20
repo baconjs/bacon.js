@@ -32,18 +32,18 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
 
   var flush = function() {
     while (waiterObs.length > 0) {
-      flushWaiters(0);
+      flushWaiters(0, true);
     }
     flushed = {}
   };
 
-  var flushWaiters = function(index) {
+  var flushWaiters = function(index, deps) {
     var obs = waiterObs[index];
     var obsId = obs.id;
     var obsWaiters = waiters[obsId];
     waiterObs.splice(index, 1);
     delete waiters[obsId];
-    if (waiterObs.length > 0) {
+    if (deps && waiterObs.length > 0) {
       flushDepsOf(obs);
     }
     for (var i = 0, f; i < obsWaiters.length; i++) {
@@ -57,11 +57,10 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
       dep = deps[i];
+      flushDepsOf(dep);
       if (waiters[dep.id]) {
         var index = _.indexOf(waiterObs, dep);
-        flushWaiters(index);
-      } else {
-        flushDepsOf(dep);
+        flushWaiters(index, false);
       }
     }
     flushed[obs.id] = true

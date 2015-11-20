@@ -458,6 +458,23 @@ describe "Integration tests", ->
           bus
         [1]
       )
+    describe "Complex setup by niklas", ->
+      expectStreamEvents(
+        ->
+          Bacon.constant(1).flatMapLatest((e) ->
+            return Bacon.combineAsArray(
+                Bacon.combineAsArray(
+                    Bacon.constant("middle"),
+                    Bacon.combineAsArray(
+                        Bacon.combineAsArray(
+                            Bacon.constant("innest")
+                        )
+                    )
+                ),
+                Bacon.constant("outest")
+            )
+          )
+        [[["middle", [["innest"]]], "outest"]])
     describe "Calling Bus.end() in onValue", ->
       it "works correctly in combination with takeUntil (#517)", (done) ->
         values = []
