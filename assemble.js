@@ -62,6 +62,7 @@ var main = function(options){
       "es6.spread"
     ],
     loose: [
+      "es6.spread",
       "es6.destructuring"
     ]
   };
