@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '<version>';
+Bacon.version = '0.7.83';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -2025,7 +2025,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return unsubLeft(), unsubRight();
+      return (unsubLeft(), unsubRight());
     };
   });
 };
