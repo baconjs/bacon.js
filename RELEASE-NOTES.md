@@ -1,3 +1,11 @@
+## 0.7.83
+
+- Remove dependency to Array.from
+
+## 0.7.82
+
+- Fix bug related to previous performance improvement
+
 ## 0.7.81
 
 - Performance improvements for complex event graphs
