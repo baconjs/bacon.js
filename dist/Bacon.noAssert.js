@@ -1,20 +1,11 @@
 (function () {
     var _slice = Array.prototype.slice;
-    function _toConsumableArray(arr) {
-        if (Array.isArray(arr)) {
-            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++)
-                arr2[i] = arr[i];
-            return arr2;
-        } else {
-            return Array.from(arr);
-        }
-    }
     var Bacon = {
         toString: function () {
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.82';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -561,19 +552,19 @@
                 };
                 args = args.slice(1);
             }
-            return wrapped.apply(undefined, [f].concat(_toConsumableArray(args)));
+            return wrapped.apply(undefined, [f].concat(args));
         };
     };
     var makeFunctionArgs = function (args) {
         args = Array.prototype.slice.call(args);
-        return makeFunction_.apply(undefined, _toConsumableArray(args));
+        return makeFunction_.apply(undefined, args);
     };
     var partiallyApplied = function (f, applied) {
         return function () {
             for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
                 args[_key3] = arguments[_key3];
             }
-            return f.apply(undefined, _toConsumableArray(applied.concat(args)));
+            return f.apply(undefined, applied.concat(args));
         };
     };
     var toSimpleExtractor = function (args) {
@@ -623,7 +614,7 @@
         }
     });
     var makeFunction = function (f, args) {
-        return makeFunction_.apply(undefined, [f].concat(_toConsumableArray(args)));
+        return makeFunction_.apply(undefined, [f].concat(args));
     };
     var convertArgsToFunction = function (obs, f, args, method) {
         if (typeof f !== 'undefined' && f !== null ? f._isProperty : undefined) {
@@ -926,7 +917,7 @@
         },
         onValues: function (f) {
             return this.onValue(function (args) {
-                return f.apply(undefined, _toConsumableArray(args));
+                return f.apply(undefined, args);
             });
         },
         onError: function () {
@@ -1336,7 +1327,7 @@
                                             }
                                             return result;
                                         }();
-                                        return (_p = p).f.apply(_p, _toConsumableArray(values));
+                                        return (_p = p).f.apply(_p, values);
                                     }));
                                     if (triggers.length) {
                                         triggers = _.filter(nonFlattened, triggers);
@@ -1663,9 +1654,9 @@
         var _argumentsToObservablesAndFunction = argumentsToObservablesAndFunction(arguments);
         var streams = _argumentsToObservablesAndFunction[0];
         var f = _argumentsToObservablesAndFunction[1];
-        var desc = new Bacon.Desc(Bacon, 'combineWith', [f].concat(_toConsumableArray(streams)));
+        var desc = new Bacon.Desc(Bacon, 'combineWith', [f].concat(streams));
         return withDesc(desc, Bacon.combineAsArray(streams).map(function (values) {
-            return f.apply(undefined, _toConsumableArray(values));
+            return f.apply(undefined, values);
         }));
     };
     Bacon.Observable.prototype.combine = function (other, f) {
@@ -2116,7 +2107,7 @@
     var liftCallback = function (desc, wrapped) {
         return withMethodCallSupport(function (f) {
             var stream = partiallyApplied(wrapped, [function (values, callback) {
-                    return f.apply(undefined, _toConsumableArray(values).concat([callback]));
+                    return f.apply(undefined, values.concat([callback]));
                 }]);
             for (var _len13 = arguments.length, args = Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
                 args[_key13 - 1] = arguments[_key13];
@@ -3119,7 +3110,7 @@
                     args[_key23] = arguments[_key23];
                 }
                 return function (i) {
-                    return f.apply(undefined, _toConsumableArray([i].concat(args)));
+                    return f.apply(undefined, [i].concat(args));
                 };
             };
         }
