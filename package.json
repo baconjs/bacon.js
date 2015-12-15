@@ -45,6 +45,8 @@
     "escodegen": "^1.6.1",
     "esprima": "^2.0.0",
     "estraverse": "^1.9.1",
+    "git-rev": "^0.2.1",
+    "github": "^0.2.4",
     "grunt": "0.4",
     "grunt-cli": "0.1.13",
     "grunt-coffeelint": "0.0.13",
