@@ -1,22 +1,28 @@
 language: node_js
 sudo: false
 node_js:
-- '0.10'
-- '0.12'
-- '4.2'
-- '5.0'
+  - '0.10'
+  - '0.12'
+  - '4.2'
+  - '5.3'
 before_install:
-- npm install -g npm@'>=2.11'
-- npm conf set strict-ssl false
-after_install:
-- sudo npm install -g phantomjs grunt-cli
-before_script:
-- phantomjs --version
-script:
-- npm test
-- grunt readme && git diff --exit-code README.md
+  - npm install -g npm@'>=2.11'
+  - npm conf set strict-ssl false
 notifications:
-  flowdock: 3853ef33f6943539cbbed913648575be
-branches:
-  only:
-  - master
+  flowdock: 3853ef33f6943539cbbed913648575beg
+script:
+  - npm test
+  - grunt readme && git diff --exit-code README.md
+env:
+  global:
+    - secure: VHyJgRz2G9C1gh+BW/ttoWOujZq+QogTdot6gdhvczB3PihZ9FFgglK0S3i4tCZFrfjBz/XMKiqF6tlQhoTQj6FD1ADSRaptel7Xv4qgcsVBffYpZS5g68gDzDG9BFOb6kes8sRJVA7Jf3OL+EhKAsvZ3e5SmHJ1SiCPdaVRSBk=
+    - secure: K11WcONU2Zptx/t8GTpE2S/Gjkmt4pVEQd9tv1AAqNWdB6/FnRWd4lCemvfeU8YiDkQSh1Pm8N116u4/m0nKxNML4GLp4PPqaVK7h7MdDndjsyaHOeDlekdGFmSWa628kulrnD1/inyJjIJKf9Z5vFiVKjVo4WGWrDb2KlUr8O0=
+    - secure: EzdZS4kE+Qr88RANdHGTiT9jfG5Cql2srthbkufeh3Py+tl1Zz+IIr2LUX2/l286xVAtbIUAwYHxlBmnvaZfI6gyq8fjZMCutNzf6l8XAxBxguyPIruJj7c+Fbor2hR0QScg60yOYznkTTpf0LtC4pSsTAN0vbxvPxa5i2SoWsg=
+matrix:
+  fast_finish: true
+  include:
+    - env: TEST_SUITE=browserstack-status
+      node_js: '5.0'
+  allow_failures:
+    - env: TEST_SUITE=browserstack-status
+      node_js: '5.0'
