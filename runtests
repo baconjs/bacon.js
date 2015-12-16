@@ -3,6 +3,7 @@ set -e
 ./node_modules/.bin/babel-node assemble-specs.js $@
 
 if [ "${TEST_SUITE}" = "browserstack-status" ]; then
+  browsertest/browserify
   ./node_modules/.bin/grunt browserstack-status
 else
   ./node_modules/.bin/mocha --compilers coffee:coffee-script/register spec/BaconSpec.coffee
