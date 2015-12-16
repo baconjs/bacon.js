@@ -87,7 +87,11 @@ module.exports = (grunt) ->
             resolve()
 
     commit = (callback) ->
-      if process.env.TRAVIS_COMMIT
+      if process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST != 'false'
+        exec = require('child_process').exec
+        exec("git rev-list --parents -n 1 #{process.env.TRAVIS_COMMIT}",
+          (error, stdout) -> callback(stdout.toString().split(' ')[2]))
+      else if process.env.TRAVIS_COMMIT
         callback(process.env.TRAVIS_COMMIT)
       else
         require('git-rev').long(callback)
