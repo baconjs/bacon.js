@@ -1,46 +1,3 @@
-browserstack = (grunt) ->
-  log = (message) -> grunt.log.write(message)
-
-  exec = require('child_process').exec
-  ->
-    new Promise (resolve, reject) ->
-      child = exec './node_modules/.bin/browserstack-runner', (error, stdout, stderr) ->
-        if error
-          reject(error)
-        else
-          resolve(stdout.toString())
-      child.stdout.on('data', log)
-      child.stderr.on('data', log)
-
-setCommitStatus = (sha, state) ->
-  GitHub = require('github')
-  github = new GitHub
-    version: '3.0.0'
-    protocol: 'https',
-    timeout: 5000,
-    headers:
-      'user-agent': 'github-status-reporter'
-
-  github.authenticate
-    type: 'oauth'
-    token: process.env.GITHUB_TOKEN
-
-  repo = (process.env.TRAVIS_REPO_SLUG || 'baconjs/bacon.js').split('/', 2)
-
-  q =
-    user: repo[0],
-    repo: repo[1],
-    sha: sha,
-    state: state
-    context: 'continous-integration/browserstack'
-
-  new Promise (resolve, reject) ->
-    github.statuses.create q, (error) ->
-      if error
-        reject(error)
-      else
-        resolve()
-
 module.exports = (grunt) ->
   grunt.initConfig
     clean:
@@ -86,9 +43,57 @@ module.exports = (grunt) ->
     fs.writeFileSync('README.md', readmegen readmedoc)
 
   grunt.registerTask 'browserstack-status', 'Run BrowserStack tests and report status to GitHub', ->
+    browserstack = (grunt) ->
+      log = (message) -> grunt.log.write(message)
+
+      exec = require('child_process').exec
+      ->
+        new Promise (resolve, reject) ->
+          child = exec './node_modules/.bin/browserstack-runner', (error, stdout, stderr) ->
+            if error
+              reject(error)
+            else
+              resolve(stdout.toString())
+          child.stdout.on('data', log)
+          child.stderr.on('data', log)
+
+    setCommitStatus = (sha, state) ->
+      GitHub = require('github')
+      github = new GitHub
+        version: '3.0.0'
+        protocol: 'https',
+        timeout: 5000,
+        headers:
+          'user-agent': 'github-status-reporter'
+
+      github.authenticate
+        type: 'oauth'
+        token: process.env.GITHUB_TOKEN
+
+      repo = (process.env.TRAVIS_REPO_SLUG || 'baconjs/bacon.js').split('/', 2)
+
+      q =
+        user: repo[0],
+        repo: repo[1],
+        sha: sha,
+        state: state
+        context: 'continous-integration/browserstack'
+
+      new Promise (resolve, reject) ->
+        github.statuses.create q, (error) ->
+          if error
+            reject(error)
+          else
+            resolve()
+
+    commit = (callback) ->
+      if process.env.TRAVIS_COMMIT
+        callback(process.env.TRAVIS_COMMIT)
+      else
+        require('git-rev').long(callback)
+
     done = @async()
-    git = require('git-rev')
-    git.long (sha) ->
+    commit (sha) ->
       grunt.log.write('SHA: ' + sha)
       setCommitStatus(sha, 'pending')
         .then(browserstack(grunt))
