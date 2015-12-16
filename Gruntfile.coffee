@@ -26,7 +26,7 @@ setCommitStatus = (sha, state) ->
     token: process.env.GITHUB_TOKEN
 
   q =
-    user: 'lautis',
+    user: 'baconjs',
     repo: 'bacon.js',
     sha: sha,
     state: state
