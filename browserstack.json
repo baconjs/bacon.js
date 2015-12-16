@@ -2,9 +2,7 @@
   "test_framework": "mocha",
   "test_path": "browsertest/mocha.runner.html",
   "browsers": [
-    "chrome_previous",
     "chrome_latest",
-    "firefox_previous",
     "firefox_latest",
     "safari_previous",
     "safari_latest",
