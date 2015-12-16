@@ -91,9 +91,9 @@ module.exports = (grunt) ->
       setCommitStatus(sha, 'pending')
         .then(browserstack(grunt))
         .then(
-          (output) ->
-            setCommitStatus(sha, 'success')
-          (error) ->
-            setCommitStatus(sha, 'failure')
-              .then -> throw error
-        ).then(done, -> done(3))
+          (output) -> setCommitStatus(sha, 'success')
+          (error) -> setCommitStatus(sha, 'failure').then(-> Promise.reject(error))
+        ).then(done, ->
+          grunt.log.error(error.message)
+          done(1)
+        )
