@@ -25,9 +25,11 @@ setCommitStatus = (sha, state) ->
     type: 'oauth'
     token: process.env.GITHUB_TOKEN
 
+  repo = (process.env.TRAVIS_REPO_SLUG || 'baconjs/bacon.js').split('/', 2)
+
   q =
-    user: 'baconjs',
-    repo: 'bacon.js',
+    user: repo[0],
+    repo: repo[1],
     sha: sha,
     state: state
     context: 'continous-integration/browserstack'
