@@ -57,7 +57,7 @@ module.exports = (grunt) ->
           child.stdout.on('data', log)
           child.stderr.on('data', log)
 
-    setCommitStatus = (sha, state) ->
+    setCommitStatus = (sha, state, message) ->
       GitHub = require('github')
       github = new GitHub
         version: '3.0.0'
@@ -76,8 +76,10 @@ module.exports = (grunt) ->
         user: repo[0],
         repo: repo[1],
         sha: sha,
-        state: state
-        context: 'continous-integration/browserstack'
+        state: state,
+        description: message || ''
+        target_url: "https://travis-ci.org/#{repo[0]}/#{repo[1]}/jobs/#{process.env.TRAVIS_JOB_ID}"
+        context: 'continuous-integration/browserstack'
 
       new Promise (resolve, reject) ->
         github.statuses.create q, (error) ->
@@ -102,8 +104,8 @@ module.exports = (grunt) ->
       setCommitStatus(sha, 'pending')
         .then(browserstack(grunt))
         .then(
-          (output) -> setCommitStatus(sha, 'success')
-          (error) -> setCommitStatus(sha, 'failure').then(-> Promise.reject(error))
+          (output) -> setCommitStatus(sha, 'success', 'The BrowserStack build passed')
+          (error) -> setCommitStatus(sha, 'failure', 'The BrowserStack build failed').then(-> Promise.reject(error))
         ).then(done, ->
           grunt.log.error(error.message)
           done(1)
