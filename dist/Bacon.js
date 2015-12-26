@@ -1,8 +1,5 @@
 (function() {
 var _slice = Array.prototype.slice;
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
 var Bacon = {
   toString: function () {
     return "Bacon";
@@ -95,7 +92,7 @@ var symbol = function (key) {
   } else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
     return Symbol["for"](key);
   } else {
-    return "@@#{key}";
+    return "@@" + key;
   }
 };
 
@@ -172,7 +169,6 @@ var _ = {
         f(key, value);
       }
     }
-    return undefined;
   },
   toArray: function (xs) {
     return isArray(xs) ? xs : [xs];
@@ -305,6 +301,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   var waiters = {};
   var afters = [];
   var aftersIndex = 0;
+  var flushed = {};
 
   var afterTransaction = function (f) {
     if (rootEvent) {
@@ -330,36 +327,38 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
 
   var flush = function () {
     while (waiterObs.length > 0) {
-      flushWaiters(0);
+      flushWaiters(0, true);
     }
-    return undefined;
+    flushed = {};
   };
 
-  var flushWaiters = function (index) {
+  var flushWaiters = function (index, deps) {
     var obs = waiterObs[index];
     var obsId = obs.id;
     var obsWaiters = waiters[obsId];
     waiterObs.splice(index, 1);
     delete waiters[obsId];
-    flushDepsOf(obs);
+    if (deps && waiterObs.length > 0) {
+      flushDepsOf(obs);
+    }
     for (var i = 0, f; i < obsWaiters.length; i++) {
       f = obsWaiters[i];
       f();
     }
-    return undefined;
   };
 
   var flushDepsOf = function (obs) {
+    if (flushed[obs.id]) return;
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
       dep = deps[i];
       flushDepsOf(dep);
       if (waiters[dep.id]) {
         var index = _.indexOf(waiterObs, dep);
-        flushWaiters(index);
+        flushWaiters(index, false);
       }
     }
-    return undefined;
+    flushed[obs.id] = true;
   };
 
   var inTransaction = function (event, context, f, args) {
@@ -593,13 +592,13 @@ var withMethodCallSupport = function (wrapped) {
       };
       args = args.slice(1);
     }
-    return wrapped.apply(undefined, [f].concat(_toConsumableArray(args)));
+    return wrapped.apply(undefined, [f].concat(args));
   };
 };
 
 var makeFunctionArgs = function (args) {
   args = Array.prototype.slice.call(args);
-  return makeFunction_.apply(undefined, _toConsumableArray(args));
+  return makeFunction_.apply(undefined, args);
 };
 
 var partiallyApplied = function (f, applied) {
@@ -608,7 +607,7 @@ var partiallyApplied = function (f, applied) {
       args[_key3] = arguments[_key3];
     }
 
-    return f.apply(undefined, _toConsumableArray(applied.concat(args)));
+    return f.apply(undefined, applied.concat(args));
   };
 };
 
@@ -616,7 +615,7 @@ var toSimpleExtractor = function (args) {
   return function (key) {
     return function (value) {
       if (!(typeof value !== "undefined" && value !== null)) {
-        return undefined;
+        return;
       } else {
         var fieldValue = value[key];
         if (_.isFunction(fieldValue)) {
@@ -664,7 +663,7 @@ var makeFunction_ = withMethodCallSupport(function (f) {
 });
 
 var makeFunction = function (f, args) {
-  return makeFunction_.apply(undefined, [f].concat(_toConsumableArray(args)));
+  return makeFunction_.apply(undefined, [f].concat(args));
 };
 
 var convertArgsToFunction = function (obs, f, args, method) {
@@ -995,7 +994,7 @@ extend(Observable.prototype, {
 
   onValues: function (f) {
     return this.onValue(function (args) {
-      return f.apply(undefined, _toConsumableArray(args));
+      return f.apply(undefined, args);
     });
   },
 
@@ -1049,7 +1048,7 @@ Bacon.Observable = Observable;
 function CompositeUnsubscribe() {
   var ss = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 
-  this.unsubscribe = this.unsubscribe.bind(this);
+  this.unsubscribe = _.bind(this.unsubscribe, this);
   this.unsubscribed = false;
   this.subscriptions = [];
   this.starting = [];
@@ -1450,7 +1449,7 @@ Bacon.when = function () {
                     return result;
                   })();
 
-                  return (_p = p).f.apply(_p, _toConsumableArray(values));
+                  return (_p = p).f.apply(_p, values);
                 }));
                 if (triggers.length) {
                   triggers = _.filter(nonFlattened, triggers);
@@ -1809,9 +1808,9 @@ Bacon.combineWith = function () {
   var streams = _argumentsToObservablesAndFunction[0];
   var f = _argumentsToObservablesAndFunction[1];
 
-  var desc = new Bacon.Desc(Bacon, "combineWith", [f].concat(_toConsumableArray(streams)));
+  var desc = new Bacon.Desc(Bacon, "combineWith", [f].concat(streams));
   return withDesc(desc, Bacon.combineAsArray(streams).map(function (values) {
-    return f.apply(undefined, _toConsumableArray(values));
+    return f.apply(undefined, values);
   }));
 };
 
@@ -2036,7 +2035,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return (unsubLeft(), unsubRight());
+      return unsubLeft(), unsubRight();
     };
   });
 };
@@ -2201,7 +2200,6 @@ extend(Bus.prototype, {
         sub.unsub();
       }
     }
-    return undefined;
   },
 
   subscribeAll: function (newSink) {
@@ -2293,7 +2291,7 @@ Bacon.Bus = Bus;
 var liftCallback = function (desc, wrapped) {
   return withMethodCallSupport(function (f) {
     var stream = partiallyApplied(wrapped, [function (values, callback) {
-      return f.apply(undefined, _toConsumableArray(values).concat([callback]));
+      return f.apply(undefined, values.concat([callback]));
     }]);
 
     for (var _len13 = arguments.length, args = Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
@@ -2368,7 +2366,7 @@ Bacon.combineTemplate = function (template) {
     if (isObservable(value)) {
       streams.push(value);
       return funcs.push(applyStreamValue(key, streams.length - 1));
-    } else if (value === Object(value) && typeof value !== "function" && !(value instanceof RegExp) && !(value instanceof Date)) {
+    } else if (value && (value.constructor == Object || value.constructor == Array)) {
       var popContext = function (ctxStack) {
         return ctxStack.pop();
       };
@@ -3331,7 +3329,7 @@ Bacon.update = function (initial) {
       }
 
       return function (i) {
-        return f.apply(undefined, _toConsumableArray([i].concat(args)));
+        return f.apply(undefined, [i].concat(args));
       };
     };
   }

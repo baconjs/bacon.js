@@ -1,5 +1,5 @@
 function CompositeUnsubscribe(ss = []) {
-  this.unsubscribe = this.unsubscribe.bind(this);
+  this.unsubscribe = _.bind(this.unsubscribe, this);
   this.unsubscribed = false;
   this.subscriptions = [];
   this.starting = [];

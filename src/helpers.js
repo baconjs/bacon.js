@@ -71,6 +71,6 @@ var symbol = function(key) {
   } else if (typeof Symbol !== "undefined" && typeof Symbol.for === "function") {
     return Symbol.for(key);
   } else {
-    return "@@#{key}";
+    return "@@" + key;
   }
 };

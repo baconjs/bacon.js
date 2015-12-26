@@ -1,0 +1,12 @@
+{
+  "test_framework": "mocha",
+  "test_path": "browsertest/mocha.runner.html",
+  "browsers": [
+    "chrome_latest",
+    "firefox_latest",
+    "safari_previous",
+    "safari_latest",
+    "ie_11",
+    "ie_10"
+  ]
+}

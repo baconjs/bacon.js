@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "0.7.78",
+  "version": "0.7.83",
   "keywords": [
     "bacon.js",
     "bacon",
@@ -37,6 +37,7 @@
     "bluebird": "^2",
     "bower-json": "^0.6.0",
     "browserify": "^11.2.0",
+    "browserstack-runner": "^0.3.8",
     "chai": "^3.3.0",
     "coffee-script": "^1.9.1",
     "coffeeify": "^1.0.0",
@@ -45,6 +46,8 @@
     "escodegen": "^1.6.1",
     "esprima": "^2.0.0",
     "estraverse": "^1.9.1",
+    "git-rev": "^0.2.1",
+    "github": "^0.2.4",
     "grunt": "0.4",
     "grunt-cli": "0.1.13",
     "grunt-coffeelint": "0.0.13",
@@ -68,40 +71,6 @@
     "url": "https://github.com/baconjs/bacon.js.git"
   },
   "homepage": "https://github.com/baconjs/bacon.js",
-  "testling": {
-    "browsers": {
-      "ie": [
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
-      "ff": [
-        12,
-        17,
-        22
-      ],
-      "chrome": [
-        22
-      ],
-      "opera": [
-        12
-      ],
-      "safari": [
-        5.1,
-        6
-      ],
-      "iphone": [
-        6
-      ],
-      "ipad": [
-        6
-      ]
-    },
-    "harness": "mocha",
-    "files": "spec/CompatibilityTest.coffee"
-  },
   "scripts": {
     "test": "./runtests",
     "pre-publish": "grunt"

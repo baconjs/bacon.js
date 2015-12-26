@@ -6,6 +6,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   var waiters = {};
   var afters = [];
   var aftersIndex = 0;
+  var flushed = {}
 
   var afterTransaction = function(f) {
     if (rootEvent) {
@@ -31,36 +32,38 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
 
   var flush = function() {
     while (waiterObs.length > 0) {
-      flushWaiters(0);
+      flushWaiters(0, true);
     }
-    return undefined;
+    flushed = {}
   };
 
-  var flushWaiters = function(index) {
+  var flushWaiters = function(index, deps) {
     var obs = waiterObs[index];
     var obsId = obs.id;
     var obsWaiters = waiters[obsId];
     waiterObs.splice(index, 1);
     delete waiters[obsId];
-    flushDepsOf(obs);
+    if (deps && waiterObs.length > 0) {
+      flushDepsOf(obs);
+    }
     for (var i = 0, f; i < obsWaiters.length; i++) {
       f = obsWaiters[i];
       f();
     }
-    return undefined;
   };
 
   var flushDepsOf = function(obs) {
+    if (flushed[obs.id]) return
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
       dep = deps[i];
       flushDepsOf(dep);
       if (waiters[dep.id]) {
         var index = _.indexOf(waiterObs, dep);
-        flushWaiters(index);
+        flushWaiters(index, false);
       }
     }
-    return undefined;
+    flushed[obs.id] = true
   };
 
   var inTransaction = function(event, context, f, args) {

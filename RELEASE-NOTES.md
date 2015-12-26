@@ -1,3 +1,23 @@
+## 0.7.83
+
+- Remove dependency to Array.from
+
+## 0.7.82
+
+- Fix bug related to previous performance improvement
+
+## 0.7.81
+
+- Performance improvements for complex event graphs
+
+## 0.7.80
+
+- Fix combineTemplate for objects with a prototype (#615)
+
+## 0.7.79
+
+- Fix IE8 compatibility (#650)
+
 ## 0.7.78
 
 - Fix #648: eventTransformer in asEventStream

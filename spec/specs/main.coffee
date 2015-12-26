@@ -238,6 +238,16 @@ describe "Integration tests", ->
            b = a.map (x) -> x
            a.combine(b, (x, y) -> x + y)
         [2, 4])
+    describe "in a double-diamond shaped combine() network", ->
+      expectPropertyEvents(
+        ->
+          a = series(1, [1,2])
+          b = a.map((x) -> "b"+x)
+          c = a.map((x) -> "c"+x)
+          d = Bacon.combineAsArray(b,c)
+          Bacon.combineAsArray(a,d)
+        [[1, ["b1", "c1"]], [2, ["b2", "c2"]]])
+
     describe "when filter is involved", ->
       expectPropertyEvents(
         ->
@@ -448,6 +458,23 @@ describe "Integration tests", ->
           bus
         [1]
       )
+    describe "Complex setup by niklas", ->
+      expectStreamEvents(
+        ->
+          Bacon.constant(1).flatMapLatest((e) ->
+            return Bacon.combineAsArray(
+                Bacon.combineAsArray(
+                    Bacon.constant("middle"),
+                    Bacon.combineAsArray(
+                        Bacon.combineAsArray(
+                            Bacon.constant("innest")
+                        )
+                    )
+                ),
+                Bacon.constant("outest")
+            )
+          )
+        [[["middle", [["innest"]]], "outest"]])
     describe "Calling Bus.end() in onValue", ->
       it "works correctly in combination with takeUntil (#517)", (done) ->
         values = []
@@ -461,3 +488,21 @@ describe "Integration tests", ->
           expect(values).to.deep.equal([1])
           done()
         Bacon.scheduler.setTimeout verify, 20
+    describe "Infinite synchronous sequences", ->
+      describe "Limiting length with take(n)", ->
+        expectStreamEvents(
+          -> endlessly(1,2,3).take(4)
+          [1,2,3,1], unstable)
+        expectStreamEvents(
+          -> endlessly(1,2,3).take(4).concat(Bacon.once(5))
+          [1,2,3,1,5], unstable)
+        expectStreamEvents(
+          -> endlessly(1,2,3).take(4).concat(endlessly(5, 6).take(2))
+          [1,2,3,1,5,6], unstable)
+      describe "With flatMap", ->
+        expectStreamEvents(
+          -> fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
+          [1,1], unstable)
+        expectStreamEvents(
+          -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
+          [1,1], unstable)
