@@ -1,10 +1,13 @@
-// build-dependencies: _, source
+import { extend, isArray, isObservable } from "./helpers";
+import _ from "./_";
 
-function Desc(context, method, args) {
+export function Desc(context, method, args) {
   this.context = context;
   this.method = method;
   this.args = args;
 }
+
+Desc.empty = new Desc("", "", []);
 
 extend(Desc.prototype, {
   _isDesc: true,
@@ -45,5 +48,4 @@ var findDeps = function(x) {
   }
 };
 
-Bacon.Desc = Desc;
-Bacon.Desc.empty = new Bacon.Desc("", "", []);
+export { withDesc, findDeps, describe }

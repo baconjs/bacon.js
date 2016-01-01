@@ -1,4 +1,5 @@
-// build-dependencies: helpers
+import { isArray } from './helpers';
+import { None } from './optional';
 
 var _ = {
   indexOf: (() => {
@@ -152,5 +153,4 @@ var _ = {
 };
 
 var recursionDepth = 0;
-
-Bacon._ = _;
+export default _;

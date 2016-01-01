@@ -1,14 +1,11 @@
-// build-dependencies: updatebarrier
-// build-dependencies: describe
-// build-dependencies: functionconstruction
-// build-dependencies: optional
-// build-dependencies: reply
-// build-dependencies: event
+import UpdateBarrier from "./updatebarrier";
+import { describe } from "./describe";
+import { makeFunctionArgs } from "./functionconstruction";
+import { extend } from "./helpers";
 
 var idCounter = 0;
-var registerObs = function() {};
 
-function Observable(desc) {
+export default function Observable(desc) {
   this.desc = desc;
   this.id = ++idCounter;
   this.initialDesc = this.desc;
@@ -77,5 +74,3 @@ extend(Observable.prototype, {
 Observable.prototype.assign = Observable.prototype.onValue;
 Observable.prototype.forEach = Observable.prototype.onValue;
 Observable.prototype.inspect = Observable.prototype.toString;
-
-Bacon.Observable = Observable;

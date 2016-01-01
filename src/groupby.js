@@ -1,6 +1,12 @@
-// build-dependencies: filter, map, once, concat, observable
+import "./concat";
+import "./filter";
+import "./map";
 
-Bacon.Observable.prototype.groupBy = function(keyF, limitF = Bacon._.id) {
+import _ from "./_";
+import once from "./once";
+import Observable from "./observable";
+
+Observable.prototype.groupBy = function(keyF, limitF = _.id) {
   var streams = {};
   var src = this;
   return src
@@ -8,7 +14,7 @@ Bacon.Observable.prototype.groupBy = function(keyF, limitF = Bacon._.id) {
     .map(function(x) {
       var key = keyF(x);
       var similar = src.filter(function(x) { return keyF(x) === key; });
-      var data = Bacon.once(x).concat(similar);
+      var data = once(x).concat(similar);
       var limited = limitF(data, x).withHandler(function(event) {
         this.push(event);
         if (event.isEnd()) {

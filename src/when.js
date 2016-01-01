@@ -1,8 +1,17 @@
-// build-dependencies: compositeunsubscribe, eventstream
-// build-dependencies: updatebarrier
+import { Desc } from "./describe";
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import EventStream from "./eventstream";
+import UpdateBarrier from "./updatebarrier";
+import { Source } from "./source";
+import { endEvent } from "./event";
+import { more, noMore } from "./reply";
+import _ from "./_";
+import { assert } from "./helpers";
+import never from "./never";
+import Bacon from "./core";
 
-Bacon.when = function() {
-  if (arguments.length === 0) { return Bacon.never(); }
+export default function when() {
+  if (arguments.length === 0) { return never(); }
   var len = arguments.length;
   var usage = "when: expecting arguments in the form (Observable+,function)+";
 
@@ -46,13 +55,13 @@ Bacon.when = function() {
   }
 
   if (!sources.length) {
-    return Bacon.never();
+    return never();
   }
 
   sources = _.map(Source.fromObservable, sources);
   var needsBarrier = (_.any(sources, function(s) { return s.flatten; })) && containsDuplicateDeps(_.map((function(s) { return s.obs; }), sources));
 
-  var desc = new Bacon.Desc(Bacon, "when", patterns);
+  var desc = new Desc(Bacon, "when", patterns);
   var resultStream = new EventStream(desc, function(sink) {
     var triggers = [];
     var ends = false;
@@ -83,7 +92,7 @@ Bacon.when = function() {
       };
       var flushWhileTriggers = function() {
         if (triggers.length > 0) {
-          var reply = Bacon.more;
+          var reply = more;
           var trigger = triggers.pop();
           for (var i1 = 0, p; i1 < pats.length; i1++) {
             p = pats[i1];
@@ -112,7 +121,7 @@ Bacon.when = function() {
               if (triggers.length) {
                 triggers = _.filter(nonFlattened, triggers);
               }
-              if (reply === Bacon.noMore) {
+              if (reply === noMore) {
                 return reply;
               } else {
                 return flushWhileTriggers();
@@ -120,7 +129,7 @@ Bacon.when = function() {
             }
           }
         } else {
-          return Bacon.more;
+          return more;
         }
       };
       var flush = function() {
@@ -130,11 +139,11 @@ Bacon.when = function() {
           //console.log "ends detected"
           if  (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
             //console.log "actually ending"
-            reply = Bacon.noMore;
+            reply = noMore;
             sink(endEvent());
           }
         }
-        if (reply === Bacon.noMore) { unsubAll(); }
+        if (reply === noMore) { unsubAll(); }
         //console.log "flushed"
         return reply;
       };
@@ -155,13 +164,13 @@ Bacon.when = function() {
             if (needsBarrier || UpdateBarrier.hasWaiters()) { flushLater(); } else { flush(); }
           }
         }
-        if (reply === Bacon.noMore) { unsubAll(); }
-        return reply || Bacon.more;
+        if (reply === noMore) { unsubAll(); }
+        return reply || more;
       });
     };
     };
 
-    return new Bacon.CompositeUnsubscribe((() => {
+    return new CompositeUnsubscribe((() => {
       var result = [];
       for (var i1 = 0, s; i1 < sources.length; i1++) {
         s = sources[i1];
@@ -199,3 +208,5 @@ var constantToFunction = function(f) {
     return _.always(f);
   }
 };
+
+Bacon.when = when;

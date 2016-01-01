@@ -1,6 +1,7 @@
-// build-dependencies: _
+import _ from './_';
+import { noMore } from './reply';
 
-var UpdateBarrier = Bacon.UpdateBarrier = (function() {
+var UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
@@ -110,7 +111,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       return afterTransaction(function() {
         if (!unsubd) {
           var reply = sink(event);
-          if (reply === Bacon.noMore) {
+          if (reply === noMore) {
             return unsub();
           }
         }
@@ -127,3 +128,4 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   return { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction };
 }
 )();
+export default UpdateBarrier;

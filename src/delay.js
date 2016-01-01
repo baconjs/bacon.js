@@ -1,11 +1,18 @@
-// build-dependencies: later
-// build-dependencies: flatmap
-// build-dependencies: delaychanges
+import "./flatmap";
+import "./delaychanges";
+import later from "./later";
+import EventStream from "./eventstream";
+import Property from "./property";
+import { withDesc, Desc } from "./describe";
 
-Bacon.EventStream.prototype.delay = function(delay) {
-  return withDesc(new Bacon.Desc(this, "delay", [delay]), this.flatMap(function(value) {
-    return Bacon.later(delay, value);
+EventStream.prototype.delay = function(delay) {
+  return withDesc(new Desc(this, "delay", [delay]), this.flatMap(function(value) {
+    return later(delay, value);
   }));
 };
 
-Bacon.Property.prototype.delay = function(delay) { return this.delayChanges(new Bacon.Desc(this, "delay", [delay]), function(changes) { return changes.delay(delay); }); };
+Property.prototype.delay = function(delay) {
+  return this.delayChanges(new Desc(this, "delay", [delay]), function(changes) {
+    return changes.delay(delay);
+  });
+};

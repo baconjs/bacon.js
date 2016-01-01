@@ -1,8 +1,11 @@
-// build-dependencies: combinetemplate
+import "./combine";
+import combineTemplate from "./combinetemplate";
+import { withDesc, Desc } from "./describe";
+import Observable from "./observable";
 
-Bacon.Observable.prototype.decode = function(cases) {
+Observable.prototype.decode = function(cases) {
   return withDesc(
-    new Bacon.Desc(this, "decode", [cases]),
-    this.combine(Bacon.combineTemplate(cases), (key, values) => values[key])
+    new Desc(this, "decode", [cases]),
+    this.combine(combineTemplate(cases), (key, values) => values[key])
   );
 };

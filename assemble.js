@@ -11,6 +11,8 @@ var fs = require("fs");
 var path = require("path");
 var Deps = require("./build-deps");
 var babel = require("babel-core");
+var rollup = require("rollup").rollup;
+var babelPlugin = require("rollup-plugin-babel");
 
 var assert = require("assert");
 var uglifyjs = require("uglify-js");
@@ -30,14 +32,31 @@ var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object
 var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.js"), "utf-8");
 // 16 spaces
 var padding = "                ";
+var blacklist = [
+  'helpers', '_', 'event', 'reply', 'optional', 'source', 'argumentstoobservables',
+  'spy', 'fromevent', 'describe', 'frombinder', 'addpropertyinitialvaluetostream',
+  'updatebarrier', 'functionconstruction', 'frompoll', 'scheduler', 'observable',
+  'eventstream', 'dispatcher', 'property', 'awaiting', 'groupsimultaneous',
+  'boolean', 'buffer', 'bufferingthrottle', 'bus', 'callback', 'combine',
+  'combinetemplate', 'compositeunsubscribe', 'concat', 'core', 'debounce',
+  'decode', 'delay', 'delaychanges', 'diff', 'doaction', 'doend', 'doerror',
+  'dolog', 'endonerror', 'errors', 'filter', 'first', 'flatmap', 'once',
+  'flatmaplatest', 'flatmapwithconcurrencylimit', 'flatmaperror',
+  'flatmapconcat', 'fold', 'fromarray', 'frompromise', 'groupby', 'holdwhen',
+  'interval', 'last', 'later', 'map', 'mapend', 'maperror', 'log', 'sample',
+  'when', 'repeat', 'retry', 'repeatedly', 'update', 'scan', 'zip', 'try',
+  'topromise', 'sequentially', 'take', 'merge', 'takeuntil', 'takewhile',
+  'withstatemachine', 'startwith', 'slidingwindow', 'throttle', 'skip',
+  'skipduplicates', 'skipuntil', 'skipwhile', 'skiperrors', 'jquery', 'main'
+];
 
-var main = function(options){
+var main = function(options) {
+  /*
   options = options || {};
 
-  var pieces = Deps.resolvePieces(manifests, "src");
-
+  var pieces = Deps.resolvePieces(manifests, "src").filter((piece) => blacklist.indexOf(piece.name) === -1);
   if (options.verbose) {
-    console.info("Linearised dependency graph:")
+    //console.info("Linearised dependency graph:")
     _.each(pieces, function (p) {
       var name = p.name + (p.type === "js" ? "*" : "");
       if (p.deps.length === 0) {
@@ -50,7 +69,7 @@ var main = function(options){
 
   var esOutput = header + _.map(pieces, "contents").join("\n") + footer;
   var esTranspiled = babel.transform(esOutput, JSON.parse(fs.readFileSync('.babelrc', 'utf8')));
-  var output = "(function() {\n" + esTranspiled.code + "\n}).call(this);";
+  var output = esTranspiled.code;
 
   // Stripping asserts
   function notAssertStatement(node) {
@@ -67,7 +86,7 @@ var main = function(options){
   }
 
   function stripAsserts(code) {
-    var ast = esprima.parse(code);
+    var ast = esprima.parse(code, { sourceType: 'module' });
     estraverse.replace(ast, {
       enter: function (node, parent) {
         if (node !== null && node.type === "BlockStatement") {
@@ -81,21 +100,40 @@ var main = function(options){
   var noAssertOutput = stripAsserts(output);
 
   // Minifying
-  var minifiedOutput = uglifyjs.minify(noAssertOutput, {
-    fromString: true,
-  }).code;
-
+  //var minifiedOutput = uglifyjs.minify(noAssertOutput, {
+  //  fromString: true,
+  //}).code;
+  var minifiedOutput = noAssertOutput;
+*/
   if (options.output) {
     try {fs.mkdirSync("dist")} catch (e) {}
-    fs.writeFileSync(options.output, output);
 
+    rollup({
+      entry: 'src/bacon.js',
+      plugins: [
+        babelPlugin()
+      ]
+    }).then((bundle) => {
+      return bundle.write({
+        format: 'umd',
+        moduleName: 'Bacon',
+        globals: {
+          jQuery: 'jQuery',
+          Bacon: 'Bacon',
+          Zeptop: 'Zepto'
+        },
+        dest: 'dist/Bacon.js',
+        indent: false
+      });
+    }).catch((error) => console.error(error));
+    /*
     if (options.noAssert) {
       fs.writeFileSync(options.noAssert, noAssertOutput);
     }
 
     if (options.minified) {
       fs.writeFileSync(options.minified, minifiedOutput);
-    }
+    }*/
   } else {
     console.log(output);
   }

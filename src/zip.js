@@ -1,10 +1,14 @@
-// build-dependencies: _, core, argumentstoobservables
-// build-dependencies: when
+import { argumentsToObservables, argumentsToObservablesAndFunction } from "./argumentstoobservables";
+import "./sample";
+import Bacon from "./core";
+import Observable from "./observable";
+import _ from "./_";
+import { withDesc, Desc } from "./describe";
 
 Bacon.zipAsArray = function(...args) {
   var streams = argumentsToObservables(args);
   return withDesc(
-    new Bacon.Desc(Bacon, "zipAsArray", streams),
+    new Desc(Bacon, "zipAsArray", streams),
     Bacon.zipWith(streams, (...xs) => xs));
 };
 
@@ -15,12 +19,12 @@ Bacon.zipWith = function(...args) {
 
   streams = _.map(((s) => s.toEventStream()), streams);
   return withDesc(
-    new Bacon.Desc(Bacon, "zipWith", [f].concat(streams)),
+    new Desc(Bacon, "zipWith", [f].concat(streams)),
     Bacon.when(streams, f));
 };
 
-Bacon.Observable.prototype.zip = function(other, f) {
+Observable.prototype.zip = function(other, f) {
   return withDesc(
-    new Bacon.Desc(this, "zip", [other]),
+    new Desc(this, "zip", [other]),
     Bacon.zipWith([this, other], f || Array));
 };

@@ -1,9 +1,11 @@
-// build-dependencies: observable
+import { withDesc, Desc } from "./describe";
+import { more } from "./reply";
+import Observable from "./observable";
 
-Bacon.Observable.prototype.skipErrors = function() {
-  return withDesc(new Bacon.Desc(this, "skipErrors", []), this.withHandler(function(event) {
+Observable.prototype.skipErrors = function() {
+  return withDesc(new Desc(this, "skipErrors", []), this.withHandler(function(event) {
     if (event.isError()) {
-      return Bacon.more;
+      return more;
     } else {
       return this.push(event);
     }

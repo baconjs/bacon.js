@@ -1,6 +1,10 @@
-// build-dependencies: combine
+import "./combine";
+import { Desc, withDesc } from "./describe";
+import { isArray, isObservable } from "./helpers";
+import _ from "./_";
+import Bacon from "./core";
 
-Bacon.combineTemplate = function(template) {
+export default function combineTemplate(template) {
   function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
   function setValue(ctxStack, key, value) {
     current(ctxStack)[key] = value;
@@ -60,5 +64,7 @@ Bacon.combineTemplate = function(template) {
 
   compileTemplate(template);
 
-  return withDesc(new Bacon.Desc(Bacon, "combineTemplate", [template]), Bacon.combineAsArray(streams).map(combinator));
-};
+  return withDesc(new Desc(Bacon, "combineTemplate", [template]), Bacon.combineAsArray(streams).map(combinator));
+}
+
+Bacon.combineTemplate = combineTemplate;

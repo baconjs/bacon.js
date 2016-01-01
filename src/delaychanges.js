@@ -1,7 +1,7 @@
-// build-dependencies: later
-// build-dependencies: flatmap
-// build-dependencies: addpropertyinitialvaluetostream
+import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
+import { withDesc } from "./describe";
+import Property from "./property";
 
-Bacon.Property.prototype.delayChanges = function(desc, f) {
+Property.prototype.delayChanges = function(desc, f) {
   return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
 };

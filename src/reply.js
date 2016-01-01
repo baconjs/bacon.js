@@ -1,2 +1,3 @@
-Bacon.noMore = "<no-more>";
-Bacon.more = "<more>";
+const noMore = "<no-more>";
+const more = "<more>";
+export { noMore, more };

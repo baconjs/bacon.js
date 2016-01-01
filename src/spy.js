@@ -1,5 +1,5 @@
 var spies = [];
-var registerObs = function(obs) {
+export function registerObs(obs) {
   if (spies.length) {
     if (!registerObs.running) {
       try {
@@ -12,6 +12,6 @@ var registerObs = function(obs) {
       }
     }
   }
-};
+}
 
-Bacon.spy = (spy) => spies.push(spy);
+export default (spy) => spies.push(spy);

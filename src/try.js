@@ -1,10 +1,16 @@
 // build-dependencies: core, once
-Bacon.try = function(f) {
+import once from "./once";
+import { Error } from "./event";
+import Bacon from "./core";
+
+export default function tryF(f) {
   return function(value) {
     try {
-      return Bacon.once(f(value));
+      return once(f(value));
     } catch(e) {
-      return new Bacon.Error(e);
+      return new Error(e);
     }
-  }
-};
+  };
+}
+
+Bacon.try = tryF;

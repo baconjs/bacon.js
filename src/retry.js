@@ -1,4 +1,14 @@
-// build-dependencies: flatmap, later, filter, repeat, endonerror, once, concat
+import "./concat";
+import "./endonerror";
+import "./filter";
+import "./flatmap";
+import Exception from "./exception";
+import repeat from "./repeat";
+import _ from "./_";
+import { withDesc, Desc } from "./describe";
+import once from "./once";
+import later from "./later";
+import Bacon from "./core";
 
 Bacon.retry = function(options) {
   if (!_.isFunction(options.source)) {
@@ -16,7 +26,7 @@ Bacon.retry = function(options) {
   var finished = false;
   var error = null;
 
-  return withDesc(new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat(function() {
+  return withDesc(new Desc(Bacon, "retry", [options]), repeat(function() {
     function valueStream() {
       return source().endOnError().withHandler(function(event) {
         if (event.isError()) {
@@ -42,9 +52,9 @@ Bacon.retry = function(options) {
         error: error.error,
         retriesDone: maxRetries - retries
       };
-      var pause = Bacon.later(delay(context)).filter(false);
+      var pause = later(delay(context)).filter(false);
       retries = retries - 1;
-      return pause.concat(Bacon.once().flatMap(valueStream));
+      return pause.concat(once().flatMap(valueStream));
     } else {
       return valueStream();
     }

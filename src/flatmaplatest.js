@@ -1,10 +1,14 @@
-// build-dependencies: core, functionconstruction, flatmap
-// build-dependencies: compositeunsubscribe, takeuntil
+import "./flatmap";
+import "./takeuntil";
 
-Bacon.Observable.prototype.flatMapLatest = function() {
+import { makeSpawner, makeObservable } from "./flatmap";
+import Observable from "./observable";
+import { withDesc, Desc } from "./describe";
+
+Observable.prototype.flatMapLatest = function() {
   var f = makeSpawner(arguments);
   var stream = this.toEventStream();
-  return withDesc(new Bacon.Desc(this, "flatMapLatest", [f]), stream.flatMap(function(value) {
+  return withDesc(new Desc(this, "flatMapLatest", [f]), stream.flatMap(function(value) {
     return makeObservable(f(value)).takeUntil(stream);
   }));
 };

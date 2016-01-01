@@ -7,16 +7,8 @@
     "objectLiteralShorthandProperties": true,
     "objectLiteralShorthandMethods": true,
     "restParams": true,
-    "spread": true
-  },
-  "globals": {
-    "Bacon": true,
-    "Observable": true,
-    "Exception": true,
-    "nextEvent": true,
-    "endEvent": true,
-    "withDescription": true,
-    "withDesc": true
+    "spread": true,
+    "modules": true
   },
   "rules": {
     "strict": 0

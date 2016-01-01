@@ -1,9 +1,13 @@
-// build-dependencies: frombinder, _, event
-Bacon.repeat = function(generator) {
+import fromBinder from "./frombinder";
+import { more, noMore } from "./reply";
+import { endEvent } from "./event";
+import Bacon from "./core";
+
+export default function repeat(generator) {
   var index = 0;
-  return Bacon.fromBinder(function(sink) {
+  return fromBinder(function(sink) {
     var flag = false;
-    var reply = Bacon.more;
+    var reply = more;
     var unsub = function() {};
     function handleEvent(event) {
       if (event.isEnd()) {
@@ -19,7 +23,7 @@ Bacon.repeat = function(generator) {
     function subscribeNext() {
       var next;
       flag = true;
-      while (flag && reply !== Bacon.noMore) {
+      while (flag && reply !== noMore) {
         next = generator(index++);
         flag = false;
         if (next) {
@@ -34,3 +38,5 @@ Bacon.repeat = function(generator) {
     return () => unsub();
   });
 };
+
+Bacon.repeat = repeat;

@@ -1,8 +1,9 @@
-// build-dependencies: _
+import { inherit } from './helpers';
+import _ from './_';
 
 var eventIdCounter = 0;
 
-function Event() {
+export function Event() {
   this.id = ++eventIdCounter;
 }
 
@@ -17,7 +18,7 @@ Event.prototype.filter = function() { return true; };
 Event.prototype.inspect = function() { return this.toString(); };
 Event.prototype.log = function() { return this.toString(); };
 
-function Next(valueF, eager) {
+export function Next(valueF, eager) {
   if (!(this instanceof Next)) {
     return new Next(valueF, eager);
   }
@@ -71,7 +72,7 @@ Next.prototype.log = function() { return this.value(); };
 Next.prototype._isNext = true;
 
 
-function Initial(valueF, eager) {
+export function Initial(valueF, eager) {
   if (!(this instanceof Initial)) {
     return new Initial(valueF, eager);
   }
@@ -85,7 +86,7 @@ Initial.prototype.isNext = function() { return false; };
 Initial.prototype.apply = function(value) { return new Initial(value); };
 Initial.prototype.toNext = function() { return new Next(this); };
 
-function End() {
+export function End() {
   if (!(this instanceof End)) {
     return new End();
   }
@@ -99,7 +100,7 @@ End.prototype.apply = function() { return this; };
 End.prototype.toString = function() { return "<end>"; };
 
 
-function Error(error) {
+export function Error(error) {
   if (!(this instanceof Error)) {
     return new Error(error);
   }
@@ -113,20 +114,13 @@ Error.prototype.fmap = function() { return this; };
 Error.prototype.apply = function() { return this; };
 Error.prototype.toString = function() { return "<error> " + _.toString(this.error); };
 
-
-Bacon.Event = Event;
-Bacon.Initial = Initial;
-Bacon.Next = Next;
-Bacon.End = End;
-Bacon.Error = Error;
-
-var initialEvent = function(value) { return new Initial(value, true); };
-var nextEvent = function(value) { return new Next(value, true); };
-var endEvent = function() { return new End(); };
-var toEvent = function(x) {
+export function initialEvent(value) { return new Initial(value, true); }
+export function nextEvent(value) { return new Next(value, true); }
+export function endEvent() { return new End(); }
+export function toEvent(x) {
   if (x && x._isEvent) {
     return x;
   } else {
     return nextEvent(x);
   }
-};
+}

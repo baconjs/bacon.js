@@ -1,6 +1,8 @@
-// build-dependencies: flatmap
+import { makeSpawner, flatMap_ } from "./flatmap";
+import Observable from "./observable";
+import { withDesc, Desc } from "./describe";
 
-Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function(limit, ...args) {
-  var desc = new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit, ...args]);
+Observable.prototype.flatMapWithConcurrencyLimit = function(limit, ...args) {
+  var desc = new Desc(this, "flatMapWithConcurrencyLimit", [limit, ...args]);
   return withDesc(desc, flatMap_(this, makeSpawner(args), false, limit));
 };
