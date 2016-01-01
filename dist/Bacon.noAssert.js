@@ -1,11 +1,10 @@
 (function () {
-    var _slice = Array.prototype.slice;
     var Bacon = {
         toString: function () {
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.83';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -1651,9 +1650,9 @@
         return Bacon.combineAsArray(streams.slice(0, streams.length - 1)).onValues(streams[streams.length - 1]);
     };
     Bacon.combineWith = function () {
-        var _argumentsToObservablesAndFunction = argumentsToObservablesAndFunction(arguments);
-        var streams = _argumentsToObservablesAndFunction[0];
-        var f = _argumentsToObservablesAndFunction[1];
+        var _argumentsToObservabl = argumentsToObservablesAndFunction(arguments);
+        var streams = _argumentsToObservabl[0];
+        var f = _argumentsToObservabl[1];
         var desc = new Bacon.Desc(Bacon, 'combineWith', [f].concat(streams));
         return withDesc(desc, Bacon.combineAsArray(streams).map(function (values) {
             return f.apply(undefined, values);
@@ -1979,7 +1978,7 @@
     };
     Bacon.Observable.prototype.flatMapConcat = function () {
         var desc = new Bacon.Desc(this, 'flatMapConcat', Array.prototype.slice.call(arguments, 0));
-        return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(_slice.call(arguments))));
+        return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))));
     };
     Bacon.later = function (delay, value) {
         return withDesc(new Bacon.Desc(Bacon, 'later', [
@@ -2427,7 +2426,8 @@
         }
         return withDesc(new Bacon.Desc(this, 'doLog', args), this.withHandler(function (event) {
             if (typeof console !== 'undefined' && console !== null && typeof console.log === 'function') {
-                console.log.apply(console, args.concat([event.log()]));
+                var _console;
+                (_console = console).log.apply(_console, args.concat([event.log()]));
             }
             return this.push(event);
         }));
@@ -2817,7 +2817,8 @@
         }
         this.subscribe(function (event) {
             if (typeof console !== 'undefined' && typeof console.log === 'function') {
-                console.log.apply(console, args.concat([event.log()]));
+                var _console2;
+                (_console2 = console).log.apply(_console2, args.concat([event.log()]));
             }
         });
         return this;

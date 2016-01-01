@@ -10,7 +10,8 @@ var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
 var Deps = require("./build-deps");
-var babel = require("babel");
+var babel = require("babel-core");
+
 var assert = require("assert");
 var uglifyjs = require("uglify-js");
 var esprima = require("esprima");
@@ -47,28 +48,8 @@ var main = function(options){
     });
   }
 
-  // let's be conservative with Babel options:
-  var babelOptions = {
-    comments: false,
-    whitelist: [
-      "es3.memberExpressionLiterals",
-      "es3.propertyLiterals",
-      "es6.arrowFunctions",
-      "es6.blockScoping",
-      "es6.properties.shorthand",
-      "es6.constants",
-      "es6.destructuring",
-      "es6.parameters",
-      "es6.spread"
-    ],
-    loose: [
-      "es6.spread",
-      "es6.destructuring"
-    ]
-  };
-
   var esOutput = header + _.map(pieces, "contents").join("\n") + footer;
-  var esTranspiled = babel.transform(esOutput, babelOptions);
+  var esTranspiled = babel.transform(esOutput, JSON.parse(fs.readFileSync('.babelrc', 'utf8')));
   var output = "(function() {\n" + esTranspiled.code + "\n}).call(this);";
 
   // Stripping asserts
