@@ -41,7 +41,7 @@
     "babel-plugin-transform-es2015-parameters": "^6.3.26",
     "babel-plugin-transform-es2015-shorthand-properties": "^6.3.13",
     "babel-plugin-transform-es2015-spread": "^6.3.14",
-    "babel-plugin-transform-es3-member-expression-literals": "^6.3.13"
+    "babel-plugin-transform-es3-member-expression-literals": "^6.3.13",
     "babel-plugin-transform-es3-property-literals": "^6.3.13",
     "babel-plugin-transform-object-rest-spread": "^6.3.13",
     "benchmark": "1.0.0",

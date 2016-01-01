@@ -1,0 +1,16 @@
+{
+  "comments": false,
+  "plugins": [
+    "check-es2015-constants",
+    "transform-es2015-arrow-functions",
+    "transform-es2015-block-scoping",
+    "transform-es2015-constants",
+    ["transform-es2015-destructuring", { "loose": true }],
+    "transform-es2015-parameters",
+    "transform-es2015-shorthand-properties",
+    ["transform-es2015-spread", { "loose": true }],
+    "transform-es3-member-expression-literals",
+    "transform-es3-property-literals",
+    ["transform-object-rest-spread", { "loose": true }]
+  ]
+}
