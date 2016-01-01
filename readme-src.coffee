@@ -939,7 +939,7 @@ is probably useful for Bacon core / library / plugin development only.
 For example:
 
     var src = Bacon.once(1)
-    var obs = src.map(function(x) { return -x })
+    var obs = src.map(function(x) { return -x })
     console.log(obs.toString())
     --> Bacon.once(1).map(function)
     obs.withDescription(src, "times", -1)
