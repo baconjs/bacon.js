@@ -2,12 +2,6 @@ module.exports = (grunt) ->
   grunt.initConfig
     clean:
       dist: ['dist/']
-
-    coffeelint:
-      bacon: [ 'src/*.coffee' ]
-      options:
-        configFile: 'coffeelint.json'
-
     eslint:
       bacon: [ 'src/*.js' ]
       options:
@@ -16,9 +10,6 @@ module.exports = (grunt) ->
       build:
         command: './build'
     watch:
-      coffee:
-        files: [ 'src/*.coffee' ]
-        tasks: [ 'coffeelint', 'build' ]
       js:
         files: [ 'src/*.js' ]
         tasls: [ 'eslint', 'build' ]
@@ -28,13 +19,12 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-watch'
-  grunt.loadNpmTasks 'grunt-coffeelint'
   grunt.loadNpmTasks 'grunt-eslint'
   grunt.loadNpmTasks 'grunt-shell'
 
   grunt.registerTask 'build', ['shell:build']
 
-  grunt.registerTask 'default', ['coffeelint', 'eslint', 'build', 'readme']
+  grunt.registerTask 'default', ['eslint', 'build', 'readme']
 
   grunt.registerTask 'readme', 'Generate README.md', ->
     fs = require 'fs'
