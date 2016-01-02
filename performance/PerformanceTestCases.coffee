@@ -1,4 +1,4 @@
-Bacon = (require "../src/bacon").Bacon
+Bacon = (require "../src/bacon").default
 
 class Generator
   constructor: ->
