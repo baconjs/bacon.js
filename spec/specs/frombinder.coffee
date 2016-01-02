@@ -1,3 +1,12 @@
+require("../../src/frombinder")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error
+} = require("../SpecHelper")
+
 describe "Bacon.fromBinder", ->
   describe "Provides an easier alternative to the EventStream constructor, allowing sending multiple events at a time", ->
     expectStreamEvents(

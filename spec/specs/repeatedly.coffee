@@ -1,3 +1,8 @@
+require("../../src/repeatedly")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+{ expectStreamEvents, take } = require("../SpecHelper")
+
 describe "Bacon.repeatedly", ->
   describe "repeats given sequence forever", ->
     expectStreamEvents(

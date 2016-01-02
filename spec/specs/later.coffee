@@ -1,3 +1,13 @@
+require("../../src/later")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  t
+} = require("../SpecHelper")
+
 describe "Bacon.later", ->
   describe "should send single event and end", ->
     expectStreamEvents(

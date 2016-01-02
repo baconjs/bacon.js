@@ -1,3 +1,16 @@
+require("../../src/endonerror")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  repeat,
+  error,
+  fromArray
+} = require("../SpecHelper")
+
 describe "EventStream.endOnError", ->
   describe "terminates on error", ->
     expectStreamEvents(

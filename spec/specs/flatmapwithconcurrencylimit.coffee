@@ -1,3 +1,16 @@
+require("../../src/flatmapwithconcurrencylimit")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  fromArray,
+  series,
+  semiunstable,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.flatMapWithConcurrencyLimit", ->
   describe "limits the number of concurrently active spawned streams by queuing", ->
     expectStreamEvents(
@@ -16,5 +29,3 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
   it "toString", ->
     expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
       .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")
-
-

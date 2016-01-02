@@ -1,4 +1,17 @@
-# build-dependencies: bus
+require("../../src/bus")
+require("../../src/doaction")
+require("../../src/doaction")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  add,
+  error,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.doAction", ->
   it "calls function before sending value to listeners", ->
     called = []

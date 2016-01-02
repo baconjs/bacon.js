@@ -1,5 +1,25 @@
-# build-dependencies: takeWhile, delay
-#
+require("../../src/delay")
+require("../../src/merge")
+require("../../src/takewhile")
+
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  take,
+  series,
+  repeat,
+  error,
+  t,
+  lessThan,
+  semiunstable,
+  unstable,
+  once,
+  fromArray,
+  map
+} = require("../SpecHelper")
+
 describe "EventStream.merge", ->
   describe "merges two streams and ends when both are exhausted", ->
     expectStreamEvents(
@@ -63,4 +83,3 @@ describe "Bacon.mergeAll", ->
       [])
   it "toString", ->
     expect(Bacon.mergeAll(Bacon.never()).toString()).to.equal("Bacon.mergeAll(Bacon.never())")
-

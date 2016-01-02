@@ -1,3 +1,10 @@
+{ expectStreamTimings, series, semiunstable, t } = require("../SpecHelper")
+require("../../src/bufferingthrottle")
+require("../../src/never")
+Bacon = require("../../src/core").Bacon
+
+expect = require("chai").expect
+
 describe "EventStream.bufferingThrottle(minimumInterval)", ->
   describe "limits throughput but includes all events", ->
     expectStreamTimings(

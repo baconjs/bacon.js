@@ -1,3 +1,21 @@
+require("../../src/throttle")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectStreamTimings,
+  expectPropertyEvents,
+  error,
+  lessThan,
+  map,
+  fromArray
+  series,
+  repeat,
+  t,
+  once
+} = require("../SpecHelper")
+
 describe "EventStream.throttle(delay)", ->
   describe "outputs at steady intervals, without waiting for quiet period", ->
     expectStreamTimings(

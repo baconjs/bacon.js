@@ -1,3 +1,17 @@
+require("../../src/last")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents
+  series,
+  repeatedly,
+  fromArray,
+  once,
+  semiunstable
+} = require("../SpecHelper")
+
 describe "EventStream.last", ->
   describe "takes the last element", ->
     expectStreamEvents(

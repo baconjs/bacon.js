@@ -1,3 +1,24 @@
+require("../../src/later")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  semiunstable,
+  unstable,
+  endlessly,
+  repeatedly,
+  fromArray,
+  later,
+  once,
+  t,
+  activate,
+  add
+} = require("../SpecHelper")
+
+
 describe "Integration tests", ->
   describe "Property.sampleBy", ->
     describe "uses updated property after combine", ->
@@ -349,21 +370,21 @@ describe "Integration tests", ->
           expect(values).to.deep.equal(expected)
         expect(values).to.deep.equal(expected)
 
-    verifyWhileDispatching "with combineAsArray", 
+    verifyWhileDispatching "with combineAsArray",
       (-> Bacon.combineAsArray([Bacon.constant(1)])),
       [[1]]
-    verifyWhileDispatching "with combineAsArray.startWith", 
+    verifyWhileDispatching "with combineAsArray.startWith",
         (->
           a = Bacon.constant("lolbal")
-          Bacon.combineAsArray([a, a]).map("right").startWith("wrong")), 
+          Bacon.combineAsArray([a, a]).map("right").startWith("wrong")),
         ["right"]
-    verifyWhileDispatching "with stream.startWith", 
-      (-> later(1).startWith(0)), 
+    verifyWhileDispatching "with stream.startWith",
+      (-> later(1).startWith(0)),
       [0]
-    verifyWhileDispatching "with combineAsArray.changes.startWith", 
+    verifyWhileDispatching "with combineAsArray.changes.startWith",
       (->
         a = Bacon.constant("lolbal")
-        Bacon.combineAsArray([a, a]).changes().startWith("right")), 
+        Bacon.combineAsArray([a, a]).changes().startWith("right")),
       ["right"]
     verifyWhileDispatching "with flatMap", (->
         a = Bacon.constant("lolbal")
@@ -428,7 +449,7 @@ describe "Integration tests", ->
           [0, 1])
     describe "delayed bounce in case Property ended (bug fix)", ->
       expectStreamEvents(
-        -> 
+        ->
           bus = new Bacon.Bus()
           root = Bacon.once(0).toProperty()
           root.onValue ->

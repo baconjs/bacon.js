@@ -1,4 +1,19 @@
-# build-dependencies: bus, merge
+require("../../src/bus")
+require("../../src/merge")
+require("../../src/scan")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  series,
+  unstable,
+  add,
+  fromArray,
+  once
+} = require("../SpecHelper")
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->

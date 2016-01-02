@@ -1,4 +1,30 @@
-# build-dependencies: startwith, filter, delay, interval, take, bus, mapEnd, map, merge, doaction
+require("../../src/startwith")
+require("../../src/filter")
+require("../../src/delay")
+require("../../src/interval")
+require("../../src/take")
+require("../../src/bus")
+require("../../src/map")
+require("../../src/mapend")
+require("../../src/merge")
+require("../../src/doaction")
+require("../../src/holdwhen")
+require("../../src/fromarray")
+require("../../src/startwith")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectStreamTimings,
+  expectPropertyEvents,
+  series,
+  error,
+  fromArray,
+  later,
+  semiunstable,
+  unstable
+} = require("../SpecHelper")
 
 describe "EventStream.holdWhen", ->
   describe "Keeps events on hold when a property is true", ->
@@ -69,7 +95,7 @@ describe "EventStream.holdWhen", ->
         Bacon.fromArray([new Bacon.Error(), "2"]).
           holdWhen(later(20, false).startWith(true))
       [error(), [20, "2"]])
-  describe "Sends the entire buffer even if valve ends", -> 
+  describe "Sends the entire buffer even if valve ends", ->
     expectStreamEvents(
       ->
         left = series(1, [1, 2, 3, 4, 5])
@@ -77,7 +103,7 @@ describe "EventStream.holdWhen", ->
             holdWhen(left.map(true).startWith(true).mapEnd(false))
         left.merge(bufferedRight)
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], unstable)
-  describe "Sends the entire buffer even if valve ends, case 2", -> 
+  describe "Sends the entire buffer even if valve ends, case 2", ->
     expectStreamEvents(
       ->
         left = series(2, [1, 2, 3])
@@ -92,5 +118,3 @@ describe "EventStream.holdWhen", ->
   it "toString", ->
     expect(Bacon.once(1).holdWhen(Bacon.constant(true)).toString()).to.equal(
       "Bacon.once(1).holdWhen(Bacon.constant(true))")
-
-

@@ -1,3 +1,14 @@
+require("../../src/withstatemachine")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents
+  series,
+  fromArray
+} = require("../SpecHelper")
+
 describe "EventStream.withStateMachine", ->
   f = (sum, event) ->
     if event.hasValue()

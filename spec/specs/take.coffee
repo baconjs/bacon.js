@@ -1,3 +1,19 @@
+require("../../src/take")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  repeat,
+  repeatedly,
+  unstable,
+  fromArray,
+  t,
+  once
+} = require("../SpecHelper")
+
 describe "EventStream.take", ->
   describe "takes N first elements", ->
     expectStreamEvents(

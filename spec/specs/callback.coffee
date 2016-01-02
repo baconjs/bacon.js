@@ -1,3 +1,15 @@
+{ expectStreamTimings, series, semiunstable } = require("../SpecHelper")
+require("../../src/callback")
+require("../../src/constant")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+{
+  expectStreamEvents,
+  series,
+  semiunstable,
+  error
+} = require("../SpecHelper")
+
 testLiftedCallback = (src, liftedCallback) ->
   input = [
     Bacon.constant('a')
@@ -33,9 +45,9 @@ describe "Bacon.fromCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromCallback(src, "go", "hello")
       ["hello bob"])
@@ -69,13 +81,11 @@ describe "Bacon.fromNodeCallback", ->
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
-        src = { 
+        src = {
                 "go": (param, callback) -> callback(null, param + " " + this.name)
-                "name": "bob" 
+                "name": "bob"
               }
         stream = Bacon.fromNodeCallback(src, "go", "hello")
       ["hello bob"])
   it "toString", ->
     expect(Bacon.fromNodeCallback((->), "lol").toString()).to.equal("Bacon.fromNodeCallback(function,lol)")
-
-

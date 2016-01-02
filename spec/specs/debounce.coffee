@@ -1,3 +1,24 @@
+require("../../src/debounce")
+require("../../src/constant")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectStreamTimings,
+  expectPropertyEvents,
+  expectPropertyTimings,
+  series,
+  error,
+  once,
+  take,
+  fromArray,
+  semiunstable,
+  lessThan,
+  repeat,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.debounce", ->
   describe "throttles input by given delay, passing-through errors", ->
     expectStreamEvents(

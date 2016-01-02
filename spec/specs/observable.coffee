@@ -1,4 +1,6 @@
-# build-dependencies: bus
+require("../../src/bus")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
 
 describe "Observable.onEnd", ->
   it "is called on stream end", ->
@@ -9,4 +11,3 @@ describe "Observable.onEnd", ->
     expect(ended).to.deep.equal(false)
     s.end()
     expect(ended).to.deep.equal(true)
-

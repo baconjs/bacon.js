@@ -1,3 +1,14 @@
+require("../../src/skip")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  series,
+  fromArray
+} = require("../SpecHelper")
+
 describe "EventStream.skip", ->
   describe "should skip first N items", ->
     expectStreamEvents(
@@ -13,5 +24,3 @@ describe "EventStream.skip", ->
     [2, 3])
   it "toString", ->
     expect(Bacon.never().skip(1).toString()).to.equal("Bacon.never().skip(1)")
-
-

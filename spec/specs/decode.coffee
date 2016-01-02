@@ -1,3 +1,13 @@
+require("../../src/decode")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectPropertyEvents,
+  series,
+  error
+} = require("../SpecHelper")
+
 describe "Property.decode", ->
   describe "switches between source Properties based on property value", ->
     expectPropertyEvents(

@@ -1,4 +1,10 @@
-# build-dependencies: flatmap, doerror, doaction
+require("../../src/doaction")
+require("../../src/doerror")
+require("../../src/flatmap")
+require("../../src/try")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
 describe "Bacon.try", ->
   it "maps the value over the function", ->
     Bacon

@@ -1,3 +1,16 @@
+require("../../src/fold")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectPropertyEvents,
+  error,
+  series,
+  unstable,
+  fromArray,
+  add
+} = require("../SpecHelper")
+
 describe "EventStream.fold", ->
   describe "folds stream into a single-valued Property, passes through errors", ->
     expectPropertyEvents(

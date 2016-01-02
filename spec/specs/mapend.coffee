@@ -1,4 +1,13 @@
-# build-dependencies: eventstream
+require("../../src/mapend")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  error
+} = require("../SpecHelper")
+
 describe "EventStream.mapEnd", ->
   describe "produces an extra element on stream end", ->
     expectStreamEvents(

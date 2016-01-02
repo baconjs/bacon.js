@@ -1,4 +1,13 @@
-# build-dependencies: bus
+require("../../src/bus")
+require("../../src/doerror")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series
+} = require("../SpecHelper")
+
 describe "EventStream.doError", ->
   it "calls function before sending error to listeners", ->
     called = []

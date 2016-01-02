@@ -1,4 +1,21 @@
-# build-dependencies: takeuntil
+require("../../src/takeuntil")
+require("../../src/delay")
+require("../../src/constant")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  fromArray,
+  later,
+  mergeAll,
+  semiunstable,
+  error,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.delay", ->
   describe "delays all events (except errors) by given delay in milliseconds", ->
     expectStreamEvents(
@@ -35,4 +52,3 @@ describe "Property.delay", ->
       [0])
   it "toString", ->
     expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)")
-

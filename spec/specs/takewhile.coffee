@@ -1,5 +1,18 @@
-# build-dependencies: eventstream, property, sample
-#
+require("../../src/takewhile")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  lessThan,
+  map,
+  fromArray
+  series,
+  repeat
+} = require("../SpecHelper")
+
 describe "EventStream.takeWhile", ->
   describe "takes while predicate is true", ->
     expectStreamEvents(

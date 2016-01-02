@@ -1,4 +1,20 @@
-# build-dependencies: flatMap, fold, concat, take, takeWhile, takeUntil, map
+require("../../src/concat")
+require("../../src/flatmap")
+require("../../src/fold")
+require("../../src/groupby")
+require("../../src/map")
+require("../../src/take")
+require("../../src/takeuntil")
+require("../../src/takewhile")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  unstable,
+  semiunstable
+} = require("../SpecHelper")
 
 describe "EventStream.groupBy", ->
   flattenAndConcat = (obs) ->

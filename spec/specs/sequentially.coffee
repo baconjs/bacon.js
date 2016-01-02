@@ -1,3 +1,14 @@
+require("../../src/sequentially")
+Bacon = require("../../src/bacon").Bacon
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  t,
+  unstable
+} = require("../SpecHelper")
+
 describe "Bacon.sequentially", ->
   describe "should send given events and end", ->
     expectStreamEvents(

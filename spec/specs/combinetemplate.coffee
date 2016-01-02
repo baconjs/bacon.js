@@ -1,4 +1,18 @@
-# build-dependencies: slidingwindow
+require("../../src/bus")
+require("../../src/constant")
+require("../../src/combinetemplate")
+require("../../src/delay")
+require("../../src/flatmap")
+require("../../src/slidingwindow")
+Bacon = require("../../src/core").Bacon
+expect = require("chai").expect
+{
+  expectPropertyEvents,
+  later,
+  once,
+  fromArray,
+} = require("../SpecHelper")
+{ mockFunction } = require( "../Mock")
 
 describe "combineTemplate", ->
   describe "combines streams and properties according to a template object", ->
