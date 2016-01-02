@@ -5,7 +5,7 @@ require("../../src/awaiting")
 require("../../src/once")
 
 { expectPropertyEvents, unstable, semiunstable, later, series } = require("../SpecHelper")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "EventStream.awaiting(other)", ->

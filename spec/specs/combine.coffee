@@ -4,7 +4,7 @@ require("../../src/delay")
 require("../../src/combine")
 require("../../src/constant")
 require("../../src/flatmap")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

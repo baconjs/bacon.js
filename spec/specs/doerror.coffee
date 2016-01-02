@@ -1,6 +1,6 @@
 require("../../src/bus")
 require("../../src/doerror")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

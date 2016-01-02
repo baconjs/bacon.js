@@ -3,7 +3,7 @@ require("../../src/map")
 require("../../src/scan")
 require("../../src/take")
 require("../../src/when")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

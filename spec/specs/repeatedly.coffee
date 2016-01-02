@@ -1,5 +1,5 @@
 require("../../src/repeatedly")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 { expectStreamEvents, take } = require("../SpecHelper")
 

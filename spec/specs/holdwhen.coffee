@@ -11,7 +11,7 @@ require("../../src/doaction")
 require("../../src/holdwhen")
 require("../../src/fromarray")
 require("../../src/startwith")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

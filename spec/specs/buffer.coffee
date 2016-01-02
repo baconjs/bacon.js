@@ -14,7 +14,7 @@ require("../../src/never")
   sc,
   t
 } = require("../SpecHelper")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "EventStream.bufferWithTime", ->

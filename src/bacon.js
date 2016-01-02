@@ -73,6 +73,4 @@ import "./when";
 import "./withstatemachine";
 import "./zip";
 
-Bacon.Bacon = Bacon;
 export default Bacon;
-export { Bacon };

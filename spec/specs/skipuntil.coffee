@@ -1,7 +1,7 @@
 require("../../src/filter")
 require("../../src/once")
 require("../../src/skipuntil")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

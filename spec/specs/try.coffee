@@ -2,7 +2,7 @@ require("../../src/doaction")
 require("../../src/doerror")
 require("../../src/flatmap")
 require("../../src/try")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "Bacon.try", ->

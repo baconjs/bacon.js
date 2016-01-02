@@ -4,7 +4,7 @@ require("../../src/combinetemplate")
 require("../../src/delay")
 require("../../src/flatmap")
 require("../../src/slidingwindow")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 {
   expectPropertyEvents,

@@ -2,7 +2,7 @@ require("../../src/bus")
 require("../../src/merge")
 require("../../src/scan")
 require("../../src/map")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

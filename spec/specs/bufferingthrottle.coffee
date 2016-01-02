@@ -1,7 +1,7 @@
 { expectStreamTimings, series, semiunstable, t } = require("../SpecHelper")
 require("../../src/bufferingthrottle")
 require("../../src/never")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 
 expect = require("chai").expect
 

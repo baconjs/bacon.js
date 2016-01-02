@@ -3,7 +3,7 @@ require("../../src/doaction")
 require("../../src/never")
 require("../../src/takewhile")
 require("../../src/concat")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 {
   expectStreamEvents,

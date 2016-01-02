@@ -1,6 +1,6 @@
 require("../../src/debounce")
 require("../../src/constant")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

@@ -1,5 +1,5 @@
 require("../../src/fromevent")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 { EventEmitter } = require("events")
 { expectStreamEvents, take } = require("../SpecHelper")

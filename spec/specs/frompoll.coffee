@@ -1,5 +1,5 @@
 require("../../src/frompoll")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 { expectStreamEvents, take } = require("../SpecHelper")
 

@@ -1,5 +1,5 @@
 require("../../src/maperror")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

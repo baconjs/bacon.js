@@ -1,7 +1,7 @@
 { expectStreamTimings, series, semiunstable } = require("../SpecHelper")
 require("../../src/callback")
 require("../../src/constant")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 {
   expectStreamEvents,

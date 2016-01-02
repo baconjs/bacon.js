@@ -1,5 +1,5 @@
 require("../../src/constant")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 { mockFunction, mock } = require( "../Mock")
 

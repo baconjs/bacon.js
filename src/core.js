@@ -45,10 +45,9 @@ var Bacon = {
   Property,
   CompositeUnsubscribe,
   never,
-  constant
+  constant,
+  version: '<version>'
 };
 
-Bacon.version = '<version>';
-
+Bacon.Bacon = Bacon;
 export default Bacon;
-export { Bacon };

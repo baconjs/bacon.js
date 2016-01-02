@@ -1,6 +1,6 @@
 # build-dependencies: eventstream, property
 require("../../src/log")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "Observable.log", ->

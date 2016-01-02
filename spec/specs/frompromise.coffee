@@ -1,5 +1,5 @@
 require("../../src/frompromise")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 { expectStreamEvents, error } = require("../SpecHelper")
 Bluebird = require("bluebird")

@@ -1,7 +1,7 @@
 require("../../src/filter")
 require("../../src/map")
 require("../../src/bus")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 
 {
   expectStreamEvents,

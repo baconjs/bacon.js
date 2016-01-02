@@ -2,7 +2,7 @@ require("../../src/delay")
 require("../../src/merge")
 require("../../src/takewhile")
 
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

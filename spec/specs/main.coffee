@@ -1,5 +1,5 @@
 require("../../src/later")
-Bacon = require("../../src/bacon").Bacon
+Bacon = require("../../src/bacon").default
 expect = require("chai").expect
 
 {

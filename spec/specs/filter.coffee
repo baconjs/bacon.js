@@ -1,7 +1,7 @@
 require("../../src/delay")
 require("../../src/filter")
 require("../../src/sample")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {

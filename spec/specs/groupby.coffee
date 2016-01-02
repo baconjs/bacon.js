@@ -6,7 +6,7 @@ require("../../src/map")
 require("../../src/take")
 require("../../src/takeuntil")
 require("../../src/takewhile")
-Bacon = require("../../src/core").Bacon
+Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 {
