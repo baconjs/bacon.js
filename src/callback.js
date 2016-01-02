@@ -10,7 +10,7 @@ import Bacon from "./core";
 var liftCallback = function(desc, wrapped) {
   return withMethodCallSupport(function(f, ...args) {
     var stream = partiallyApplied(wrapped, [function(values, callback) {
-      return f(...values, callback);
+      return f(...values.concat([callback]));
     }]);
     return withDesc(new Desc(Bacon, desc, [f, ...args]), Bacon.combineAsArray(args).flatMap(stream));
   });
