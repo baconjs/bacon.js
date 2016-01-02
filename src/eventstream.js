@@ -5,7 +5,6 @@ import { registerObs } from "./spy";
 import { more, noMore } from "./reply";
 import { None, Some, toOption } from "./optional";
 import Property from "./property";
-import Bacon from "./core";
 import _ from "./_";
 import { Initial } from "./event";
 import Dispatcher from "./dispatcher";

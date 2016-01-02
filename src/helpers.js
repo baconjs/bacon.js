@@ -3,7 +3,7 @@ import Exception from './exception';
 
 export function nop() {}
 export function latter(_, x) { return x; }
-export function former(x, _) { return x; }
+export function former(x) { return x; }
 export function cloneArray(xs) { return xs.slice(0); }
 export function assert(message, condition) {
   if (!condition) {

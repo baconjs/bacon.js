@@ -74,8 +74,8 @@ export function makeFunction(f, args) {
 export function convertArgsToFunction(obs, f, args, method) {
   if ((typeof f !== "undefined" && f !== null) ? f._isProperty : undefined) {
     var sampled = f.sampledBy(obs, function(p,s) { return [p,s]; });
-    return method.call(sampled, function([p, s]) { return p; })
-      .map(function([p, s]) { return s; });
+    return method.call(sampled, function([p]) { return p; })
+      .map(function([, s]) { return s; });
   } else {
     f = makeFunction(f, args);
     return method.call(obs, f);

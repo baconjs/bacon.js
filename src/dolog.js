@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+/* global console:true */
 import { withDesc, Desc } from "./describe";
 import Observable from "./observable";
 

@@ -31,8 +31,7 @@ export function makeObservable(x) {
   } else {
     return once(x);
   }
-};
-
+}
 
 export function flatMap_(root, f, firstOnly, limit) {
   var rootDep = [root];

@@ -60,6 +60,8 @@
     "coffeeify": "^1.0.0",
     "es6-promise": "^3.0.2",
     "escodegen": "^1.6.1",
+    "eslint": "^1.10.3",
+    "eslint-config-defaults": "^7.1.1",
     "esprima": "^2.0.0",
     "estraverse": "^4.1.1",
     "git-rev": "^0.2.1",

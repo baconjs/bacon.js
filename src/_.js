@@ -131,7 +131,6 @@ var _ = {
           for (key in obj) {
             if (!hasProp.call(obj, key)) continue;
             value = (function() {
-              var error;
               try {
                 return obj[key];
               } catch (error) {

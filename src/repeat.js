@@ -19,7 +19,7 @@ export default function repeat(generator) {
       } else {
         return reply = sink(event);
       }
-    };
+    }
     function subscribeNext() {
       var next;
       flag = true;
@@ -33,10 +33,10 @@ export default function repeat(generator) {
         }
       }
       return flag = true;
-    };
+    }
     subscribeNext();
     return () => unsub();
   });
-};
+}
 
 Bacon.repeat = repeat;

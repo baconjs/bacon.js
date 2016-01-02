@@ -180,7 +180,7 @@ export default function when() {
     })()).unsubscribe;
   });
   return resultStream;
-};
+}
 
 var containsDuplicateDeps = function(observables, state = []) {
   var checkObservable = function(obs) {

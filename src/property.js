@@ -45,7 +45,6 @@ extend(PropertyDispatcher.prototype, {
   },
 
   subscribe(sink) {
-    var initSent = false;
     // init value is "bounced" here because the base Dispatcher class
     // won't add more than one subscription to the underlying observable.
     // without bouncing, the init value would be missing from all new subscribers
