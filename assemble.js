@@ -6,11 +6,8 @@
 
 "use strict";
 
-var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
-var Deps = require("./build-deps");
-var babel = require("babel-core");
 var rollup = require("rollup").rollup;
 var babelPlugin = require("rollup-plugin-babel");
 
@@ -21,58 +18,18 @@ var estraverse = require("estraverse");
 var escodegen = require("escodegen");
 var jsstana = require("jsstana");
 
-var argPieceNames =  process.argv.slice(2)
-var manifests = argPieceNames.length ? argPieceNames : ["main"];
 var defaultOutput = path.join(__dirname, "dist", "Bacon.js");
 var defaultNoAssert = path.join(__dirname, "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "dist", "Bacon.min.js");
 
-// Boilerplate: *header* and *footer*
-var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.js"), "utf-8");
-var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.js"), "utf-8");
-// 16 spaces
-var padding = "                ";
-var blacklist = [
-  'helpers', '_', 'event', 'reply', 'optional', 'source', 'argumentstoobservables',
-  'spy', 'fromevent', 'describe', 'frombinder', 'addpropertyinitialvaluetostream',
-  'updatebarrier', 'functionconstruction', 'frompoll', 'scheduler', 'observable',
-  'eventstream', 'dispatcher', 'property', 'awaiting', 'groupsimultaneous',
-  'boolean', 'buffer', 'bufferingthrottle', 'bus', 'callback', 'combine',
-  'combinetemplate', 'compositeunsubscribe', 'concat', 'core', 'debounce',
-  'decode', 'delay', 'delaychanges', 'diff', 'doaction', 'doend', 'doerror',
-  'dolog', 'endonerror', 'errors', 'filter', 'first', 'flatmap', 'once',
-  'flatmaplatest', 'flatmapwithconcurrencylimit', 'flatmaperror',
-  'flatmapconcat', 'fold', 'fromarray', 'frompromise', 'groupby', 'holdwhen',
-  'interval', 'last', 'later', 'map', 'mapend', 'maperror', 'log', 'sample',
-  'when', 'repeat', 'retry', 'repeatedly', 'update', 'scan', 'zip', 'try',
-  'topromise', 'sequentially', 'take', 'merge', 'takeuntil', 'takewhile',
-  'withstatemachine', 'startwith', 'slidingwindow', 'throttle', 'skip',
-  'skipduplicates', 'skipuntil', 'skipwhile', 'skiperrors', 'jquery', 'main'
-];
-
 var main = function(options) {
-  /*
   options = options || {};
 
-  var pieces = Deps.resolvePieces(manifests, "src").filter((piece) => blacklist.indexOf(piece.name) === -1);
-  if (options.verbose) {
-    //console.info("Linearised dependency graph:")
-    _.each(pieces, function (p) {
-      var name = p.name + (p.type === "js" ? "*" : "");
-      if (p.deps.length === 0) {
-        console.info(" ", name);
-      } else {
-        console.info(" ", name + padding.substr(name.length), "←", p.deps.join(", "));
-      }
-    });
-  }
-
-  var esOutput = header + _.map(pieces, "contents").join("\n") + footer;
-  var esTranspiled = babel.transform(esOutput, JSON.parse(fs.readFileSync('.babelrc', 'utf8')));
-  var output = esTranspiled.code;
-
-  // Stripping asserts
   function notAssertStatement(node) {
+    if (node.type == "FunctionDeclaration" && node.id.name.match(/^assert/)) {
+      return false;
+    }
+
     var m1 = jsstana.match("(expr (call (ident ?fn) ??))", node);
     if (m1 && m1.fn.match(/^assert/)) {
       return false;
@@ -97,46 +54,45 @@ var main = function(options) {
     })
     return escodegen.generate(ast);
   }
-  var noAssertOutput = stripAsserts(output);
 
-  // Minifying
-  //var minifiedOutput = uglifyjs.minify(noAssertOutput, {
-  //  fromString: true,
-  //}).code;
-  var minifiedOutput = noAssertOutput;
-*/
-  if (options.output) {
-    try {fs.mkdirSync("dist")} catch (e) {}
+  try {fs.mkdirSync("dist")} catch (e) {}
 
-    rollup({
-      entry: 'src/bacon.js',
-      plugins: [
-        babelPlugin()
-      ]
-    }).then((bundle) => {
-      return bundle.write({
-        format: 'umd',
-        moduleName: 'Bacon',
-        globals: {
-          jQuery: 'jQuery',
-          Bacon: 'Bacon',
-          Zeptop: 'Zepto'
-        },
-        dest: 'dist/Bacon.js',
-        indent: false
-      });
-    }).catch((error) => console.error(error));
-    /*
+  rollup({
+    entry: 'src/bacon.js',
+    plugins: [
+      babelPlugin()
+    ]
+  }).then((bundle) => {
+    return bundle.write({
+      format: 'umd',
+      moduleName: 'Bacon',
+      globals: {
+        jQuery: 'jQuery',
+        Bacon: 'Bacon',
+        Zeptop: 'Zepto'
+      },
+      dest: 'dist/Bacon.js',
+      indent: false
+    });
+  }).then(function() {
+    var output = fs.readFileSync('dist/Bacon.js');
+    var noAssertOutput = stripAsserts(output);
     if (options.noAssert) {
       fs.writeFileSync(options.noAssert, noAssertOutput);
     }
 
+    // Minifying
+    var minifiedOutput = uglifyjs.minify(noAssertOutput, {
+      fromString: true
+    }).code;
+
     if (options.minified) {
       fs.writeFileSync(options.minified, minifiedOutput);
-    }*/
-  } else {
-    console.log(output);
-  }
+    }
+  }).catch(function(error) {
+    console.error(error);
+    process.exit(1);
+  });
 }
 
 if (require.main === module) {

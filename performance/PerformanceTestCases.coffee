@@ -1,4 +1,4 @@
-Bacon = (require "../dist/Bacon").Bacon
+Bacon = (require "../src/bacon").Bacon
 
 class Generator
   constructor: ->
@@ -105,7 +105,7 @@ _ = require "lodash"
 includeCase = (key) ->
   args = process.argv.slice(2)
   if args.length
-    _.any args, (arg) -> 
+    _.any args, (arg) ->
       key.toLowerCase().indexOf(arg.toLowerCase()) >= 0
   else
     true

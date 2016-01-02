@@ -1,5 +1,5 @@
 sinon = require 'sinon'
-Bacon = require '../dist/Bacon'
+Bacon = require '../src/bacon'
 expect = require('chai').expect
 $.fn.asEventStream = Bacon.$.asEventStream
 
@@ -36,4 +36,3 @@ describe 'asEventStream', ->
     $('body').asEventStream('click', mock).take(1).onValue(->)
     $('body').click()
     expect(mock.calledOn($('body')[0])).to.be.true
-
