@@ -1,4 +1,3 @@
-// build-dependencies: core, once
 import once from "./once";
 import { Error } from "./event";
 import Bacon from "./core";

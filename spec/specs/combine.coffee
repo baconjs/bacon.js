@@ -1,4 +1,3 @@
-# build-dependencies: bus, flatmap, delay
 require("../../src/bus")
 require("../../src/delay")
 require("../../src/combine")

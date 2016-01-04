@@ -1,5 +1,3 @@
-// build-dependencies: observable, property, combine
-
 import Observable from "./observable";
 import { withDesc, Desc } from "./describe";
 import { more, noMore } from "./reply";

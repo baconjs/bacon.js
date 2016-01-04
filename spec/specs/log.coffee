@@ -1,4 +1,3 @@
-# build-dependencies: eventstream, property
 require("../../src/log")
 Bacon = require("../../src/core").default
 expect = require("chai").expect

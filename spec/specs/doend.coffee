@@ -1,4 +1,3 @@
-# build-dependencies: bus
 require("../../src/bus")
 require("../../src/doend")
 Bacon = require("../../src/core").default

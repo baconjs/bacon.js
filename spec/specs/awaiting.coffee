@@ -1,4 +1,3 @@
-# build-dependencies: flatmap
 require("../../src/flatmap")
 require("../../src/constant")
 require("../../src/awaiting")

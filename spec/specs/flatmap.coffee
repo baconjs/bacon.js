@@ -1,4 +1,3 @@
-# build-dependencies: concat
 #
 require("../../src/concat")
 require("../../src/flatmap")

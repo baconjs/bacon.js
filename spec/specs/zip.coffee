@@ -1,4 +1,3 @@
-# build-dependencies: skip, delay
 require("../../src/delay")
 require("../../src/skip")
 require("../../src/zip")
