@@ -9,7 +9,10 @@
 var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
+var createFilter = require('rollup-pluginutils').createFilter;
 var babelPlugin = require("rollup-plugin-babel");
+
+var recast = require("recast");
 
 var assert = require("assert");
 var uglifyjs = require("uglify-js");
@@ -18,9 +21,37 @@ var estraverse = require("estraverse");
 var escodegen = require("escodegen");
 var jsstana = require("jsstana");
 
+var argPieceNames = process.argv.slice(2);
 var defaultOutput = path.join(__dirname, "dist", "Bacon.js");
 var defaultNoAssert = path.join(__dirname, "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "dist", "Bacon.min.js");
+
+var customBuildPlugin = function(options) {
+  var pieces = (options || {}).pieces || [];
+  var filter = function(id) {
+    return path.basename(id) === 'bacon.js';
+  }
+
+  return {
+    transform (code, id) {
+      if (!filter(id)) return;
+
+      var ast = recast.parse(code, { sourceFileName: id });
+      recast.visit(ast, {
+        visitImportDeclaration: function(path) {
+          this.traverse(path);
+          var name = path.node.source.value.replace(/^.\//, '');
+          if (name !== 'core' && pieces.indexOf(name) === -1) {
+            path.replace(null);
+          }
+
+        }
+      });
+
+      return recast.print(ast, { sourceMapName: "map.json" });
+    }
+  };
+}
 
 var main = function(options) {
   options = options || {};
@@ -57,11 +88,14 @@ var main = function(options) {
 
   try {fs.mkdirSync("dist")} catch (e) {}
 
+  var plugins = [babelPlugin()];
+  if (process.argv.length > 2) {
+    plugins.push(customBuildPlugin({ pieces: argPieceNames }));
+  }
+
   rollup({
     entry: 'src/bacon.js',
-    plugins: [
-      babelPlugin()
-    ]
+    plugins: plugins
   }).then((bundle) => {
     return bundle.write({
       format: 'umd',
