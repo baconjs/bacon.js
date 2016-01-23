@@ -1,5 +1,6 @@
 # build-dependencies: combine
 require("../../src/combine")
+require("../../src/combinetemplate")
 require("../../src/spy")
 Bacon = require("../../src/bacon").Bacon
 expect = require("chai").expect

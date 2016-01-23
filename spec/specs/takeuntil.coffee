@@ -1,4 +1,6 @@
 require("../../src/takeuntil")
+require("../../src/filter")
+require("../../src/bus")
 Bacon = require("../../src/bacon").Bacon
 expect = require("chai").expect
 

@@ -1,6 +1,7 @@
 require("../../src/bus")
 require("../../src/merge")
 require("../../src/scan")
+require("../../src/map")
 Bacon = require("../../src/bacon").Bacon
 expect = require("chai").expect
 
