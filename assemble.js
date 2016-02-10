@@ -4,17 +4,15 @@
  * This file is responsible for building Bacon.js, Bacon.noAssert.js and Bacon.min.js
  */
 
+/* eslint no-console: 0 */
 "use strict";
 
 var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
-var createFilter = require('rollup-pluginutils').createFilter;
 var babelPlugin = require("rollup-plugin-babel");
 
 var recast = require("recast");
-
-var assert = require("assert");
 var uglifyjs = require("uglify-js");
 var esprima = require("esprima");
 var estraverse = require("estraverse");
@@ -76,7 +74,7 @@ var main = function(options) {
   function stripAsserts(code) {
     var ast = esprima.parse(code, { sourceType: 'module' });
     estraverse.replace(ast, {
-      enter: function (node, parent) {
+      enter: function (node) {
         if (node !== null && node.type === "BlockStatement") {
           node.body = node.body.filter(notAssertStatement);
           return node;
@@ -86,7 +84,9 @@ var main = function(options) {
     return escodegen.generate(ast);
   }
 
-  try {fs.mkdirSync("dist")} catch (e) {}
+  try {fs.mkdirSync("dist")} catch (e) {
+    // directory exists, do nothing
+  }
 
   var plugins = [babelPlugin()];
   if (process.argv.length > 2) {
@@ -134,7 +134,7 @@ if (require.main === module) {
     verbose: true,
     output: defaultOutput,
     noAssert: defaultNoAssert,
-    minified: defaultMinified,
+    minified: defaultMinified
   });
 }
 

@@ -20,5 +20,9 @@
     "clearTimeout": true,
     "setInterval": true,
     "clearInterval": true
+  },
+  "env": {
+    "browser": true,
+    "node": true
   }
 }
