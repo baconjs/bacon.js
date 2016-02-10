@@ -29,7 +29,9 @@
     }
   ],
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^3.10.0"	
+  },
   "devDependencies": {
     "babel": "^5.8.23",
     "benchmark": "1.0.0",
