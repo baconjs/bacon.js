@@ -1,5 +1,4 @@
 /* eslint no-console: 0 */
-/* global console:true */
 import Observable from "./observable";
 
 Observable.prototype.log = function(...args) {
