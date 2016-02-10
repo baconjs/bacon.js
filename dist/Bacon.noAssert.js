@@ -298,8 +298,6 @@
         }
     };
     var recursionDepth = 0;
-    var noMore = '<no-more>';
-    var more = '<more>';
     var eventIdCounter = 0;
     function Event() {
         this.id = ++eventIdCounter;
@@ -465,6 +463,70 @@
             return nextEvent(x);
         }
     }
+    var noMore = '<no-more>';
+    var more = '<more>';
+    var spies = [];
+    function registerObs(obs) {
+        if (spies.length) {
+            if (!registerObs.running) {
+                try {
+                    registerObs.running = true;
+                    spies.forEach(function (spy) {
+                        spy(obs);
+                    });
+                } finally {
+                    delete registerObs.running;
+                }
+            }
+        }
+    }
+    var spy = function (spy) {
+        return spies.push(spy);
+    };
+    function Desc(context, method, args) {
+        this.context = context;
+        this.method = method;
+        this.args = args;
+    }
+    Desc.empty = new Desc('', '', []);
+    extend(Desc.prototype, {
+        _isDesc: true,
+        deps: function () {
+            if (!this.cached) {
+                this.cached = findDeps([this.context].concat(this.args));
+            }
+            return this.cached;
+        },
+        toString: function () {
+            return _.toString(this.context) + '.' + _.toString(this.method) + '(' + _.map(_.toString, this.args) + ')';
+        }
+    });
+    var describe = function (context, method) {
+        var ref = context || method;
+        if (ref && ref._isDesc) {
+            return context || method;
+        } else {
+            for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+                args[_key - 2] = arguments[_key];
+            }
+            return new Desc(context, method, args);
+        }
+    };
+    var withDesc = function (desc, obs) {
+        obs.desc = desc;
+        return obs;
+    };
+    var findDeps = function (x) {
+        if (isArray(x)) {
+            return _.flatMap(findDeps, x);
+        } else if (isObservable(x)) {
+            return [x];
+        } else if (typeof x !== 'undefined' && x !== null ? x._isSource : undefined) {
+            return [x.obs];
+        } else {
+            return [];
+        }
+    };
     var UpdateBarrier = function () {
         var rootEvent;
         var waiterObs = [];
@@ -588,6 +650,23 @@
             afterTransaction: afterTransaction
         };
     }();
+    var scheduler = {
+        setTimeout: function (f, d) {
+            return setTimeout(f, d);
+        },
+        setInterval: function (f, i) {
+            return setInterval(f, i);
+        },
+        clearInterval: function (id) {
+            return clearInterval(id);
+        },
+        clearTimeout: function (id) {
+            return clearTimeout(id);
+        },
+        now: function () {
+            return new Date().getTime();
+        }
+    };
     function Dispatcher(_subscribe, _handleEvent) {
         this._subscribe = _subscribe;
         this._handleEvent = _handleEvent;
@@ -689,50 +768,6 @@
                     }
                 };
             }(this);
-        }
-    };
-    function Desc(context, method, args) {
-        this.context = context;
-        this.method = method;
-        this.args = args;
-    }
-    Desc.empty = new Desc('', '', []);
-    extend(Desc.prototype, {
-        _isDesc: true,
-        deps: function () {
-            if (!this.cached) {
-                this.cached = findDeps([this.context].concat(this.args));
-            }
-            return this.cached;
-        },
-        toString: function () {
-            return _.toString(this.context) + '.' + _.toString(this.method) + '(' + _.map(_.toString, this.args) + ')';
-        }
-    });
-    var describe = function (context, method) {
-        var ref = context || method;
-        if (ref && ref._isDesc) {
-            return context || method;
-        } else {
-            for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-                args[_key - 2] = arguments[_key];
-            }
-            return new Desc(context, method, args);
-        }
-    };
-    var withDesc = function (desc, obs) {
-        obs.desc = desc;
-        return obs;
-    };
-    var findDeps = function (x) {
-        if (isArray(x)) {
-            return _.flatMap(findDeps, x);
-        } else if (isObservable(x)) {
-            return [x];
-        } else if (typeof x !== 'undefined' && x !== null ? x._isSource : undefined) {
-            return [x.obs];
-        } else {
-            return [];
         }
     };
     function withMethodCallSupport(wrapped) {
@@ -912,100 +947,6 @@
     Observable.prototype.assign = Observable.prototype.onValue;
     Observable.prototype.forEach = Observable.prototype.onValue;
     Observable.prototype.inspect = Observable.prototype.toString;
-    var spies = [];
-    function registerObs(obs) {
-        if (spies.length) {
-            if (!registerObs.running) {
-                try {
-                    registerObs.running = true;
-                    spies.forEach(function (spy) {
-                        spy(obs);
-                    });
-                } finally {
-                    delete registerObs.running;
-                }
-            }
-        }
-    }
-    var spy = function (spy) {
-        return spies.push(spy);
-    };
-    function EventStream(desc, subscribe, handler) {
-        if (!(this instanceof EventStream)) {
-            return new EventStream(desc, subscribe, handler);
-        }
-        if (_.isFunction(desc)) {
-            handler = subscribe;
-            subscribe = desc;
-            desc = Desc.empty;
-        }
-        Observable.call(this, desc);
-        this.dispatcher = new Dispatcher(subscribe, handler);
-        registerObs(this);
-    }
-    inherit(EventStream, Observable);
-    extend(EventStream.prototype, {
-        _isEventStream: true,
-        toProperty: function (initValue_) {
-            var initValue = arguments.length === 0 ? None : toOption(function () {
-                return initValue_;
-            });
-            var disp = this.dispatcher;
-            var desc = new Desc(this, 'toProperty', [initValue_]);
-            return new Property(desc, function (sink) {
-                var initSent = false;
-                var subbed = false;
-                var unsub = nop;
-                var reply = more;
-                var sendInit = function () {
-                    if (!initSent) {
-                        return initValue.forEach(function (value) {
-                            initSent = true;
-                            reply = sink(new Initial(value));
-                            if (reply === noMore) {
-                                unsub();
-                                unsub = nop;
-                                return nop;
-                            }
-                        });
-                    }
-                };
-                unsub = disp.subscribe(function (event) {
-                    if (event.hasValue()) {
-                        if (event.isInitial() && !subbed) {
-                            initValue = new Some(function () {
-                                return event.value();
-                            });
-                            return more;
-                        } else {
-                            if (!event.isInitial()) {
-                                sendInit();
-                            }
-                            initSent = true;
-                            initValue = new Some(event);
-                            return sink(event);
-                        }
-                    } else {
-                        if (event.isEnd()) {
-                            reply = sendInit();
-                        }
-                        if (reply !== noMore) {
-                            return sink(event);
-                        }
-                    }
-                });
-                subbed = true;
-                sendInit();
-                return unsub;
-            });
-        },
-        toEventStream: function () {
-            return this;
-        },
-        withHandler: function (handler) {
-            return new EventStream(new Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler);
-        }
-    });
     function PropertyDispatcher(property, subscribe, handleEvent) {
         Dispatcher.call(this, subscribe, handleEvent);
         this.property = property;
@@ -1097,19 +1038,82 @@
             });
         }
     });
-    function constant(value) {
-        return new Property(new Desc(Bacon, 'constant', [value]), function (sink) {
-            sink(initialEvent(value));
-            sink(endEvent());
-            return nop;
-        });
+    function EventStream(desc, subscribe, handler) {
+        if (!(this instanceof EventStream)) {
+            return new EventStream(desc, subscribe, handler);
+        }
+        if (_.isFunction(desc)) {
+            handler = subscribe;
+            subscribe = desc;
+            desc = Desc.empty;
+        }
+        Observable.call(this, desc);
+        this.dispatcher = new Dispatcher(subscribe, handler);
+        registerObs(this);
     }
-    function never() {
-        return new EventStream(describe(Bacon, 'never'), function (sink) {
-            sink(endEvent());
-            return nop;
-        });
-    }
+    inherit(EventStream, Observable);
+    extend(EventStream.prototype, {
+        _isEventStream: true,
+        toProperty: function (initValue_) {
+            var initValue = arguments.length === 0 ? None : toOption(function () {
+                return initValue_;
+            });
+            var disp = this.dispatcher;
+            var desc = new Desc(this, 'toProperty', [initValue_]);
+            return new Property(desc, function (sink) {
+                var initSent = false;
+                var subbed = false;
+                var unsub = nop;
+                var reply = more;
+                var sendInit = function () {
+                    if (!initSent) {
+                        return initValue.forEach(function (value) {
+                            initSent = true;
+                            reply = sink(new Initial(value));
+                            if (reply === noMore) {
+                                unsub();
+                                unsub = nop;
+                                return nop;
+                            }
+                        });
+                    }
+                };
+                unsub = disp.subscribe(function (event) {
+                    if (event.hasValue()) {
+                        if (event.isInitial() && !subbed) {
+                            initValue = new Some(function () {
+                                return event.value();
+                            });
+                            return more;
+                        } else {
+                            if (!event.isInitial()) {
+                                sendInit();
+                            }
+                            initSent = true;
+                            initValue = new Some(event);
+                            return sink(event);
+                        }
+                    } else {
+                        if (event.isEnd()) {
+                            reply = sendInit();
+                        }
+                        if (reply !== noMore) {
+                            return sink(event);
+                        }
+                    }
+                });
+                subbed = true;
+                sendInit();
+                return unsub;
+            });
+        },
+        toEventStream: function () {
+            return this;
+        },
+        withHandler: function (handler) {
+            return new EventStream(new Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler);
+        }
+    });
     function CompositeUnsubscribe() {
         var ss = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
         this.unsubscribe = _.bind(this.unsubscribe, this);
@@ -1178,23 +1182,19 @@
             return this.count() === 0;
         }
     });
-    var scheduler = {
-        setTimeout: function (f, d) {
-            return setTimeout(f, d);
-        },
-        setInterval: function (f, i) {
-            return setInterval(f, i);
-        },
-        clearInterval: function (id) {
-            return clearInterval(id);
-        },
-        clearTimeout: function (id) {
-            return clearTimeout(id);
-        },
-        now: function () {
-            return new Date().getTime();
-        }
-    };
+    function never() {
+        return new EventStream(describe(Bacon, 'never'), function (sink) {
+            sink(endEvent());
+            return nop;
+        });
+    }
+    function constant(value) {
+        return new Property(new Desc(Bacon, 'constant', [value]), function (sink) {
+            sink(initialEvent(value));
+            sink(endEvent());
+            return nop;
+        });
+    }
     var Bacon = {
         toString: function () {
             return 'Bacon';
