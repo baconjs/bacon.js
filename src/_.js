@@ -1,4 +1,5 @@
-// build-dependencies: helpers
+import { isArray } from './helpers';
+import { None } from './optional';
 
 var _ = {
   indexOf: (() => {
@@ -130,7 +131,6 @@ var _ = {
           for (key in obj) {
             if (!hasProp.call(obj, key)) continue;
             value = (function() {
-              var error;
               try {
                 return obj[key];
               } catch (error) {
@@ -152,5 +152,4 @@ var _ = {
 };
 
 var recursionDepth = 0;
-
-Bacon._ = _;
+export default _;

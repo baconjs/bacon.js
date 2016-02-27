@@ -5,11 +5,10 @@
 var fs = require("fs");
 var shell = require('shelljs');
 
-var testModules = fs.readdirSync("spec/specs")
-    .map(function(name) { return name.substring(0, name.length - 7)})
+var testModules = fs.readdirSync("spec/specs");
 
 testModules.forEach(function(moduleName) {
-  var result = shell.exec("./runtests " + moduleName)
+  var result = shell.exec("BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs/" + moduleName)
   if (result.code != 0)
     process.exit(result.code)
 })

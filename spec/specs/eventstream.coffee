@@ -1,4 +1,19 @@
-# build-dependencies: property
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  testSideEffects,
+  unstable,
+  error,
+  once,
+  fromArray,
+  series,
+  skip,
+  later,
+  map
+} = require("../SpecHelper")
 
 describe "EventStream constructor", ->
   it "Can be instantiated without new", ->
@@ -83,7 +98,7 @@ describe "Observable.withDescription", ->
     expect(description.context).to.equal(Bacon)
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
-    
+
 describe "EventStream.subscribe", ->
   it "asserts that argument is function", ->
     f = -> Bacon.never().subscribe("a string")

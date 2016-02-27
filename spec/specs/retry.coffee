@@ -1,4 +1,14 @@
-# build-dependencies: skipDuplicates, take
+require("../../src/skipduplicates")
+require("../../src/retry")
+require("../../src/take")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  fromArray
+} = require("../SpecHelper")
 
 describe "Bacon.retry", ->
   describe "does not retry after value", ->

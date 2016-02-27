@@ -1,4 +1,6 @@
-# build-dependencies: eventstream, property
+require("../../src/log")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
 
 describe "Observable.log", ->
   preservingLog = (f) ->
@@ -26,5 +28,3 @@ describe "Observable.log", ->
     expect(new Bacon.End().log()).to.equal("<end>")
   it "toString", ->
     expect(Bacon.never().log().toString()).to.equal("Bacon.never()")
-
-

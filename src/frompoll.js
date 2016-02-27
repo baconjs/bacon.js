@@ -1,9 +1,13 @@
-// build-dependencies: scheduler, frombinder
+import fromBinder from "./frombinder";
+import { Desc, withDesc } from "./describe";
+import Bacon from "./core";
 
-Bacon.fromPoll = function(delay, poll) {
-  var desc = new Bacon.Desc(Bacon, "fromPoll", [delay, poll]);
-  return withDesc(desc, Bacon.fromBinder((function(handler) {
+export default function fromPoll(delay, poll) {
+  var desc = new Desc(Bacon, "fromPoll", [delay, poll]);
+  return withDesc(desc, fromBinder((function(handler) {
     var id = Bacon.scheduler.setInterval(handler, delay);
     return function() { return Bacon.scheduler.clearInterval(id); };
   }), poll));
-};
+}
+
+Bacon.fromPoll = fromPoll;

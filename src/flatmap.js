@@ -1,36 +1,42 @@
-// build-dependencies: core, eventstream, once
-// build-dependencies: functionconstruction
-// build-dependencies: compositeunsubscribe
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import { Desc } from "./describe";
+import { endEvent } from "./event";
+import { isObservable } from "./helpers";
+import _ from "./_";
+import { makeFunctionArgs } from "./functionconstruction";
+import Observable from "./observable";
+import EventStream from "./eventstream";
+import { noMore, more } from "./reply";
+import once from "./once";
 
-Bacon.Observable.prototype.flatMap = function() {
+Observable.prototype.flatMap = function() {
   return flatMap_(this, makeSpawner(arguments));
 };
 
-Bacon.Observable.prototype.flatMapFirst = function() {
+Observable.prototype.flatMapFirst = function() {
   return flatMap_(this, makeSpawner(arguments), true);
 };
 
-var makeSpawner = function(args) {
+export function makeSpawner(args) {
   if (args.length === 1 && isObservable(args[0])) {
     return _.always(args[0]);
   } else {
     return makeFunctionArgs(args);
   }
-};
+}
 
-var makeObservable = function(x) {
+export function makeObservable(x) {
   if (isObservable(x)) {
     return x;
   } else {
-    return Bacon.once(x);
+    return once(x);
   }
-};
+}
 
-
-var flatMap_ = function(root, f, firstOnly, limit) {
+export function flatMap_(root, f, firstOnly, limit) {
   var rootDep = [root];
   var childDeps = [];
-  var desc = new Bacon.Desc(root, "flatMap" + (firstOnly ? "First" : ""), [f]);
+  var desc = new Desc(root, "flatMap" + (firstOnly ? "First" : ""), [f]);
   var result = new EventStream(desc, function(sink) {
     var composite = new CompositeUnsubscribe();
     var queue = [];
@@ -43,14 +49,14 @@ var flatMap_ = function(root, f, firstOnly, limit) {
             _.remove(child, childDeps);
             checkQueue();
             checkEnd(unsubMe);
-            return Bacon.noMore;
+            return noMore;
           } else {
             if ((typeof event !== "undefined" && event !== null) ? event._isInitial : undefined) {
               // To support Property as the spawned stream
               event = event.toNext();
             }
             var reply = sink(event);
-            if (reply === Bacon.noMore) { unsubAll(); }
+            if (reply === noMore) { unsubAll(); }
             return reply;
           }
         });
@@ -70,9 +76,9 @@ var flatMap_ = function(root, f, firstOnly, limit) {
       } else if (event.isError()) {
         return sink(event);
       } else if (firstOnly && composite.count() > 1) {
-        return Bacon.more;
+        return more;
       } else {
-        if (composite.unsubscribed) { return Bacon.noMore; }
+        if (composite.unsubscribed) { return noMore; }
         if (limit && composite.count() > limit) {
           return queue.push(event);
         } else {
@@ -91,4 +97,4 @@ var flatMap_ = function(root, f, firstOnly, limit) {
     }
   };
   return result;
-};
+}

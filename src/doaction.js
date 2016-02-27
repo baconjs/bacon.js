@@ -1,8 +1,10 @@
-// build-dependencies: observable
+import { makeFunctionArgs } from "./functionconstruction";
+import { withDesc, Desc } from "./describe";
+import Observable from "./observable";
 
-Bacon.Observable.prototype.doAction = function() {
+Observable.prototype.doAction = function() {
   var f = makeFunctionArgs(arguments);
-  return withDesc(new Bacon.Desc(this, "doAction", [f]), this.withHandler(function(event) {
+  return withDesc(new Desc(this, "doAction", [f]), this.withHandler(function(event) {
     if (event.hasValue()) { f(event.value()); }
     return this.push(event);
   }));

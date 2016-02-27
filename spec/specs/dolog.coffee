@@ -1,4 +1,11 @@
-# build-dependencies: eventstream, property
+require("../../src/dolog")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  once
+} = require("../SpecHelper")
 
 describe "Observable.doLog", ->
   preservingLog = (f) ->
@@ -43,5 +50,3 @@ describe "Observable.doLog", ->
     expect(loggedValues).to.deep.equal [true, '<end>']
   it "toString", ->
     expect(Bacon.never().doLog().toString()).to.equal("Bacon.never().doLog()")
-
-

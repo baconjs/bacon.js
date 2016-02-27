@@ -1,12 +1,13 @@
-// build-dependencies: fromarray
-// build-dependencies: when
-// build-dependencies: once
+import EventStream from "./eventstream";
+import { nextEvent, endEvent } from "./event";
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import { Desc } from "./describe";
 
-Bacon.EventStream.prototype.holdWhen = function(valve) {
+EventStream.prototype.holdWhen = function(valve) {
   var onHold = false;
   var bufferedValues = [];
   var src = this;
-  return new EventStream(new Bacon.Desc(this, "holdWhen", [valve]), function(sink) {
+  return new EventStream(new Desc(this, "holdWhen", [valve]), function(sink) {
     var composite = new CompositeUnsubscribe();
     var subscribed = false;
     var endIfBothEnded = function(unsub) {

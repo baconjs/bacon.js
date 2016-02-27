@@ -1,14 +1,21 @@
-// build-dependencies: core, source
-// build-dependencies: functionconstruction
-// build-dependencies: when, map
+import EventStream from "./eventstream";
+import Observable from "./observable";
+import Property from "./property";
+import { former } from "./helpers";
+import { Source } from "./source";
+import { toCombinator } from "./functionconstruction";
+import { withDesc, Desc } from "./describe";
+import map from "./map";
+import when from "./when";
+import Bacon from "./core";
 
-Bacon.EventStream.prototype.sampledBy = function(sampler, combinator) {
+EventStream.prototype.sampledBy = function(sampler, combinator) {
   return withDesc(
-    new Bacon.Desc(this, "sampledBy", [sampler, combinator]),
+    new Desc(this, "sampledBy", [sampler, combinator]),
     this.toProperty().sampledBy(sampler, combinator));
 };
 
-Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
+Property.prototype.sampledBy = function(sampler, combinator) {
   var lazy = false;
   if ((typeof combinator !== "undefined" && combinator !== null)) {
     combinator = toCombinator(combinator);
@@ -18,25 +25,21 @@ Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
   }
   var thisSource = new Source(this, false, lazy);
   var samplerSource = new Source(sampler, true, lazy);
-  var stream = Bacon.when([thisSource, samplerSource], combinator);
+  var stream = when([thisSource, samplerSource], combinator);
   var result = sampler._isProperty ? stream.toProperty() : stream;
-  return withDesc(new Bacon.Desc(this, "sampledBy", [sampler, combinator]), result);
+  return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 
-Bacon.Property.prototype.sample = function(interval) {
+Property.prototype.sample = function(interval) {
   return withDesc(
-    new Bacon.Desc(this, "sample", [interval]),
+    new Desc(this, "sample", [interval]),
     this.sampledBy(Bacon.interval(interval, {})));
 };
 
-Bacon.Observable.prototype.map = function(p, ...args) {
+Observable.prototype.map = function(p) {
   if (p && p._isProperty) {
     return p.sampledBy(this, former);
   } else {
-    return convertArgsToFunction(this, p, args, function(f) {
-      return withDesc(new Bacon.Desc(this, "map", [f]), this.withHandler(function(event) {
-        return this.push(event.fmap(f));
-      }));
-    });
+    return map.apply(this, arguments);
   }
 };

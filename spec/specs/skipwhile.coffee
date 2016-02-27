@@ -1,5 +1,17 @@
-# build-dependencies: property, eventstream, sample
-#
+require("../../src/sample")
+require("../../src/skipwhile")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  series,
+  fromArray,
+  lessThan
+} = require("../SpecHelper")
+
 describe "EventStream.skipWhile", ->
   describe "skips filter predicate holds true", ->
     expectStreamEvents(

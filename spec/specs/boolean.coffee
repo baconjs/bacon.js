@@ -1,3 +1,10 @@
+require("../../src/boolean")
+require("../../src/constant")
+
+{ expectPropertyEvents } = require("../SpecHelper")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
 describe "Boolean logic", ->
   describe "combines Properties with and()", ->
     expectPropertyEvents(
@@ -26,4 +33,3 @@ describe "Boolean logic", ->
         [true])
   it "toString", ->
     expect(Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3)).toString()).to.equal("Bacon.constant(1).and(Bacon.constant(2).not()).or(Bacon.constant(3))")
-

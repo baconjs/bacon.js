@@ -4,75 +4,61 @@
  * This file is responsible for building Bacon.js, Bacon.noAssert.js and Bacon.min.js
  */
 
+/* eslint no-console: 0 */
 "use strict";
 
-var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
-var Deps = require("./build-deps");
-var babel = require("babel");
-var assert = require("assert");
+var rollup = require("rollup").rollup;
+var babelPlugin = require("rollup-plugin-babel");
+
+var recast = require("recast");
 var uglifyjs = require("uglify-js");
 var esprima = require("esprima");
 var estraverse = require("estraverse");
 var escodegen = require("escodegen");
 var jsstana = require("jsstana");
 
-var argPieceNames =  process.argv.slice(2)
-var manifests = argPieceNames.length ? argPieceNames : ["main"];
+var argPieceNames = process.argv.slice(2);
 var defaultOutput = path.join(__dirname, "dist", "Bacon.js");
 var defaultNoAssert = path.join(__dirname, "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "dist", "Bacon.min.js");
 
-// Boilerplate: *header* and *footer*
-var header = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "object.js"), "utf-8");
-var footer = fs.readFileSync(path.join(__dirname, "src", "boilerplate",  "exports.js"), "utf-8");
-// 16 spaces
-var padding = "                ";
-
-var main = function(options){
-  options = options || {};
-
-  var pieces = Deps.resolvePieces(manifests, "src");
-
-  if (options.verbose) {
-    console.info("Linearised dependency graph:")
-    _.each(pieces, function (p) {
-      var name = p.name + (p.type === "js" ? "*" : "");
-      if (p.deps.length === 0) {
-        console.info(" ", name);
-      } else {
-        console.info(" ", name + padding.substr(name.length), "←", p.deps.join(", "));
-      }
-    });
+var customBuildPlugin = function(options) {
+  var pieces = (options || {}).pieces || [];
+  var filter = function(id) {
+    return path.basename(id) === 'bacon.js';
   }
 
-  // let's be conservative with Babel options:
-  var babelOptions = {
-    comments: false,
-    whitelist: [
-      "es3.memberExpressionLiterals",
-      "es3.propertyLiterals",
-      "es6.arrowFunctions",
-      "es6.blockScoping",
-      "es6.properties.shorthand",
-      "es6.constants",
-      "es6.destructuring",
-      "es6.parameters",
-      "es6.spread"
-    ],
-    loose: [
-      "es6.spread",
-      "es6.destructuring"
-    ]
+  return {
+    transform (code, id) {
+      if (!filter(id)) return;
+
+      var ast = recast.parse(code, { sourceFileName: id });
+      recast.visit(ast, {
+        visitImportDeclaration: function(path) {
+          this.traverse(path);
+          var name = path.node.source.value.replace(/^.\//, '');
+          if (name !== 'core' && pieces.indexOf(name) === -1) {
+            path.replace(null);
+          }
+
+        }
+      });
+
+      return recast.print(ast, { sourceMapName: "map.json" });
+    }
   };
+}
 
-  var esOutput = header + _.map(pieces, "contents").join("\n") + footer;
-  var esTranspiled = babel.transform(esOutput, babelOptions);
-  var output = "(function() {\n" + esTranspiled.code + "\n}).call(this);";
+var main = function(options) {
+  options = options || {};
 
-  // Stripping asserts
   function notAssertStatement(node) {
+    if (node.type == "FunctionDeclaration" && node.id.name.match(/^assert/)) {
+      return false;
+    }
+
     var m1 = jsstana.match("(expr (call (ident ?fn) ??))", node);
     if (m1 && m1.fn.match(/^assert/)) {
       return false;
@@ -86,9 +72,9 @@ var main = function(options){
   }
 
   function stripAsserts(code) {
-    var ast = esprima.parse(code);
+    var ast = esprima.parse(code, { sourceType: 'module' });
     estraverse.replace(ast, {
-      enter: function (node, parent) {
+      enter: function (node) {
         if (node !== null && node.type === "BlockStatement") {
           node.body = node.body.filter(notAssertStatement);
           return node;
@@ -97,27 +83,50 @@ var main = function(options){
     })
     return escodegen.generate(ast);
   }
-  var noAssertOutput = stripAsserts(output);
 
-  // Minifying
-  var minifiedOutput = uglifyjs.minify(noAssertOutput, {
-    fromString: true,
-  }).code;
+  try {fs.mkdirSync("dist")} catch (e) {
+    // directory exists, do nothing
+  }
 
-  if (options.output) {
-    try {fs.mkdirSync("dist")} catch (e) {}
-    fs.writeFileSync(options.output, output);
+  var plugins = [babelPlugin()];
+  if (process.argv.length > 2) {
+    plugins.push(customBuildPlugin({ pieces: argPieceNames }));
+  }
 
+  rollup({
+    entry: 'src/bacon.js',
+    plugins: plugins
+  }).then((bundle) => {
+    return bundle.write({
+      format: 'umd',
+      moduleName: 'Bacon',
+      globals: {
+        jQuery: 'jQuery',
+        Bacon: 'Bacon',
+        Zepto: 'Zepto'
+      },
+      dest: 'dist/Bacon.js',
+      indent: false
+    });
+  }).then(function() {
+    var output = fs.readFileSync('dist/Bacon.js');
+    var noAssertOutput = stripAsserts(output);
     if (options.noAssert) {
       fs.writeFileSync(options.noAssert, noAssertOutput);
     }
 
+    // Minifying
+    var minifiedOutput = uglifyjs.minify(noAssertOutput, {
+      fromString: true
+    }).code;
+
     if (options.minified) {
       fs.writeFileSync(options.minified, minifiedOutput);
     }
-  } else {
-    console.log(output);
-  }
+  }).catch(function(error) {
+    console.error(error);
+    process.exit(1);
+  });
 }
 
 if (require.main === module) {
@@ -125,7 +134,7 @@ if (require.main === module) {
     verbose: true,
     output: defaultOutput,
     noAssert: defaultNoAssert,
-    minified: defaultMinified,
+    minified: defaultMinified
   });
 }
 

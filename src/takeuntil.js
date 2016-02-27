@@ -1,12 +1,16 @@
-// build-dependencies: core
-// build-dependencies: addpropertyinitialvaluetostream
-// build-dependencies: mapend
-// build-dependencies: skiperrors
-// build-dependencies: groupsimultaneous
+import EventStream from "./eventstream";
+import Property from "./property";
+import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
+import "./mapend";
+import "./skiperrors";
+import { endEvent, nextEvent } from "./event";
+import { more } from "./reply";
+import { withDesc, Desc } from "./describe";
+import groupSimultaneous from "./groupsimultaneous";
 
-Bacon.EventStream.prototype.takeUntil = function(stopper) {
+EventStream.prototype.takeUntil = function(stopper) {
   var endMarker = {};
-  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
+  return withDesc(new Desc(this, "takeUntil", [stopper]), groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
     .withHandler(function(event) {
       if (!event.hasValue()) {
         return this.push(event);
@@ -16,7 +20,7 @@ Bacon.EventStream.prototype.takeUntil = function(stopper) {
 //            console.log(_.toString(data), "stopped by", _.toString(stopper))
           return this.push(endEvent());
         } else {
-          var reply = Bacon.more;
+          var reply = more;
           for (var i = 0, value; i < data.length; i++) {
             value = data[i];
             if (value === endMarker) {
@@ -32,7 +36,7 @@ Bacon.EventStream.prototype.takeUntil = function(stopper) {
     ));
 };
 
-Bacon.Property.prototype.takeUntil = function(stopper) {
+Property.prototype.takeUntil = function(stopper) {
   var changes = this.changes().takeUntil(stopper);
-  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), addPropertyInitValueToStream(this, changes));
+  return withDesc(new Desc(this, "takeUntil", [stopper]), addPropertyInitValueToStream(this, changes));
 };

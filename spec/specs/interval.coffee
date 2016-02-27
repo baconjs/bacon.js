@@ -1,3 +1,13 @@
+require("../../src/interval")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  take,
+  t
+} = require("../SpecHelper")
+
 describe "Bacon.interval", ->
   describe "repeats single element indefinitely", ->
     expectStreamEvents(

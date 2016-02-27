@@ -1,4 +1,23 @@
-# build-dependencies: property, filter, take, map, scan
+require("../../src/filter")
+require("../../src/map")
+require("../../src/scan")
+require("../../src/take")
+require("../../src/when")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents
+  series,
+  semiunstable,
+  unstable,
+  add,
+  repeatedly,
+  repeat,
+  once,
+  expectError
+} = require("../SpecHelper")
 
 describe "Bacon.when", ->
   describe "synchronizes on join patterns", ->

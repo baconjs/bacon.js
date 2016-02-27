@@ -1,8 +1,14 @@
-// build-dependencies: sample, scan, mapend, filter
+import "./filter";
+import "./mapend";
+import "./sample";
+import "./scan";
 
-Bacon.Observable.prototype.fold = function(seed, f) {
+import Observable from "./observable";
+import { withDesc, Desc } from "./describe";
+
+Observable.prototype.fold = function(seed, f) {
   return withDesc(
-    new Bacon.Desc(this, "fold", [seed, f]),
+    new Desc(this, "fold", [seed, f]),
     this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty())
   );
 };

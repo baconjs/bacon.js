@@ -1,4 +1,7 @@
-// build-dependencies: frombinder
+import Exception from './exception';
+import { Desc, withDesc } from './describe';
+import fromBinder from './frombinder';
+import Bacon from './core';
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
@@ -36,18 +39,18 @@ var findHandlerMethods = function(target) {
     var addListener = target[pair[0]];
     if (addListener) { return [addListener, function() {}]; }
   }
-  throw new Error("No suitable event methods in " + target);
+  throw new Exception("No suitable event methods in " + target);
 };
 
-Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
+export default function fromEventTarget(target, eventName, eventTransformer) {
   var [sub, unsub] = findHandlerMethods(target);
-  var desc = new Bacon.Desc(Bacon, "fromEvent", [target, eventName]);
-  return withDesc(desc, Bacon.fromBinder(function(handler) {
+  var desc = new Desc(Bacon, "fromEvent", [target, eventName]);
+  return withDesc(desc, fromBinder(function(handler) {
     sub.call(target, eventName, handler);
     return function() {
       return unsub.call(target, eventName, handler);
     };
   }, eventTransformer));
-};
+}
 
-Bacon.fromEvent = Bacon.fromEventTarget;
+Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;

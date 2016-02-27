@@ -1,4 +1,7 @@
-function CompositeUnsubscribe(ss = []) {
+import { extend, nop } from "./helpers";
+import _ from "./_";
+
+export default function CompositeUnsubscribe(ss = []) {
   this.unsubscribe = _.bind(this.unsubscribe, this);
   this.unsubscribed = false;
   this.subscriptions = [];
@@ -57,5 +60,3 @@ extend(CompositeUnsubscribe.prototype, {
     return this.count() === 0;
   }
 });
-
-Bacon.CompositeUnsubscribe = CompositeUnsubscribe;

@@ -1,4 +1,5 @@
 {
+  "extends": "defaults",
   "ecmaFeatures": {
     "arrowFunctions": true,
     "blockBindings": true,
@@ -7,18 +8,21 @@
     "objectLiteralShorthandProperties": true,
     "objectLiteralShorthandMethods": true,
     "restParams": true,
-    "spread": true
+    "spread": true,
+    "modules": true
   },
+  "rules": {},
   "globals": {
-    "Bacon": true,
-    "Observable": true,
-    "Exception": true,
-    "nextEvent": true,
-    "endEvent": true,
-    "withDescription": true,
-    "withDesc": true
+    "global": true,
+    "jQuery": true,
+    "Zepto": true,
+    "setTimeout": true,
+    "clearTimeout": true,
+    "setInterval": true,
+    "clearInterval": true
   },
-  "rules": {
-    "strict": 0
+  "env": {
+    "browser": true,
+    "node": true
   }
 }

@@ -1,16 +1,24 @@
-// build-dependencies: core, argumentstoobservables
-// build-dependencies: compositeunsubscribe
+import EventStream from "./eventstream";
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import { argumentsToObservables } from "./argumentstoobservables";
+import { assertEventStream } from "./helpers";
+import never from "./never";
+import _ from "./_";
+import { noMore, more } from "./reply";
+import { endEvent } from "./event";
+import { withDesc, Desc } from "./describe";
+import Bacon from "./core";
 
-Bacon.EventStream.prototype.merge = function(right) {
+EventStream.prototype.merge = function(right) {
   assertEventStream(right);
   var left = this;
-  return withDesc(new Bacon.Desc(left, "merge", [right]), Bacon.mergeAll(this, right));
+  return withDesc(new Desc(left, "merge", [right]), mergeAll(this, right));
 };
 
-Bacon.mergeAll = function() {
+function mergeAll() {
   var streams = argumentsToObservables(arguments);
   if (streams.length) {
-    return new EventStream(new Bacon.Desc(Bacon, "mergeAll", streams), function(sink) {
+    return new EventStream(new Desc(Bacon, "mergeAll", streams), function(sink) {
       var ends = 0;
       var smartSink = function(obs) {
         return function(unsubBoth) {
@@ -20,20 +28,22 @@ Bacon.mergeAll = function() {
               if (ends === streams.length) {
                 return sink(endEvent());
               } else {
-                return Bacon.more;
+                return more;
               }
             } else {
               var reply = sink(event);
-              if (reply === Bacon.noMore) { unsubBoth(); }
+              if (reply === noMore) { unsubBoth(); }
               return reply;
             }
           });
         };
       };
       var sinks = _.map(smartSink, streams);
-      return new Bacon.CompositeUnsubscribe(sinks).unsubscribe;
+      return new CompositeUnsubscribe(sinks).unsubscribe;
     });
   } else {
-    return Bacon.never();
+    return never();
   }
-};
+}
+
+Bacon.mergeAll = mergeAll;
