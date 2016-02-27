@@ -103,7 +103,7 @@ var main = function(options) {
       globals: {
         jQuery: 'jQuery',
         Bacon: 'Bacon',
-        Zeptop: 'Zepto'
+        Zepto: 'Zepto'
       },
       dest: 'dist/Bacon.js',
       indent: false
