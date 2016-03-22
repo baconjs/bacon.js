@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.83';
+    Bacon.version = '0.7.84';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2718,6 +2718,7 @@
         var onHold = false;
         var bufferedValues = [];
         var src = this;
+        var srcIsEnded = false;
         return new EventStream(new Bacon.Desc(this, 'holdWhen', [valve]), function (sink) {
             var composite = new CompositeUnsubscribe();
             var subscribed = false;
@@ -2742,6 +2743,10 @@
                                     value = toSend[i];
                                     result.push(sink(nextEvent(value)));
                                 }
+                                if (srcIsEnded) {
+                                    result.push(sink(endEvent()));
+                                    unsubMe();
+                                }
                                 return result;
                             }();
                         }
@@ -2757,6 +2762,7 @@
                     if (onHold && event.hasValue()) {
                         return bufferedValues.push(event.value());
                     } else if (event.isEnd() && bufferedValues.length) {
+                        srcIsEnded = true;
                         return endIfBothEnded(unsubMe);
                     } else {
                         return sink(event);
