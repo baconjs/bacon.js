@@ -1,3 +1,7 @@
+## 0.7.84
+
+- Fix holdWhen: properly end the result stream if src has ended while holding. (Pull Request #666 by @umanamente)
+
 ## 0.7.83
 
 - Remove dependency to Array.from
