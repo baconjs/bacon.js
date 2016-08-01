@@ -42,7 +42,7 @@
         return assert('not a function : ' + f, _.isFunction(f));
     };
     var isArray = function (xs) {
-        return xs instanceof Array;
+        return Array.isArray ? Array.isArray(xs) : xs instanceof Array;
     };
     var isObservable = function (x) {
         return x && x._isObservable;
