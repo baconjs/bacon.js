@@ -41,6 +41,16 @@ describe "Property.combine", ->
         src = series(1, ["same", error()])
         Bacon.combineAsArray(src, src)
       [["same", "same"], error()])
+
+  it "does not mutate given array", ->
+    lol = Bacon.once("lol")
+    bal = "bal"
+    streams = [lol, bal]
+    Bacon.combineAsArray(streams)
+    expect(streams.length).to.equal(2)
+    expect(streams[0]).to.equal(lol)
+    expect(streams[1]).to.equal(bal)
+
   it "toString", ->
     expect(Bacon.constant(1).combine(Bacon.constant(2), (->)).toString()).to.equal("Bacon.constant(1).combine(Bacon.constant(2),function)")
   describe "with random methods on Array.prototype", ->
