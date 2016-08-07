@@ -1,3 +1,7 @@
+## 0.7.85
+
+- Workaround for Node 6 (#671)
+
 ## 0.7.84
 
 - Fix holdWhen: properly end the result stream if src has ended while holding. (Pull Request #666 by @umanamente)
