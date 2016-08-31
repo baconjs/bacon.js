@@ -2023,6 +2023,10 @@ Note: this readme is generated from `readme-src.coffee`. After updating the src 
 doc.section "Sponsors"
 doc.text """
 Thanks to [BrowserStack](http://www.browserstack.com) for kindly providing me with free of charge automatic testing time.
+
+Thanks also to [Reaktor](https://reaktor.com/) for supporting Bacon.js development and letting me use some of my working hours on open-source development.
+
+<a href="https://reaktor.com/"><img src="https://baconjs.github.io/supported-by-reaktor.png" /></a>
 """
 
 module.exports = doc
