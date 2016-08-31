@@ -3,7 +3,7 @@
 // build-dependencies: when
 
 Bacon.combineAsArray = function() {
-  var streams = argumentsToObservables(arguments);
+  var streams = argumentsToObservables(arguments).slice();
   for (var index = 0, stream; index < streams.length; index++) {
     stream = streams[index];
     if (!isObservable(stream)) {
