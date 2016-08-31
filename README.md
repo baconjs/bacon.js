@@ -1,6 +1,5 @@
 Bacon.js
 ========
-
 <img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />
 
 A small functional reactive programming lib for JavaScript.
@@ -1945,3 +1944,7 @@ Sponsors
 ========
 
 Thanks to [BrowserStack](http://www.browserstack.com) for kindly providing me with free of charge automatic testing time.
+
+Thanks also to [Reaktor](https://reaktor.com/) for supporting Bacon.js development and letting me use some of my working hours on open-source development.
+
+<a href="https://reaktor.com/"><img src="https://baconjs.github.io/supported-by-reaktor.png" /></a>
