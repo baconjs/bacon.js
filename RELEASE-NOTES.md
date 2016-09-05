@@ -1,3 +1,7 @@
+## 0.7.86
+
+- Fix array mutation issue in `Bacon.combineAsArray` (#673)
+
 ## 0.7.85
 
 - Workaround for Node 6 (#671)
