@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.86';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -1757,26 +1757,12 @@ var argumentsToObservablesAndFunction = function (args) {
 
 Bacon.combineAsArray = function () {
   var streams = argumentsToObservables(arguments);
-  var cloned = false;
-  for (var index = 0, stream; index < streams.length; index++) {
-    stream = streams[index];
-    if (!isObservable(stream)) {
-      if (!cloned) {
-        cloned = true;
-        streams = streams.slice();
-      }
-      streams[index] = Bacon.constant(stream);
-    }
-  }
   if (streams.length) {
-    var sources = (function () {
-      var result = [];
-      for (var i = 0, s; i < streams.length; i++) {
-        s = streams[i];
-        result.push(new Source(s, true));
-      }
-      return result;
-    })();
+    var sources = [];
+    for (var i = 0; i < streams.length; i++) {
+      var stream = isObservable(streams[i]) ? streams[i] : Bacon.constant(streams[i]);
+      sources.push(new Source(stream, true));
+    }
     return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), Bacon.when(sources, function () {
       for (var _len9 = arguments.length, xs = Array(_len9), _key9 = 0; _key9 < _len9; _key9++) {
         xs[_key9] = arguments[_key9];
@@ -2030,7 +2016,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return (unsubLeft(), unsubRight());
+      return unsubLeft(), unsubRight();
     };
   });
 };
