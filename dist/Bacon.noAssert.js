@@ -1636,10 +1636,7 @@
         }
     };
     Bacon.onValues = function () {
-        for (var _len10 = arguments.length, streams = Array(_len10), _key10 = 0; _key10 < _len10; _key10++) {
-            streams[_key10] = arguments[_key10];
-        }
-        return Bacon.combineAsArray(streams.slice(0, streams.length - 1)).onValues(streams[streams.length - 1]);
+        return Bacon.combineAsArray(Array.prototype.slice.call(arguments, 0, arguments.length - 1)).onValues(arguments[arguments.length - 1]);
     };
     Bacon.combineWith = function () {
         var _argumentsToObservablesAndFunction = argumentsToObservablesAndFunction(arguments);
@@ -1831,8 +1828,8 @@
         }));
     };
     Bacon.Observable.prototype.filter = function (f) {
-        for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
-            args[_key11 - 1] = arguments[_key11];
+        for (var _len10 = arguments.length, args = Array(_len10 > 1 ? _len10 - 1 : 0), _key10 = 1; _key10 < _len10; _key10++) {
+            args[_key10 - 1] = arguments[_key10];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'filter', [f]), this.withHandler(function (event) {
@@ -1962,8 +1959,8 @@
         return result;
     };
     Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
-        for (var _len12 = arguments.length, args = Array(_len12 > 1 ? _len12 - 1 : 0), _key12 = 1; _key12 < _len12; _key12++) {
-            args[_key12 - 1] = arguments[_key12];
+        for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
+            args[_key11 - 1] = arguments[_key11];
         }
         var desc = new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args));
         return withDesc(desc, flatMap_(this, makeSpawner(args), false, limit));
@@ -2100,15 +2097,15 @@
             var stream = partiallyApplied(wrapped, [function (values, callback) {
                     return f.apply(undefined, values.concat([callback]));
                 }]);
-            for (var _len13 = arguments.length, args = Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
-                args[_key13 - 1] = arguments[_key13];
+            for (var _len12 = arguments.length, args = Array(_len12 > 1 ? _len12 - 1 : 0), _key12 = 1; _key12 < _len12; _key12++) {
+                args[_key12 - 1] = arguments[_key12];
             }
             return withDesc(new Bacon.Desc(Bacon, desc, [f].concat(args)), Bacon.combineAsArray(args).flatMap(stream));
         });
     };
     Bacon.fromCallback = liftCallback('fromCallback', function (f) {
-        for (var _len14 = arguments.length, args = Array(_len14 > 1 ? _len14 - 1 : 0), _key14 = 1; _key14 < _len14; _key14++) {
-            args[_key14 - 1] = arguments[_key14];
+        for (var _len13 = arguments.length, args = Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
+            args[_key13 - 1] = arguments[_key13];
         }
         return Bacon.fromBinder(function (handler) {
             makeFunction(f, args)(handler);
@@ -2121,8 +2118,8 @@
         });
     });
     Bacon.fromNodeCallback = liftCallback('fromNodeCallback', function (f) {
-        for (var _len15 = arguments.length, args = Array(_len15 > 1 ? _len15 - 1 : 0), _key15 = 1; _key15 < _len15; _key15++) {
-            args[_key15 - 1] = arguments[_key15];
+        for (var _len14 = arguments.length, args = Array(_len14 > 1 ? _len14 - 1 : 0), _key14 = 1; _key14 < _len14; _key14++) {
+            args[_key14 - 1] = arguments[_key14];
         }
         return Bacon.fromBinder(function (handler) {
             makeFunction(f, args)(handler);
@@ -2413,8 +2410,8 @@
         }));
     };
     Bacon.Observable.prototype.doLog = function () {
-        for (var _len16 = arguments.length, args = Array(_len16), _key16 = 0; _key16 < _len16; _key16++) {
-            args[_key16] = arguments[_key16];
+        for (var _len15 = arguments.length, args = Array(_len15), _key15 = 0; _key15 < _len15; _key15++) {
+            args[_key15] = arguments[_key15];
         }
         return withDesc(new Bacon.Desc(this, 'doLog', args), this.withHandler(function (event) {
             if (typeof console !== 'undefined' && console !== null && typeof console.log === 'function') {
@@ -2427,8 +2424,8 @@
         if (!(typeof f !== 'undefined' && f !== null)) {
             f = true;
         }
-        for (var _len17 = arguments.length, args = Array(_len17 > 1 ? _len17 - 1 : 0), _key17 = 1; _key17 < _len17; _key17++) {
-            args[_key17 - 1] = arguments[_key17];
+        for (var _len16 = arguments.length, args = Array(_len16 > 1 ? _len16 - 1 : 0), _key16 = 1; _key16 < _len16; _key16++) {
+            args[_key16 - 1] = arguments[_key16];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'endOnError', []), this.withHandler(function (event) {
@@ -2527,8 +2524,8 @@
         if (p && p._isProperty) {
             return p.sampledBy(this, former);
         } else {
-            for (var _len18 = arguments.length, args = Array(_len18 > 1 ? _len18 - 1 : 0), _key18 = 1; _key18 < _len18; _key18++) {
-                args[_key18 - 1] = arguments[_key18];
+            for (var _len17 = arguments.length, args = Array(_len17 > 1 ? _len17 - 1 : 0), _key17 = 1; _key17 < _len17; _key17++) {
+                args[_key17 - 1] = arguments[_key17];
             }
             return convertArgsToFunction(this, p, args, function (f) {
                 return withDesc(new Bacon.Desc(this, 'map', [f]), this.withHandler(function (event) {
@@ -2809,8 +2806,8 @@
         }));
     };
     Bacon.Observable.prototype.log = function () {
-        for (var _len19 = arguments.length, args = Array(_len19), _key19 = 0; _key19 < _len19; _key19++) {
-            args[_key19] = arguments[_key19];
+        for (var _len18 = arguments.length, args = Array(_len18), _key18 = 0; _key18 < _len18; _key18++) {
+            args[_key18] = arguments[_key18];
         }
         this.subscribe(function (event) {
             if (typeof console !== 'undefined' && typeof console.log === 'function') {
@@ -2989,8 +2986,8 @@
     };
     Bacon.EventStream.prototype.skipWhile = function (f) {
         var ok = false;
-        for (var _len20 = arguments.length, args = Array(_len20 > 1 ? _len20 - 1 : 0), _key20 = 1; _key20 < _len20; _key20++) {
-            args[_key20 - 1] = arguments[_key20];
+        for (var _len19 = arguments.length, args = Array(_len19 > 1 ? _len19 - 1 : 0), _key19 = 1; _key19 < _len19; _key19++) {
+            args[_key19 - 1] = arguments[_key19];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'skipWhile', [f]), this.withHandler(function (event) {
@@ -3043,8 +3040,8 @@
         return withDesc(new Bacon.Desc(this, 'startWith', [seed]), Bacon.once(seed).concat(this));
     };
     Bacon.Observable.prototype.takeWhile = function (f) {
-        for (var _len21 = arguments.length, args = Array(_len21 > 1 ? _len21 - 1 : 0), _key21 = 1; _key21 < _len21; _key21++) {
-            args[_key21 - 1] = arguments[_key21];
+        for (var _len20 = arguments.length, args = Array(_len20 > 1 ? _len20 - 1 : 0), _key20 = 1; _key20 < _len20; _key20++) {
+            args[_key20 - 1] = arguments[_key20];
         }
         return convertArgsToFunction(this, f, args, function (f) {
             return withDesc(new Bacon.Desc(this, 'takeWhile', [f]), this.withHandler(function (event) {
@@ -3103,16 +3100,16 @@
     Bacon.update = function (initial) {
         function lateBindFirst(f) {
             return function () {
-                for (var _len23 = arguments.length, args = Array(_len23), _key23 = 0; _key23 < _len23; _key23++) {
-                    args[_key23] = arguments[_key23];
+                for (var _len22 = arguments.length, args = Array(_len22), _key22 = 0; _key22 < _len22; _key22++) {
+                    args[_key22] = arguments[_key22];
                 }
                 return function (i) {
                     return f.apply(undefined, [i].concat(args));
                 };
             };
         }
-        for (var _len22 = arguments.length, patterns = Array(_len22 > 1 ? _len22 - 1 : 0), _key22 = 1; _key22 < _len22; _key22++) {
-            patterns[_key22 - 1] = arguments[_key22];
+        for (var _len21 = arguments.length, patterns = Array(_len21 > 1 ? _len21 - 1 : 0), _key21 = 1; _key21 < _len21; _key21++) {
+            patterns[_key21 - 1] = arguments[_key21];
         }
         var i = patterns.length - 1;
         while (i > 0) {
@@ -3127,20 +3124,20 @@
         }));
     };
     Bacon.zipAsArray = function () {
-        for (var _len24 = arguments.length, args = Array(_len24), _key24 = 0; _key24 < _len24; _key24++) {
-            args[_key24] = arguments[_key24];
+        for (var _len23 = arguments.length, args = Array(_len23), _key23 = 0; _key23 < _len23; _key23++) {
+            args[_key23] = arguments[_key23];
         }
         var streams = argumentsToObservables(args);
         return withDesc(new Bacon.Desc(Bacon, 'zipAsArray', streams), Bacon.zipWith(streams, function () {
-            for (var _len25 = arguments.length, xs = Array(_len25), _key25 = 0; _key25 < _len25; _key25++) {
-                xs[_key25] = arguments[_key25];
+            for (var _len24 = arguments.length, xs = Array(_len24), _key24 = 0; _key24 < _len24; _key24++) {
+                xs[_key24] = arguments[_key24];
             }
             return xs;
         }));
     };
     Bacon.zipWith = function () {
-        for (var _len26 = arguments.length, args = Array(_len26), _key26 = 0; _key26 < _len26; _key26++) {
-            args[_key26] = arguments[_key26];
+        for (var _len25 = arguments.length, args = Array(_len25), _key25 = 0; _key25 < _len25; _key25++) {
+            args[_key25] = arguments[_key25];
         }
         var observablesAndFunction = argumentsToObservablesAndFunction(args);
         var streams = observablesAndFunction[0];

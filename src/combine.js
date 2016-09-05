@@ -19,8 +19,10 @@ Bacon.combineAsArray = function() {
   }
 };
 
-Bacon.onValues = function(...streams) {
-  return Bacon.combineAsArray(streams.slice(0, streams.length - 1)).onValues(streams[streams.length - 1]);
+Bacon.onValues = function() {
+  return Bacon.combineAsArray(
+    Array.prototype.slice.call(arguments, 0, arguments.length - 1)
+  ).onValues(arguments[arguments.length - 1]);
 };
 
 Bacon.combineWith = function() {
