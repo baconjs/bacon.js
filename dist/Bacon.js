@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.85';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -1757,9 +1757,14 @@ var argumentsToObservablesAndFunction = function (args) {
 
 Bacon.combineAsArray = function () {
   var streams = argumentsToObservables(arguments);
+  var cloned = false;
   for (var index = 0, stream; index < streams.length; index++) {
     stream = streams[index];
     if (!isObservable(stream)) {
+      if (!cloned) {
+        cloned = true;
+        streams = streams.slice();
+      }
       streams[index] = Bacon.constant(stream);
     }
   }
@@ -2025,7 +2030,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return unsubLeft(), unsubRight();
+      return (unsubLeft(), unsubRight());
     };
   });
 };
