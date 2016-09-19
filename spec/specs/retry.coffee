@@ -78,6 +78,19 @@ describe "Bacon.retry", ->
         interval = -> 1
         Bacon.retry({source, interval, retries: 1000})
       [error()])
+  describe "Retries indefinitely if retries==0", ->
+    expectStreamEvents(
+      ->
+        counter = 0
+        source = ->
+          counter++
+          if counter < 100
+            Bacon.once(new Bacon.Error())
+          else
+            Bacon.once("success")
+        interval = -> 1
+        Bacon.retry({source, interval, retries: 0})
+      ["success"])
   it "throws exception if 'source' option is not a function", ->
     expect(-> Bacon.retry(source: "ugh")).to.throw "'source' option has to be a function"
   it "toString", ->

@@ -1,3 +1,7 @@
+## 0.7.87
+
+- `Bacon.retry` retries indefinitely if `retries` is zero.
+
 ## 0.7.86
 
 - Fix array mutation issue in `Bacon.combineAsArray` (#673)

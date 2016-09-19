@@ -35,6 +35,7 @@ DOC_SPEC =
   fn:
     params: ["signature", "content"]
     process: (element) ->
+      element.type = "fn"
       element.parsedSignature = signatureParse element.signature
       element.anchorName = common.functionAnchorName element.parsedSignature
       element
