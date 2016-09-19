@@ -1489,7 +1489,7 @@ such as AJAX calls.
 The two required option parameters are:
 
 * `source`, a function that produces an Observable.
-* `retries`, the number of times to retry the `source` function _in addition to the initial attempt_.
+* `retries`, the number of times to retry the `source` function _in addition to the initial attempt_. Use the value o (zero) for retrying indefinitely.
 
 Additionally, one may pass in one or both of the following callbacks:
 
