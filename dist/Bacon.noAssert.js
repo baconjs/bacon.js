@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '<version>';
+    Bacon.version = '0.7.87';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2907,7 +2907,7 @@
         }
         var source = options.source;
         var retries = options.retries || 0;
-        var maxRetries = options.maxRetries || retries;
+        var retriesDone = 0;
         var delay = options.delay || function () {
             return 0;
         };
@@ -2921,7 +2921,7 @@
                 return source().endOnError().withHandler(function (event) {
                     if (event.isError()) {
                         error = event;
-                        if (!(isRetryable(error.error) && retries > 0)) {
+                        if (!(isRetryable(error.error) && (retries === 0 || retriesDone < retries))) {
                             finished = true;
                             return this.push(event);
                         }
@@ -2939,10 +2939,10 @@
             } else if (error) {
                 var context = {
                     error: error.error,
-                    retriesDone: maxRetries - retries
+                    retriesDone: retriesDone
                 };
                 var pause = Bacon.later(delay(context)).filter(false);
-                retries = retries - 1;
+                retriesDone++;
                 return pause.concat(Bacon.once().flatMap(valueStream));
             } else {
                 return valueStream();
