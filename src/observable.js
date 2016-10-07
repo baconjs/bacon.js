@@ -69,6 +69,10 @@ extend(Observable.prototype, {
     }
   },
 
+  deps() {
+    return this.desc.deps()
+  },
+
   internalDeps() {
     return this.initialDesc.deps();
   }
