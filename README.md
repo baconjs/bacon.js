@@ -1692,7 +1692,7 @@ Bacon.js provides ways to get some descriptive metadata about all Observables.
 
 <a name="observable-tostring"></a>
 [`observable.toString`](#observable-tostring "observable.toString") Returns a textual description of the Observable. For instance,
-'Bacon.once(1).map(function() {}))' would return "Bacon.once(1).map(function)".
+`Bacon.once(1).map(function() {}))` would return "Bacon.once(1).map(function)".
 
 
 <a name="observable-deps"></a>
