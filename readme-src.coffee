@@ -1769,15 +1769,12 @@ Bacon.js provides ways to get some descriptive metadata about all Observables.
 """
 
 doc.fn "observable.toString", """Returns a textual description of the Observable. For instance,
-
-    console.log(Bacon.once(1).map(function() {}))
-    --> Bacon.once(1).map(function)
+'Bacon.once(1).map(function() {}))' would return "Bacon.once(1).map(function)".
 
 """
 
 doc.fn "observable.deps", """Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`. 
-This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
-
+This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools. 
 Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on. 
 The `deps` method will skip these internal dependencies.
 """
