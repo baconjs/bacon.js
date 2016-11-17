@@ -600,17 +600,7 @@ source:             asdf----asdf----
 source.debounce(2): -----f-------f--
 ```
 
-<a name="observable-debounceimmediate"></a>
-[`observable.debounceImmediate(delay)`](#observable-debounceimmediate "observable.debounceImmediate(delay)") passes the first event in the
-stream through, but after that, only passes events after a given number
-of milliseconds have passed since previous output.
-
-Example:
-
-```
-source:                      asdf----asdf----
-source.debounceImmediate(2): a-d-----a-d-----
-```
+See also [`debounceImmediate`](#stream-debounceimmediate) for [`EventStream`](#eventstream).
 
 <a name="observable-bufferingthrottle"></a>
 [`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
@@ -1020,6 +1010,18 @@ events with values `[1, 2]`, `[3, 4]` and `[5]`.
 [`stream.bufferWithTimeOrCount(delay, count)`](#stream-bufferwithtimeorcount "stream.bufferWithTimeOrCount(delay, count)") buffers stream events and
 flushes when either the buffer contains the given number elements or the
 given amount of milliseconds has passed since last buffered event.
+
+<a name="stream-debounceimmediate"></a>
+[`stream.debounceImmediate(delay)`](#stream-debounceimmediate "stream.debounceImmediate(delay)") passes the first event in the
+stream through, but after that, only passes events after a given number
+of milliseconds have passed since previous output.
+
+Example:
+
+```
+source:                      asdf----asdf----
+source.debounceImmediate(2): a-d-----a-d-----
+```
 
 <a name="stream-toproperty"></a>
 [`stream.toProperty()`](#stream-toproperty "stream.toProperty(@ : EventStream[A]) : Property[A]") creates a Property based on the

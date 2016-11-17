@@ -600,19 +600,8 @@ Example:
 source:             asdf----asdf----
 source.debounce(2): -----f-------f--
 ```
-"""
 
-doc.fn "observable.debounceImmediate(delay)", """
-passes the first event in the
-stream through, but after that, only passes events after a given number
-of milliseconds have passed since previous output.
-
-Example:
-
-```
-source:                      asdf----asdf----
-source.debounceImmediate(2): a-d-----a-d-----
-```
+See also [`debounceImmediate`](#stream-debounceimmediate) for `EventStream`.
 """
 
 doc.fn "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]", """
@@ -1067,6 +1056,19 @@ doc.fn "stream.bufferWithTimeOrCount(delay, count)", """
 buffers stream events and
 flushes when either the buffer contains the given number elements or the
 given amount of milliseconds has passed since last buffered event.
+"""
+
+doc.fn "stream.debounceImmediate(delay)", """
+passes the first event in the
+stream through, but after that, only passes events after a given number
+of milliseconds have passed since previous output.
+
+Example:
+
+```
+source:                      asdf----asdf----
+source.debounceImmediate(2): a-d-----a-d-----
+```
 """
 
 doc.fn "stream.toProperty(@ : EventStream[A]) : Property[A]", """
