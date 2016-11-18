@@ -50,3 +50,15 @@ describe "Property.debounce", ->
       [1])
   it "toString", ->
     expect(Bacon.constant(0).debounce(1).toString()).to.equal("Bacon.constant(0).debounce(1)")
+
+describe "Property.debounceImmediate", ->
+  describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
+    expectStreamTimings(
+      -> series(2, [1, 2, 3, 4]).toProperty().debounceImmediate(t(3)).changes()
+      [[2, 1], [6, 3]], semiunstable)
+  describe "works with Bacon.constant (bug fix)", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1).debounceImmediate(1)
+      [1])
+  it "toString", ->
+    expect(Bacon.constant(0).debounceImmediate(1).toString()).to.equal("Bacon.constant(0).debounceImmediate(1)")

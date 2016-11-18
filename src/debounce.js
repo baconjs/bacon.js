@@ -18,3 +18,9 @@ Bacon.EventStream.prototype.debounceImmediate = function(delay) {
     return Bacon.once(value).concat(Bacon.later(delay).filter(false));
   }));
 };
+
+Bacon.Property.prototype.debounceImmediate = function(delay) { 
+  return this.delayChanges(new Bacon.Desc(this, "debounceImmediate", [delay]), function(changes) { 
+    return changes.debounceImmediate(delay)
+  })
+}

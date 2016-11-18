@@ -1,6 +1,11 @@
+## 0.7.89
+
+- Add missing `Property::debounceImmediate` method
+
 ## 0.7.88
 
 - Restore the removed `Observable::deps` method
+
 ## 0.7.87
 
 - `Bacon.retry` retries indefinitely if `retries` is zero.
