@@ -3,5 +3,9 @@
 // build-dependencies: addpropertyinitialvaluetostream
 
 Bacon.Property.prototype.delayChanges = function(desc, f) {
-  return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
-};
+  return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())))
+}
+
+Bacon.EventStream.prototype.delayChanges = function(desc, f) {
+  return withDesc(desc, f(this))
+}
