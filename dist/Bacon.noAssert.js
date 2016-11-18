@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.88';
+    Bacon.version = '0.7.89';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2304,6 +2304,11 @@
         return withDesc(new Bacon.Desc(this, 'debounceImmediate', [delay]), this.flatMapFirst(function (value) {
             return Bacon.once(value).concat(Bacon.later(delay).filter(false));
         }));
+    };
+    Bacon.Property.prototype.debounceImmediate = function (delay) {
+        return this.delayChanges(new Bacon.Desc(this, 'debounceImmediate', [delay]), function (changes) {
+            return changes.debounceImmediate(delay);
+        });
     };
     Bacon.Observable.prototype.decode = function (cases) {
         return withDesc(new Bacon.Desc(this, 'decode', [cases]), this.combine(Bacon.combineTemplate(cases), function (key, values) {
