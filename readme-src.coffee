@@ -845,8 +845,8 @@ doc.fn "observable.withStateMachine(initState, f)", """
 lets you run a state machine
 on an observable. Give it an initial state object and a state
 transformation function that processes each incoming event and
-returns and array containing the next state and an array of output
-events. Here's an an example, where we calculate the total sum of all
+returns an array containing the next state and an array of output
+events. Here's an example where we calculate the total sum of all
 numbers in the stream and output the value on stream end:
 
 ```js
