@@ -1,8 +1,8 @@
 Observable = require('zen-observable')
-Rx = require('@reactivex/rxjs')
+Rx = require('rxjs')
 
 describe "Bacon.fromESObservable", ->
-  describe "turns an ES7 observable into an EventStream", ->
+  describe "turns an ES observable into an EventStream", ->
     expectStreamEvents(
       -> Bacon.fromESObservable(Observable.of(1, 2))
       [1, 2], semiunstable)

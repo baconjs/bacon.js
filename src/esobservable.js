@@ -19,6 +19,10 @@ ESObservable.prototype.subscribe = function(observer) {
   return cancel;
 };
 
+ESObservable.prototype[symbol('observable')] = function() {
+  return this;
+};
+
 Bacon.Observable.prototype[symbol('observable')] = function() {
   return new ESObservable(this);
 };

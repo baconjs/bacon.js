@@ -84,9 +84,9 @@
     };
     var symbol = function (key) {
         if (typeof Symbol !== 'undefined' && Symbol[key]) {
-            return Symbol.observable;
+            return Symbol[key];
         } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
-            return Symbol['for'](key);
+            return Symbol[key] = Symbol['for'](key);
         } else {
             return '@@' + key;
         }
@@ -3189,6 +3189,9 @@
         });
         return cancel;
     };
+    ESObservable.prototype[symbol('observable')] = function () {
+        return this;
+    };
     Bacon.Observable.prototype[symbol('observable')] = function () {
         return new ESObservable(this);
     };
@@ -3197,7 +3200,7 @@
         if (_observable[symbol('observable')]) {
             observable = _observable[symbol('observable')]();
         } else {
-            observable = observable;
+            observable = _observable;
         }
         var desc = new Bacon.Desc(Bacon, 'fromESObservable', [observable]);
         return new Bacon.EventStream(desc, function (sink) {

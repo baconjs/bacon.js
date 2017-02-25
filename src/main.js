@@ -63,6 +63,6 @@
 // build-dependencies: when
 // build-dependencies: zip
 
-// ES7 observable:
+// ES observable:
 // build-dependencies: esobservable
 // build-dependencies: fromesobservable

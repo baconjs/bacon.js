@@ -20,7 +20,7 @@ describe "EventStream[Symbol.observable]", ->
   it "unsubscribes stream after an error", (done) ->
     bus = new Bacon.Bus
     values = []
-    observable = bus[Symbol.observable]()
+    observable = bus[Symbol.for('observable')]()
     observable.subscribe
       next: (x) ->
         values.push(x)

@@ -5,7 +5,7 @@ Bacon.fromESObservable = function(_observable) {
   if (_observable[symbol("observable")]) {
     observable = _observable[symbol("observable")]();
   } else {
-    observable = observable;
+    observable = _observable;
   }
 
   var desc = new Bacon.Desc(Bacon, "fromESObservable", [observable]);
