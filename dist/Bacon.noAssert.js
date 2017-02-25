@@ -3187,9 +3187,9 @@
                     observer.error(event.error);
                 subscription.unsubscribe();
             } else if (event.isEnd()) {
+                subscription.closed = true;
                 if (observer.complete)
                     observer.complete();
-                subscription.unsubscribe();
             } else if (observer.next) {
                 observer.next(event.value());
             }
