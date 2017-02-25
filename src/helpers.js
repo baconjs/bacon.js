@@ -26,7 +26,7 @@ var assertObservable = function(event) {
 var assertFunction = function(f) {
   return assert("not a function : " + f, _.isFunction(f));
 };
-var isArray = function(xs) { return xs instanceof Array; };
+var isArray = Array.isArray || function(xs) { return xs instanceof Array };
 var isObservable = function(x) {
   return x && x._isObservable;
 };

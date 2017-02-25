@@ -7,7 +7,7 @@ var registerObs = function(obs) {
         spies.forEach(function(spy) {
           spy(obs);
         });
-      } finally {
+      } finally {
         delete registerObs.running;
       }
     }

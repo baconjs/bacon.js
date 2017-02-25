@@ -6,6 +6,7 @@ Bacon.EventStream.prototype.holdWhen = function(valve) {
   var onHold = false;
   var bufferedValues = [];
   var src = this;
+  var srcIsEnded = false;
   return new EventStream(new Bacon.Desc(this, "holdWhen", [valve]), function(sink) {
     var composite = new CompositeUnsubscribe();
     var subscribed = false;
@@ -28,6 +29,10 @@ Bacon.EventStream.prototype.holdWhen = function(valve) {
                 value = toSend[i];
                 result.push(sink(nextEvent(value)));
               }
+              if(srcIsEnded){
+                result.push(sink(endEvent()));                
+                unsubMe();
+              }
               return result;
             })();
           }
@@ -43,6 +48,7 @@ Bacon.EventStream.prototype.holdWhen = function(valve) {
         if (onHold && event.hasValue()) {
           return bufferedValues.push(event.value());
         } else if (event.isEnd() && bufferedValues.length) {
+          srcIsEnded = true;
           return endIfBothEnded(unsubMe);
         } else {
           return sink(event);

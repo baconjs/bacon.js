@@ -85,6 +85,16 @@ describe "EventStream.holdWhen", ->
             holdWhen(left.map(true).startWith(true).mapEnd(false))
         left.merge(bufferedRight)
       [1, 2, 3, 4, 5, 6], unstable)
+  describe "Ends after flush if source has ended while holding, with never-ending valve", ->
+    expectStreamEvents(
+      ->
+        src = series(2, [1, 2])
+        valveSource = later(5, false).startWith(true)
+        valve = new Bacon.Bus()
+        valve.plug(valveSource)
+        src.holdWhen(valve)
+      [1, 2], unstable)
+
   describe "In combination with .toProperty", ->
     expectPropertyEvents(
       -> later(1,1).holdWhen(Bacon.constant(false)).toProperty(0)

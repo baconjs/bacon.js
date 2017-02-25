@@ -1,5 +1,5 @@
 # build-dependencies: flatmap
-describe "EventStream.awaiting(other)", ->
+describe "EventStream.awaiting(stream)", ->
   describe "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).awaiting(series(3, [2]))
@@ -22,7 +22,7 @@ describe "EventStream.awaiting(other)", ->
   it "toString", ->
     expect(Bacon.never().awaiting(Bacon.never()).toString()).to.equal("Bacon.never().awaiting(Bacon.never())")
 
-describe "Property.awaiting(other)", ->
+describe "Property.awaiting(property)", ->
   describe "works for awaiting self", ->
     expectPropertyEvents(
       ->
@@ -55,3 +55,13 @@ describe "Property.awaiting(other)", ->
         p = Bacon.constant(1)
         p.awaiting(p.flatMap((x) -> once(x)))
       [true, false], unstable)
+
+describe "EventStream.awaiting(property)", ->
+  describe "works correctly when EventStream emits first", ->
+    expectPropertyEvents(
+      -> series(2, [1, 1]).awaiting(series(3, [2]))
+      [false, true, false, true], semiunstable)
+  describe "works correctly when Property emits first", ->
+    expectPropertyEvents(
+      -> series(3, [1]).awaiting(series(2, [2, 2]))
+      [false, true, false], semiunstable)

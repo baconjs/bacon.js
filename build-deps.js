@@ -45,7 +45,7 @@ function resolve(pieceNames, dir, resolving, pieceCache, options) {
   return _.uniq(_.flatten(pieceNames.map(function(pieceName) {
     var piece = readPiece(pieceName, dir, pieceCache);
 
-    if (_.contains(resolving, pieceName)) {
+    if (_.includes(resolving, pieceName)) {
       throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
     }
 

@@ -3,30 +3,26 @@
 // build-dependencies: when
 
 Bacon.combineAsArray = function() {
-  var streams = argumentsToObservables(arguments);
-  for (var index = 0, stream; index < streams.length; index++) {
-    stream = streams[index];
-    if (!isObservable(stream)) {
-      streams[index] = Bacon.constant(stream);
-    }
-  }
+  var streams = argumentsToObservables(arguments)
   if (streams.length) {
-    var sources = (() => {
-      var result = [];
-      for (var i = 0, s; i < streams.length; i++) {
-        s = streams[i];
-        result.push(new Source(s, true));
-      }
-      return result;
-    })();
-    return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), Bacon.when(sources, (function(...xs) { return xs; })).toProperty());
+    var sources = [];
+    for (var i = 0; i < streams.length; i++) {
+      let stream = isObservable(streams[i])
+        ? streams[i]
+        : Bacon.constant(streams[i])
+      sources.push(new Source(stream, true));
+    }
+    return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), 
+                    Bacon.when(sources, (function(...xs) { return xs; })).toProperty());
   } else {
     return Bacon.constant([]);
   }
 };
 
-Bacon.onValues = function(...streams) {
-  return Bacon.combineAsArray(streams.slice(0, streams.length - 1)).onValues(streams[streams.length - 1]);
+Bacon.onValues = function() {
+  return Bacon.combineAsArray(
+    Array.prototype.slice.call(arguments, 0, arguments.length - 1)
+  ).onValues(arguments[arguments.length - 1]);
 };
 
 Bacon.combineWith = function() {

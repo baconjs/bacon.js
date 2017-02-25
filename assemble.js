@@ -67,7 +67,7 @@ var main = function(options){
     ]
   };
 
-  var esOutput = header + _.pluck(pieces, "contents").join("\n") + footer;
+  var esOutput = header + _.map(pieces, "contents").join("\n") + footer;
   var esTranspiled = babel.transform(esOutput, babelOptions);
   var output = "(function() {\n" + esTranspiled.code + "\n}).call(this);";
 

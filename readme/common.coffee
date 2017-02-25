@@ -43,15 +43,15 @@ findFunctionAnchor = (text, anchors) ->
   m = text.toLowerCase().match /^(\w+)\.(\w+)/
   if m?
     fnAnchor = m[1] + "-" + m[2]
-  if fnAnchor? && _.contains anchors, fnAnchor
+  if fnAnchor? && _.includes anchors, fnAnchor
     fnAnchor
 
 findAnchorByNeedle = (text, anchors) ->
   anchorNeedle = text.toLowerCase().replace(".", "-").replace(/[^a-z\-]/g, "")
 
-  if _.contains anchors, anchorNeedle
+  if _.includes anchors, anchorNeedle
     anchorNeedle
-  else if _.contains ["subscribe", "f"], anchorNeedle
+  else if _.includes ["subscribe", "f"], anchorNeedle
     undefined
   else
     possibleAnchors = _.filter anchors, (anchor) ->

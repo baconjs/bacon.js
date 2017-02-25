@@ -845,8 +845,8 @@ doc.fn "observable.withStateMachine(initState, f)", """
 lets you run a state machine
 on an observable. Give it an initial state object and a state
 transformation function that processes each incoming event and
-returns and array containing the next state and an array of output
-events. Here's an an example, where we calculate the total sum of all
+returns an array containing the next state and an array of output
+events. Here's an example where we calculate the total sum of all
 numbers in the stream and output the value on stream end:
 
 ```js
@@ -939,7 +939,7 @@ is probably useful for Bacon core / library / plugin development only.
 For example:
 
     var src = Bacon.once(1)
-    var obs = src.map(function(x) { return -x })
+    var obs = src.map(function(x) { return -x })
     console.log(obs.toString())
     --> Bacon.once(1).map(function)
     obs.withDescription(src, "times", -1)
@@ -1562,7 +1562,7 @@ is used to retry the call when there is an [`Error`](#bacon-error) event in the 
 The two required option parameters are:
 
 * `source`, a function that produces an Observable.
-* `retries`, the number of times to retry the `source` function _in addition to the initial attempt_.
+* `retries`, the number of times to retry the `source` function _in addition to the initial attempt_. Use the value o (zero) for retrying indefinitely.
 
 Additionally, one may pass in one or both of the following callbacks:
 
@@ -1761,6 +1761,43 @@ for (var i = 0; i < 3; i++) {
   hungry[0].push({}); hungry[1].push({}); hungry[2].push({})
 }
 ```
+"""
+
+doc.subsection "Introspection and metadata"
+doc.text """
+Bacon.js provides ways to get some descriptive metadata about all Observables.
+"""
+
+doc.fn "observable.toString", """Returns a textual description of the Observable. For instance,
+`Bacon.once(1).map(function() {}))` would return "Bacon.once(1).map(function)".
+
+"""
+
+doc.fn "observable.deps", """Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`. 
+This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools. 
+Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on. 
+The `deps` method will skip these internal dependencies.
+"""
+
+doc.fn "observable.internalDeps", """
+Returns the true dependencies of the observable, including the intermediate "hidden" Observables. 
+This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
+"""
+
+doc.fn "observable.desc()", """
+Contains a structured version of what `toString` returns. 
+The structured description is an object that contains the fields `context`, `method` and `args`. 
+For example, for `Bacon.fromArray([1,2,3]).desc` you'd get
+
+    { context: Bacon, method: "fromArray", args: [[1,2,3]] }
+
+Notice that this is a field, not a function.
+"""
+
+doc.fn "Bacon.spy(f)", """
+
+Adds your function as a "spy" that will get notified on all new Observables. 
+This will allow a visualization/analytis tool to spy on all Bacon activity. 
 """
 
 doc.subsection "Cleaning up"
@@ -2023,6 +2060,10 @@ Note: this readme is generated from `readme-src.coffee`. After updating the src 
 doc.section "Sponsors"
 doc.text """
 Thanks to [BrowserStack](http://www.browserstack.com) for kindly providing me with free of charge automatic testing time.
+
+Thanks also to [Reaktor](https://reaktor.com/) for supporting Bacon.js development and letting me use some of my working hours on open-source development.
+
+<a href="https://reaktor.com/"><img src="https://baconjs.github.io/supported-by-reaktor.png" /></a>
 """
 
 module.exports = doc

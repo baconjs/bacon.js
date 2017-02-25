@@ -22,5 +22,5 @@ Bacon.zipWith = function(...args) {
 Bacon.Observable.prototype.zip = function(other, f) {
   return withDesc(
     new Bacon.Desc(this, "zip", [other]),
-    Bacon.zipWith([this, other], f || Array));
+    Bacon.zipWith([this, other], f || Array));
 };

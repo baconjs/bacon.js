@@ -72,7 +72,7 @@ extend(Bus.prototype, {
     if (this.ended) { return; }
     var sub = { input: input };
     this.subscriptions.push(sub);
-    if (typeof this.sink !== "undefined") { this.subscribeInput(sub); }
+    if (typeof this.sink !== "undefined") { this.subscribeInput(sub); }
     return (() => this.unsubscribeInput(input));
   },
 

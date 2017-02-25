@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "0.7.83",
+  "version": "0.7.89",
   "keywords": [
     "bacon.js",
     "bacon",
@@ -58,7 +58,7 @@
     "jasmine-node": "^1.14.5",
     "jquery": "^2.1.4",
     "jsstana": "^0.1.5",
-    "lodash": "^3.3.1",
+    "lodash": "^4.0.0",
     "mocha": "^2.1.0",
     "shelljs": "^0.5.3",
     "sinon": "^1.12.2",

@@ -1,3 +1,27 @@
+## 0.7.89
+
+- Add missing `Property::debounceImmediate` method
+
+## 0.7.88
+
+- Restore the removed `Observable::deps` method
+
+## 0.7.87
+
+- `Bacon.retry` retries indefinitely if `retries` is zero.
+
+## 0.7.86
+
+- Fix array mutation issue in `Bacon.combineAsArray` (#673)
+
+## 0.7.85
+
+- Workaround for Node 6 (#671)
+
+## 0.7.84
+
+- Fix holdWhen: properly end the result stream if src has ended while holding. (Pull Request #666 by @umanamente)
+
 ## 0.7.83
 
 - Remove dependency to Array.from
