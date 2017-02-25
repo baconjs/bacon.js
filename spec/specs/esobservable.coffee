@@ -53,3 +53,20 @@ describe "EventStream[Symbol.observable]", ->
 
     expect(values).to.deep.equal([1])
     done()
+
+ it 'supports subscribe(onNext, onError, onCompete) format', ->
+    bus = new Bacon.Bus
+    values = []
+    errors = []
+    completes = []
+    onValue = (x) -> values.push(x)
+    onError = (x) -> errors.push(x)
+    onComplete = (x) -> completes.push(x)
+    observable = bus[Symbol.for('observable')]()
+    observable.subscribe(onValue, onError, onComplete)
+    bus.push(1)
+    bus.error(2)
+    bus.end()
+    expect(values).to.deep.equal([1])
+    expect(errors).to.deep.equal([2])
+    expect(completes).to.deep.equal([])

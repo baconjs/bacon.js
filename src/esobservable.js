@@ -4,7 +4,10 @@ function ESObservable(observable) {
   this.observable = observable;
 }
 
-ESObservable.prototype.subscribe = function(observer) {
+ESObservable.prototype.subscribe = function(observerOrOnNext, onError, onComplete) {
+  const observer = typeof observerOrOnNext === 'function'
+      ? { next: observerOrOnNext, error: onError, complete: onComplete }
+      : observerOrOnNext
   const subscription = {
     closed: false,
     unsubscribe: function() {

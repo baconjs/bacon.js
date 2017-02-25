@@ -3173,7 +3173,12 @@
     function ESObservable(observable) {
         this.observable = observable;
     }
-    ESObservable.prototype.subscribe = function (observer) {
+    ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
+        var observer = typeof observerOrOnNext === 'function' ? {
+            next: observerOrOnNext,
+            error: onError,
+            complete: onComplete
+        } : observerOrOnNext;
         var subscription = {
             closed: false,
             unsubscribe: function () {
