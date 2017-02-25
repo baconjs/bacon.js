@@ -1,4 +1,10 @@
+# build-dependencies: bus
 Observable = require 'zen-observable'
+
+symbolObservable = if typeof Symbol != 'undefined'
+  Symbol.for('observable')
+else
+  '@@observable'
 
 describe "EventStream[Symbol.observable]", ->
   it "outputs compatible Observable", (done) ->
@@ -43,7 +49,7 @@ describe "EventStream[Symbol.observable]", ->
   it "unsubscribes stream after an error", (done) ->
     bus = new Bacon.Bus
     values = []
-    observable = bus[Symbol.for('observable')]()
+    observable = bus[symbolObservable]()
     observable.subscribe
       next: (x) -> values.push(x)
 
@@ -54,7 +60,7 @@ describe "EventStream[Symbol.observable]", ->
     expect(values).to.deep.equal([1])
     done()
 
- it 'supports subscribe(onNext, onError, onCompete) format', ->
+  it 'supports subscribe(onNext, onError, onCompete) format', ->
     bus = new Bacon.Bus
     values = []
     errors = []
@@ -62,7 +68,7 @@ describe "EventStream[Symbol.observable]", ->
     onValue = (x) -> values.push(x)
     onError = (x) -> errors.push(x)
     onComplete = (x) -> completes.push(x)
-    observable = bus[Symbol.for('observable')]()
+    observable = bus[symbolObservable]()
     observable.subscribe(onValue, onError, onComplete)
     bus.push(1)
     bus.error(2)
