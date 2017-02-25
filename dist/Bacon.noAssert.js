@@ -3174,20 +3174,27 @@
         this.observable = observable;
     }
     ESObservable.prototype.subscribe = function (observer) {
+        var subscription = {
+            closed: false,
+            unsubscribe: function () {
+                subscription.closed = true;
+                cancel();
+            }
+        };
         var cancel = this.observable.subscribe(function (event) {
             if (event.isError()) {
                 if (observer.error)
                     observer.error(event.error);
-                cancel();
+                subscription.unsubscribe();
             } else if (event.isEnd()) {
                 if (observer.complete)
                     observer.complete();
-                cancel();
+                subscription.unsubscribe();
             } else if (observer.next) {
                 observer.next(event.value());
             }
         });
-        return cancel;
+        return subscription;
     };
     ESObservable.prototype[symbol('observable')] = function () {
         return this;
