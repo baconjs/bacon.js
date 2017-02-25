@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.89';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2280,34 +2280,28 @@
     Bacon.Property.prototype.delayChanges = function (desc, f) {
         return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
     };
-    Bacon.EventStream.prototype.delay = function (delay) {
-        return withDesc(new Bacon.Desc(this, 'delay', [delay]), this.flatMap(function (value) {
-            return Bacon.later(delay, value);
-        }));
+    Bacon.EventStream.prototype.delayChanges = function (desc, f) {
+        return withDesc(desc, f(this));
     };
-    Bacon.Property.prototype.delay = function (delay) {
+    Bacon.Observable.prototype.delay = function (delay) {
         return this.delayChanges(new Bacon.Desc(this, 'delay', [delay]), function (changes) {
-            return changes.delay(delay);
+            return changes.flatMap(function (value) {
+                return Bacon.later(delay, value);
+            });
         });
     };
-    Bacon.EventStream.prototype.debounce = function (delay) {
-        return withDesc(new Bacon.Desc(this, 'debounce', [delay]), this.flatMapLatest(function (value) {
-            return Bacon.later(delay, value);
-        }));
-    };
-    Bacon.Property.prototype.debounce = function (delay) {
+    Bacon.Observable.prototype.debounce = function (delay) {
         return this.delayChanges(new Bacon.Desc(this, 'debounce', [delay]), function (changes) {
-            return changes.debounce(delay);
+            return changes.flatMapLatest(function (value) {
+                return Bacon.later(delay, value);
+            });
         });
     };
-    Bacon.EventStream.prototype.debounceImmediate = function (delay) {
-        return withDesc(new Bacon.Desc(this, 'debounceImmediate', [delay]), this.flatMapFirst(function (value) {
-            return Bacon.once(value).concat(Bacon.later(delay).filter(false));
-        }));
-    };
-    Bacon.Property.prototype.debounceImmediate = function (delay) {
+    Bacon.Observable.prototype.debounceImmediate = function (delay) {
         return this.delayChanges(new Bacon.Desc(this, 'debounceImmediate', [delay]), function (changes) {
-            return changes.debounceImmediate(delay);
+            return changes.flatMapFirst(function (value) {
+                return Bacon.once(value).concat(Bacon.later(delay).filter(false));
+            });
         });
     };
     Bacon.Observable.prototype.decode = function (cases) {
@@ -3062,14 +3056,11 @@
             }));
         });
     };
-    Bacon.EventStream.prototype.throttle = function (delay) {
-        return withDesc(new Bacon.Desc(this, 'throttle', [delay]), this.bufferWithTime(delay).map(function (values) {
-            return values[values.length - 1];
-        }));
-    };
-    Bacon.Property.prototype.throttle = function (delay) {
+    Bacon.Observable.prototype.throttle = function (delay) {
         return this.delayChanges(new Bacon.Desc(this, 'throttle', [delay]), function (changes) {
-            return changes.throttle(delay);
+            return changes.bufferWithTime(delay).map(function (values) {
+                return values[values.length - 1];
+            });
         });
     };
     Observable.prototype.firstToPromise = function (PromiseCtr) {
