@@ -1033,7 +1033,7 @@ EventStream with the given initial value that will be used as the current value 
 the first value comes from the stream.
 
 <a name="stream-flatscan"></a>
-[`stream.flatScan(seed, f)`](#stream-flatscan "stream.flatScan(seed, f) : Property[A]") scans stream/property with given seed value and accumulator function, resulting to a Property.
+[`stream.flatScan(seed, f)`](#stream-flatscan "stream.flatScan(seed, f) : Property[A]") scans stream with given seed value and accumulator function, resulting to a Property.
 Difference to [`scan`](#observable-scan) is that the function `f` can return an [`EventStream`](#eventstream) or a [`Property`](#property) instead
 of a pure value, meaning that you can use [`flatScan`](#stream-flatscan) for asynchronous updates of state. It serializes
 updates so that that the next update will be queued until the previous one has completed.
