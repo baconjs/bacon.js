@@ -1,3 +1,7 @@
+## 0.7.90
+
+- Add `EventSTream::flatScan` method
+
 ## 0.7.89
 
 - Add missing `Property::debounceImmediate` method
