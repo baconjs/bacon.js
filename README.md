@@ -1501,7 +1501,7 @@ such as AJAX calls.
 
 The two required option parameters are:
 
-* `source`, a function that produces an Observable.
+* `source`, a function that produces an Observable. The function gets attempt number (starting from zero) as its argument.
 * `retries`, the number of times to retry the `source` function _in addition to the initial attempt_. Use the value o (zero) for retrying indefinitely.
 
 Additionally, one may pass in one or both of the following callbacks:
@@ -1513,7 +1513,7 @@ Additionally, one may pass in one or both of the following callbacks:
 var triggeringStream, ajaxCall // <- ajaxCall gives Errors on network or server errors
 ajaxResult = triggeringStream.flatMap(function(url) {
     return Bacon.retry({
-        source: function() { return ajaxCall(url) },
+        source: function(attemptNumber) { return ajaxCall(url) },
         retries: 5,
         isRetryable: function (error) { return error.httpStatusCode !== 404; },
         delay: function(context) { return 100; } // Just use the same delay always
