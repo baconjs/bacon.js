@@ -2491,6 +2491,14 @@
             }
         }));
     };
+    Bacon.EventStream.prototype.flatScan = function (seed, f) {
+        var current = seed;
+        return this.flatMapConcat(function (next) {
+            return makeObservable(f(current, next)).doAction(function (updated) {
+                return current = updated;
+            });
+        }).toProperty(seed);
+    };
     Bacon.EventStream.prototype.sampledBy = function (sampler, combinator) {
         return withDesc(new Bacon.Desc(this, 'sampledBy', [
             sampler,
