@@ -2016,7 +2016,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return unsubLeft(), unsubRight();
+      return (unsubLeft(), unsubRight());
     };
   });
 };
@@ -2692,6 +2692,15 @@ Bacon.Observable.prototype.flatMapError = function (fn) {
       return Bacon.once(x);
     }
   }));
+};
+
+Bacon.EventStream.prototype.flatScan = function (seed, f) {
+  var current = seed;
+  return this.flatMapConcat(function (next) {
+    return makeObservable(f(current, next)).doAction(function (updated) {
+      return current = updated;
+    });
+  }).toProperty(seed);
 };
 
 Bacon.EventStream.prototype.sampledBy = function (sampler, combinator) {

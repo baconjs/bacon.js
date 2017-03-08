@@ -1082,6 +1082,13 @@ EventStream with the given initial value that will be used as the current value 
 the first value comes from the stream.
 """
 
+doc.fn "stream.flatScan(seed, f) : Property[A]", """
+scans stream/property with given seed value and accumulator function, resulting to a Property.
+Difference to `scan` is that the function `f` can return an `EventStream` or a `Property` instead
+of a pure value, meaning that you can use `flatScan` for asynchronous updates of state. It serializes
+updates so that that the next update will be queued until the previous one has completed.
+"""
+
 doc.subsection "Property"
 
 doc.fn "Bacon.Property", """
