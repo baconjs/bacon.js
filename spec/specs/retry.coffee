@@ -13,15 +13,15 @@ describe "Bacon.retry", ->
   describe "retries to run the source stream given number of times until it yields a value", ->
     expectStreamEvents(
       ->
-        calls = 0
-        source = ->
-          calls += 1
-          if calls < 3
+        calls = []
+        source = (count) ->
+          calls.push(count)
+          if calls.length < 3
             Bacon.once(new Bacon.Error())
           else
-            Bacon.once({calls})
+            Bacon.once(calls)
         Bacon.retry({source, retries: 5})
-      [calls: 3])
+      [[0, 1, 2]])
   describe "does not change source stream characteristics", ->
     expectStreamEvents(
       -> Bacon.retry(source: -> fromArray([3, 1, 2, 1, 3]).skipDuplicates().take(2))
