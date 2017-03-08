@@ -1421,8 +1421,14 @@ to a Property.
 <a name="event-isinitial"></a>
 [`event.isInitial()`](#event-isinitial "event.isInitial(@ : Event[A]) : Bool") true for Initial events
 
+<a name="event-iserror"></a>
+[`event.isError()`](#event-iserror "event.isError()") true for Error events
+
 <a name="event-isend"></a>
 [`event.isEnd()`](#event-isend "event.isEnd()") true for End events
+
+<a name="event-error"></a>
+[`event.error`](#event-error "event.error") the error value of Error events
 
 Errors
 ------

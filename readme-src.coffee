@@ -1494,7 +1494,9 @@ doc.fn "event.value(@ : Event[A]) : A", "returns the value associated with a Nex
 doc.fn "event.hasValue(@ : Event[A]) : Bool", "returns true for events of type Initial and Next"
 doc.fn "event.isNext(@ : Event[A]) : Bool", "true for Next events"
 doc.fn "event.isInitial(@ : Event[A]) : Bool", "true for Initial events"
+doc.fn "event.isError()", "true for Error events"
 doc.fn "event.isEnd()", "true for End events"
+doc.fn "event.error", "the error value of Error events"
 
 doc.subsection "Errors"
 doc.text """
