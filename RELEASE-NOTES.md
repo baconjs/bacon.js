@@ -1,3 +1,7 @@
+## 0.7.91
+
+- `Bacon.retry` supplies the `source` function with attempt number
+
 ## 0.7.90
 
 - Add `EventSTream::flatScan` method
