@@ -2704,6 +2704,15 @@ Bacon.Observable.prototype.flatMapError = function (fn) {
   }));
 };
 
+Bacon.EventStream.prototype.flatScan = function (seed, f) {
+  var current = seed;
+  return this.flatMapConcat(function (next) {
+    return makeObservable(f(current, next)).doAction(function (updated) {
+      return current = updated;
+    });
+  }).toProperty(seed);
+};
+
 Bacon.EventStream.prototype.sampledBy = function (sampler, combinator) {
   return withDesc(new Bacon.Desc(this, "sampledBy", [sampler, combinator]), this.toProperty().sampledBy(sampler, combinator));
 };
@@ -3117,9 +3126,9 @@ Bacon.retry = function (options) {
   var finished = false;
   var error = null;
 
-  return withDesc(new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat(function () {
+  return withDesc(new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat(function (count) {
     function valueStream() {
-      return source().endOnError().withHandler(function (event) {
+      return source(count).endOnError().withHandler(function (event) {
         if (event.isError()) {
           error = event;
           if (!(isRetryable(error.error) && (retries === 0 || retriesDone < retries))) {

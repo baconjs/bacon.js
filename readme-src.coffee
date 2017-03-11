@@ -1082,6 +1082,13 @@ EventStream with the given initial value that will be used as the current value 
 the first value comes from the stream.
 """
 
+doc.fn "stream.flatScan(seed, f) : Property[A]", """
+scans stream with given seed value and accumulator function, resulting to a Property.
+Difference to `scan` is that the function `f` can return an `EventStream` or a `Property` instead
+of a pure value, meaning that you can use `flatScan` for asynchronous updates of state. It serializes
+updates so that that the next update will be queued until the previous one has completed.
+"""
+
 doc.subsection "Property"
 
 doc.fn "Bacon.Property", """
@@ -1494,7 +1501,9 @@ doc.fn "event.value(@ : Event[A]) : A", "returns the value associated with a Nex
 doc.fn "event.hasValue(@ : Event[A]) : Bool", "returns true for events of type Initial and Next"
 doc.fn "event.isNext(@ : Event[A]) : Bool", "true for Next events"
 doc.fn "event.isInitial(@ : Event[A]) : Bool", "true for Initial events"
+doc.fn "event.isError()", "true for Error events"
 doc.fn "event.isEnd()", "true for End events"
+doc.fn "event.error", "the error value of Error events"
 
 doc.subsection "Errors"
 doc.text """
@@ -1561,7 +1570,7 @@ is used to retry the call when there is an [`Error`](#bacon-error) event in the 
 
 The two required option parameters are:
 
-* `source`, a function that produces an Observable.
+* `source`, a function that produces an Observable. The function gets attempt number (starting from zero) as its argument.
 * `retries`, the number of times to retry the `source` function _in addition to the initial attempt_. Use the value o (zero) for retrying indefinitely.
 
 Additionally, one may pass in one or both of the following callbacks:
@@ -1573,7 +1582,7 @@ Additionally, one may pass in one or both of the following callbacks:
 var triggeringStream, ajaxCall // <- ajaxCall gives Errors on network or server errors
 ajaxResult = triggeringStream.flatMap(function(url) {
     return Bacon.retry({
-        source: function() { return ajaxCall(url) },
+        source: function(attemptNumber) { return ajaxCall(url) },
         retries: 5,
         isRetryable: function (error) { return error.httpStatusCode !== 404; },
         delay: function(context) { return 100; } // Just use the same delay always

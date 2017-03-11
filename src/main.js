@@ -24,6 +24,7 @@
 // build-dependencies: flatmaperror
 // build-dependencies: flatmaplatest
 // build-dependencies: flatmapwithconcurrencylimit
+// build-dependencies: flatscan
 // build-dependencies: fold
 // build-dependencies: frombinder
 // build-dependencies: fromevent

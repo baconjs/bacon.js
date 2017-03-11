@@ -16,9 +16,9 @@ Bacon.retry = function(options) {
   var finished = false;
   var error = null;
 
-  return withDesc(new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat(function() {
+  return withDesc(new Bacon.Desc(Bacon, "retry", [options]), Bacon.repeat(function(count) {
     function valueStream() {
-      return source().endOnError().withHandler(function(event) {
+      return source(count).endOnError().withHandler(function(event) {
         if (event.isError()) {
           error = event;
           if (!(isRetryable(error.error) && (retries===0 || retriesDone < retries))) {
