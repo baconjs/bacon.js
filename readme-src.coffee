@@ -233,6 +233,12 @@ read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 """
 
+doc.fn "Bacon.fromESObservable(observable : ESObservable[A]) : EventStream[A]", """
+creates an EventStream from an
+[ES Observable](https://github.com/tc39/proposal-observable). Input can be any
+ES Observable implementation including RxJS and Kefir.
+"""
+
 doc.fnOverload "Bacon.fromNodeCallback(object, methodName [, args...])", "object", """
 a variant of fromNodeCallback which calls the named method of a given object.
 """
@@ -456,6 +462,14 @@ doc.fn "observable.firstToPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]
 returns a Promise which will be resolved with the first event coming from an Observable.
 Like `toPromise`, the global ES6 promise implementation will be used unless a promise
 constructor is given.
+"""
+
+doc.fn "observable.toESObservable() : ESObservable[A]", """
+Aliased as `observable[Symbol.observable]()`. Returns an
+[ES Observable](https://github.com/zenparsing/es-observable) containing the
+events from Bacon observable. This allows Bacon observables to be used with
+`Observable.from` and provides interoperability with other ES observable
+implementations such as RxJS and Kefir.
 """
 
 doc.fn "observable.map(@ : Observable[A], f : A -> B) : Observable[B]", """
@@ -1782,20 +1796,20 @@ doc.fn "observable.toString", """Returns a textual description of the Observable
 
 """
 
-doc.fn "observable.deps", """Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`. 
-This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools. 
-Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on. 
+doc.fn "observable.deps", """Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
+This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
+Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
 The `deps` method will skip these internal dependencies.
 """
 
 doc.fn "observable.internalDeps", """
-Returns the true dependencies of the observable, including the intermediate "hidden" Observables. 
+Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
 This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
 """
 
 doc.fn "observable.desc()", """
-Contains a structured version of what `toString` returns. 
-The structured description is an object that contains the fields `context`, `method` and `args`. 
+Contains a structured version of what `toString` returns.
+The structured description is an object that contains the fields `context`, `method` and `args`.
 For example, for `Bacon.fromArray([1,2,3]).desc` you'd get
 
     { context: Bacon, method: "fromArray", args: [[1,2,3]] }
@@ -1805,8 +1819,8 @@ Notice that this is a field, not a function.
 
 doc.fn "Bacon.spy(f)", """
 
-Adds your function as a "spy" that will get notified on all new Observables. 
-This will allow a visualization/analytis tool to spy on all Bacon activity. 
+Adds your function as a "spy" that will get notified on all new Observables.
+This will allow a visualization/analytis tool to spy on all Bacon activity.
 """
 
 doc.subsection "Cleaning up"
