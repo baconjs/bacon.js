@@ -3417,9 +3417,11 @@ ESObservable.prototype[symbol('observable')] = function () {
   return this;
 };
 
-Bacon.Observable.prototype[symbol('observable')] = function () {
+Bacon.Observable.prototype.toESObservable = function () {
   return new ESObservable(this);
 };
+
+Bacon.Observable.prototype[symbol('observable')] = Bacon.Observable.prototype.toESObservable;
 
 Bacon.fromESObservable = function (_observable) {
   var observable;
