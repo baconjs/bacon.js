@@ -3,7 +3,7 @@
   "test_path": "browsertest/mocha.runner.html",
   "browsers": [
     "chrome_latest",
-    "firefox_latest",
+    "firefox_previous",
     "safari_previous",
     "safari_latest",
     "ie_11",
