@@ -32,6 +32,7 @@
   "dependencies": {},
   "devDependencies": {
     "babel": "^5.8.23",
+    "rxjs": "^5.2.0",
     "benchmark": "1.0.0",
     "bluebird": "^2",
     "bower-json": "^0.6.0",
@@ -61,7 +62,9 @@
     "mocha": "^2.1.0",
     "shelljs": "^0.5.3",
     "sinon": "^1.12.2",
-    "uglify-js": "^2.4.16"
+    "uglify-js": "^2.4.16",
+    "when": "^3.6.4",
+    "zen-observable": "^0.4.0"
   },
   "repository": {
     "type": "git",

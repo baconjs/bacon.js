@@ -1,4 +1,5 @@
 expect = require("chai").expect
+Observable = require 'zen-observable'
 Bacon = require("../dist/Bacon").Bacon
 _ = Bacon._
 Mocks = require( "./Mock")
@@ -24,7 +25,7 @@ lessThan = (limit) ->
 times = (x, y) -> x * y
 add = (x, y) -> x + y
 id = (x) -> x
-activate = (obs) -> 
+activate = (obs) ->
   obs.onValue(->)
   obs
 
@@ -72,7 +73,7 @@ fromBinder = Bacon.fromBinder || (binder, eventTransformer = Bacon._.id) ->
       value = eventTransformer.apply(this, args)
       unless (value instanceof Array) and Bacon._.last(value) instanceof Bacon.Event
         value = [value]
-        
+
       reply = Bacon.more
       for event in value
         reply = sink(event = toEvent(event))

@@ -269,6 +269,11 @@ read.onError(function(error) { console.log("Reading failed: " + error); });
 read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 
+<a name="bacon-fromesobservable"></a>
+[`Bacon.fromESObservable(observable)`](#bacon-fromesobservable "Bacon.fromESObservable(observable : ESObservable[A]) : EventStream[A]") creates an EventStream from an
+[ES Observable](https://github.com/tc39/proposal-observable). Input can be any
+ES Observable implementation including RxJS and Kefir.
+
 <a name="bacon-fromnodecallback-object"></a>
 [`Bacon.fromNodeCallback(object, methodName [, args...])`](#bacon-fromnodecallback-object "Bacon.fromNodeCallback(object, methodName [, args...])") a variant of fromNodeCallback which calls the named method of a given object.
 
@@ -474,6 +479,13 @@ Use a shim if you need to support legacy browsers or platforms.
 [`observable.firstToPromise([PromiseCtr])`](#observable-firsttopromise "observable.firstToPromise(@ : Observable[A] [, PromiseCtr]) : Promise[A]") returns a Promise which will be resolved with the first event coming from an Observable.
 Like [`toPromise`](#observable-topromise), the global ES6 promise implementation will be used unless a promise
 constructor is given.
+
+<a name="observable-toesobservable"></a>
+[`observable.toESObservable()`](#observable-toesobservable "observable.toESObservable() : ESObservable[A]") Aliased as `observable[Symbol.observable]()`. Returns an
+[ES Observable](https://github.com/zenparsing/es-observable) containing the
+events from Bacon observable. This allows Bacon observables to be used with
+`Observable.from` and provides interoperability with other ES observable
+implementations such as RxJS and Kefir.
 
 <a name="observable-map"></a>
 [`observable.map(f)`](#observable-map "observable.map(@ : Observable[A], f : A -> B) : Observable[B]") maps values using given function, returning a new
@@ -1708,18 +1720,18 @@ Bacon.js provides ways to get some descriptive metadata about all Observables.
 
 
 <a name="observable-deps"></a>
-[`observable.deps`](#observable-deps "observable.deps") Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`. 
-This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools. 
-Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on. 
+[`observable.deps`](#observable-deps "observable.deps") Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
+This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
+Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
 The [`deps`](#observable-deps) method will skip these internal dependencies.
 
 <a name="observable-internaldeps"></a>
-[`observable.internalDeps`](#observable-internaldeps "observable.internalDeps") Returns the true dependencies of the observable, including the intermediate "hidden" Observables. 
+[`observable.internalDeps`](#observable-internaldeps "observable.internalDeps") Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
 This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
 
 <a name="observable-desc"></a>
-[`observable.desc()`](#observable-desc "observable.desc()") Contains a structured version of what [`toString`](#observable-tostring) returns. 
-The structured description is an object that contains the fields `context`, `method` and `args`. 
+[`observable.desc()`](#observable-desc "observable.desc()") Contains a structured version of what [`toString`](#observable-tostring) returns.
+The structured description is an object that contains the fields `context`, `method` and `args`.
 For example, for `Bacon.fromArray([1,2,3]).desc` you'd get
 
     { context: Bacon, method: "fromArray", args: [[1,2,3]] }
@@ -1728,8 +1740,8 @@ Notice that this is a field, not a function.
 
 <a name="bacon-spy"></a>
 [`Bacon.spy(f)`](#bacon-spy "Bacon.spy(f)") 
-Adds your function as a "spy" that will get notified on all new Observables. 
-This will allow a visualization/analytis tool to spy on all Bacon activity. 
+Adds your function as a "spy" that will get notified on all new Observables.
+This will allow a visualization/analytis tool to spy on all Bacon activity.
 
 Cleaning up
 -----------

@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.91';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -84,6 +84,16 @@ var inherit = function (child, parent) {
     }
   }
   return child;
+};
+
+var symbol = function (key) {
+  if (typeof Symbol !== "undefined" && Symbol[key]) {
+    return Symbol[key];
+  } else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
+    return Symbol[key] = Symbol["for"](key);
+  } else {
+    return "@@" + key;
+  }
 };
 
 var _ = {
@@ -2016,7 +2026,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return (unsubLeft(), unsubRight());
+      return unsubLeft(), unsubRight();
     };
   });
 };
@@ -3373,6 +3383,77 @@ Bacon.zipWith = function () {
 
 Bacon.Observable.prototype.zip = function (other, f) {
   return withDesc(new Bacon.Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
+};
+
+function ESObservable(observable) {
+  this.observable = observable;
+}
+
+ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
+  var observer = typeof observerOrOnNext === 'function' ? { next: observerOrOnNext, error: onError, complete: onComplete } : observerOrOnNext;
+  var subscription = {
+    closed: false,
+    unsubscribe: function () {
+      subscription.closed = true;
+      cancel();
+    }
+  };
+
+  var cancel = this.observable.subscribe(function (event) {
+    if (event.isError()) {
+      if (observer.error) observer.error(event.error);
+      subscription.unsubscribe();
+    } else if (event.isEnd()) {
+      subscription.closed = true;
+      if (observer.complete) observer.complete();
+    } else if (observer.next) {
+      observer.next(event.value());
+    }
+  });
+  return subscription;
+};
+
+ESObservable.prototype[symbol('observable')] = function () {
+  return this;
+};
+
+Bacon.Observable.prototype.toESObservable = function () {
+  return new ESObservable(this);
+};
+
+Bacon.Observable.prototype[symbol('observable')] = Bacon.Observable.prototype.toESObservable;
+
+Bacon.fromESObservable = function (_observable) {
+  var observable;
+  if (_observable[symbol("observable")]) {
+    observable = _observable[symbol("observable")]();
+  } else {
+    observable = _observable;
+  }
+
+  var desc = new Bacon.Desc(Bacon, "fromESObservable", [observable]);
+  return new Bacon.EventStream(desc, function (sink) {
+    var cancel = observable.subscribe({
+      error: function () {
+        sink(new Bacon.Error());
+        sink(new Bacon.End());
+      },
+      next: function (value) {
+        sink(new Bacon.Next(value, true));
+      },
+      complete: function () {
+        sink(new Bacon.End());
+      }
+    });
+
+    if (cancel.unsubscribe) {
+      return function () {
+        cancel.unsubscribe();
+      };
+    } else {
+      return cancel;
+    }
+  });
 };
 
 if (typeof define !== "undefined" && define !== null && define.amd != null) {
