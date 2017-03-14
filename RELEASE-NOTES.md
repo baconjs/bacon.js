@@ -1,3 +1,7 @@
+## 0.7.92
+
+- Added ECMAScript Observable support (#649)
+
 ## 0.7.91
 
 - `Bacon.retry` supplies the `source` function with attempt number
