@@ -83,6 +83,50 @@
         $("#batter-up button")
           .asEventStream("click").skip(2).take(1).onValue(strikeout)
 
+
+        // Typelighter example
+
+        function renderKeyboard($container) {
+          $el = $("<pre></pre>")
+          $container.html($el)
+          function keyTemplate(char) {
+            return '<span class="key">'+char+'</span>'
+          }
+          function renderRow(str) {
+            _.each(str, function(char) { $el.append(keyTemplate(char) + " ") })
+          }
+          renderRow("QWERTYUIOP")
+          $el.append("<br>&nbsp;")
+          renderRow("ASDFGHJKL")
+          $el.append("<br>&nbsp;&nbsp;")
+          renderRow("ZXCVBNM")
+        }
+
+        function charIs(char) { 
+          return function(event) { return String.fromCharCode(event.which) === char }
+        }
+        function charDownEvents(char) { 
+          return $(document).asEventStream("keydown").filter(charIs(char))
+        }
+        function charUpEvents(char) { 
+          return $(document).asEventStream("keyup").filter(charIs(char))
+        }
+        function keyLightStyleProperty(char) { 
+          var light = {color: "red"},
+              dim = {color: "inherit"}
+          return charDownEvents(char).map(always(light))
+            .merge(charUpEvents(char).map(always(dim)))
+            .toProperty(dim)
+        }
+
+        renderKeyboard($("#typelighter .keyboard"))
+        $("#typelighter .keyboard .key").each(function() {
+          var $key = $(this),
+              char = $key.text()
+          keyLightStyleProperty(char)
+            .onValue(function(lightStyle) { $key.css(lightStyle) })
+        })
+
       })
     </script>
   </head>
@@ -156,6 +200,11 @@
       <button>Swing</button>
       <span class="ump-call" style="font-weight:bold"></span>
       <p style="font-style:italic">♪♫  ...for it's one, two, three strikes you're out at the old ball game ♪♫ </p>
+    </div>
+    <div id="typelighter">
+      <h2>“Typelighter” example:</h2>
+      <p>Watch the keys below light up as you type...</p>
+      <div class="keyboard" style="padding-left:20px; font-weight:bold"></div>
     </div>
   </body>
 </html>
