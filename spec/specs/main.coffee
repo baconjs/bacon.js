@@ -323,10 +323,15 @@ describe "Integration tests", ->
           bus = new Bacon.Bus
           src = Bacon.later(1, 1)
           result = src.merge(bus)
+          started = false
           # these two side-effects are queued at the same time
           result.onValue (val) ->
+            if started
+              throw new Error("next started before previous finished")
+            started = true
             bus.push "x" if val == 1
             bus.end()
+            started = false
           result
         [1, "x"], unstable)
     it "EventStream.take(1) works correctly (bug fix)", ->
