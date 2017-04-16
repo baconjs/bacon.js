@@ -4,18 +4,79 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
-  var afters = [];
-  var aftersIndex = 0;
+  var aftersStack = []
+  var aftersStackHeight = 0
   var flushed = {}
 
-  var afterTransaction = function(f) {
-    if (rootEvent) {
-      return afters.push(f);
+  function ensureStackHeight(h) {
+    if (h <= aftersStackHeight) return
+    if (!aftersStack[h-1]) {
+      aftersStack[h-1]=[[],0]
+    }
+    aftersStackHeight = h
+  }
+
+  var afterTransaction = function(obs, f) {
+    if (rootEvent || aftersStack.length) {
+      ensureStackHeight(1)
+      var stackIndexForThisObs = 0
+      while (stackIndexForThisObs < aftersStackHeight - 1) {
+        if (containsObs(obs, aftersStack[stackIndexForThisObs][0])) {
+          // this observable is already being processed at this stack index -> use this index
+          break;
+        }
+        stackIndexForThisObs++
+      }
+      var listFromStack = aftersStack[stackIndexForThisObs][0]
+      listFromStack.push([obs, f]);
+      if (!rootEvent) {
+        processAfters() // wouldn't be called otherwise
+      }
     } else {
       return f();
     }
   };
 
+  function containsObs(obs, aftersList) {
+    for (var i in aftersList) {
+      if (aftersList[i][0].id == obs.id) return true
+    }
+    return false
+  }
+
+  function processAfters() {
+    let stackSizeAtStart = aftersStackHeight
+    if (!stackSizeAtStart) return
+    while (aftersStackHeight >= stackSizeAtStart) { // to prevent sinking to levels started by others
+      var topOfStack = aftersStack[aftersStackHeight - 1]
+      if (!topOfStack) throw new Error("Unexpected stack top: " + topOfStack)
+      var [topAfters, index] = topOfStack
+      if (index < topAfters.length) {
+        var [obs, after] = topAfters[index];
+        topOfStack[1]++ // increase index already here to indicate that this level is being processed
+        ensureStackHeight(aftersStackHeight+1) // to ensure there's a new level for recursively added afters
+        var callSuccess = false
+        try {
+          after()
+          callSuccess = true
+          while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight-1][0].length == 0) {
+            aftersStackHeight--
+          }
+        } finally {
+          if (!callSuccess) {
+            aftersStack = []
+            aftersStackHeight = 0 // reset state to prevent stale updates after error
+          }
+        }
+      } else {
+        topOfStack[0] = []
+        topOfStack[1] = 0 // reset this level
+        break
+      }
+    }
+  }
+
+  
   var whenDoneWith = function(obs, f) {
     if (rootEvent) {
       var obsWaiters = waiters[obs.id];
@@ -68,10 +129,10 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
 
   var inTransaction = function(event, context, f, args) {
     if (rootEvent) {
-      //console.log "in tx"
+      //console.log("in tx")
       return f.apply(context, args);
     } else {
-      //console.log "start tx"
+      //console.log("start tx")
       rootEvent = event;
       try {
         var result = f.apply(context, args);
@@ -79,13 +140,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
         flush();
       } finally {
         rootEvent = undefined;
-        while (aftersIndex < afters.length) {
-          var after = afters[aftersIndex];
-          aftersIndex++;
-          after();
-        }
-        aftersIndex = 0;
-        afters = [];
+        processAfters()
       }
       return result;
     }
@@ -107,7 +162,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       return doUnsub();
     };
     doUnsub = obs.dispatcher.subscribe(function(event) {
-      return afterTransaction(function() {
+      return afterTransaction(obs, function() {
         if (!unsubd) {
           var reply = sink(event);
           if (reply === Bacon.noMore) {

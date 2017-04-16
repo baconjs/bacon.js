@@ -6,12 +6,12 @@ Bacon.fromArray = function(values) {
     return withDesc(new Bacon.Desc(Bacon, "fromArray", values), Bacon.never());
   } else {
     var i = 0;
-    return new EventStream(new Bacon.Desc(Bacon, "fromArray", [values]), function(sink) {
+    var stream = new EventStream(new Bacon.Desc(Bacon, "fromArray", [values]), function(sink) {
       var unsubd = false;
       var reply = Bacon.more;
       var pushing = false;
       var pushNeeded = false;
-      var push = function() {
+      function push() {
         pushNeeded = true;
         if (pushing) {
           return;
@@ -26,7 +26,7 @@ Bacon.fromArray = function(values) {
               if (i === values.length) {
                 sink(endEvent());
               } else {
-                UpdateBarrier.afterTransaction(push);
+                UpdateBarrier.afterTransaction(stream, push);
               }
             }
           }
@@ -41,5 +41,6 @@ Bacon.fromArray = function(values) {
         return unsubd;
       };
     });
+    return stream;
   }
 };

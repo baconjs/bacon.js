@@ -324,7 +324,6 @@ describe "Integration tests", ->
           src = Bacon.later(1, 1)
           result = src.merge(bus)
           started = false
-          # these two side-effects are queued at the same time
           result.onValue (val) ->
             if started
               throw new Error("next started before previous finished")
@@ -368,7 +367,6 @@ describe "Integration tests", ->
             values.push(value)
           expect(values).to.deep.equal(expected)
         expect(values).to.deep.equal(expected)
-
       it name + " (dependent)", ->
         values = []
         src = Bacon.combineAsArray(Bacon.once(1).toProperty(), Bacon.constant(2))

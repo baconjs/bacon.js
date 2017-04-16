@@ -115,7 +115,7 @@ fromArray = Bacon.fromArray || (values) ->
     Bacon.never()
   else
     i = 0
-    new Bacon.EventStream noDesc, (sink) ->
+    stream = new Bacon.EventStream noDesc, (sink) ->
       unsubd = false
       reply = Bacon.more
       push = ->
@@ -126,9 +126,10 @@ fromArray = Bacon.fromArray || (values) ->
             if i == values.length
               sink(new Bacon.End())
             else
-              Bacon.UpdateBarrier.afterTransaction push
+              Bacon.UpdateBarrier.afterTransaction stream, push
       push()
       -> unsubd = true
+    stream
 
 once = Bacon.once || (value) ->
   new Bacon.EventStream noDesc, (sink) ->

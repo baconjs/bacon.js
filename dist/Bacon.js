@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.92';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -299,17 +299,81 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
-  var afters = [];
-  var aftersIndex = 0;
+  var aftersStack = [];
+  var aftersStackHeight = 0;
   var flushed = {};
 
-  var afterTransaction = function (f) {
-    if (rootEvent) {
-      return afters.push(f);
-    } else {
-      return f();
+  function ensureStackHeight(h) {
+    if (h <= aftersStackHeight) return;
+    if (!aftersStack[h - 1]) {
+      aftersStack[h - 1] = [[], 0];
     }
+    aftersStackHeight = h;
+  }
+
+  var afterTransaction = function (obs, f) {
+    if (rootEvent || aftersStack.length) {
+      ensureStackHeight(1);
+      var stackIndexForThisObs = 0;
+      while (stackIndexForThisObs < aftersStackHeight - 1) {
+        if (containsObs(obs, aftersStack[stackIndexForThisObs][0])) {
+          break;
+        }
+        stackIndexForThisObs++;
+      }
+      var listFromStack = aftersStack[stackIndexForThisObs][0];
+      listFromStack.push([obs, f]);
+      if (!rootEvent) {
+        processAfters();
+      }
+    } else {
+        return f();
+      }
   };
+
+  function containsObs(obs, aftersList) {
+    for (var i in aftersList) {
+      if (aftersList[i][0].id == obs.id) return true;
+    }
+    return false;
+  }
+
+  function processAfters() {
+    var stackSizeAtStart = aftersStackHeight;
+    if (!stackSizeAtStart) return;
+    while (aftersStackHeight >= stackSizeAtStart) {
+      var topOfStack = aftersStack[aftersStackHeight - 1];
+      if (!topOfStack) throw new Error("Unexpected stack top: " + topOfStack);
+      var topAfters = topOfStack[0];
+      var index = topOfStack[1];
+
+      if (index < topAfters.length) {
+        var _topAfters$index = topAfters[index];
+        var obs = _topAfters$index[0];
+        var after = _topAfters$index[1];
+
+        topOfStack[1]++;
+        ensureStackHeight(aftersStackHeight + 1);
+        var callSuccess = false;
+        try {
+          after();
+          callSuccess = true;
+          while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight - 1][0].length == 0) {
+            aftersStackHeight--;
+          }
+        } finally {
+          if (!callSuccess) {
+            aftersStack = [];
+            aftersStackHeight = 0;
+          }
+        }
+      } else {
+          topOfStack[0] = [];
+          topOfStack[1] = 0;
+          break;
+        }
+    }
+  }
 
   var whenDoneWith = function (obs, f) {
     if (rootEvent) {
@@ -372,13 +436,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
         flush();
       } finally {
         rootEvent = undefined;
-        while (aftersIndex < afters.length) {
-          var after = afters[aftersIndex];
-          aftersIndex++;
-          after();
-        }
-        aftersIndex = 0;
-        afters = [];
+        processAfters();
       }
       return result;
     }
@@ -400,7 +458,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
       return doUnsub();
     };
     doUnsub = obs.dispatcher.subscribe(function (event) {
-      return afterTransaction(function () {
+      return afterTransaction(obs, function () {
         if (!unsubd) {
           var reply = sink(event);
           if (reply === Bacon.noMore) {
@@ -2026,7 +2084,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return unsubLeft(), unsubRight();
+      return (unsubLeft(), unsubRight());
     };
   });
 };
@@ -2266,7 +2324,28 @@ extend(Bus.prototype, {
 
   push: function (value) {
     if (!this.ended && typeof this.sink === "function") {
-      return this.sink(nextEvent(value));
+      var rootPush = !this.pushing;
+      if (!rootPush) {
+        if (!this.pushQueue) this.pushQueue = [];
+        this.pushQueue.push(value);
+
+        return;
+      }
+      this.pushing = true;
+      try {
+        return this.sink(nextEvent(value));
+      } finally {
+        if (rootPush && this.pushQueue) {
+          var i = 0;
+          while (i < this.pushQueue.length) {
+            var value = this.pushQueue[i];
+            this.sink(nextEvent(value));
+            i++;
+          }
+          this.pushQueue = null;
+        }
+        this.pushing = false;
+      }
     }
   },
 
@@ -2865,12 +2944,12 @@ Bacon.fromArray = function (values) {
     return withDesc(new Bacon.Desc(Bacon, "fromArray", values), Bacon.never());
   } else {
     var i = 0;
-    return new EventStream(new Bacon.Desc(Bacon, "fromArray", [values]), function (sink) {
+    var stream = new EventStream(new Bacon.Desc(Bacon, "fromArray", [values]), function (sink) {
       var unsubd = false;
       var reply = Bacon.more;
       var pushing = false;
       var pushNeeded = false;
-      var push = function () {
+      function push() {
         pushNeeded = true;
         if (pushing) {
           return;
@@ -2885,7 +2964,7 @@ Bacon.fromArray = function (values) {
               if (i === values.length) {
                 sink(endEvent());
               } else {
-                UpdateBarrier.afterTransaction(push);
+                UpdateBarrier.afterTransaction(stream, push);
               }
             }
           }
@@ -2900,6 +2979,7 @@ Bacon.fromArray = function (values) {
         return unsubd;
       };
     });
+    return stream;
   }
 };
 
