@@ -15,7 +15,7 @@ describe "EventStream.first", ->
         s.onValue (value) ->
           throw "testing" if value == "lol" # special string that will be catched by TickScheduler
         s
-      ["lol"], semiunstable)
+      ["lol"], semiunstable) # the outputs don't really matter - it's just that the stream terminates normally
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1,2,3,4]).first()

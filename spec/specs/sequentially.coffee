@@ -11,9 +11,9 @@ describe "Bacon.sequentially", ->
     expectStreamEvents(
       ->
         s = Bacon.sequentially(t(1), ["lol", "wut"])
-        s.onValue (value) ->
+        take(1, s).onValue (value) ->
           throw "testing" # special string that will be catched by TickScheduler
         s
-      ["lol", "wut"], unstable)
+      ["wut"], unstable) # the outputs don't really matter - it's just that the stream terminates normally
   it "toString", ->
     expect(Bacon.sequentially(1, [2]).toString()).to.equal("Bacon.sequentially(1,[2])")
