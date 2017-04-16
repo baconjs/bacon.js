@@ -84,7 +84,31 @@ extend(Bus.prototype, {
 
   push(value) {
     if (!this.ended && typeof this.sink === "function") {
-      return this.sink(nextEvent(value));
+      var rootPush = !this.pushing
+      if (!rootPush) {
+        //console.log("recursive push")
+        if (!this.pushQueue) this.pushQueue = []
+        this.pushQueue.push(value)
+        //console.log('queued', value)
+        return
+      }
+      this.pushing = true
+      try {
+        return this.sink(nextEvent(value));
+      } finally {
+        if (rootPush && this.pushQueue) {
+          //console.log("start processing queue", this.pushQueue.length)
+          var i = 0
+          while (i < this.pushQueue.length) {
+            //console.log("in loop", i, this.pushQueue[i])
+            var value = this.pushQueue[i]
+            this.sink(nextEvent(value))
+            i++
+          }
+          this.pushQueue = null
+        }
+        this.pushing = false
+      }
     }
   },
 
