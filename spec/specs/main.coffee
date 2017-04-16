@@ -304,7 +304,31 @@ describe "Integration tests", ->
         values.push(v)
       bus.push "a"
       bus.push "b"
-      expect(values).to.deep.equal(["a", "A", "A", "B", "B", "b"])
+      expect(values).to.deep.equal(["a", "A", "B", "A", "B", "b"])
+      # original version: (["a", "A", "B", "A", "B", "b"])
+      # current output: ABABab
+    it "keeps bus order", ->
+      bus = new Bacon.Bus
+      values = []
+      bus.take(1).onValue (v) ->
+        bus.push("x")
+        values.push(v)
+      bus.onValue (v) ->
+        values.push(v)
+      bus.push("A")
+      expect(values).to.deep.equal(["A", "A", "x"])
+    describe "keeps order when output-queued thing is not from a bus", ->
+      expectStreamEvents(
+        ->
+          bus = new Bacon.Bus
+          src = Bacon.later(1, 1)
+          result = src.merge(bus)
+          # these two side-effects are queued at the same time
+          result.onValue (val) ->
+            bus.push "x" if val == 1
+            bus.end()
+          result
+        [1, "x"], unstable)
     it "EventStream.take(1) works correctly (bug fix)", ->
       bus = new Bacon.Bus
       values = []
