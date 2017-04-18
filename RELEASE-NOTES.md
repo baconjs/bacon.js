@@ -1,3 +1,9 @@
+## 0.7.93
+
+- Improve processing order of side-effects (onValue etc) when Bus is pushed while in onValue
+  - ensure that subscribers of observable A won't be called again before first call is fully handled
+  - ensure correct processing order while handling independent observables as soon as possible
+
 ## 0.7.92
 
 - Added ECMAScript Observable support (#649)
