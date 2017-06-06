@@ -1,4 +1,4 @@
-# build-dependencies: flatMap, fold, concat, take, takeWhile, takeUntil, map
+# build-dependencies: flatMap, fold, concat, take, takeWhile, takeUntil, map, flatMapLatest, filter, merge
 
 describe "EventStream.groupBy", ->
   flattenAndConcat = (obs) ->
@@ -56,6 +56,26 @@ describe "EventStream.groupBy", ->
         flattenAndConcat (series(2, [{k:1, t:"start"}, {k:2, t:"start"}, {k: 1, t:"data"}, {k: 1, t: "end"}, {k: 1, t: "start"}])
           .groupBy(((x) -> x.k), (x) -> takeWhileInclusive x, (x) -> x.t != "end"))
       [[{k:1, t:"start"}, {k: 1, t:"data"}, {k: 1, t:"end"}], [{k:2, t:"start"}], [{k:1, t:"start"}]], unstable)
+  describe "scenario #624", ->
+    events = [
+      {chan: 1, type: 'keydown', key: '4'},
+      {chan: 1, type: 'keyup'},
+      {chan: 2, type: 'keydown', key: '2'},
+      {chan: 2, type: 'keyup'}
+    ]
+    keyPresses = (stream) ->
+      down = stream.filter((i) -> i.type == 'keydown')
+      up = stream.filter((i) -> i.type == 'keyup')
+      upWithKey = down.flatMapLatest (downEvent) ->
+        up.take(1).map (upEvent) ->
+          upEvent.key = downEvent.key
+          upEvent
+      down.merge(upWithKey)
+    expectStreamEvents(
+      ->
+        series(2, events).groupBy((i) -> i.chan).map(keyPresses).flatMap(Bacon._.id).map((i) -> i.type + i.key)
+      ['keydown4', 'keyup4', 'keydown2', 'keyup2'], semiunstable)
+
   describe "scenario calculating sums by continuous groups", ->
     events = [
       {id: 1, val: 3, type: "add"},
