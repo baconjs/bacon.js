@@ -50,7 +50,7 @@
     "github": "^0.2.4",
     "grunt": "0.4",
     "grunt-cli": "0.1.13",
-    "grunt-coffeelint": "0.0.13",
+    "grunt-coffeelint": "0.0.16",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-eslint": "^17.2.0",
