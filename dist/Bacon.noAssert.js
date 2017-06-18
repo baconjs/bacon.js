@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.93';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -305,6 +305,8 @@
             aftersStackHeight = h;
         }
         var afterTransaction = function (obs, f) {
+            if (!obs)
+                throw new Error('observable missing');
             if (rootEvent || aftersStack.length) {
                 ensureStackHeight(1);
                 var stackIndexForThisObs = 0;
@@ -328,6 +330,8 @@
         };
         function containsObs(obs, aftersList) {
             for (var i in aftersList) {
+                if (!aftersList[i][0])
+                    throw new Error('observable missing from at index ' + i + ' in array ' + aftersList);
                 if (aftersList[i][0].id == obs.id)
                     return true;
             }
@@ -358,6 +362,7 @@
                         }
                     } finally {
                         if (!callSuccess) {
+                            console.error('Error while running afters, cleaning up');
                             aftersStack = [];
                             aftersStackHeight = 0;
                         }

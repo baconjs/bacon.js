@@ -4,7 +4,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
-  var aftersStack = []
+  var aftersStack = [] // :: [([(Observable, function)], Int index)]
   var aftersStackHeight = 0
   var flushed = {}
 
@@ -17,6 +17,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   }
 
   var afterTransaction = function(obs, f) {
+    if (!obs) throw new Error('observable missing')
     if (rootEvent || aftersStack.length) {
       ensureStackHeight(1)
       var stackIndexForThisObs = 0
@@ -39,6 +40,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
 
   function containsObs(obs, aftersList) {
     for (var i in aftersList) {
+      if (!aftersList[i][0]) throw new Error('observable missing from at index ' + i + ' in array ' + aftersList)
       if (aftersList[i][0].id == obs.id) return true
     }
     return false
@@ -64,6 +66,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
           }
         } finally {
           if (!callSuccess) {
+            console.error('Error while running afters, cleaning up')
             aftersStack = []
             aftersStackHeight = 0 // reset state to prevent stale updates after error
           }
