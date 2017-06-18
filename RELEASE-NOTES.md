@@ -1,8 +1,13 @@
+## 0.7.94
+
+- Fix #693: failure when there's extra junk in Array proto
+- Ensure that the same never happens again by adding lots of junk in Array proto when running tests
+
 ## 0.7.93
 
 - Improve processing order of side-effects (onValue etc) when Bus is pushed while in onValue
-  - ensure that subscribers of observable A won't be called again before first call is fully handled
-  - ensure correct processing order while handling independent observables as soon as possible
+- ensure that subscribers of observable A won't be called again before first call is fully handled
+- ensure correct processing order while handling independent observables as soon as possible
 
 ## 0.7.92
 
