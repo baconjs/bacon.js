@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '0.7.93';
+Bacon.version = '0.7.94';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -332,7 +332,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   };
 
   function containsObs(obs, aftersList) {
-    for (var i in aftersList) {
+    for (var i = 0; i < aftersList.length; i++) {
       if (aftersList[i][0].id == obs.id) return true;
     }
     return false;
@@ -2084,7 +2084,7 @@ Bacon.EventStream.prototype.concat = function (right) {
       }
     });
     return function () {
-      return (unsubLeft(), unsubRight());
+      return unsubLeft(), unsubRight();
     };
   });
 };
