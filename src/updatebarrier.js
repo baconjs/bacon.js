@@ -1,5 +1,7 @@
 // build-dependencies: _
 
+console.log("Debugging issue #693")
+
 var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
@@ -72,8 +74,9 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
           }
         }
       } else {
+        // Done processing afters on this level (index out of bounds now)
         topOfStack[0] = []
-        topOfStack[1] = 0 // reset this level
+        topOfStack[1] = 0
         break
       }
     }

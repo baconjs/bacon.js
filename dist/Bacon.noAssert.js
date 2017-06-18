@@ -286,6 +286,7 @@
     };
     var recursionDepth = 0;
     Bacon._ = _;
+    console.log('Debugging issue #693');
     var UpdateBarrier = Bacon.UpdateBarrier = function () {
         var rootEvent;
         var waiterObs = [];

@@ -317,6 +317,16 @@ describe "Integration tests", ->
         values.push(v)
       bus.push("A")
       expect(values).to.deep.equal(["A", "A", "x"])
+    it "works with more depth", ->
+      values = []
+      b1 = Bacon.Bus()
+      b2 = Bacon.Bus()
+      b3 = Bacon.Bus()
+      b1.toProperty().onValue(-> b2.push())
+      b2.toProperty().onValue(-> b3.push(1))
+      b3.toProperty().onValue((x) -> values.push(x))
+      b1.push()
+      expect(values).to.deep.equal([1])
     describe "keeps order when output-queued thing is not from a bus", ->
       expectStreamEvents(
         ->
