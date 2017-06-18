@@ -38,7 +38,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   };
 
   function containsObs(obs, aftersList) {
-    for (var i in aftersList) {
+    for (var i = 0; i < aftersList.length; i++) {
       if (aftersList[i][0].id == obs.id) return true
     }
     return false
