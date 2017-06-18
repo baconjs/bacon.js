@@ -218,4 +218,9 @@ repeat = (interval, values) ->
 error = (msg) -> new Bacon.Error(msg)
 soon = (f) -> setTimeout f, t(1)
 
-Array.prototype.extraTest = "Testing how this works with extra fields in Array prototype"
+Array.prototype.extraTest = -> "Testing how this works with extra fields in Array prototype"
+Array.prototype.extraTest2 = ""
+Array.prototype.extraTest3 = 0
+Array.prototype.extraTest4 = null
+Array.prototype.extraTest5 = {}
+
