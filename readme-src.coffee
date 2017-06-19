@@ -1016,6 +1016,15 @@ doc.marble()
   .input("Bacon.sequentially(200, [9,0,2]).filter(function(x) { return x })")
   .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
   .output("function(a,b) { return a.concat(b) }")
+  
+doc.fn "stream.bufferingConcat(otherStream)", """
+like [`concat`](#stream-concat), but buffers all events from `otherStream` until `stream` ends.
+"""
+
+doc.marble()
+  .input("Bacon.sequentially(200, [9,0,2]).filter(function(x) { return x })")
+  .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
+  .output("function(a,b) { return a.bufferingConcat(b) }")
 
 doc.fn "stream.merge(otherStream)", """
 merges two streams into one stream that delivers events from both
