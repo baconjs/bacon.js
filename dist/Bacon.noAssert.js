@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.94';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -1929,7 +1929,7 @@
             var unsubRight = nop;
             var unsubLeft = left.dispatcher.subscribe(function (e) {
                 if (e.isEnd()) {
-                    unsubRight = right.dispatcher.subscribe(sink);
+                    unsubRight = right.toEventStream().dispatcher.subscribe(sink);
                     return unsubRight;
                 } else {
                     return sink(e);
@@ -1939,6 +1939,28 @@
                 return unsubLeft(), unsubRight();
             };
         });
+    };
+    Bacon.Property.prototype.concat = function (right) {
+        return addPropertyInitValueToStream(this, this.changes().concat(right));
+    };
+    var addPropertyInitValueToStream = function (property, stream) {
+        var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
+            var value = undefined;
+            var unsub = property.dispatcher.subscribe(function (event) {
+                if (!event.isEnd()) {
+                    value = event;
+                }
+                return Bacon.noMore;
+            });
+            UpdateBarrier.whenDoneWith(justInitValue, function () {
+                if (typeof value !== 'undefined' && value !== null) {
+                    sink(value);
+                }
+                return sink(endEvent());
+            });
+            return unsub;
+        });
+        return justInitValue.concat(stream).toProperty();
     };
     Bacon.Observable.prototype.flatMap = function () {
         return flatMap_(this, makeSpawner(arguments));
@@ -2292,25 +2314,6 @@
         var streams = [];
         compileTemplate(template);
         return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), Bacon.combineAsArray(streams).map(combinator));
-    };
-    var addPropertyInitValueToStream = function (property, stream) {
-        var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
-            var value = undefined;
-            var unsub = property.dispatcher.subscribe(function (event) {
-                if (!event.isEnd()) {
-                    value = event;
-                }
-                return Bacon.noMore;
-            });
-            UpdateBarrier.whenDoneWith(justInitValue, function () {
-                if (typeof value !== 'undefined' && value !== null) {
-                    sink(value);
-                }
-                return sink(endEvent());
-            });
-            return unsub;
-        });
-        return justInitValue.concat(stream).toProperty();
     };
     Bacon.Observable.prototype.mapEnd = function () {
         var f = makeFunctionArgs(arguments);

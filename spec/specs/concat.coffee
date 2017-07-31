@@ -1,4 +1,33 @@
-# build-dependencies: bus, doaction, takewhile
+# build-dependencies: bus, doaction, takewhile, property, eventstream
+
+describe "Property.concat", ->
+  describe "provides values from streams in given order and ends when both are exhausted", ->
+    expectPropertyEvents(
+      ->
+        left = series(2, [1, error(), 2, 3]).toProperty()
+        right = series(1, [4, 5, 6]).toProperty()
+        left.concat(right)
+      [1, error(), 2, 3, 4, 5, 6], semiunstable)
+  describe "works with Bacon.never()", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1).toProperty().concat(Bacon.never())
+      [1])
+  describe "works with Bacon.once()", ->
+    expectPropertyEvents(
+      -> once(2).toProperty().concat(once(1))
+      [2, 1])
+  describe "works with constants", ->
+    expectPropertyEvents(
+      -> Bacon.constant(2).concat(Bacon.constant(3))
+      [2, 3], unstable)
+  describe "works with Bacon.once() and async source", ->
+    expectPropertyEvents(
+      -> once(1).toProperty().concat(series(1, [2, 3]))
+      [1, 2, 3])
+  describe "works with fromArray()", ->
+    expectPropertyEvents(
+      -> Bacon.constant(1).concat(fromArray([2, 3]))
+      [1, 2, 3], unstable)
 
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
@@ -29,6 +58,10 @@ describe "EventStream.concat", ->
   describe "works with Bacon.once()", ->
     expectStreamEvents(
       -> once(2).concat(once(1))
+      [2, 1])
+  describe "works with Bacon.constant()", ->
+    expectStreamEvents(
+      -> once(2).concat(Bacon.constant(1))
       [2, 1])
   describe "works with Bacon.once() and Bacon.never()", ->
     expectStreamEvents(
