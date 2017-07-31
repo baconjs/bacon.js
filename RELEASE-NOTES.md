@@ -1,3 +1,9 @@
+## 0.7.95
+
+- Add `Property::concat`
+- Add `Bacon.concatAll`
+- Improve `Bacon.combineTemplate`: support all kinds of objects on root level, always use original objects when they don't contain Observables.
+
 ## 0.7.94
 
 - Fix #693: failure when there's extra junk in Array proto
