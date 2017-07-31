@@ -39,6 +39,17 @@ describe "Bacon.concatAll", ->
           sequentially(1, [3,4])
         )
       [1, 2, 3, 4])
+  describe "Supports single array as well as multiple arguments", ->
+    expectStreamEvents(
+      ->
+        Bacon.concatAll([
+          Bacon.constant(1),
+          once(2),
+          sequentially(1, [3,4])
+        ])
+      [1, 2, 3, 4])
+  describe "works with zero inputs", ->
+    expectStreamEvents((-> Bacon.concatAll([])), [])
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
     expectStreamEvents(
