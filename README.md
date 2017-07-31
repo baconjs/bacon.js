@@ -569,6 +569,13 @@ If other stream ends without value, it is ignored.
 <a name="observable-skip"></a>
 [`observable.skip(n)`](#observable-skip "observable.skip(n)") skips the first n elements from the stream
 
+<a name="observable-concat"></a>
+[`observable.concat(other)`](#observable-concat "observable.concat(other)") concatenates two streams/properties into one stream/property so that
+it will deliver events from `observable` until it ends and then deliver
+events from `other`. This means too that events from `other`,
+occurring before the end of `observable` will not be included in the result
+stream/property.
+
 <a name="observable-delay"></a>
 [`observable.delay(delay)`](#observable-delay "observable.delay(delay)") delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](#property).
 
@@ -975,13 +982,6 @@ EventStream
 <a name="bacon-eventstream"></a>
 [`Bacon.EventStream`](#bacon-eventstream "Bacon.EventStream") a stream of events. See methods below.
 
-<a name="stream-concat"></a>
-[`stream.concat(otherStream)`](#stream-concat "stream.concat(otherStream)") concatenates two streams into one stream so that
-it will deliver events from `stream` until it ends and then deliver
-events from `otherStream`. This means too that events from `stream2`,
-occurring before the end of `stream` will not be included in the result
-stream.
-
 <a name="stream-merge"></a>
 [`stream.merge(otherStream)`](#stream-merge "stream.merge(otherStream)") merges two streams into one stream that delivers events from both
 
@@ -1208,6 +1208,11 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 <a name="bacon-mergeall"></a>
 [`Bacon.mergeAll(streams)`](#bacon-mergeall "Bacon.mergeAll(streams)") merges given array of EventStreams.
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
+
+<a name="bacon-concatall"></a>
+[`Bacon.concatAll(streams)`](#bacon-concatall "Bacon.concatAll(streams)") concatenates given array of EventStreams or Properties, returns an EventStream. See [`concat`](#observable-concat)
+
+`Bacon.concatAll(stream1, stream2 ...)` concatenates given EventStreams.
 
 <a name="bacon-zipasarray"></a>
 [`Bacon.zipAsArray(streams)`](#bacon-zipasarray "Bacon.zipAsArray(streams)") zips the array of EventStreams / Properties in to a new

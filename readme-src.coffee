@@ -569,6 +569,18 @@ takes the last element from the stream. None, if stream is empty.
 doc.fn "observable.skip(n)", """
 skips the first n elements from the stream
 """
+doc.fn "observable.concat(other)", """
+concatenates two streams/properties into one stream/property so that
+it will deliver events from `observable` until it ends and then deliver
+events from `other`. This means too that events from `other`,
+occurring before the end of `observable` will not be included in the result
+stream/property.
+"""
+
+doc.marble()
+  .input("Bacon.sequentially(200, [9,0,2]).filter(function(x) { return x })")
+  .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
+  .output("function(a,b) { return a.concat(b) }")
 
 doc.fn "observable.delay(delay)", """
 delays the stream/property by given amount of milliseconds. Does not delay the initial value of a `Property`.
@@ -1004,19 +1016,6 @@ Calculator for grouped consecutive values until group is cancelled:
 doc.subsection "EventStream"
 doc.fn "Bacon.EventStream", "a stream of events. See methods below."
 
-doc.fn "stream.concat(otherStream)", """
-concatenates two streams into one stream so that
-it will deliver events from `stream` until it ends and then deliver
-events from `otherStream`. This means too that events from `stream2`,
-occurring before the end of `stream` will not be included in the result
-stream.
-"""
-
-doc.marble()
-  .input("Bacon.sequentially(200, [9,0,2]).filter(function(x) { return x })")
-  .input("Bacon.sequentially(200, [0,1,0,12,8,0]).filter(function(x) { return x })")
-  .output("function(a,b) { return a.concat(b) }")
-
 doc.fn "stream.merge(otherStream)", """
 merges two streams into one stream that delivers events from both
 """
@@ -1275,6 +1274,12 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 doc.fn "Bacon.mergeAll(streams)", """
 merges given array of EventStreams.
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
+"""
+
+doc.fn "Bacon.concatAll(streams)", """
+concatenates given array of EventStreams or Properties, returns an EventStream. See [`concat`](#observable-concat)
+
+`Bacon.concatAll(stream1, stream2 ...)` concatenates given EventStreams.
 """
 
 doc.fn "Bacon.zipAsArray(streams)", """
