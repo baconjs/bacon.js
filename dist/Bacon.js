@@ -2093,6 +2093,17 @@ Bacon.Property.prototype.concat = function (right) {
   return addPropertyInitValueToStream(this, this.changes().concat(right));
 };
 
+Bacon.concatAll = function () {
+  var streams = argumentsToObservables(arguments);
+  if (streams.length) {
+    return withDesc(new Bacon.Desc(Bacon, "concatAll", streams), _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
+      return a.concat(b);
+    }));
+  } else {
+    return Bacon.never();
+  }
+};
+
 var addPropertyInitValueToStream = function (property, stream) {
   var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
     var value = undefined;

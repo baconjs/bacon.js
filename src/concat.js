@@ -1,5 +1,5 @@
 // build-dependencies: core, observable, eventstream, property
-// build-dependencies: updatebarrier
+// build-dependencies: updatebarrier, argumentstoobservables
 
 Bacon.EventStream.prototype.concat = function(right) {
   var left = this;
@@ -22,6 +22,18 @@ Bacon.EventStream.prototype.concat = function(right) {
 Bacon.Property.prototype.concat = function(right) {
   return addPropertyInitValueToStream(this, this.changes().concat(right))
 }
+
+Bacon.concatAll = function() {
+  var streams = argumentsToObservables(arguments);
+  if (streams.length) {
+    return withDesc(
+      new Bacon.Desc(Bacon, "concatAll", streams),
+      _.fold(_.tail(streams), _.head(streams).toEventStream(), (a, b) => a.concat(b))    
+    )
+  } else {
+    return Bacon.never();
+  }
+};
 
 var addPropertyInitValueToStream = function(property, stream) {
   var justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {

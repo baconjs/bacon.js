@@ -29,6 +29,16 @@ describe "Property.concat", ->
       -> Bacon.constant(1).concat(fromArray([2, 3]))
       [1, 2, 3], unstable)
 
+describe "Bacon.concatAll", ->
+  describe "Concats streams and properties into a single stream", ->
+    expectStreamEvents(
+      ->
+        Bacon.concatAll(
+          Bacon.constant(1),
+          once(2),
+          sequentially(1, [3,4])
+        )
+      [1, 2, 3, 4])
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
     expectStreamEvents(
