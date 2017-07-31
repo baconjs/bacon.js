@@ -2275,12 +2275,12 @@
         }
         function applyStreamValue(key, index) {
             return function (ctxStack, values) {
-                return setValue(ctxStack, key, values[index]);
+                setValue(ctxStack, key, values[index]);
             };
         }
         function constantValue(key, value) {
             return function (ctxStack) {
-                return setValue(ctxStack, key, value);
+                setValue(ctxStack, key, value);
             };
         }
         function mkContext(template) {
@@ -2290,22 +2290,35 @@
             return function (ctxStack) {
                 var newContext = mkContext(value);
                 setValue(ctxStack, key, newContext);
-                return ctxStack.push(newContext);
+                ctxStack.push(newContext);
             };
+        }
+        function containsObservables(value) {
+            if (isObservable(value)) {
+                return true;
+            } else if (value && (value.constructor == Object || value.constructor == Array)) {
+                for (var key in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, key)) {
+                        var child = value[key];
+                        if (containsObservables(child))
+                            return true;
+                    }
+                }
+            }
         }
         function compile(key, value) {
             if (isObservable(value)) {
                 streams.push(value);
-                return funcs.push(applyStreamValue(key, streams.length - 1));
-            } else if (value && (value.constructor == Object || value.constructor == Array)) {
+                funcs.push(applyStreamValue(key, streams.length - 1));
+            } else if (containsObservables(value)) {
                 var popContext = function (ctxStack) {
-                    return ctxStack.pop();
+                    ctxStack.pop();
                 };
                 funcs.push(pushContext(key, value));
                 compileTemplate(value);
-                return funcs.push(popContext);
+                funcs.push(popContext);
             } else {
-                return funcs.push(constantValue(key, value));
+                funcs.push(constantValue(key, value));
             }
         }
         function combinator(values) {
@@ -2318,12 +2331,12 @@
             return rootContext;
         }
         function compileTemplate(template) {
-            return _.each(template, compile);
+            _.each(template, compile);
         }
         var funcs = [];
         var streams = [];
-        compileTemplate(template);
-        return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), Bacon.combineAsArray(streams).map(combinator));
+        var resultProperty = containsObservables(template) ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator)) : Bacon.constant(template);
+        return withDesc(new Bacon.Desc(Bacon, 'combineTemplate', [template]), resultProperty);
     };
     Bacon.Observable.prototype.mapEnd = function () {
         var f = makeFunctionArgs(arguments);

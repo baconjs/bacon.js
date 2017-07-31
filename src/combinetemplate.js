@@ -23,18 +23,32 @@ Bacon.combineTemplate = function(template) {
 
   function pushContext(key, value) {
     return function(ctxStack) {
-      var newContext = mkContext(value);
+      const newContext = mkContext(value);
       setValue(ctxStack, key, newContext);
       ctxStack.push(newContext);
     };
+  }
+
+  function containsObservables(value) {
+    if (isObservable(value)) {
+      return true
+    } else if (value && (value.constructor == Object || value.constructor == Array)) {
+      for (var key in value) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+          const child = value[key];
+          if (containsObservables(child))
+            return true
+        }
+      }
+    }
   }
 
   function compile(key, value) {
     if (isObservable(value)) {
       streams.push(value);
       funcs.push(applyStreamValue(key, streams.length - 1));
-    } else if (value && (value.constructor == Object || value.constructor == Array)) {
-      var popContext = function(ctxStack) { ctxStack.pop(); };
+    } else if (containsObservables(value)) {
+      const popContext = function(ctxStack) { ctxStack.pop(); };
       funcs.push(pushContext(key, value));
       compileTemplate(value);
       funcs.push(popContext);
@@ -44,8 +58,8 @@ Bacon.combineTemplate = function(template) {
   }
 
   function combinator(values) {
-    var rootContext = mkContext(template);
-    var ctxStack = [rootContext];
+    const rootContext = mkContext(template);
+    const ctxStack = [rootContext];
     for (var i = 0, f; i < funcs.length; i++) {
       f = funcs[i];
       f(ctxStack, values);
@@ -55,10 +69,12 @@ Bacon.combineTemplate = function(template) {
 
   function compileTemplate(template) { _.each(template, compile); }
 
-  var funcs = [];
-  var streams = [];
+  const funcs = [];
+  const streams = [];
 
-  compileTemplate(template);
+  const resultProperty = containsObservables(template) 
+    ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator))
+    : Bacon.constant(template)
 
-  return withDesc(new Bacon.Desc(Bacon, "combineTemplate", [template]), Bacon.combineAsArray(streams).map(combinator));
+  return withDesc(new Bacon.Desc(Bacon, "combineTemplate", [template]), resultProperty);
 };
