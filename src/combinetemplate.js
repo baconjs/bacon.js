@@ -8,12 +8,12 @@ Bacon.combineTemplate = function(template) {
   }
   function applyStreamValue(key, index) {
     return function(ctxStack, values) {
-      return setValue(ctxStack, key, values[index]);
+      setValue(ctxStack, key, values[index]);
     };
   }
   function constantValue(key, value) {
     return function(ctxStack) {
-      return setValue(ctxStack, key, value);
+      setValue(ctxStack, key, value);
     };
   }
 
@@ -25,21 +25,21 @@ Bacon.combineTemplate = function(template) {
     return function(ctxStack) {
       var newContext = mkContext(value);
       setValue(ctxStack, key, newContext);
-      return ctxStack.push(newContext);
+      ctxStack.push(newContext);
     };
   }
 
   function compile(key, value) {
     if (isObservable(value)) {
       streams.push(value);
-      return funcs.push(applyStreamValue(key, streams.length - 1));
+      funcs.push(applyStreamValue(key, streams.length - 1));
     } else if (value && (value.constructor == Object || value.constructor == Array)) {
-      var popContext = function(ctxStack) { return ctxStack.pop(); };
+      var popContext = function(ctxStack) { ctxStack.pop(); };
       funcs.push(pushContext(key, value));
       compileTemplate(value);
-      return funcs.push(popContext);
+      funcs.push(popContext);
     } else {
-      return funcs.push(constantValue(key, value));
+      funcs.push(constantValue(key, value));
     }
   }
 
@@ -53,7 +53,7 @@ Bacon.combineTemplate = function(template) {
     return rootContext;
   }
 
-  function compileTemplate(template) { return _.each(template, compile); }
+  function compileTemplate(template) { _.each(template, compile); }
 
   var funcs = [];
   var streams = [];
