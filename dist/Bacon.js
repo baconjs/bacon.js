@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '<version>';
+Bacon.version = '0.7.95';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -2579,7 +2579,7 @@ Bacon.Observable.prototype.flatMapLatest = function () {
   var f = makeSpawner(arguments);
   var stream = this.toEventStream();
   return withDesc(new Bacon.Desc(this, "flatMapLatest", [f]), stream.flatMap(function (value) {
-    return makeObservable(f(value)).toEventStream().takeUntil(stream);
+    return makeObservable(f(value)).takeUntil(stream);
   }));
 };
 

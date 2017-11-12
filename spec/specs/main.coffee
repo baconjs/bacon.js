@@ -404,11 +404,6 @@ describe "Integration tests", ->
         c = Bacon.constant(1)
         Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
 
-  it "doAction within flatMapLatest", ->
-    values = []
-    Bacon.constant('constant').flatMapLatest(-> Bacon.constant(1).doAction((val) -> values.push(val))).onValue()
-    expect(values).to.deep.equal([1])
-
   describe "when subscribing while dispatching", ->
     describe "single subscriber", ->
       describe "up-to-date values are used (skipped bounce)", ->
