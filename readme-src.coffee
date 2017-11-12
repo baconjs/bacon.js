@@ -666,6 +666,10 @@ useful for debugging, but also for stuff like calling the
 `preventDefault()` method for events. In fact, you can
 also use a property-extractor string instead of a function, as in
 `".preventDefault"`.
+
+Please note that for Properties, it's not guaranteed that the function will be called exactly once
+per event; when a Property loses all of its subscribers it will re-emit its current value when a 
+new subscriber is added.
 """
 
 doc.fn "observable.doError(f)", """

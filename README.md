@@ -655,6 +655,10 @@ useful for debugging, but also for stuff like calling the
 also use a property-extractor string instead of a function, as in
 `".preventDefault"`.
 
+Please note that for Properties, it's not guaranteed that the function will be called exactly once
+per event; when a Property loses all of its subscribers it will re-emit its current value when a 
+new subscriber is added.
+
 <a name="observable-doerror"></a>
 [`observable.doError(f)`](#observable-doerror "observable.doError(f)") returns a stream/property where the function f
 is executed for each error, before dispatching to subscribers.
