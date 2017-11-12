@@ -1,5 +1,5 @@
 // build-dependencies: core, observable, eventstream, property
-// build-dependencies: updatebarrier, argumentstoobservables
+// build-dependencies: updatebarrier, argumentstoobservables, addpropertyinitialvaluetostream
 
 Bacon.EventStream.prototype.concat = function(right) {
   var left = this;
@@ -33,24 +33,4 @@ Bacon.concatAll = function() {
   } else {
     return Bacon.never();
   }
-};
-
-var addPropertyInitValueToStream = function(property, stream) {
-  var justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
-    var value = undefined;
-    var unsub = property.dispatcher.subscribe(function(event) {
-      if (!event.isEnd()) {
-        value = event;
-      }
-      return Bacon.noMore;
-    });
-    UpdateBarrier.whenDoneWith(justInitValue, function() {
-      if ((typeof value !== "undefined" && value !== null)) {
-        sink(value);
-      }
-      return sink(endEvent());
-    });
-    return unsub;
-  });
-  return justInitValue.concat(stream).toProperty();
 };

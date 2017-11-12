@@ -46,7 +46,7 @@ function resolve(pieceNames, dir, resolving, pieceCache, options) {
     var piece = readPiece(pieceName, dir, pieceCache);
 
     if (_.includes(resolving, pieceName)) {
-      throw new Error("circular dependency resolving " + piece + "; stack: " + resolving.join(""));
+      return [] // circular dep, break here
     }
 
     var deps = _.chain(piece.deps)
