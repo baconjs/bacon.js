@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.95';
+    Bacon.version = '<version>';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -2393,7 +2393,7 @@
         var f = makeSpawner(arguments);
         var stream = this.toEventStream();
         return withDesc(new Bacon.Desc(this, 'flatMapLatest', [f]), stream.flatMap(function (value) {
-            return makeObservable(f(value)).takeUntil(stream);
+            return makeObservable(f(value)).toEventStream().takeUntil(stream);
         }));
     };
     Bacon.Property.prototype.delayChanges = function (desc, f) {
