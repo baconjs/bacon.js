@@ -387,7 +387,7 @@ As shown in the example, you can push
 - A plain value, like `"first value"`
 - An [`Event`](#event) object including [`Bacon.Error`](#bacon-error) (wraps an error) and [`Bacon.End`](#bacon-end) (indicates
 stream end).
-- An array of event objects at once
+- An array of [event](#event) objects at once
 
 Other examples can be found on [JSFiddle](http://jsfiddle.net/PG4c4/) and the
 [Bacon.js blog](http://baconjs.blogspot.fi/2013/12/wrapping-things-in-bacon.html).
@@ -440,7 +440,8 @@ Methods typically return observables so that methods can be chained; exceptions 
 Common methods are listed below.
 
 <a name="observable-subscribe"></a>
-[`observable.subscribe(f)`](#observable-subscribe "observable.subscribe(f)") subscribes given handler function to event stream. Function will receive Event objects (see below).
+[`observable.subscribe(f)`](#observable-subscribe "observable.subscribe(f)") subscribes given handler function to event stream. Function will receive [event](#event) objects
+for all new value, end and error events in the stream.
 The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
 You can also unsubscribe by returning [`Bacon.noMore`](#bacon-nomore) from the handler function as a reply
 to an Event.
@@ -1210,7 +1211,8 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 ```
 
 <a name="bacon-mergeall"></a>
-[`Bacon.mergeAll(streams)`](#bacon-mergeall "Bacon.mergeAll(streams)") merges given array of EventStreams.
+[`Bacon.mergeAll(streams)`](#bacon-mergeall "Bacon.mergeAll(streams)") merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#observable-merge)
+
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 
 <a name="bacon-concatall"></a>

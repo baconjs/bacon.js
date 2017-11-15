@@ -366,7 +366,7 @@ As shown in the example, you can push
 - A plain value, like `"first value"`
 - An `Event` object including `Bacon.Error` (wraps an error) and `Bacon.End` (indicates
 stream end).
-- An array of event objects at once
+- An array of [event](#event) objects at once
 
 Other examples can be found on [JSFiddle](http://jsfiddle.net/PG4c4/) and the
 [Bacon.js blog](http://baconjs.blogspot.fi/2013/12/wrapping-things-in-bacon.html).
@@ -417,7 +417,8 @@ Common methods are listed below.
 """
 
 doc.fn "observable.subscribe(f)", """
-subscribes given handler function to event stream. Function will receive Event objects (see below).
+subscribes given handler function to event stream. Function will receive [event](#event) objects
+for all new value, end and error events in the stream.
 The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
 You can also unsubscribe by returning `Bacon.noMore` from the handler function as a reply
 to an Event.
@@ -1276,7 +1277,8 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 """
 
 doc.fn "Bacon.mergeAll(streams)", """
-merges given array of EventStreams.
+merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#observable-merge)
+
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 """
 
