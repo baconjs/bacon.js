@@ -5,7 +5,7 @@
             return 'Bacon';
         }
     };
-    Bacon.version = '0.7.95';
+    Bacon.version = '1.0.0';
     var Exception = (typeof global !== 'undefined' && global !== null ? global : this).Error;
     var nop = function () {
     };
@@ -1923,6 +1923,25 @@
             return nop;
         });
     };
+    function addPropertyInitValueToStream(property, stream) {
+        var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
+            var value = undefined;
+            var unsub = property.dispatcher.subscribe(function (event) {
+                if (!event.isEnd()) {
+                    value = event;
+                }
+                return Bacon.noMore;
+            });
+            UpdateBarrier.whenDoneWith(justInitValue, function () {
+                if (typeof value !== 'undefined' && value !== null) {
+                    sink(value);
+                }
+                return sink(endEvent());
+            });
+            return unsub;
+        });
+        return justInitValue.concat(stream).toProperty();
+    }
     Bacon.EventStream.prototype.concat = function (right) {
         var left = this;
         return new EventStream(new Bacon.Desc(left, 'concat', [right]), function (sink) {
@@ -1952,25 +1971,6 @@
         } else {
             return Bacon.never();
         }
-    };
-    var addPropertyInitValueToStream = function (property, stream) {
-        var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
-            var value = undefined;
-            var unsub = property.dispatcher.subscribe(function (event) {
-                if (!event.isEnd()) {
-                    value = event;
-                }
-                return Bacon.noMore;
-            });
-            UpdateBarrier.whenDoneWith(justInitValue, function () {
-                if (typeof value !== 'undefined' && value !== null) {
-                    sink(value);
-                }
-                return sink(endEvent());
-            });
-            return unsub;
-        });
-        return justInitValue.concat(stream).toProperty();
     };
     Bacon.Observable.prototype.flatMap = function () {
         return flatMap_(this, makeSpawner(arguments));
