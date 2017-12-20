@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '1.0.0';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -2541,9 +2541,11 @@ Bacon.Observable.prototype.skipErrors = function () {
   }));
 };
 
-Bacon.EventStream.prototype.takeUntil = function (stopper) {
+Bacon.Observable.prototype.takeUntil = function (stopper) {
   var endMarker = {};
-  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors()).withHandler(function (event) {
+  var withEndMarker = Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors());
+  if (this instanceof Property) withEndMarker = withEndMarker.toProperty();
+  var impl = withEndMarker.withHandler(function (event) {
     if (!event.hasValue()) {
       return this.push(event);
     } else {
@@ -2567,12 +2569,8 @@ Bacon.EventStream.prototype.takeUntil = function (stopper) {
         return reply;
       }
     }
-  }));
-};
-
-Bacon.Property.prototype.takeUntil = function (stopper) {
-  var changes = this.changes().takeUntil(stopper);
-  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), addPropertyInitValueToStream(this, changes));
+  });
+  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), impl);
 };
 
 Bacon.Observable.prototype.flatMapLatest = function () {
