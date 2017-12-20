@@ -109,6 +109,19 @@ describe "Integration tests", ->
           a.flatMapLatest((a) -> b.map((b) -> a + b))
         ["ab", "Ab", "AB"], semiunstable)
 
+  describe "Property.flatMapLatest", ->
+    describe "works in combination with synchronous sources in a complex scenario #699", ->
+      expectStreamEvents(
+        ->
+          bar = Bacon.once('first').merge(Bacon.later(10, 'success')).toProperty()
+
+          Bacon.constant(false).flatMapLatest((it) ->
+              Bacon.constant(false).flatMapLatest((it) -> bar).toProperty()
+          )
+        ['first', 'success']
+        unstable
+      )
+
   describe "EventStream.flatMapLatest", ->
     describe "No glitches in a complex scenario", ->
       expectPropertyEvents(
