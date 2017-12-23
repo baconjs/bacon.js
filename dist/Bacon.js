@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '1.0.1';
+Bacon.version = '<version>';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
@@ -2124,39 +2124,24 @@ Bacon.concatAll = function () {
   }
 };
 
-Bacon.Observable.prototype.flatMap = function () {
-  return flatMap_(this, makeSpawner(arguments));
-};
+var flatMap_ = function (root, f, desc) {
+  var params = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
-Bacon.Observable.prototype.flatMapFirst = function () {
-  return flatMap_(this, makeSpawner(arguments), true);
-};
-
-var makeSpawner = function (args) {
-  if (args.length === 1 && isObservable(args[0])) {
-    return _.always(args[0]);
-  } else {
-    return makeFunctionArgs(args);
-  }
-};
-
-var makeObservable = function (x) {
-  if (isObservable(x)) {
-    return x;
-  } else {
-    return Bacon.once(x);
-  }
-};
-
-var flatMap_ = function (root, f, firstOnly, limit) {
   var rootDep = [root];
   var childDeps = [];
-  var desc = new Bacon.Desc(root, "flatMap" + (firstOnly ? "First" : ""), [f]);
+  if (!params.forEvents) {
+    (function () {
+      var origF = f;
+      f = function (event) {
+        return origF(event.value());
+      };
+    })();
+  }
   var result = new EventStream(desc, function (sink) {
     var composite = new CompositeUnsubscribe();
     var queue = [];
     var spawn = function (event) {
-      var child = makeObservable(f(event.value()));
+      var child = makeObservable(f(event));
       childDeps.push(child);
       return composite.add(function (unsubAll, unsubMe) {
         return child.dispatcher.subscribe(function (event) {
@@ -2194,15 +2179,15 @@ var flatMap_ = function (root, f, firstOnly, limit) {
       return root.dispatcher.subscribe(function (event) {
         if (event.isEnd()) {
           return checkEnd(unsubRoot);
-        } else if (event.isError()) {
+        } else if (event.isError() && !params.forEvents) {
           return sink(event);
-        } else if (firstOnly && composite.count() > 1) {
+        } else if (params.firstOnly && composite.count() > 1) {
           return Bacon.more;
         } else {
           if (composite.unsubscribed) {
             return Bacon.noMore;
           }
-          if (limit && composite.count() > limit) {
+          if (params.limit && composite.count() > params.limit) {
             return queue.push(event);
           } else {
             return spawn(event);
@@ -2222,13 +2207,32 @@ var flatMap_ = function (root, f, firstOnly, limit) {
   return result;
 };
 
+var makeSpawner = function (args) {
+  if (args.length === 1 && isObservable(args[0])) {
+    return _.always(args[0]);
+  } else {
+    return makeFunctionArgs(args);
+  }
+};
+
+var makeObservable = function (x) {
+  if (isObservable(x)) {
+    return x;
+  } else {
+    return Bacon.once(x);
+  }
+};
+
+Bacon.Observable.prototype.flatMap = function () {
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMap", Array.prototype.slice.call(arguments)));
+};
+
 Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
   for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
     args[_key11 - 1] = arguments[_key11];
   }
 
-  var desc = new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit].concat(args));
-  return withDesc(desc, flatMap_(this, makeSpawner(args), false, limit));
+  return flatMap_(this, makeSpawner(args), new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit].concat(args)), { limit: limit });
 };
 
 Bacon.Observable.prototype.flatMapConcat = function () {
@@ -2785,28 +2789,24 @@ Bacon.Observable.prototype.first = function () {
   return withDesc(new Bacon.Desc(this, "first", []), this.take(1));
 };
 
-Bacon.Observable.prototype.mapError = function () {
-  var f = makeFunctionArgs(arguments);
-  return withDesc(new Bacon.Desc(this, "mapError", [f]), this.withHandler(function (event) {
-    if (event.isError()) {
-      return this.push(nextEvent(f(event.error)));
-    } else {
-      return this.push(event);
-    }
-  }));
+Bacon.Observable.prototype.flatMapEvent = function () {
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapEvent", Array.prototype.slice.call(arguments)), { forEvents: true });
+};
+
+Bacon.Observable.prototype.flatMapFirst = function () {
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapFirst", Array.prototype.slice.call(arguments)), { firstOnly: true });
 };
 
 Bacon.Observable.prototype.flatMapError = function (fn) {
   var desc = new Bacon.Desc(this, "flatMapError", [fn]);
-  return withDesc(desc, this.mapError(function (err) {
-    return new Error(err);
-  }).flatMap(function (x) {
+
+  return flatMap_(this, function (x) {
     if (x instanceof Error) {
       return fn(x.error);
     } else {
-      return Bacon.once(x);
+      return x;
     }
-  }));
+  }, desc, { forEvents: true });
 };
 
 Bacon.EventStream.prototype.flatScan = function (seed, f) {
@@ -3130,6 +3130,17 @@ Bacon.Observable.prototype.log = function () {
     }
   });
   return this;
+};
+
+Bacon.Observable.prototype.mapError = function () {
+  var f = makeFunctionArgs(arguments);
+  return withDesc(new Bacon.Desc(this, "mapError", [f]), this.withHandler(function (event) {
+    if (event.isError()) {
+      return this.push(nextEvent(f(event.error)));
+    } else {
+      return this.push(event);
+    }
+  }));
 };
 
 Bacon.EventStream.prototype.merge = function (right) {
