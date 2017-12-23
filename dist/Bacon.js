@@ -6,7 +6,7 @@ var Bacon = {
   }
 };
 
-Bacon.version = '<version>';
+Bacon.version = '1.0.1';
 
 var Exception = (typeof global !== "undefined" && global !== null ? global : this).Error;
 var nop = function () {};
