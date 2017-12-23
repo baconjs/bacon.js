@@ -21,6 +21,8 @@
 // build-dependencies: first
 // build-dependencies: flatmap
 // build-dependencies: flatmapconcat
+// build-dependencies: flatmapevent
+// build-dependencies: flatmapfirst
 // build-dependencies: flatmaperror
 // build-dependencies: flatmaplatest
 // build-dependencies: flatmapwithconcurrencylimit
