@@ -1972,12 +1972,12 @@
             return Bacon.never();
         }
     };
-    Bacon.Observable.prototype.flatMap_ = function (f, desc) {
-        var params = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    Bacon.Observable.prototype.flatMap_ = function (f) {
+        var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
         var root = this;
         var rootDep = [root];
         var childDeps = [];
-        var result = new EventStream(desc, function (sink) {
+        var result = new EventStream(params.desc || new Bacon.Desc(this, 'flatMap_', arguments), function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
             var spawn = function (event) {
@@ -2066,13 +2066,16 @@
         }
     };
     Bacon.Observable.prototype.flatMap = function () {
-        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), new Bacon.Desc(this, 'flatMap', arguments));
+        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), { desc: new Bacon.Desc(this, 'flatMap', arguments) });
     };
     Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
         for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
             args[_key11 - 1] = arguments[_key11];
         }
-        return this.flatMap_(handleEventValueWith(makeSpawner(args)), new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args)), { limit: limit });
+        return this.flatMap_(handleEventValueWith(makeSpawner(args)), {
+            limit: limit,
+            desc: new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args))
+        });
     };
     Bacon.Observable.prototype.flatMapConcat = function () {
         var desc = new Bacon.Desc(this, 'flatMapConcat', Array.prototype.slice.call(arguments, 0));
@@ -2591,10 +2594,16 @@
         return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
     Bacon.Observable.prototype.flatMapEvent = function () {
-        return this.flatMap_(makeSpawner(arguments), new Bacon.Desc(this, 'flatMapEvent', arguments), { mapError: true });
+        return this.flatMap_(makeSpawner(arguments), {
+            mapError: true,
+            desc: new Bacon.Desc(this, 'flatMapEvent', arguments)
+        });
     };
     Bacon.Observable.prototype.flatMapFirst = function () {
-        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), new Bacon.Desc(this, 'flatMapFirst', arguments), { firstOnly: true });
+        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), {
+            firstOnly: true,
+            desc: new Bacon.Desc(this, 'flatMapFirst', arguments)
+        });
     };
     Bacon.Observable.prototype.flatMapError = function (fn) {
         return this.flatMap_(function (x) {
@@ -2603,7 +2612,10 @@
             } else {
                 return x;
             }
-        }, new Bacon.Desc(this, 'flatMapError', [fn]), { mapError: true });
+        }, {
+            mapError: true,
+            desc: new Bacon.Desc(this, 'flatMapError', [fn])
+        });
     };
     Bacon.EventStream.prototype.flatScan = function (seed, f) {
         var current = seed;

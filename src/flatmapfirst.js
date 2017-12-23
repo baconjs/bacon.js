@@ -3,7 +3,9 @@
 Bacon.Observable.prototype.flatMapFirst = function() {
   return this.flatMap_(
     handleEventValueWith(makeSpawner(arguments)), 
-    new Bacon.Desc(this, "flatMapFirst", arguments), 
-    {firstOnly: true}
+    {
+      firstOnly: true,
+      desc: new Bacon.Desc(this, "flatMapFirst", arguments)
+    }
   );
 };

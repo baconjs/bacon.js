@@ -2,12 +2,12 @@
 // build-dependencies: functionconstruction
 // build-dependencies: compositeunsubscribe
 
-Bacon.Observable.prototype.flatMap_ = function(f, desc, params = { }) {
+Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
     const root = this
     const rootDep = [root];
     const childDeps = [];
     
-    var result = new EventStream(desc, function(sink) {
+    var result = new EventStream(params.desc || new Bacon.Desc(this, "flatMap_", arguments), function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
       var spawn = function(event) {

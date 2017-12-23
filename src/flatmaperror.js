@@ -9,7 +9,9 @@ Bacon.Observable.prototype.flatMapError = function(fn) {
         return x;
       }
     }, 
-    new Bacon.Desc(this, "flatMapError", [fn]), 
-    { mapError: true }
+    { 
+      mapError: true,
+      desc: new Bacon.Desc(this, "flatMapError", [fn])
+    }
   )
 };

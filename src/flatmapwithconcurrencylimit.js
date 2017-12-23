@@ -3,8 +3,9 @@
 Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function(limit, ...args) {
   return this.flatMap_(
     handleEventValueWith(makeSpawner(args)), 
-    new Bacon.Desc(this, "flatMapWithConcurrencyLimit", 
-    [limit, ...args]), 
-    { limit }
+    { 
+      limit,
+      desc: new Bacon.Desc(this, "flatMapWithConcurrencyLimit", [limit, ...args])
+    }
   )
 };
