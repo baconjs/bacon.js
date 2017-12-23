@@ -2224,7 +2224,7 @@ var makeObservable = function (x) {
 };
 
 Bacon.Observable.prototype.flatMap = function () {
-  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMap", Array.prototype.slice.call(arguments)));
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMap", arguments));
 };
 
 Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
@@ -2790,11 +2790,11 @@ Bacon.Observable.prototype.first = function () {
 };
 
 Bacon.Observable.prototype.flatMapEvent = function () {
-  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapEvent", Array.prototype.slice.call(arguments)), { forEvents: true });
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapEvent", arguments), { forEvents: true });
 };
 
 Bacon.Observable.prototype.flatMapFirst = function () {
-  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapFirst", Array.prototype.slice.call(arguments)), { firstOnly: true });
+  return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, "flatMapFirst", arguments), { firstOnly: true });
 };
 
 Bacon.Observable.prototype.flatMapError = function (fn) {

@@ -2068,7 +2068,7 @@
         }
     };
     Bacon.Observable.prototype.flatMap = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMap', Array.prototype.slice.call(arguments)));
+        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMap', arguments));
     };
     Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
         for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
@@ -2593,10 +2593,10 @@
         return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
     Bacon.Observable.prototype.flatMapEvent = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapEvent', Array.prototype.slice.call(arguments)), { forEvents: true });
+        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapEvent', arguments), { forEvents: true });
     };
     Bacon.Observable.prototype.flatMapFirst = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapFirst', Array.prototype.slice.call(arguments)), { firstOnly: true });
+        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapFirst', arguments), { firstOnly: true });
     };
     Bacon.Observable.prototype.flatMapError = function (fn) {
         var desc = new Bacon.Desc(this, 'flatMapError', [fn]);
