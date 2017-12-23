@@ -1972,18 +1972,11 @@
             return Bacon.never();
         }
     };
-    var flatMap_ = function (root, f, desc) {
-        var params = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    Bacon.Observable.prototype.flatMap_ = function (f, desc) {
+        var params = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+        var root = this;
         var rootDep = [root];
         var childDeps = [];
-        if (!params.forEvents) {
-            (function () {
-                var origF = f;
-                f = function (event) {
-                    return origF(event.value());
-                };
-            }());
-        }
         var result = new EventStream(desc, function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
@@ -2026,7 +2019,7 @@
                 return root.dispatcher.subscribe(function (event) {
                     if (event.isEnd()) {
                         return checkEnd(unsubRoot);
-                    } else if (event.isError() && !params.forEvents) {
+                    } else if (event.isError() && !params.mapError) {
                         return sink(event);
                     } else if (params.firstOnly && composite.count() > 1) {
                         return Bacon.more;
@@ -2053,6 +2046,11 @@
         };
         return result;
     };
+    var handleEventValueWith = function (f) {
+        return function (event) {
+            return f(event.value());
+        };
+    };
     var makeSpawner = function (args) {
         if (args.length === 1 && isObservable(args[0])) {
             return _.always(args[0]);
@@ -2068,13 +2066,13 @@
         }
     };
     Bacon.Observable.prototype.flatMap = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMap', arguments));
+        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), new Bacon.Desc(this, 'flatMap', arguments));
     };
     Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
         for (var _len11 = arguments.length, args = Array(_len11 > 1 ? _len11 - 1 : 0), _key11 = 1; _key11 < _len11; _key11++) {
             args[_key11 - 1] = arguments[_key11];
         }
-        return flatMap_(this, makeSpawner(args), new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args)), { limit: limit });
+        return this.flatMap_(handleEventValueWith(makeSpawner(args)), new Bacon.Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args)), { limit: limit });
     };
     Bacon.Observable.prototype.flatMapConcat = function () {
         var desc = new Bacon.Desc(this, 'flatMapConcat', Array.prototype.slice.call(arguments, 0));
@@ -2593,20 +2591,19 @@
         return withDesc(new Bacon.Desc(this, 'first', []), this.take(1));
     };
     Bacon.Observable.prototype.flatMapEvent = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapEvent', arguments), { forEvents: true });
+        return this.flatMap_(makeSpawner(arguments), new Bacon.Desc(this, 'flatMapEvent', arguments), { mapError: true });
     };
     Bacon.Observable.prototype.flatMapFirst = function () {
-        return flatMap_(this, makeSpawner(arguments), new Bacon.Desc(this, 'flatMapFirst', arguments), { firstOnly: true });
+        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), new Bacon.Desc(this, 'flatMapFirst', arguments), { firstOnly: true });
     };
     Bacon.Observable.prototype.flatMapError = function (fn) {
-        var desc = new Bacon.Desc(this, 'flatMapError', [fn]);
-        return flatMap_(this, function (x) {
+        return this.flatMap_(function (x) {
             if (x instanceof Error) {
                 return fn(x.error);
             } else {
                 return x;
             }
-        }, desc, { forEvents: true });
+        }, new Bacon.Desc(this, 'flatMapError', [fn]), { mapError: true });
     };
     Bacon.EventStream.prototype.flatScan = function (seed, f) {
         var current = seed;

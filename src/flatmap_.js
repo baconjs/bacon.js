@@ -2,13 +2,11 @@
 // build-dependencies: functionconstruction
 // build-dependencies: compositeunsubscribe
 
-var flatMap_ = function(root, f, desc, params = { }) {
-    var rootDep = [root];
-    var childDeps = [];
-    if (!params.forEvents) {
-      let origF = f
-      f = event => origF(event.value())
-    }
+Bacon.Observable.prototype.flatMap_ = function(f, desc, params = { }) {
+    const root = this
+    const rootDep = [root];
+    const childDeps = [];
+    
     var result = new EventStream(desc, function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
@@ -45,7 +43,7 @@ var flatMap_ = function(root, f, desc, params = { }) {
       composite.add(function(__, unsubRoot) { return root.dispatcher.subscribe(function(event) {
         if (event.isEnd()) {
           return checkEnd(unsubRoot);
-        } else if (event.isError() && !params.forEvents) {
+        } else if (event.isError() && !params.mapError) {
           return sink(event);
         } else if (params.firstOnly && composite.count() > 1) {
           return Bacon.more;
@@ -71,6 +69,8 @@ var flatMap_ = function(root, f, desc, params = { }) {
     return result;
   };
   
+  const handleEventValueWith = f => event => f(event.value())
+
   var makeSpawner = function(args) {
     if (args.length === 1 && isObservable(args[0])) {
       return _.always(args[0]);
