@@ -1,12 +1,13 @@
-// build-dependencies: flatmap, maperror, once
+// build-dependencies: flatmap_
 
 Bacon.Observable.prototype.flatMapError = function(fn) {
   var desc = new Bacon.Desc(this, "flatMapError", [fn]);
-  return withDesc(desc, this.mapError((err) => new Error(err)).flatMap((x) => {
+
+  return flatMap_(this, (x) => {
     if (x instanceof Error) {
       return fn(x.error);
     } else {
-      return Bacon.once(x);
+      return x;
     }
-  }));
+  }, desc, { forEvents: true })
 };
