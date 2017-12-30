@@ -28,27 +28,31 @@ extend(Observable.prototype, {
 
   onValue() {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function(event) {
+    this.subscribe(function(event) {
       if (event.hasValue()) { return f(event.value()); }
-    });
+    })
+    return this
   },
 
   onValues(f) {
-    return this.onValue(function(args) { return f(...args); });
+    this.onValue(function(args) { return f(...args); })
+    return this
   },
 
   onError() {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function(event) {
+    this.subscribe(function(event) {
       if (event.isError()) { return f(event.error); }
-    });
+    })
+    return this
   },
 
   onEnd() {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function(event) {
+    this.subscribe(function(event) {
       if (event.isEnd()) { return f(); }
-    });
+    })
+    return this
   },
 
   name(name) {
