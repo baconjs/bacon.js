@@ -74,8 +74,8 @@ Bacon.EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = no
         buffer.flush();
       }
     } else {
-      buffer.values.push(event.value());
-      //console.log Bacon.scheduler.now() + ": input " + event.value()
+      buffer.values.push(event.value);
+      //console.log Bacon.scheduler.now() + ": input " + event.value
       onInput(buffer);
     }
     return reply;

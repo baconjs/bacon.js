@@ -5,7 +5,7 @@ describe "EventStream.flatMapEvent", ->
     expectStreamEvents(
       -> series(1, [1, new Bacon.Error()]).flatMapEvent (event) ->
         if event.hasValue()
-          event.value() + 1
+          event.value + 1
         else if event.isError()
           "error handled"
           

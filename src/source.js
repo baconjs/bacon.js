@@ -1,6 +1,6 @@
 // build-dependencies: _
 
-function Source(obs, sync, lazy = false) {
+function Source(obs, sync, lazy = false) { // TODO get rid of lazy here?
   this.obs = obs;
   this.sync = sync;
   this.lazy = lazy;
@@ -18,11 +18,12 @@ extend(Source.prototype, {
   },
   consume() {
     if (this.lazy) {
-      return { value: _.always(this.queue[0]) };
+      return { value: this.queue[0] };
     } else {
       return this.queue[0];
     }
   },
+  // TODO: push shouldn't return, right?
   push(x) {
     this.queue = [x];
     return [x];
@@ -56,12 +57,10 @@ extend(BufferingSource.prototype, {
     const values = this.queue;
     this.queue = [];
     return {
-      value: function() {
-        return values;
-      }
+      value: values
     };
   },
-  push(x) { return this.queue.push(x.value()); },
+  push(x) { return this.queue.push(x.value); },
   hasAtLeast() { return true; }
 });
 

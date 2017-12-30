@@ -71,7 +71,7 @@ var makeFunction = function(f, args) {
 };
 
 var convertArgsToFunction = function(obs, f, args, method) {
-  if ((typeof f !== "undefined" && f !== null) ? f._isProperty : undefined) {
+  if (f && f._isProperty) {
     var sampled = f.sampledBy(obs, function(p,s) { return [p,s]; });
     return method.call(sampled, function([p, s]) { return p; })
       .map(function([p, s]) { return s; });

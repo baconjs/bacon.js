@@ -370,9 +370,6 @@ For example:
 var stream = Bacon.fromBinder(function(sink) {
   sink("first value")
   sink([new Bacon.Next("2nd"), new Bacon.Next("3rd")])
-  sink(new Bacon.Next(function() {
-    return "This one will be evaluated lazily"
-  }))
   sink(new Bacon.Error("oops, an error"))
   sink(new Bacon.End())
   return function() {
@@ -408,23 +405,6 @@ function is called only after the last listener has been removed.
 The subscribe-unsubscribe cycle may of course be repeated indefinitely,
 so prepare for multiple calls to the subscribe function.
 
-A note about the `new Bacon.Next(..)` constructor: You can use it like
-
-```js
-new Bacon.Next("value")
-```
-
-But the canonical way would be
-```js
-new Bacon.Next(function() { return "value"; })
-```
-
-The former version is safe only when you know that the actual value in
-the stream is not a function.
-
-The idea in using a function instead of a plain value is that the internals on Bacon.js take
-advantage of [lazy evaluation](#lazy-evaluation) by deferring the evaluations of values
-created by [`map`](#observable-map), [`combine`](#combining-multiple-streams-and-properties).
 
 <a name="bacon-nomore"></a>
 [`Bacon.noMore`](#bacon-nomore "Bacon.noMore") The opaque value `sink` function may return. See [`Bacon.fromBinder`](#bacon-frombinder).
@@ -498,7 +478,6 @@ value. For instance map(".keyCode") will pluck the keyCode field from
 the input values. If keyCode was a function, the result stream would
 contain the values returned by the function.
 The [Function Construction rules](#function-construction-rules) below apply here.
-The [`map`](#observable-map) method, among many others, uses [lazy evaluation](#lazy-evaluation).
 
 <a name="stream-map"></a>
 [`stream.map(property)`](#stream-map "stream.map(property)") maps the stream events to the current value of
@@ -856,7 +835,7 @@ numbers in the stream and output the value on stream end:
 Bacon.fromArray([1,2,3])
   .withStateMachine(0, function(sum, event) {
     if (event.hasValue())
-      return [sum + event.value(), []]
+      return [sum + event.value, []]
     else if (event.isEnd())
       return [undefined, [new Bacon.Next(sum), event]]
     else
@@ -910,7 +889,7 @@ and end the stream if you choose. For example, to send an error and end
 the stream in case a value is below zero:
 
 ```js
-if (event.hasValue() && event.value() < 0) {
+if (event.hasValue() && event.value < 0) {
   this.push(new Bacon.Error("Value below zero"));
   return this.push(end());
 } else {
@@ -1339,36 +1318,7 @@ at least [`onValue`](#observable-onvalue), [`onError`](#observable-onerror), [`o
 Lazy evaluation
 ---------------
 
-Methods such as [`map`](#observable-map) and the [`combine`](#observable-combine) use lazy evaluation to avoid evaluating
-values that aren't actually needed. This can be generally considered a Good Thing,
-but it has it's pitfalls.
-
-If you pass a function that referentially transparent, you'll
-be fine. This means that your function should return the same value regardless of
-when it's called.
-
-On the other hand, if you pass a function that returns a value depending on time,
-you may have problems. Consider a property `contents` that's derived from events
-like below.
-
-```javascript
-var items = clicks.map(getCurrentValueFromUI).toProperty()
-var submittedItems = items.sampledBy(submitClick)
-```
-
-Now the `submittedItems` stream will produce the current value of the `items` property
-when an event occurs in the `submitClick` stream. Or so you'd think. In fact, the value
-of `submittedItems` is evaluated at the time of the event in the `submitClick` stream,
-which means that it will actually produce the value of `getCurrentValueFromUI` at that time,
-instead of at the time of the original `click` event.
-
-To force evaluation at the time of original event, you can just use [`flatMap`](#observable-flatmap) instead of [`map`](#observable-map).
-As in here.
-
-```javascript
-var items = clicks.flatMap(getCurrentValueFromUI).toProperty()
-```
-
+Lazy evaluation of event values has been removed in version 2.0
 
 Latest value of Property or EventStream
 ---------------------------------------

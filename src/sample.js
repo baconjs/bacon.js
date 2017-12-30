@@ -14,7 +14,7 @@ Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
     combinator = toCombinator(combinator);
   } else {
     lazy = true;
-    combinator = function(f) { return f.value(); };
+    combinator = function(f) { return f.value; };
   }
   var thisSource = new Source(this, false, lazy);
   var samplerSource = new Source(sampler, true, lazy);

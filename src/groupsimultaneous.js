@@ -7,9 +7,8 @@ Bacon.groupSimultaneous = function(...streams) {
   }
   var sources = (() => {
     var result = [];
-    for (var i = 0, s; i < streams.length; i++) {
-      s = streams[i];
-      result.push(new BufferingSource(s));
+    for (var i = 0; i < streams.length; i++) {
+      result.push(new BufferingSource(streams[i]));
     }
     return result;
   })();

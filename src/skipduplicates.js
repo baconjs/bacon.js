@@ -11,8 +11,8 @@ Bacon.Observable.prototype.skipDuplicates = function(isEqual = equals) {
   return withDesc(desc, this.withStateMachine(None, function(prev, event) {
     if (!event.hasValue()) {
       return [prev, [event]];
-    } else if (event.isInitial() || isNone(prev) || !isEqual(prev.get(), event.value())) {
-      return [new Some(event.value()), [event]];
+    } else if (event.isInitial() || isNone(prev) || !isEqual(prev.get(), event.value)) {
+      return [new Some(event.value), [event]];
     } else {
       return [prev, []];
     }

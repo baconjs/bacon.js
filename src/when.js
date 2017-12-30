@@ -89,6 +89,7 @@ Bacon.when = function() {
             p = pats[i1];
             if (match(p)) {
               //console.log "match", p
+              // TODO: simplify
               var events = ((() => {
                 var result = [];
                 for (var i2 = 0, i; i2 < p.ixs.length; i2++) {
@@ -97,18 +98,18 @@ Bacon.when = function() {
                 }
                 return result;
               })());
-              reply = sink(trigger.e.apply(function() {
-                var values = ((() => {
-                  var result = [];
-                  for (var i2 = 0, event; i2 < events.length; i2++) {
-                    event = events[i2];
-                    result.push(event.value());
-                  }
-                  return result;
-                })());
-                //console.log "flushing values", values
-                return p.f(...values);
-              }));
+              var values = ((() => {
+                var result = [];
+                for (var i2 = 0, event; i2 < events.length; i2++) {
+                  event = events[i2];
+                  result.push(event.value);
+                }
+                return result;
+              })());
+              //console.log("flushing values", values)
+              let applied = p.f(...values);
+              //console.log('sinking', applied)
+              reply = sink(trigger.e.apply(applied));
               if (triggers.length) {
                 triggers = _.filter(nonFlattened, triggers);
               }
@@ -147,7 +148,7 @@ Bacon.when = function() {
         } else if (e.isError()) {
           var reply = sink(e);
         } else {
-          //console.log "got value", e.value()
+          //console.log "got value", e.value
           source.push(e);
           if (source.sync) {
             //console.log "queuing", e.toString(), _.toString(resultStream)

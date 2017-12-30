@@ -23,6 +23,7 @@ extend(PropertyDispatcher.prototype, {
       this.propertyEnded = true;
     }
     if (event.hasValue()) {
+      //console.log('push', event.value)
       this.current = new Some(event);
       this.currentValueRootId = UpdateBarrier.currentEventId();
     }
@@ -55,18 +56,19 @@ extend(PropertyDispatcher.prototype, {
       if (!this.propertyEnded && valId && dispatchingId && dispatchingId !== valId) {
         // when subscribing while already dispatching a value and this property hasn't been updated yet
         // we cannot bounce before this property is up to date.
-        //console.log "bouncing with possibly stale value", event.value(), "root at", valId, "vs", dispatchingId
+        //console.log "bouncing with possibly stale value", event.value, "root at", valId, "vs", dispatchingId
         UpdateBarrier.whenDoneWith(this.property, () => {
           if (this.currentValueRootId === valId) {
-            return sink(initialEvent(this.current.get().value()));
+            //console.log("bouncing", this.current.get().value)
+            return sink(initialEvent(this.current.get().value));
           }
         });
         // the subscribing thing should be defered
         return this.maybeSubSource(sink, reply);
       } else {
-        //console.log "bouncing value immediately"
+        //console.log("bouncing immdiately", this.current.get().value)
         UpdateBarrier.inTransaction(undefined, this, function() {
-          reply = sink(initialEvent(this.current.get().value()));
+          reply = sink(initialEvent(this.current.get().value));
           return reply;
         }, []);
         return this.maybeSubSource(sink, reply);
@@ -108,8 +110,7 @@ extend(Property.prototype, {
   toEventStream() {
     return new EventStream(new Bacon.Desc(this, "toEventStream", []), (sink) => {
       return this.dispatcher.subscribe(function(event) {
-        if (event.isInitial()) { event = event.toNext(); }
-        return sink(event);
+        return sink(event.toNext());
       });
     });
   }
