@@ -216,7 +216,7 @@ You can also pass an optional function that transforms the promise value into Ev
 Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
 
 <a name="bacon-fromevent"></a>
-[`Bacon.fromEvent(target, eventName [, listenerOptionsOrUseCapture] [, eventTransformer])`](#bacon-fromevent "Bacon.fromEvent(target : EventTarget | EventEmitter, eventName : String [, listenerOptionsOrUseCapture : Object | boolean] [, eventTransformer]) : EventStream") creates an EventStream from events
+[`Bacon.fromEvent(target, eventName [, options] [, eventTransformer])`](#bacon-fromevent "Bacon.fromEvent(target : EventTarget | EventEmitter, eventName : String [, options : Object | boolean] [, eventTransformer]) : EventStream") creates an EventStream from events
 on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
 You can pass an optional object (`options`) or boolean value (`useCapture`) representing event listener characteristics.
 You can also pass an optional function that transforms the emitted

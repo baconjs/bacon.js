@@ -41,8 +41,8 @@ describe "Bacon.fromEvent", ->
       [["x", "y"]]
     )
 
-  describe "listenerOptionsOrUseCapture", ->
-    test = (listenerOptionsOrUseCapture, eventTransformer = (x) -> x) ->
+  describe "options", ->
+    test = (options, eventTransformer = (x) -> x) ->
       # Basic EventTarget implementation for testing
       TestEventTarget = ->
         @eventEmitter = new EventEmitter
@@ -50,20 +50,20 @@ describe "Bacon.fromEvent", ->
         @removeListenerCalls = []
         return
 
-      TestEventTarget::addEventListener = (name, handler, listenerOptionsOrUseCapture) ->
+      TestEventTarget::addEventListener = (name, handler, options) ->
         @eventEmitter.addListener name, handler
         @addListenerCalls.push
           name: name
           handler: handler
-          listenerOptionsOrUseCapture: listenerOptionsOrUseCapture
+          options: options
         return
 
-      TestEventTarget::removeEventListener = (name, handler, listenerOptionsOrUseCapture) ->
+      TestEventTarget::removeEventListener = (name, handler, options) ->
         @eventEmitter.removeListener name, handler
         @removeListenerCalls.push
           name: name
           handler: handler
-          listenerOptionsOrUseCapture: listenerOptionsOrUseCapture
+          options: options
         return
 
       TestEventTarget::emit = (name, value) ->
@@ -78,10 +78,10 @@ describe "Bacon.fromEvent", ->
       target = new TestEventTarget()
       stream = null
 
-      if listenerOptionsOrUseCapture? and eventTransformer?
-        stream = Bacon.fromEvent(target, EVENT_NAME, listenerOptionsOrUseCapture, eventTransformer)
-      else if listenerOptionsOrUseCapture?
-        stream = Bacon.fromEvent(target, EVENT_NAME, listenerOptionsOrUseCapture)
+      if options? and eventTransformer?
+        stream = Bacon.fromEvent(target, EVENT_NAME, options, eventTransformer)
+      else if options?
+        stream = Bacon.fromEvent(target, EVENT_NAME, options)
       else
         stream = Bacon.fromEvent(target, EVENT_NAME, eventTransformer)
 
@@ -94,7 +94,7 @@ describe "Bacon.fromEvent", ->
       expect(target.addListenerCalls.length).to.equal(1)
       expect(target.addListenerCalls[0].name).to.equal(EVENT_NAME)
       expect(target.addListenerCalls[0].handler).to.be.a.function
-      expect(target.addListenerCalls[0].listenerOptionsOrUseCapture).to.deep.equal(listenerOptionsOrUseCapture)
+      expect(target.addListenerCalls[0].options).to.deep.equal(options)
       expect(target.listeners(EVENT_NAME).length).to.equal(1)
       expect(target.listeners(EVENT_NAME)[0]).to.be.a.function
 
@@ -107,7 +107,7 @@ describe "Bacon.fromEvent", ->
       expect(target.removeListenerCalls.length).to.equal(1)
       expect(target.removeListenerCalls[0].name).to.equal(EVENT_NAME)
       expect(target.removeListenerCalls[0].handler).to.be.a.function
-      expect(target.removeListenerCalls[0].listenerOptionsOrUseCapture).to.deep.equal(listenerOptionsOrUseCapture)
+      expect(target.removeListenerCalls[0].options).to.deep.equal(options)
       expect(target.listeners(EVENT_NAME).length).to.equal(0)
 
     describe "options", ->
