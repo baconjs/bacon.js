@@ -1,6 +1,6 @@
 # build-dependencies: concat
 #
-describe "EventStream.flatMap", ->
+describe.only "EventStream.flatMap", ->
   describe "should spawn new stream for each value and collect results into a single stream", ->
     expectStreamEvents(
       -> series(1, [1, 2]).flatMap (value) ->

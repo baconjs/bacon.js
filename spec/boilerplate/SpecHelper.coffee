@@ -144,7 +144,7 @@ verifyPSwitchingAggressively = (srcF, expectedEvents, done) ->
               gotMine = true
               events.push(toValue(event))
       unsub = src.subscribe(newSink())
-    it "outputs expected value in order", ->
+    it "outputs expected values in order", ->
       expect(events).to.deep.equal(toValues(expectedEvents))
 
 verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) ->
@@ -243,7 +243,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
       expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
     before (done) ->
       collectF(src, events, done)
-    it "outputs expected value in order", ->
+    it "outputs expected values in order", ->
       expect(toValues(events)).to.deep.equal(toValues(expectedEvents))
     it "the stream is exhausted", ->
        verifyExhausted src
@@ -271,7 +271,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
             unsub = src.subscribe(newSink())
             Bacon.noMore
       unsub = src.subscribe(newSink())
-    it "outputs expected value in order", ->
+    it "outputs expected values in order", ->
       expect(events).to.deep.equal(toValues(expectedEvents))
     it "the stream is exhausted", ->
        verifyExhausted src
@@ -313,6 +313,14 @@ justValues = (xs) ->
 
 hasValue = (x) ->
   toValue(x) != "<error>"
+
+deferred = (f) ->
+  new Promise((resolve) -> 
+    setTimeout((->
+      f()
+      resolve()
+    ), 1)
+  )
 
 Bacon.Observable?.prototype.onUnsub = (f) ->
   self = this

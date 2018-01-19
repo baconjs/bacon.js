@@ -58,7 +58,7 @@ describe "Property.combine", ->
       try
         Array.prototype.foo = "bar"
         events = []
-        once("a").combine(once("b"), (a,b) -> [a,b]).onValue (v) ->
+        Bacon.constant("a").combine(Bacon.constant("b"), (a,b) -> [a,b]).onValue (v) ->
           events.push(v)
         expect(events).to.deep.equal([["a", "b"]])
       finally
@@ -131,9 +131,9 @@ describe "Bacon.combineAsArray", ->
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
       -> 
-          once(123)
-          .flatMap ->
-              Bacon.combineAsArray(once(1), once(2), 3)
+          # TODO: why produces two outputs when switching aggressively
+          # works correctly if either layer replaced with "later"
+          once(123).flatMap -> Bacon.combineAsArray(once(1), once(2), 3)
     [[1,2,3]])
   it "toString", ->
     expect(Bacon.combineAsArray(Bacon.never()).toString()).to.equal("Bacon.combineAsArray(Bacon.never())")

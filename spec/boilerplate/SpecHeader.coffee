@@ -167,36 +167,47 @@ mergeAll = Bacon.mergeAll || (streams...) ->
 
 testSideEffects = (wrapper, method) ->
   ->
+    soon = (done, f) ->
+      setTimeout((-> 
+        f()
+        done()
+      ), 0)      
+    immediately = (done, f) ->
+      f()
+      done()
     it "(f) calls function with property value", ->
       f = mockFunction()
       wrapper("kaboom")[method](f)
-      f.verify("kaboom")
+      # TODO: once is no longer synchronous
+      # TODO: why latter cases don't fail? 
+      # ALso, why all succeeds when using "describe.only", i.e. seems that once works synchrnously here
+      deferred -> f.verify("kaboom")
     it "(f, param) calls function, partially applied with param", ->
       f = mockFunction()
       wrapper("kaboom")[method](f, "pow")
-      f.verify("pow", "kaboom")
+      deferred -> f.verify("pow", "kaboom")
     it "('.method') calls event value object method", ->
       value = mock("get")
       value.when().get().thenReturn("pow")
       wrapper(value)[method](".get")
-      value.verify().get()
+      deferred -> value.verify().get()
     it "('.method', param) calls event value object method with param", ->
       value = mock("get")
       value.when().get("value").thenReturn("pow")
       wrapper(value)[method](".get", "value")
-      value.verify().get("value")
+      deferred -> value.verify().get("value")
     it "(object, method) calls object method with property value", ->
       target = mock("pow")
       wrapper("kaboom")[method](target, "pow")
-      target.verify().pow("kaboom")
+      deferred -> target.verify().pow("kaboom")
     it "(object, method, param) partially applies object method with param", ->
       target = mock("pow")
       wrapper("kaboom")[method](target, "pow", "smack")
-      target.verify().pow("smack", "kaboom")
+      deferred -> target.verify().pow("smack", "kaboom")
     it "(object, method, param1, param2) partially applies with 2 args", ->
       target = mock("pow")
       wrapper("kaboom")[method](target, "pow", "smack", "whack")
-      target.verify().pow("smack", "whack", "kaboom")
+      deferred -> target.verify().pow("smack", "whack", "kaboom")
 
 t = @t = (time) -> time
 seqs = []

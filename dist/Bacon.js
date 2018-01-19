@@ -302,6 +302,11 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   var aftersStack = [];
   var aftersStackHeight = 0;
   var flushed = {};
+  var processingAfters = false;
+
+  function toString() {
+    return _.toString({ rootEvent: rootEvent, processingAfters: processingAfters, waiterObs: waiterObs, waiters: waiters, aftersStack: aftersStack, aftersStackHeight: aftersStackHeight, flushed: flushed });
+  }
 
   function ensureStackHeight(h) {
     if (h <= aftersStackHeight) return;
@@ -311,8 +316,22 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     aftersStackHeight = h;
   }
 
-  var afterTransaction = function (obs, f) {
-    if (rootEvent || aftersStack.length) {
+  var dummyObs = { id: null, internalDeps: function () {
+      return [];
+    } };
+
+  function soonButNotYet(obs, f) {
+    if (false && rootEvent) {
+      whenDoneWith(dummyObs, f);
+    } else if (false && processingAfters) {
+      afterTransaction(obs, f);
+    } else {
+      Bacon.scheduler.setTimeout(f, 0);
+    }
+  }
+
+  function afterTransaction(obs, f) {
+    if (rootEvent || processingAfters) {
       ensureStackHeight(1);
       var stackIndexForThisObs = 0;
       while (stackIndexForThisObs < aftersStackHeight - 1) {
@@ -341,41 +360,47 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
   function processAfters() {
     var stackSizeAtStart = aftersStackHeight;
     if (!stackSizeAtStart) return;
-    while (aftersStackHeight >= stackSizeAtStart) {
-      var topOfStack = aftersStack[aftersStackHeight - 1];
-      if (!topOfStack) throw new Error("Unexpected stack top: " + topOfStack);
-      var topAfters = topOfStack[0];
-      var index = topOfStack[1];
+    var isRoot = !processingAfters;
+    processingAfters = true;
+    try {
+      while (aftersStackHeight >= stackSizeAtStart) {
+        var topOfStack = aftersStack[aftersStackHeight - 1];
+        if (!topOfStack) throw new Error("Unexpected stack top: " + topOfStack);
+        var topAfters = topOfStack[0];
+        var index = topOfStack[1];
 
-      if (index < topAfters.length) {
-        var _topAfters$index = topAfters[index];
-        var obs = _topAfters$index[0];
-        var after = _topAfters$index[1];
+        if (index < topAfters.length) {
+          var _topAfters$index = topAfters[index];
+          var obs = _topAfters$index[0];
+          var after = _topAfters$index[1];
 
-        topOfStack[1]++;
-        ensureStackHeight(aftersStackHeight + 1);
-        var callSuccess = false;
-        try {
-          after();
-          callSuccess = true;
-          while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight - 1][0].length == 0) {
-            aftersStackHeight--;
+          topOfStack[1]++;
+          ensureStackHeight(aftersStackHeight + 1);
+          var callSuccess = false;
+          try {
+            after();
+            callSuccess = true;
+            while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight - 1][0].length == 0) {
+              aftersStackHeight--;
+            }
+          } finally {
+            if (!callSuccess) {
+              aftersStack = [];
+              aftersStackHeight = 0;
+            }
           }
-        } finally {
-          if (!callSuccess) {
-            aftersStack = [];
-            aftersStackHeight = 0;
+        } else {
+            topOfStack[0] = [];
+            topOfStack[1] = 0;
+            break;
           }
-        }
-      } else {
-          topOfStack[0] = [];
-          topOfStack[1] = 0;
-          break;
-        }
+      }
+    } finally {
+      if (isRoot) processingAfters = false;
     }
   }
 
-  var whenDoneWith = function (obs, f) {
+  function whenDoneWith(obs, f) {
     if (rootEvent) {
       var obsWaiters = waiters[obs.id];
       if (!(typeof obsWaiters !== "undefined" && obsWaiters !== null)) {
@@ -389,14 +414,14 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     }
   };
 
-  var flush = function () {
+  function flush() {
     while (waiterObs.length > 0) {
       flushWaiters(0, true);
     }
     flushed = {};
   };
 
-  var flushWaiters = function (index, deps) {
+  function flushWaiters(index, deps) {
     var obs = waiterObs[index];
     var obsId = obs.id;
     var obsWaiters = waiters[obsId];
@@ -411,7 +436,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     }
   };
 
-  var flushDepsOf = function (obs) {
+  function flushDepsOf(obs) {
     if (flushed[obs.id]) return;
     var deps = obs.internalDeps();
     for (var i = 0, dep; i < deps.length; i++) {
@@ -425,7 +450,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     flushed[obs.id] = true;
   };
 
-  var inTransaction = function (event, context, f, args) {
+  function inTransaction(event, context, f, args) {
     if (rootEvent) {
       return f.apply(context, args);
     } else {
@@ -442,11 +467,11 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     }
   };
 
-  var currentEventId = function () {
+  function currentEventId() {
     return rootEvent ? rootEvent.id : undefined;
   };
 
-  var wrappedSubscribe = function (obs, sink) {
+  function wrappedSubscribe(obs, sink) {
     var unsubd = false;
     var shouldUnsub = false;
     var doUnsub = function () {
@@ -477,7 +502,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     return waiterObs.length > 0;
   };
 
-  return { whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction };
+  return { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet };
 })();
 
 function Source(obs, sync) {
@@ -2028,10 +2053,24 @@ Bacon.Observable.prototype.filter = function (f) {
   });
 };
 
+Bacon.later = function (delay, value) {
+  return withDesc(new Bacon.Desc(Bacon, "later", [delay, value]), Bacon.fromBinder(function (sink) {
+    var sender = function () {
+      return sink([value, endEvent()]);
+    };
+    var id = Bacon.scheduler.setTimeout(sender, delay);
+    return function () {
+      return Bacon.scheduler.clearTimeout(id);
+    };
+  }));
+};
+
 Bacon.once = function (value) {
-  return new EventStream(new Desc(Bacon, "once", [value]), function (sink) {
-    sink(toEvent(value));
-    sink(endEvent());
+  return s = new EventStream(new Desc(Bacon, "once", [value]), function (sink) {
+    UpdateBarrier.soonButNotYet(s, function () {
+      sink(toEvent(value));
+      sink(endEvent());
+    });
     return nop;
   });
 };
@@ -2170,7 +2209,7 @@ var handleEventValueWith = function (f) {
   };
 };
 
-var makeSpawner = function (args) {
+function makeSpawner(args) {
   if (args.length === 1 && isObservable(args[0])) {
     return _.always(args[0]);
   } else {
@@ -2178,12 +2217,20 @@ var makeSpawner = function (args) {
   }
 };
 
-var makeObservable = function (x) {
+function makeObservable(x) {
   if (isObservable(x)) {
     return x;
   } else {
     return Bacon.once(x);
   }
+};
+
+Bacon.immediately = function (value) {
+  return new EventStream(new Desc(Bacon, "immediately", [value]), function (sink) {
+    sink(toEvent(value));
+    sink(endEvent());
+    return nop;
+  });
 };
 
 Bacon.Observable.prototype.flatMap = function () {
@@ -2204,18 +2251,6 @@ Bacon.Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
 Bacon.Observable.prototype.flatMapConcat = function () {
   var desc = new Bacon.Desc(this, "flatMapConcat", Array.prototype.slice.call(arguments, 0));
   return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(_slice.call(arguments))));
-};
-
-Bacon.later = function (delay, value) {
-  return withDesc(new Bacon.Desc(Bacon, "later", [delay, value]), Bacon.fromBinder(function (sink) {
-    var sender = function () {
-      return sink([value, endEvent()]);
-    };
-    var id = Bacon.scheduler.setTimeout(sender, delay);
-    return function () {
-      return Bacon.scheduler.clearTimeout(id);
-    };
-  }));
 };
 
 Bacon.Observable.prototype.bufferingThrottle = function (minimumInterval) {

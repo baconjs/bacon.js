@@ -59,7 +59,7 @@ describe "Bacon.Bus", ->
     bus.plug(once("x"))
     bus.plug(once("y"))
     bus.onValue((x) -> values.push(x))
-    expect(values).to.deep.equal(["x", "y"])
+    deferred -> expect(values).to.deep.equal(["x", "y"])
 
   it "throws if a non-observable is plugged", ->
     expect(-> new Bacon.Bus().plug(undefined)).to.throw()

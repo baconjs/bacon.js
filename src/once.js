@@ -1,8 +1,10 @@
-// build-dependencies: eventstream, event
+// build-dependencies: eventstream, event, later
 Bacon.once = function(value) {
-  return new EventStream(new Desc(Bacon, "once", [value]), function(sink) {
-    sink(toEvent(value));
-    sink(endEvent());
+  return s = new EventStream(new Desc(Bacon, "once", [value]), function(sink) {
+    UpdateBarrier.soonButNotYet(s, function() {
+      sink(toEvent(value));
+      sink(endEvent());  
+    })
     return nop;
   });
 };

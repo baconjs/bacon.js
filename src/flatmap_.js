@@ -68,7 +68,7 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
   
   const handleEventValueWith = f => event => f(event.value)
 
-  var makeSpawner = function(args) {
+  function makeSpawner(args) {
     if (args.length === 1 && isObservable(args[0])) {
       return _.always(args[0]);
     } else {
@@ -76,10 +76,18 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
     }
   };
   
-  var makeObservable = function(x) {
+  function makeObservable(x) {
     if (isObservable(x)) {
       return x;
     } else {
       return Bacon.once(x);
     }
+  };
+
+  Bacon.immediately = function(value) {
+    return new EventStream(new Desc(Bacon, "immediately", [value]), function(sink) {
+      sink(toEvent(value));
+      sink(endEvent());  
+      return nop;
+    });
   };
