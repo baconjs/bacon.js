@@ -2583,6 +2583,13 @@ Bacon.Observable.prototype.flatMapLatest = function () {
   }));
 };
 
+Bacon.Observable.prototype.flatMapFirst = function () {
+  return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), {
+    firstOnly: true,
+    desc: new Bacon.Desc(this, "flatMapFirst", arguments)
+  });
+};
+
 Bacon.Property.prototype.delayChanges = function (desc, f) {
   return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
 };
@@ -2790,13 +2797,6 @@ Bacon.Observable.prototype.flatMapEvent = function () {
   });
 };
 
-Bacon.Observable.prototype.flatMapFirst = function () {
-  return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), {
-    firstOnly: true,
-    desc: new Bacon.Desc(this, "flatMapFirst", arguments)
-  });
-};
-
 Bacon.Observable.prototype.flatMapError = function (fn) {
   return this.flatMap_(function (x) {
     if (x instanceof Error) {
@@ -3000,7 +3000,8 @@ Bacon.fromArray = function (values) {
         return pushing;
       };
 
-      push();
+      UpdateBarrier.soonButNotYet(stream, push);
+
       return function () {
         unsubd = true;
         return unsubd;

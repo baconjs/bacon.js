@@ -63,7 +63,7 @@ describe "EventStream.holdWhen", ->
         Bacon.once("2").
           holdWhen(Bacon.constant(false))
       [[0, "2"]])
-  describe.skip "Works with synchronous sources, case 4", ->
+  describe "Works with synchronous sources, case 4", ->
     expectStreamTimings(
       ->
         # TODO: fails because startWith relies on once and fromArray is not yet async

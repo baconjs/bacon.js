@@ -25,7 +25,7 @@ describe "Bacon.retry", ->
   describe "does not change source stream characteristics", ->
     expectStreamEvents(
       -> Bacon.retry(source: -> fromArray([3, 1, 2, 1, 3]).skipDuplicates().take(2))
-      [3, 1])
+      [3, 1], semiunstable)
   describe "retries after retryable error", ->
     expectStreamEvents(
       ->

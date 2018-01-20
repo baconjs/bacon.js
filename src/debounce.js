@@ -1,4 +1,4 @@
-// build-dependencies: flatmaplatest, delay, once
+// build-dependencies: flatmaplatest, flatmapfirst, delay, once
 // build-dependencies: concat, filter
 
 Bacon.Observable.prototype.debounce = function(delay) { 
