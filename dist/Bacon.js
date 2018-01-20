@@ -321,10 +321,8 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function () {
     } };
 
   function soonButNotYet(obs, f) {
-    if (false && rootEvent) {
+    if (rootEvent) {
       whenDoneWith(dummyObs, f);
-    } else if (false && processingAfters) {
-      afterTransaction(obs, f);
     } else {
       Bacon.scheduler.setTimeout(f, 0);
     }

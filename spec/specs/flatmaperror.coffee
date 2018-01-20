@@ -1,5 +1,4 @@
 describe "EventStream.flatMapError", ->
- # TODO: tests fail with aggressive switching because autowrapping uses async Bacon.once now
   describe "allows spawning a new stream from an error", ->
     expectStreamEvents(
       ->

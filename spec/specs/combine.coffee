@@ -58,13 +58,11 @@ describe "Property.combine", ->
       try
         Array.prototype.foo = "bar"
         events = []
-        Bacon.constant("a").combine(Bacon.constant("b"), (a,b) -> [a,b]).onValue (v) ->
+        once("a").combine(once("b"), (a,b) -> [a,b]).onValue (v) ->
           events.push(v)
-        expect(events).to.deep.equal([["a", "b"]])
-      finally
-        delete Array.prototype.foo
-
-
+        deferred -> 
+          expect(events).to.deep.equal([["a", "b"]])
+          delete Array.prototype.foo
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->

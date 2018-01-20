@@ -76,7 +76,7 @@ describe "EventStream.concat", ->
     expectStreamEvents(
       -> Bacon.never().concat(Bacon.never())
       [])
-  describe "works great with Bacon.once()", ->
+  describe "works with Bacon.once()", ->
     expectStreamEvents(
       -> once(2).concat(once(1))
       [2, 1])

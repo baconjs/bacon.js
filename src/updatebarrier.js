@@ -24,16 +24,10 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   var dummyObs = { id: null, internalDeps: () => [] }
 
   function soonButNotYet(obs, f) {
-    // TODO: make everything (?) work without these optimizations first, then restore into use
-    if (false && rootEvent) {
-      // If in transaction -> perform within transaction (TODO: ensure first/last order?)
+    if (rootEvent) {
+      // If in transaction -> perform within transaction
       //console.log('in tx')
       whenDoneWith(dummyObs, f)
-    } else if (false && processingAfters) {
-      // Processing afters -> perform with afters
-      //console.log('with afters')
-      //console.log('with afters')
-      afterTransaction(obs, f)
     } else {
       // Otherwise -> perform with timeout
       //console.log('with timeout')

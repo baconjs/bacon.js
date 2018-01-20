@@ -167,20 +167,12 @@ mergeAll = Bacon.mergeAll || (streams...) ->
 
 testSideEffects = (wrapper, method) ->
   ->
-    soon = (done, f) ->
-      setTimeout((-> 
-        f()
-        done()
-      ), 0)      
     immediately = (done, f) ->
       f()
       done()
     it "(f) calls function with property value", ->
       f = mockFunction()
       wrapper("kaboom")[method](f)
-      # TODO: once is no longer synchronous
-      # TODO: why latter cases don't fail? 
-      # ALso, why all succeeds when using "describe.only", i.e. seems that once works synchrnously here
       deferred -> f.verify("kaboom")
     it "(f, param) calls function, partially applied with param", ->
       f = mockFunction()
@@ -236,4 +228,3 @@ Array.prototype.extraTest2 = ""
 Array.prototype.extraTest3 = 0
 Array.prototype.extraTest4 = null
 Array.prototype.extraTest5 = {}
-

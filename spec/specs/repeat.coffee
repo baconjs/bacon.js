@@ -18,7 +18,7 @@ describe "Bacon.repeat", ->
           count++
           if count <= 3
             Bacon.once(count)
-      [1,2,3], semiunstable)
+      [1,2,3], unstable)
   describe "Provides generator function with index", ->
     expectStreamEvents(
       ->
@@ -48,6 +48,6 @@ describe "Bacon.repeat", ->
     expectStreamEvents(
       ->
         take(3, Bacon.repeat(-> Bacon.once(1)))
-      [1,1,1], semiunstable)
+      [1,1,1], unstable)
 
 

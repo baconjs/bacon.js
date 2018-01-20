@@ -134,6 +134,7 @@ describe "Integration tests", ->
           ab = Bacon.combineAsArray a, b
 
           f = ab.flatMapLatest (values) ->
+            # TODO: this was Bacon.once, but that's no longer immdiate so breaks atomic update here
             Bacon.constant 'f' + values
 
           Bacon.combineAsArray(f, b).map(".0")
@@ -145,7 +146,7 @@ describe "Integration tests", ->
       fromArray(array)
         .map(-> array)
         .flatMap(fromArray)
-        .flatMapLatest(Bacon._.id) # TODO: fails because autowrapping uses async Bacon.once
+        .flatMapLatest(Bacon._.id)
         .onValue (v) -> result.push v
       deferred -> expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
   describe "EventStream.debounce", ->
