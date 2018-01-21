@@ -1,9 +1,8 @@
 // build-dependencies: _
 
-function Source(obs, sync, lazy = false) { // TODO get rid of lazy here?
+function Source(obs, sync) {
   this.obs = obs;
   this.sync = sync;
-  this.lazy = lazy;
   this.queue = [];
 }
 
@@ -17,22 +16,15 @@ extend(Source.prototype, {
     return true;
   },
   consume() {
-    if (this.lazy) {
-      return { value: this.queue[0] };
-    } else {
-      return this.queue[0];
-    }
+    return this.queue[0];
   },
-  // TODO: push shouldn't return, right?
   push(x) {
     this.queue = [x];
-    return [x];
   },
   mayHave() { return true; },
   hasAtLeast() { return this.queue.length; },
   flatten: true
 });
-
 
 function ConsumingSource() {
   Source.apply(this, arguments);
@@ -66,17 +58,18 @@ extend(BufferingSource.prototype, {
 
 
 Source.isTrigger = function(s) {
-  if (s != null ? s._isSource : void 0) {
+  if (s == null) return false
+  if (s._isSource) {
     return s.sync;
   } else {
-    return s != null ? s._isEventStream : void 0;
+    return s._isEventStream
   }
 };
 
 Source.fromObservable = function(s) {
-  if (s != null ? s._isSource : void 0) {
+  if (s != null && s._isSource) {
     return s;
-  } else if (s != null ? s._isProperty : void 0) {
+  } else if (s != null && s._isProperty) {
     return new Source(s, false);
   } else {
     return new ConsumingSource(s, true);

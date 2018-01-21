@@ -9,15 +9,13 @@ Bacon.EventStream.prototype.sampledBy = function(sampler, combinator) {
 };
 
 Bacon.Property.prototype.sampledBy = function(sampler, combinator) {
-  var lazy = false;
   if ((typeof combinator !== "undefined" && combinator !== null)) {
     combinator = toCombinator(combinator);
   } else {
-    lazy = true;
-    combinator = function(f) { return f.value; };
+    combinator = Bacon._.id
   }
-  var thisSource = new Source(this, false, lazy);
-  var samplerSource = new Source(sampler, true, lazy);
+  var thisSource = new Source(this, false); // false = doesn't trigger event
+  var samplerSource = new Source(sampler, true); // true = triggers event
   var stream = Bacon.when([thisSource, samplerSource], combinator);
   var result = sampler._isProperty ? stream.toProperty() : stream;
   return withDesc(new Bacon.Desc(this, "sampledBy", [sampler, combinator]), result);
