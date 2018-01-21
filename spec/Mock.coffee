@@ -32,7 +32,7 @@ mockFunction = (name) ->
         #console.log("match => #{returnCombo.returnValue}")
         return returnCombo.returnValue
   method.verify = (args...) ->
-    if !calls
+    if !calls.length
       throw "not called: #{name}"
     actualCall = calls[0]
     calls.splice(0,1)

@@ -19,7 +19,8 @@ describe "EventStream.flatMapError", ->
   describe "has no effect on values", ->
     expectStreamEvents(
       -> fromArray([1, 2]).flatMapError(-> Bacon.once("omg"))
-      [1, 2])
+      [1, 2]
+    )
   it "toString", ->
     expect(Bacon.once(1).flatMapError(->).toString()).to.equal("Bacon.once(1).flatMapError(function)")
 

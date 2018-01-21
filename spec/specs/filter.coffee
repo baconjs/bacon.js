@@ -29,7 +29,7 @@ describe "Property.filter", ->
     p.onValue(=>) # to ensure that property is actualy updated
     values = []
     p.onValue((v) => values.push(v))
-    expect(values).to.deep.equal([1])
+    deferred -> expect(values).to.deep.equal([1])
   describe "can filter by Property value", ->
     expectPropertyEvents(
       ->

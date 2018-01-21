@@ -1,14 +1,16 @@
 # build-dependencies: eventstream, property
 
 describe "Observable.doLog", ->
+  originalConsole = console
+  originalLog = console.log
+  restoreLog = ->
+      global.console = originalConsole
+      console.log = originalLog
   preservingLog = (f) ->
-    originalConsole = console
-    originalLog = console.log
     try
       f()
     finally
-      global.console = originalConsole
-      console.log = originalLog
+      restoreLog()
 
   it "does not consume the event", (done) ->
     streamWithOneEvent = once({}).doLog('hello bacon')
@@ -31,16 +33,18 @@ describe "Observable.doLog", ->
     expect(loggedValues[0]).to.equal(true)
   it "logs Error events as strings", ->
     loggedValues = undefined
-    preservingLog ->
-      console.log = (args...) -> loggedValues = args
-      once(Bacon.Error('err')).doLog(true).onValue(->)
-    expect(loggedValues).to.deep.equal [true, '<end>']
+    console.log = (args...) -> loggedValues = args
+    once(Bacon.Error('err')).doLog(true).onValue(->)
+    deferred -> 
+      expect(loggedValues).to.deep.equal [true, '<end>']
+      restoreLog()
   it "logs End events as strings", ->
     loggedValues = undefined
-    preservingLog ->
-      console.log = (args...) -> loggedValues = args
-      once(new Bacon.End()).doLog(true).onValue(->)
-    expect(loggedValues).to.deep.equal [true, '<end>']
+    console.log = (args...) -> loggedValues = args
+    once(new Bacon.End()).doLog(true).onValue(->)
+    deferred -> 
+      expect(loggedValues).to.deep.equal [true, '<end>']
+      restoreLog()
   it "toString", ->
     expect(Bacon.never().doLog().toString()).to.equal("Bacon.never().doLog()")
 

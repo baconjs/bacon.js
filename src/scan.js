@@ -1,4 +1,3 @@
-// build-dependencies: optional
 // build-dependencies: core
 // build-dependencies: functionconstruction
 // build-dependencies: when
@@ -7,7 +6,7 @@
 Bacon.Observable.prototype.scan = function(seed, f) {
   var resultProperty;
   f = toCombinator(f);
-  var acc = toOption(seed);
+  var acc = seed
   var initHandled = false;
   var subscribe = (sink) => {
     var initSent = false;
@@ -15,15 +14,12 @@ Bacon.Observable.prototype.scan = function(seed, f) {
     var reply = Bacon.more;
     var sendInit = function() {
       if (!initSent) {
-        return acc.forEach(function(value) {
-          initSent = initHandled = true;
-          reply = sink(new Initial(value));
-          if (reply === Bacon.noMore) {
-            unsub();
-            unsub = nop;
-            return unsub;
-          }
-        });
+        initSent = initHandled = true;
+        reply = sink(new Initial(acc));
+        if (reply === Bacon.noMore) {
+          unsub();
+          unsub = nop;
+        }
       }
     };
     unsub = this.dispatcher.subscribe(function(event) {
@@ -34,10 +30,10 @@ Bacon.Observable.prototype.scan = function(seed, f) {
         } else {
           if (!event.isInitial()) { sendInit(); }
           initSent = initHandled = true;
-          var prev = acc.getOrElse(undefined);
+          var prev = acc
           var next = f(prev, event.value);
           //console.log prev , ",", event.value, "->", next
-          acc = new Some(next);
+          acc = next
           return sink(event.apply(next));
         }
       } else {
@@ -52,6 +48,5 @@ Bacon.Observable.prototype.scan = function(seed, f) {
     UpdateBarrier.whenDoneWith(resultProperty, sendInit);
     return unsub;
   };
-  resultProperty = new Property(new Bacon.Desc(this, "scan", [seed, f]), subscribe);
-  return resultProperty;
+  return resultProperty = new Property(new Bacon.Desc(this, "scan", [seed, f]), subscribe)
 };

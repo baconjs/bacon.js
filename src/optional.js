@@ -40,7 +40,7 @@ var None = {
 };
 
 var toOption = function(v) {
-  if (((typeof v !== "undefined" && v !== null) ? v._isSome : undefined) || ((typeof v !== "undefined" && v !== null) ? v._isNone : undefined)) {
+  if (v && (v._isSome || v.isNone)) {
     return v;
   } else {
     return new Some(v);

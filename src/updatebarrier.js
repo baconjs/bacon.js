@@ -21,6 +21,18 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     aftersStackHeight = h
   }
 
+  function soonButNotYet(obs, f) {
+    if (rootEvent) {
+      // If in transaction -> perform within transaction
+      //console.log('in tx')
+      whenDoneWith(obs, f)
+    } else {
+      // Otherwise -> perform with timeout
+      //console.log('with timeout')
+      Bacon.scheduler.setTimeout(f, 0)
+    }
+  }
+
   function afterTransaction(obs, f) {
     if (rootEvent || processingAfters) {
       ensureStackHeight(1)
@@ -190,6 +202,6 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
 
   var hasWaiters = function() { return waiterObs.length > 0; };
 
-  return { toString, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction };
+  return { toString, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction, soonButNotYet };
 }
 )();

@@ -35,7 +35,8 @@ Bacon.fromArray = function(values) {
         return pushing;
       };
 
-      push();
+      UpdateBarrier.soonButNotYet(stream, push)
+
       return function() {
         unsubd = true;
         return unsubd;

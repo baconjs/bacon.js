@@ -60,11 +60,9 @@ describe "Property.combine", ->
         events = []
         once("a").combine(once("b"), (a,b) -> [a,b]).onValue (v) ->
           events.push(v)
-        expect(events).to.deep.equal([["a", "b"]])
-      finally
-        delete Array.prototype.foo
-
-
+        deferred -> 
+          expect(events).to.deep.equal([["a", "b"]])
+          delete Array.prototype.foo
 
 describe "EventStream.combine", ->
   describe "converts stream to Property, then combines", ->
@@ -131,9 +129,7 @@ describe "Bacon.combineAsArray", ->
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
       -> 
-          once(123)
-          .flatMap ->
-              Bacon.combineAsArray(once(1), once(2), 3)
+          once(123).flatMap -> Bacon.combineAsArray(once(1), once(2), 3)
     [[1,2,3]])
   it "toString", ->
     expect(Bacon.combineAsArray(Bacon.never()).toString()).to.equal("Bacon.combineAsArray(Bacon.never())")

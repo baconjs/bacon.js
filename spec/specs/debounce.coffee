@@ -27,7 +27,7 @@ describe "EventStream.debounceImmediate(delay)", ->
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3, 4]).debounceImmediate(t(3))
-      [1])
+      [1], semiunstable)
   it "toString", ->
     expect(Bacon.never().debounceImmediate(1).toString()).to.equal("Bacon.never().debounceImmediate(1)")
 

@@ -11,10 +11,10 @@ describe "Bacon.once", ->
     expectStreamEvents(
       -> Bacon.once(error())
       [error()])
-  it "Responds synchronously", ->
+  it "Responds asynchronously", ->
     values = []
     s = Bacon.once(1)
     s.onValue((value) => values.push(value))
-    expect(values).to.deep.equal([1])
     s.onValue((value) => values.push(value))
-    expect(values).to.deep.equal([1])
+    expect(values).to.deep.equal([])
+    deferred -> expect(values).to.deep.equal([1, 1])
