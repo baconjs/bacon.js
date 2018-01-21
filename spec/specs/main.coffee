@@ -149,6 +149,25 @@ describe "Integration tests", ->
         .flatMapLatest(Bacon._.id)
         .onValue (v) -> result.push v
       deferred -> expect(result).to.deep.equal([1,2,3,1,2,3,1,2,3])
+  describe "Mixed test from two tests above", ->
+    it "works", ->
+      result = ""
+      prop = Bacon.combineTemplate(faq: later(1).toProperty("default value"))
+      Bacon.once().flatMap(->
+          problem = prop.sampledBy(Bacon.once())
+          problem.onValue (x) ->
+            result = x
+      ).onValue ->
+      result2 = []
+      array = [1,2,3]
+      fromArray(array)
+        .map(-> array)
+        .flatMap(fromArray)
+        .flatMapLatest(Bacon._.id)
+        .onValue (v) -> result2.push v
+      deferred -> 
+        expect(result).to.deep.equal({faq: "default value"})
+        expect(result2).to.deep.equal([1,2,3,1,2,3,1,2,3])
   describe "EventStream.debounce", ->
     describe "works in combination with scan", ->
       count = 0
