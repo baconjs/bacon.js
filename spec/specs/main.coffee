@@ -77,6 +77,7 @@ describe "Integration tests", ->
             problem.onValue (x) ->
               result = x
         ).onValue ->
+        deferred ->
           expect(result).to.deep.equal({faq: "default value"})
       it "case 2 (samplee has subscriber)", ->
         result = ""
@@ -87,6 +88,7 @@ describe "Integration tests", ->
             problem.onValue (x) ->
               result = x
         ).onValue ->
+        deferred ->
           expect(result).to.deep.equal({faq: "default value"})
       it "case 3 (original fiddle)", ->
         result = ""
@@ -99,7 +101,7 @@ describe "Integration tests", ->
               result = x
         ).onValue ->
         events.push()
-        deferred ->expect(result).to.deep.equal({faq: "default value"})
+        deferred -> expect(result).to.deep.equal({faq: "default value"})
   describe "Property.flatMap", ->
     describe "works in a complex scenario #338", ->
       expectStreamEvents(
