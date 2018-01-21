@@ -817,7 +817,7 @@
         }
     };
     var toOption = function (v) {
-        if ((typeof v !== 'undefined' && v !== null ? v._isSome : undefined) || (typeof v !== 'undefined' && v !== null ? v._isNone : undefined)) {
+        if (v && (v._isSome || v.isNone)) {
             return v;
         } else {
             return new Some(v);
@@ -2450,7 +2450,7 @@
         var _this10 = this;
         var resultProperty;
         f = toCombinator(f);
-        var acc = toOption(seed);
+        var acc = seed;
         var initHandled = false;
         var subscribe = function (sink) {
             var initSent = false;
@@ -2458,15 +2458,12 @@
             var reply = Bacon.more;
             var sendInit = function () {
                 if (!initSent) {
-                    return acc.forEach(function (value) {
-                        initSent = initHandled = true;
-                        reply = sink(new Initial(value));
-                        if (reply === Bacon.noMore) {
-                            unsub();
-                            unsub = nop;
-                            return unsub;
-                        }
-                    });
+                    initSent = initHandled = true;
+                    reply = sink(new Initial(acc));
+                    if (reply === Bacon.noMore) {
+                        unsub();
+                        unsub = nop;
+                    }
                 }
             };
             unsub = _this10.dispatcher.subscribe(function (event) {
@@ -2478,9 +2475,9 @@
                             sendInit();
                         }
                         initSent = initHandled = true;
-                        var prev = acc.getOrElse(undefined);
+                        var prev = acc;
                         var next = f(prev, event.value);
-                        acc = new Some(next);
+                        acc = next;
                         return sink(event.apply(next));
                     }
                 } else {
@@ -2495,11 +2492,10 @@
             UpdateBarrier.whenDoneWith(resultProperty, sendInit);
             return unsub;
         };
-        resultProperty = new Property(new Bacon.Desc(this, 'scan', [
+        return resultProperty = new Property(new Bacon.Desc(this, 'scan', [
             seed,
             f
         ]), subscribe);
-        return resultProperty;
     };
     Bacon.Observable.prototype.diff = function (start, f) {
         f = toCombinator(f);
