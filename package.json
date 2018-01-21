@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "2.0-alpha",
+  "version": "2.0.0",
   "keywords": [
     "bacon.js",
     "bacon",
