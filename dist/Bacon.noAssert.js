@@ -316,15 +316,9 @@
             }
             aftersStackHeight = h;
         }
-        var dummyObs = {
-            id: null,
-            internalDeps: function () {
-                return [];
-            }
-        };
         function soonButNotYet(obs, f) {
             if (rootEvent) {
-                whenDoneWith(dummyObs, f);
+                whenDoneWith(obs, f);
             } else {
                 Bacon.scheduler.setTimeout(f, 0);
             }
