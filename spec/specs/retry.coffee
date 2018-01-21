@@ -36,7 +36,7 @@ describe "Bacon.retry", ->
         isRetryable = ({calls}) ->
           calls < 2
         Bacon.retry({source, isRetryable, retries: 5})
-      [error(calls: 2)]) # TODO: assert error content
+      [error(calls: 2)]) # TODO: assert error content (current test system doesn't look inside the error)
   describe "yields error when no retries left", ->
     expectStreamEvents(
       ->
@@ -45,7 +45,7 @@ describe "Bacon.retry", ->
           calls += 1
           Bacon.once(new Bacon.Error({calls}))
         Bacon.retry {source, retries: 2}
-      [error(calls: 3)]) # TODO: assert error content
+      [error(calls: 3)]) # TODO: assert error content (current test system doesn't look inside the error)
   it "allows specifying delay by context for each retry", (done) ->
     calls = 0
     contexts = []
