@@ -1,4 +1,14 @@
-# build-dependencies: bus
+require("../../src/bus")
+require("../../src/doend")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series
+} = require("../SpecHelper")
+
+
 describe "EventStream.doEnd", ->
   it "calls function before sending end to listeners", ->
     called = []

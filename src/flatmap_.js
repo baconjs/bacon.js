@@ -1,13 +1,20 @@
-// build-dependencies: core, eventstream, once
-// build-dependencies: functionconstruction
-// build-dependencies: compositeunsubscribe
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import { Desc } from "./describe";
+import { endEvent } from "./event";
+import { isObservable } from "./helpers";
+import _ from "./_";
+import { makeFunctionArgs } from "./functionconstruction";
+import Observable from "./observable";
+import EventStream from "./eventstream";
+import { noMore, more } from "./reply";
+import once from "./once";
 
-Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
+Observable.prototype.flatMap_ = function(f, params = { }) {
     const root = this
     const rootDep = [root];
     const childDeps = [];
     
-    var result = new EventStream(params.desc || new Bacon.Desc(this, "flatMap_", arguments), function(sink) {
+    var result = new EventStream(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
       var spawn = function(event) {
@@ -19,14 +26,14 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
               _.remove(child, childDeps);
               checkQueue();
               checkEnd(unsubMe);
-              return Bacon.noMore;
+              return noMore;
             } else {
               if ((typeof event !== "undefined" && event !== null) ? event._isInitial : undefined) {
                 // To support Property as the spawned stream
                 event = event.toNext();
               }
               var reply = sink(event);
-              if (reply === Bacon.noMore) { unsubAll(); }
+              if (reply === noMore) { unsubAll(); }
               return reply;
             }
           });
@@ -46,9 +53,9 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
         } else if (event.isError() && !params.mapError) {
           return sink(event);
         } else if (params.firstOnly && composite.count() > 1) {
-          return Bacon.more;
+          return more;
         } else {
-          if (composite.unsubscribed) { return Bacon.noMore; }
+          if (composite.unsubscribed) { return noMore; }
           if (params.limit && composite.count() > params.limit) {
             return queue.push(event);
           } else {
@@ -69,20 +76,20 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
     return result;
   };
   
-  const handleEventValueWith = f => event => f(event.value())
+export const handleEventValueWith = f => event => f(event.value())
 
-  var makeSpawner = function(args) {
-    if (args.length === 1 && isObservable(args[0])) {
-      return _.always(args[0]);
-    } else {
-      return makeFunctionArgs(args);
-    }
-  };
-  
-  var makeObservable = function(x) {
-    if (isObservable(x)) {
-      return x;
-    } else {
-      return Bacon.once(x);
-    }
-  };
+export function makeSpawner(args) {
+  if (args.length === 1 && isObservable(args[0])) {
+    return _.always(args[0]);
+  } else {
+    return makeFunctionArgs(args);
+  }
+}
+
+export function makeObservable(x) {
+  if (isObservable(x)) {
+    return x;
+  } else {
+    return once(x);
+  }
+}

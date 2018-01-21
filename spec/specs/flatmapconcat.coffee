@@ -1,3 +1,20 @@
+require("../../src/flatmapconcat")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  semiunstable,
+  unstable,
+  error,
+  fromArray,
+  series,
+  repeat,
+  once,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.flatMapConcat", ->
   describe "is like flatMapWithConcurrencyLimit(1)", ->
     expectStreamEvents(
@@ -10,5 +27,3 @@ describe "EventStream.flatMapConcat", ->
       ["sir francis"])
   it "toString", ->
     expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")
-
-

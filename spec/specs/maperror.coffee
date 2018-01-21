@@ -1,5 +1,15 @@
-# build-dependencies: eventstream
-#
+require("../../src/maperror")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  take,
+  repeat,
+  error,
+  id
+} = require("../SpecHelper")
+
 describe "EventStream.mapError", ->
   describe "should map error events with given function", ->
     expectStreamEvents(

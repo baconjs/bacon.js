@@ -1,4 +1,7 @@
-// build-dependencies: eventstream, event, helpers
+import EventStream from "./eventstream";
+import { Desc } from "./describe";
+import Bacon from "./core";
+import { symbol } from "./helpers";
 
 Bacon.fromESObservable = function(_observable) {
   var observable;
@@ -8,8 +11,8 @@ Bacon.fromESObservable = function(_observable) {
     observable = _observable;
   }
 
-  var desc = new Bacon.Desc(Bacon, "fromESObservable", [observable]);
-  return new Bacon.EventStream(desc, function(sink) {
+  var desc = new Desc(Bacon, "fromESObservable", [observable]);
+  return new EventStream(desc, function(sink) {
     var cancel = observable.subscribe({
       error: function() {
         sink(new Bacon.Error());

@@ -1,4 +1,16 @@
-# build-dependencies: eventstream, mapend, map, merge
+require("../../src/map")
+require("../../src/mapend")
+require("../../src/merge")
+require("../../src/groupsimultaneous")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  fromArray,
+  later
+} = require("../SpecHelper")
 
 describe "Bacon.groupSimultaneous", ->
   describe "groups simultaneous values in to arrays", ->
@@ -36,5 +48,3 @@ describe "Bacon.groupSimultaneous", ->
         [[[1]], [[2]], [[3]]])
   it "toString", ->
     expect(Bacon.groupSimultaneous(Bacon.never()).toString()).to.equal("Bacon.groupSimultaneous(Bacon.never())")
-
-

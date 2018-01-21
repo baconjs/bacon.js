@@ -1,6 +1,7 @@
-// build-dependencies: _
+import _ from './_';
+import Exception from "./exception";
 
-var withMethodCallSupport = function(wrapped) {
+export function withMethodCallSupport(wrapped) {
   return function(f, ...args) {
     if (typeof f === "object" && args.length) {
       var context = f;
@@ -12,18 +13,18 @@ var withMethodCallSupport = function(wrapped) {
     }
     return wrapped(f, ...args);
   };
-};
+}
 
-var makeFunctionArgs = function(args) {
+export function makeFunctionArgs(args) {
   args = Array.prototype.slice.call(args);
   return makeFunction_(...args);
-};
+}
 
-var partiallyApplied = function(f, applied) {
+export function partiallyApplied(f, applied) {
   return function(...args) { return f(...(applied.concat(args))); };
-};
+}
 
-var toSimpleExtractor = function(args) {
+export function toSimpleExtractor(args) {
   return function(key) {
     return function(value) {
       if (!(typeof value !== "undefined" && value !== null)) {
@@ -38,9 +39,9 @@ var toSimpleExtractor = function(args) {
       }
     };
   };
-};
+}
 
-var toFieldExtractor = function(f, args) {
+export function toFieldExtractor(f, args) {
   var parts = f.slice(1).split(".");
   var partFuncs = _.map(toSimpleExtractor(args), parts);
   return function(value) {
@@ -50,13 +51,13 @@ var toFieldExtractor = function(f, args) {
     }
     return value;
   };
-};
+}
 
-var isFieldKey = function(f) {
+export function isFieldKey(f) {
   return (typeof f === "string") && f.length > 1 && f.charAt(0) === ".";
-};
+}
 
-var makeFunction_ = withMethodCallSupport(function(f, ...args) {
+const makeFunction_ = withMethodCallSupport(function(f, ...args) {
   if (_.isFunction(f) ) {
     if (args.length) { return partiallyApplied(f, args); } else { return f; }
   } else if (isFieldKey(f)) {
@@ -66,22 +67,22 @@ var makeFunction_ = withMethodCallSupport(function(f, ...args) {
   }
 });
 
-var makeFunction = function(f, args) {
+export function makeFunction(f, args) {
   return makeFunction_(f, ...args);
-};
+}
 
-var convertArgsToFunction = function(obs, f, args, method) {
+export function convertArgsToFunction(obs, f, args, method) {
   if ((typeof f !== "undefined" && f !== null) ? f._isProperty : undefined) {
     var sampled = f.sampledBy(obs, function(p,s) { return [p,s]; });
-    return method.call(sampled, function([p, s]) { return p; })
-      .map(function([p, s]) { return s; });
+    return method.call(sampled, function([p]) { return p; })
+      .map(function([, s]) { return s; });
   } else {
     f = makeFunction(f, args);
     return method.call(obs, f);
   }
-};
+}
 
-var toCombinator = function(f) {
+export function toCombinator(f) {
   if (_.isFunction(f)) {
     return f;
   } else if (isFieldKey(f) ) {
@@ -92,8 +93,8 @@ var toCombinator = function(f) {
   } else {
     throw new Exception("not a function or a field key: " + f);
   }
-};
+}
 
-var toFieldKey = function(f) {
+export function toFieldKey(f) {
   return f.slice(1);
-};
+}

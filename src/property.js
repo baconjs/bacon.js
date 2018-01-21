@@ -1,13 +1,17 @@
-// build-dependencies: observable
-// build-dependencies: describe
-// build-dependencies: functionconstruction
-// build-dependencies: updatebarrier
-// build-dependencies: dispatcher
-// build-dependencies: optional
-// build-dependencies: helpers
-// build-dependencies: _
+import Dispatcher from "./dispatcher";
+import Observable from "./observable";
+import EventStream from "./eventstream";
+import { inherit, extend, nop, assertFunction, assertNoArguments } from "./helpers";
+import { Some, None } from "./optional";
+import UpdateBarrier from "./updatebarrier";
+import _ from "./_";
+import { initialEvent, endEvent } from "./event";
+import { Desc } from "./describe";
+import { registerObs } from "./spy";
+import Bacon from "./core";
 
-function PropertyDispatcher(property, subscribe, handleEvent) {
+
+function PropertyDispatcher(property, subscribe, handleEvent) {
   Dispatcher.call(this, subscribe, handleEvent);
   this.property = property;
   this.subscribe = _.bind(this.subscribe, this);
@@ -41,7 +45,6 @@ extend(PropertyDispatcher.prototype, {
   },
 
   subscribe(sink) {
-    var initSent = false;
     // init value is "bounced" here because the base Dispatcher class
     // won't add more than one subscription to the underlying observable.
     // without bouncing, the init value would be missing from all new subscribers
@@ -77,7 +80,7 @@ extend(PropertyDispatcher.prototype, {
   }
 });
 
-function Property(desc, subscribe, handler) {
+export default function Property(desc, subscribe, handler) {
   Observable.call(this, desc);
   assertFunction(subscribe);
   this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
@@ -89,7 +92,7 @@ extend(Property.prototype, {
   _isProperty: true,
 
   changes() {
-    return new EventStream(new Bacon.Desc(this, "changes", []), (sink) => {
+    return new EventStream(new Desc(this, "changes", []), (sink) => {
       return this.dispatcher.subscribe(function(event) {
         if (!event.isInitial()) { return sink(event); }
       });
@@ -97,7 +100,7 @@ extend(Property.prototype, {
   },
 
   withHandler(handler) {
-    return new Property(new Bacon.Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+    return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
   },
 
   toProperty() {
@@ -106,7 +109,7 @@ extend(Property.prototype, {
   },
 
   toEventStream() {
-    return new EventStream(new Bacon.Desc(this, "toEventStream", []), (sink) => {
+    return new EventStream(new Desc(this, "toEventStream", []), (sink) => {
       return this.dispatcher.subscribe(function(event) {
         if (event.isInitial()) { event = event.toNext(); }
         return sink(event);
@@ -114,13 +117,3 @@ extend(Property.prototype, {
     });
   }
 });
-
-Bacon.Property = Property;
-
-Bacon.constant = function(value) {
-  return new Property(new Bacon.Desc(Bacon, "constant", [value]), function(sink) {
-    sink(initialEvent(value));
-    sink(endEvent());
-    return nop;
-  });
-};

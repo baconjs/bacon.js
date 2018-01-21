@@ -1,3 +1,13 @@
+require("../../src/flatmaperror")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  fromArray
+} = require("../SpecHelper")
+
 describe "EventStream.flatMapError", ->
   describe "allows spawning a new stream from an error", ->
     expectStreamEvents(
@@ -22,4 +32,3 @@ describe "EventStream.flatMapError", ->
       [1, 2])
   it "toString", ->
     expect(Bacon.once(1).flatMapError(->).toString()).to.equal("Bacon.once(1).flatMapError(function)")
-

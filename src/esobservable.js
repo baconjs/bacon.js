@@ -1,4 +1,5 @@
-// build-dependencies: core
+import Observable from "./observable";
+import { symbol } from "./helpers";
 
 function ESObservable(observable) {
   this.observable = observable;
@@ -34,8 +35,8 @@ ESObservable.prototype[symbol('observable')] = function() {
   return this;
 };
 
-Bacon.Observable.prototype.toESObservable = function() {
+Observable.prototype.toESObservable = function() {
   return new ESObservable(this);
 };
 
-Bacon.Observable.prototype[symbol('observable')] = Bacon.Observable.prototype.toESObservable;
+Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;

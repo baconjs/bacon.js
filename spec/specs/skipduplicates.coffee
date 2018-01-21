@@ -1,5 +1,16 @@
-# build-dependencies: eventstream, property
-#
+require("../../src/skipduplicates")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  series,
+  fromArray,
+  semiunstable
+} = require("../SpecHelper")
+
 describe "EventStream.skipDuplicates", ->
   describe "drops duplicates", ->
     expectStreamEvents(
@@ -22,7 +33,7 @@ describe "EventStream.skipDuplicates", ->
     expectStreamEvents(
       -> fromArray([1, 2, 2, 3, 1]).skipDuplicates()
     [1, 2, 3, 1], semiunstable)
-  
+
   it "toString", ->
     expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()")
 

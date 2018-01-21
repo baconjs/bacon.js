@@ -1,13 +1,18 @@
-// build-dependencies: concat
+import "./concat";
+import { noMore } from './reply';
+import EventStream from "./eventstream";
+import { describe } from './describe';
+import UpdateBarrier from './updatebarrier';
+import { endEvent } from './event';
 
-function addPropertyInitValueToStream(property, stream) {
-  var justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
-    var value = undefined;
-    var unsub = property.dispatcher.subscribe(function(event) {
+export default function addPropertyInitValueToStream(property, stream) {
+  const justInitValue = new EventStream(describe(property, "justInitValue"), function(sink) {
+    let value;
+    const unsub = property.dispatcher.subscribe(function(event) {
       if (!event.isEnd()) {
         value = event;
       }
-      return Bacon.noMore;
+      return noMore;
     });
     UpdateBarrier.whenDoneWith(justInitValue, function() {
       if ((typeof value !== "undefined" && value !== null)) {

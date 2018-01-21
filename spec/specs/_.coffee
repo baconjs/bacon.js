@@ -1,5 +1,7 @@
+_ = require("../../src/_").default
+expect = require("chai").expect
+
 describe "Bacon._", ->
-  _ = Bacon._
   describe "head", ->
     expect(_.head([5,2,9])).to.equal(5)
     expect(_.head([])).to.equal(undefined)
@@ -116,7 +118,3 @@ describe "Bacon._", ->
           throw new Error "an error"
 
       expect(_.toString(obj)).to.equal("{name:madcow,prop:Error: an error}")
-
-
-
-

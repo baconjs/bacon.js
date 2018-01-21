@@ -1,12 +1,16 @@
-// build-dependencies: observable
+import { withDesc, Desc } from "./describe";
+import { makeFunctionArgs } from "./functionconstruction";
+import Observable from "./observable";
+import { nextEvent, endEvent } from "./event";
+import { noMore } from "./reply";
 
-Bacon.Observable.prototype.mapEnd = function() {
+Observable.prototype.mapEnd = function() {
   var f = makeFunctionArgs(arguments);
-  return withDesc(new Bacon.Desc(this, "mapEnd", [f]), this.withHandler(function(event) {
+  return withDesc(new Desc(this, "mapEnd", [f]), this.withHandler(function(event) {
     if (event.isEnd()) {
       this.push(nextEvent(f(event)));
       this.push(endEvent());
-      return Bacon.noMore;
+      return noMore;
     } else {
       return this.push(event);
     }

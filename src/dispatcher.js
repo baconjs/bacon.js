@@ -1,7 +1,10 @@
-// build-dependencies: _
-// build-dependencies: updatebarrier
+import _ from "./_";
+import { more, noMore } from "./reply";
+import { assertFunction, nop } from "./helpers";
+import { endEvent } from "./event";
+import UpdateBarrier from "./updatebarrier";
 
-function Dispatcher(_subscribe, _handleEvent) {
+export default function Dispatcher(_subscribe, _handleEvent) {
   this._subscribe = _subscribe;
   this._handleEvent = _handleEvent;
   this.subscribe = _.bind(this.subscribe, this);
@@ -37,7 +40,7 @@ Dispatcher.prototype.pushToSubscriptions = function(event) {
     for (let i = 0; i < len; i++) {
       const sub = tmp[i];
       let reply = sub.sink(event);
-      if (reply === Bacon.noMore || event.isEnd()) {
+      if (reply === noMore || event.isEnd()) {
         this.removeSub(sub);
       }
     }
@@ -65,14 +68,14 @@ Dispatcher.prototype.pushIt = function(event) {
       this.push(event);
     }
     if (this.hasSubscribers()) {
-      return Bacon.more;
+      return more;
     } else {
       this.unsubscribeFromSource();
-      return Bacon.noMore;
+      return noMore;
     }
   } else {
     this.queue.push(event);
-    return Bacon.more;
+    return more;
   }
 };
 
@@ -116,5 +119,3 @@ Dispatcher.prototype.subscribe = function(sink) {
     })(this);
   }
 };
-
-Bacon.Dispatcher = Dispatcher;

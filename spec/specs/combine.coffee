@@ -1,4 +1,24 @@
-# build-dependencies: bus, flatmap, delay
+require("../../src/bus")
+require("../../src/delay")
+require("../../src/combine")
+require("../../src/constant")
+require("../../src/flatmap")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectPropertyEvents,
+  expectStreamEvents,
+  series,
+  semiunstable,
+  error,
+  once,
+  add,
+  skip,
+  fromArray,
+  t
+} = require("../SpecHelper")
+{ mockFunction } = require( "../Mock")
 
 describe "Property.combine", ->
   describe "combines latest values of two properties, with given combinator function, passing through errors", ->
@@ -130,7 +150,7 @@ describe "Bacon.combineAsArray", ->
     [[1,2,3]])
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
-      -> 
+      ->
           once(123)
           .flatMap ->
               Bacon.combineAsArray(once(1), once(2), 3)

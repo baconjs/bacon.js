@@ -1,4 +1,16 @@
-# build-dependencies: filter
+require("../../src/filter")
+require("../../src/update")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{
+  expectPropertyEvents
+  series,
+  semiunstable,
+  unstable,
+  once,
+  expectError
+} = require("../SpecHelper")
+
 describe "Bacon.update", ->
   describe "works like Bacon.when, but produces a property, and can be defined in terms of a current value", ->
     expectPropertyEvents(

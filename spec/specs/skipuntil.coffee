@@ -1,5 +1,18 @@
-# build-dependencies: filter, once
-#
+require("../../src/filter")
+require("../../src/once")
+require("../../src/skipuntil")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  series,
+  fromArray,
+  map
+} = require("../SpecHelper")
+
 describe "EventStream.skipUntil", ->
   describe "skips events until one appears in given starter stream", ->
     expectStreamEvents(
@@ -27,5 +40,3 @@ describe "EventStream.skipUntil", ->
       [3])
   it "toString", ->
     expect(Bacon.never().skipUntil(Bacon.once(1)).toString()).to.equal("Bacon.never().skipUntil(Bacon.once(1))")
-
-

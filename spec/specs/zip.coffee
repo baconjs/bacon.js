@@ -1,4 +1,19 @@
-# build-dependencies: skip, delay
+require("../../src/delay")
+require("../../src/skip")
+require("../../src/zip")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  error,
+  fromArray,
+  semiunstable,
+  repeatedly,
+  add
+} = require("../SpecHelper")
+
 
 describe "EventStream.zip", ->
   describe "pairwise combines values from two streams using given combinator function", ->
@@ -145,5 +160,3 @@ describe "Bacon.zipWith", ->
       [])
   it "toString", ->
     expect(Bacon.zipWith((->), Bacon.never()).toString()).to.equal("Bacon.zipWith(function,Bacon.never())")
-
-

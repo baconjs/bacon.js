@@ -1,4 +1,20 @@
-# build-dependencies: eventstream
+require("../../src/constant")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{ mockFunction, mock } = require( "../Mock")
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  fromArray,
+  series,
+  map,
+  id,
+  semiunstable,
+  unstable,
+  testSideEffects
+} = require("../SpecHelper")
 
 describe "Bacon.constant", ->
   describe "creates a constant property", ->

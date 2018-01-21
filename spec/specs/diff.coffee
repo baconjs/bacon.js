@@ -1,4 +1,18 @@
-# build-dependencies: bus
+require("../../src/bus")
+require("../../src/constant")
+require("../../src/diff")
+require("../../src/never")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  add,
+  error,
+  t
+} = require("../SpecHelper")
 
 describe "EventStream.diff", ->
   describe "apply diff function to previous and current values, passing through errors", ->

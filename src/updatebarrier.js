@@ -1,6 +1,8 @@
-// build-dependencies: _
+import _ from './_';
+import { noMore } from './reply';
+import { assertFunction, nop } from "./helpers";
 
-var UpdateBarrier = Bacon.UpdateBarrier = (function() {
+var UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
@@ -17,6 +19,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   }
 
   var afterTransaction = function(obs, f) {
+    assertFunction(f)
     if (rootEvent || aftersStack.length) {
       ensureStackHeight(1)
       var stackIndexForThisObs = 0
@@ -165,7 +168,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       return afterTransaction(obs, function() {
         if (!unsubd) {
           var reply = sink(event);
-          if (reply === Bacon.noMore) {
+          if (reply === noMore) {
             return unsub();
           }
         }
@@ -182,3 +185,4 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   return { whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction };
 }
 )();
+export default UpdateBarrier;

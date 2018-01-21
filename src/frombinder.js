@@ -1,10 +1,13 @@
-// build-dependencies: _
-// build-dependencies: updatebarrier, eventstream, property, event
-// build-dependencies: helpers
+import _ from './_';
+import { toEvent } from './event';
+import { isArray } from './helpers';
+import Bacon from './core';
+import { Desc } from "./describe";
+import { EventStream } from "./eventstream";
 
 // eventTransformer - should return one value or one or many events
-Bacon.fromBinder = function(binder, eventTransformer = _.id) {
-  var desc = new Bacon.Desc(Bacon, "fromBinder", [binder, eventTransformer]);
+export default function fromBinder(binder, eventTransformer = _.id) {
+  var desc = new Desc(Bacon, "fromBinder", [binder, eventTransformer]);
   return new EventStream(desc, function(sink) {
     var unbound = false;
     var shouldUnbind = false;
@@ -41,4 +44,6 @@ Bacon.fromBinder = function(binder, eventTransformer = _.id) {
     }
     return unbind;
   });
-};
+}
+
+Bacon.fromBinder = fromBinder;
