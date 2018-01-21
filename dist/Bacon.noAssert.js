@@ -293,6 +293,18 @@
         var aftersStack = [];
         var aftersStackHeight = 0;
         var flushed = {};
+        var processingAfters = false;
+        function toString() {
+            return _.toString({
+                rootEvent: rootEvent,
+                processingAfters: processingAfters,
+                waiterObs: waiterObs,
+                waiters: waiters,
+                aftersStack: aftersStack,
+                aftersStackHeight: aftersStackHeight,
+                flushed: flushed
+            });
+        }
         function ensureStackHeight(h) {
             if (h <= aftersStackHeight)
                 return;
@@ -304,8 +316,8 @@
             }
             aftersStackHeight = h;
         }
-        var afterTransaction = function (obs, f) {
-            if (rootEvent || aftersStack.length) {
+        function afterTransaction(obs, f) {
+            if (rootEvent || processingAfters) {
                 ensureStackHeight(1);
                 var stackIndexForThisObs = 0;
                 while (stackIndexForThisObs < aftersStackHeight - 1) {
@@ -325,7 +337,8 @@
             } else {
                 return f();
             }
-        };
+        }
+        ;
         function containsObs(obs, aftersList) {
             for (var i = 0; i < aftersList.length; i++) {
                 if (aftersList[i][0].id == obs.id)
@@ -337,39 +350,46 @@
             var stackSizeAtStart = aftersStackHeight;
             if (!stackSizeAtStart)
                 return;
-            while (aftersStackHeight >= stackSizeAtStart) {
-                var topOfStack = aftersStack[aftersStackHeight - 1];
-                if (!topOfStack)
-                    throw new Error('Unexpected stack top: ' + topOfStack);
-                var topAfters = topOfStack[0];
-                var index = topOfStack[1];
-                if (index < topAfters.length) {
-                    var _topAfters$index = topAfters[index];
-                    var obs = _topAfters$index[0];
-                    var after = _topAfters$index[1];
-                    topOfStack[1]++;
-                    ensureStackHeight(aftersStackHeight + 1);
-                    var callSuccess = false;
-                    try {
-                        after();
-                        callSuccess = true;
-                        while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight - 1][0].length == 0) {
-                            aftersStackHeight--;
+            var isRoot = !processingAfters;
+            processingAfters = true;
+            try {
+                while (aftersStackHeight >= stackSizeAtStart) {
+                    var topOfStack = aftersStack[aftersStackHeight - 1];
+                    if (!topOfStack)
+                        throw new Error('Unexpected stack top: ' + topOfStack);
+                    var topAfters = topOfStack[0];
+                    var index = topOfStack[1];
+                    if (index < topAfters.length) {
+                        var _topAfters$index = topAfters[index];
+                        var obs = _topAfters$index[0];
+                        var after = _topAfters$index[1];
+                        topOfStack[1]++;
+                        ensureStackHeight(aftersStackHeight + 1);
+                        var callSuccess = false;
+                        try {
+                            after();
+                            callSuccess = true;
+                            while (aftersStackHeight > stackSizeAtStart && aftersStack[aftersStackHeight - 1][0].length == 0) {
+                                aftersStackHeight--;
+                            }
+                        } finally {
+                            if (!callSuccess) {
+                                aftersStack = [];
+                                aftersStackHeight = 0;
+                            }
                         }
-                    } finally {
-                        if (!callSuccess) {
-                            aftersStack = [];
-                            aftersStackHeight = 0;
-                        }
+                    } else {
+                        topOfStack[0] = [];
+                        topOfStack[1] = 0;
+                        break;
                     }
-                } else {
-                    topOfStack[0] = [];
-                    topOfStack[1] = 0;
-                    break;
                 }
+            } finally {
+                if (isRoot)
+                    processingAfters = false;
             }
         }
-        var whenDoneWith = function (obs, f) {
+        function whenDoneWith(obs, f) {
             if (rootEvent) {
                 var obsWaiters = waiters[obs.id];
                 if (!(typeof obsWaiters !== 'undefined' && obsWaiters !== null)) {
@@ -381,14 +401,16 @@
             } else {
                 return f();
             }
-        };
-        var flush = function () {
+        }
+        ;
+        function flush() {
             while (waiterObs.length > 0) {
                 flushWaiters(0, true);
             }
             flushed = {};
-        };
-        var flushWaiters = function (index, deps) {
+        }
+        ;
+        function flushWaiters(index, deps) {
             var obs = waiterObs[index];
             var obsId = obs.id;
             var obsWaiters = waiters[obsId];
@@ -401,8 +423,9 @@
                 f = obsWaiters[i];
                 f();
             }
-        };
-        var flushDepsOf = function (obs) {
+        }
+        ;
+        function flushDepsOf(obs) {
             if (flushed[obs.id])
                 return;
             var deps = obs.internalDeps();
@@ -415,8 +438,9 @@
                 }
             }
             flushed[obs.id] = true;
-        };
-        var inTransaction = function (event, context, f, args) {
+        }
+        ;
+        function inTransaction(event, context, f, args) {
             if (rootEvent) {
                 return f.apply(context, args);
             } else {
@@ -430,11 +454,13 @@
                 }
                 return result;
             }
-        };
-        var currentEventId = function () {
+        }
+        ;
+        function currentEventId() {
             return rootEvent ? rootEvent.id : undefined;
-        };
-        var wrappedSubscribe = function (obs, sink) {
+        }
+        ;
+        function wrappedSubscribe(obs, sink) {
             var unsubd = false;
             var shouldUnsub = false;
             var doUnsub = function () {
@@ -459,11 +485,13 @@
                 doUnsub();
             }
             return unsub;
-        };
+        }
+        ;
         var hasWaiters = function () {
             return waiterObs.length > 0;
         };
         return {
+            toString: toString,
             whenDoneWith: whenDoneWith,
             hasWaiters: hasWaiters,
             inTransaction: inTransaction,
@@ -473,10 +501,8 @@
         };
     }();
     function Source(obs, sync) {
-        var lazy = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
         this.obs = obs;
         this.sync = sync;
-        this.lazy = lazy;
         this.queue = [];
     }
     extend(Source.prototype, {
@@ -492,15 +518,10 @@
             return true;
         },
         consume: function () {
-            if (this.lazy) {
-                return { value: this.queue[0] };
-            } else {
-                return this.queue[0];
-            }
+            return this.queue[0];
         },
         push: function (x) {
             this.queue = [x];
-            return [x];
         },
         mayHave: function () {
             return true;
@@ -547,16 +568,18 @@
         }
     });
     Source.isTrigger = function (s) {
-        if (s != null ? s._isSource : void 0) {
+        if (s == null)
+            return false;
+        if (s._isSource) {
             return s.sync;
         } else {
-            return s != null ? s._isEventStream : void 0;
+            return s._isEventStream;
         }
     };
     Source.fromObservable = function (s) {
-        if (s != null ? s._isSource : void 0) {
+        if (s != null && s._isSource) {
             return s;
-        } else if (s != null ? s._isProperty : void 0) {
+        } else if (s != null && s._isProperty) {
             return new Source(s, false);
         } else {
             return new ConsumingSource(s, true);
@@ -2588,17 +2611,13 @@
         ]), this.toProperty().sampledBy(sampler, combinator));
     };
     Bacon.Property.prototype.sampledBy = function (sampler, combinator) {
-        var lazy = false;
         if (typeof combinator !== 'undefined' && combinator !== null) {
             combinator = toCombinator(combinator);
         } else {
-            lazy = true;
-            combinator = function (f) {
-                return f.value;
-            };
+            combinator = Bacon._.id;
         }
-        var thisSource = new Source(this, false, lazy);
-        var samplerSource = new Source(sampler, true, lazy);
+        var thisSource = new Source(this, false);
+        var samplerSource = new Source(sampler, true);
         var stream = Bacon.when([
             thisSource,
             samplerSource
