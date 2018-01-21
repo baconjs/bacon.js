@@ -129,8 +129,6 @@ describe "Bacon.combineAsArray", ->
   describe "works with synchronous sources and flatMap (#407)", ->
     expectStreamEvents(
       -> 
-          # TODO: why produces two outputs when switching aggressively
-          # works correctly if either layer replaced with "later"
           once(123).flatMap -> Bacon.combineAsArray(once(1), once(2), 3)
     [[1,2,3]])
   it "toString", ->
