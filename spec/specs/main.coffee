@@ -187,13 +187,9 @@ describe "Integration tests", ->
           -> Bacon.constant(-> "hello").map((f) -> f())
           ["hello"])
       describe "case 4", ->          
-        # TODO: gets stuck in a loop, but this is nothing new: using Bacon.later instead of Bacon.once
-        # this gets stuck in master
-        ###
         expectStreamEvents(
-          -> Bacon.constant(-> "hello").flatMap(Bacon.once)
+          -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
           ["hello"])
-        ###
     it "handles one subscriber added twice just like two separate subscribers (case Bacon.noMore)", ->
       values = []
       bus = new Bacon.Bus()
