@@ -21,13 +21,11 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     aftersStackHeight = h
   }
 
-  var dummyObs = { id: null, internalDeps: () => [] }
-
   function soonButNotYet(obs, f) {
     if (rootEvent) {
       // If in transaction -> perform within transaction
       //console.log('in tx')
-      whenDoneWith(dummyObs, f)
+      whenDoneWith(obs, f)
     } else {
       // Otherwise -> perform with timeout
       //console.log('with timeout')

@@ -136,12 +136,10 @@ describe "Integration tests", ->
           ab = Bacon.combineAsArray a, b
 
           f = ab.flatMapLatest (values) ->
-            # TODO: this was Bacon.once, but that's no longer immdiate so breaks atomic update here
-            Bacon.constant 'f' + values
+            Bacon.once 'f' + values
 
           Bacon.combineAsArray(f, b).map(".0")
         ["f0,0","f1,1"], semiunstable)
-
     it "Works with flatMap source spawning fromArrays", ->
       result = []
       array = [1,2,3]
@@ -188,7 +186,7 @@ describe "Integration tests", ->
         expectPropertyEvents(
           -> Bacon.constant(-> "hello").map((f) -> f())
           ["hello"])
-      describe "case 4", ->          
+      describe "case 4", ->
         expectStreamEvents(
           -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
           ["hello"])
@@ -276,6 +274,13 @@ describe "Integration tests", ->
            b = a.map((x) -> x).filter(true)
            a.combine(b, (x, y) -> x + y)
         [2, 4])
+    describe "when flatMap is involved (spawning synchronous streams)", ->
+      expectPropertyEvents(
+        ->
+           a = series(1, [1, 2]).toProperty()
+           b = a.flatMap((x) -> Bacon.once(x))
+           a.combine(b, (x, y) -> x + y)
+        [2, 4], unstable)
     describe "when root property is based on combine*", ->
       expectPropertyEvents(
         ->
