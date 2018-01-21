@@ -268,6 +268,13 @@ describe "Integration tests", ->
            b = a.map((x) -> x).filter(true)
            a.combine(b, (x, y) -> x + y)
         [2, 4])
+    describe "when flatMap is involved (spawning synchronous streams)", ->
+      expectPropertyEvents(
+        ->
+           a = series(1, [1, 2]).toProperty()
+           b = a.flatMap((x) -> Bacon.once(x))
+           a.combine(b, (x, y) -> x + y)
+        [2, 4], unstable)
     describe "when root property is based on combine*", ->
       expectPropertyEvents(
         ->
