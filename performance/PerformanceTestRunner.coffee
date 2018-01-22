@@ -1,4 +1,6 @@
 #!/usr/bin/env coffee
+process.env.BABEL_ENV="test";
+require("babel-register")
 Benchmark = require('benchmark')
 cases = require "./PerformanceTestCases.coffee"
 suite = new Benchmark.Suite

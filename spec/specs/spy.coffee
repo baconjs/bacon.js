@@ -1,9 +1,14 @@
-# build-dependencies: combine
+require("../../src/combine")
+require("../../src/combinetemplate")
+require("../../src/spy")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{ once } = require("../SpecHelper")
 
 describe "Bacon.spy", ->
   testSpy = (expectedCount, f) ->
     calls = 0
-    spy = (obs) -> 
+    spy = (obs) ->
       obs.toString()
       calls++
     Bacon.spy spy

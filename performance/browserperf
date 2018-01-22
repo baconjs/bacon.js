@@ -2,4 +2,4 @@
 
 # generates performance.js for running the performance.html page on your browser
 
-node_modules/.bin/browserify -d --transform coffeeify --extension=".coffee" performance/PerformanceTest.coffee > performance/performance.js
+BABEL_ENV=test node_modules/.bin/browserify -d --extension=".coffee" -t coffeeify -t babelify performance/PerformanceTest.coffee > performance/performance.js

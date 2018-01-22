@@ -1,5 +1,13 @@
-# build-dependencies: flatmap
-describe "EventStream.awaiting(stream)", ->
+require("../../src/flatmap")
+require("../../src/constant")
+require("../../src/awaiting")
+require("../../src/once")
+
+{ expectPropertyEvents, unstable, semiunstable, later, series } = require("../SpecHelper")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+describe "EventStream.awaiting(other)", ->
   describe "indicates whether s1 has produced output after s2 (or only the former has output so far)", ->
     expectPropertyEvents(
       -> series(2, [1, 1]).awaiting(series(3, [2]))
@@ -53,7 +61,7 @@ describe "Property.awaiting(property)", ->
     expectPropertyEvents(
       ->
         p = Bacon.constant(1)
-        p.awaiting(p.flatMap((x) -> once(x)))
+        p.awaiting(p.flatMap((x) -> Bacon.once(x)))
       [true, false], unstable)
 
 describe "EventStream.awaiting(property)", ->

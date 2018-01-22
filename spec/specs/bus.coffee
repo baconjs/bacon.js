@@ -1,4 +1,25 @@
-# build-dependencies: filter, map
+require("../../src/filter")
+require("../../src/map")
+require("../../src/bus")
+Bacon = require("../../src/core").default
+
+{
+  expectStreamEvents,
+  unstable,
+  semiunstable,
+  error,
+  soon,
+  once,
+  toValues,
+  later,
+  verifyCleanup,
+  add,
+  mockFunction
+  skip,
+  t,
+  deferred
+} = require("../SpecHelper")
+expect = require("chai").expect
 
 describe "Bacon.Bus", ->
   it "can be instatiated without new", ->
@@ -111,7 +132,7 @@ describe "Bacon.Bus", ->
     busB.end()
     busA.push('foo')
     expect(failed).to.equal(false)
-  
+
   it "respects end() calls before subscribers", ->
     failed = false
     bus = new Bacon.Bus()

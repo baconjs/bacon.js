@@ -1,4 +1,30 @@
-# build-dependencies: filter, bus, property, mapend, fromarray
+require("../../src/takeuntil")
+require("../../src/filter")
+require("../../src/bus")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  repeat,
+  repeatedly,
+  unstable,
+  semiunstable,
+  error,
+  later,
+  sc,
+  map,
+  mergeAll,
+  take,
+  lessThan,
+  fromArray,
+  t,
+  once,
+  deferred
+} = require("../SpecHelper")
+
 
 describe "EventStream.takeUntil", ->
   describe "takes elements from source until an event appears in the other stream", ->

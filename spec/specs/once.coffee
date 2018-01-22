@@ -1,3 +1,13 @@
+require("../../src/once")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  deferred
+} = require("../SpecHelper")
+
 describe "Bacon.once", ->
   describe "should send single event and end", ->
     expectStreamEvents(

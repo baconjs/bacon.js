@@ -1,4 +1,13 @@
-# build-dependencies: concat
+require("../../src/concat")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  error,
+  semiunstable
+} = require("../SpecHelper")
 
 describe "EventStream.flatMapEvent", ->
   describe "should spawn new stream for each event (value or error) and collect results into a single stream", ->

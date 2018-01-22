@@ -1,5 +1,25 @@
-# build-dependencies: EventStream, Property, sample, delay
-#
+require("../../src/delay")
+require("../../src/filter")
+require("../../src/sample")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  testSideEffects,
+  unstable,
+  error,
+  once,
+  fromArray,
+  series,
+  lessThan,
+  later,
+  map,
+  deferred,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.filter", ->
   describe "should filter values", ->
     expectStreamEvents(

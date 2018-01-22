@@ -1,4 +1,14 @@
-# build-dependencies: bus, merge
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{
+  expectPropertyEvents,
+  series,
+  error,
+  semiunstable,
+  later,
+  add
+} = require("../SpecHelper")
+
 describe "EventStream.flatScan", ->
   addAsync = (delay) -> (prev, next) -> later(delay, prev + next)
   describe "accumulates values with given seed and accumulator function which returns a stream of updated values", ->

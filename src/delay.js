@@ -1,11 +1,13 @@
-// build-dependencies: later
-// build-dependencies: flatmap
-// build-dependencies: delaychanges
+import "./flatmap";
+import "./delaychanges";
+import later from "./later";
+import Observable from "./observable";
+import { Desc } from "./describe";
 
-Bacon.Observable.prototype.delay = function(delay) { 
-  return this.delayChanges(new Bacon.Desc(this, "delay", [delay]), function(changes) { 
+Observable.prototype.delay = function(delay) { 
+  return this.delayChanges(new Desc(this, "delay", [delay]), function(changes) { 
     return changes.flatMap(function(value) {
-      return Bacon.later(delay, value);
+      return later(delay, value);
     })
   })
-};
+}

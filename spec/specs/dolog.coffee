@@ -1,6 +1,14 @@
-# build-dependencies: eventstream, property
+require("../../src/dolog")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
 
-describe "Observable.doLog", ->
+{
+  expectStreamEvents,
+  once
+} = require("../SpecHelper")
+
+# TODO why
+describe.skip "Observable.doLog", ->
   originalConsole = console
   originalLog = console.log
   restoreLog = ->
@@ -47,5 +55,3 @@ describe "Observable.doLog", ->
       restoreLog()
   it "toString", ->
     expect(Bacon.never().doLog().toString()).to.equal("Bacon.never().doLog()")
-
-

@@ -1,3 +1,13 @@
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  error,
+  semiunstable
+} = require("../SpecHelper")
+
 Observable = require('zen-observable')
 Rx = require('rxjs')
 

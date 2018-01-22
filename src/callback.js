@@ -1,23 +1,30 @@
-// build-dependencies: core, combine, frombinder, flatmap
+import "./combine";
+import "./flatmap";
+import { withDesc, Desc } from "./describe";
+import { endEvent, Error } from "./event";
+import { makeFunction, partiallyApplied, withMethodCallSupport } from "./functionconstruction";
+import fromBinder from "./frombinder";
+import { nop } from "./helpers";
+import Bacon from "./core";
 
 var liftCallback = function(desc, wrapped) {
   return withMethodCallSupport(function(f, ...args) {
     var stream = partiallyApplied(wrapped, [function(values, callback) {
-      return f(...values, callback);
+      return f(...values.concat([callback]));
     }]);
-    return withDesc(new Bacon.Desc(Bacon, desc, [f, ...args]), Bacon.combineAsArray(args).flatMap(stream));
+    return withDesc(new Desc(Bacon, desc, [f, ...args]), Bacon.combineAsArray(args).flatMap(stream));
   });
 };
 
 Bacon.fromCallback = liftCallback("fromCallback", function(f, ...args) {
-  return Bacon.fromBinder(function(handler) {
+  return fromBinder(function(handler) {
     makeFunction(f, args)(handler);
     return nop;
   }, (function(value) { return [value, endEvent()]; }));
 });
 
 Bacon.fromNodeCallback = liftCallback("fromNodeCallback", function(f, ...args) {
-  return Bacon.fromBinder(function(handler) {
+  return fromBinder(function(handler) {
     makeFunction(f, args)(handler);
     return nop;
   }, function(error, value) {

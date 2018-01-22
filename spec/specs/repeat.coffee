@@ -1,4 +1,20 @@
-# build-dependencies: take, concat, flatmap, fromgenerator, filter
+require("../../src/concat")
+require("../../src/filter")
+require("../../src/flatmap")
+require("../../src/repeat")
+require("../../src/take")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  later,
+  unstable,
+  semiunstable,
+  take,
+  endlessly,
+  repeatedly
+} = require("../SpecHelper")
 
 describe "Bacon.repeat", ->
   describe "Polls new streams from generator function until empty result", ->
@@ -49,5 +65,3 @@ describe "Bacon.repeat", ->
       ->
         take(3, Bacon.repeat(-> Bacon.once(1)))
       [1,1,1], unstable)
-
-

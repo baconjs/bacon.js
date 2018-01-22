@@ -1,4 +1,12 @@
-# build-dependencies: eventstream
+Bacon = require("../../src/errors").Bacon
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  series,
+  error
+} = require("../SpecHelper")
 
 describe "EventStream.errors", ->
   describe "Includes errors only", ->
@@ -7,4 +15,3 @@ describe "EventStream.errors", ->
       [error()])
   it "toString", ->
     expect(Bacon.never().errors().toString()).to.equal("Bacon.never().errors()")
-

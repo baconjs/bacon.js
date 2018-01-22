@@ -1,6 +1,7 @@
-// build-dependencies: core, take
+import "./take";
+import { withDesc, Desc } from "./describe";
+import Observable from "./observable";
 
-Bacon.Observable.prototype.first = function () {
-  // It's important not to use fat arrow here!
-  return withDesc(new Bacon.Desc(this, "first", []), this.take(1));
+Observable.prototype.first = function () {
+  return withDesc(new Desc(this, "first", []), this.take(1));
 };

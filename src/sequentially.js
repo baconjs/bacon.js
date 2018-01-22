@@ -1,8 +1,11 @@
-// build-dependencies: frompoll
+import fromPoll from "./frompoll";
+import { Desc, withDesc } from "./describe";
+import Bacon from "./core";
+import { endEvent } from "./event";
 
-Bacon.sequentially = function(delay, values) {
+export default function sequentially(delay, values) {
   var index = 0;
-  return withDesc(new Bacon.Desc(Bacon, "sequentially", [delay, values]), Bacon.fromPoll(delay, function() {
+  return withDesc(new Desc(Bacon, "sequentially", [delay, values]), fromPoll(delay, function() {
     var value = values[index++];
     if (index < values.length) {
       return value;
@@ -12,5 +15,6 @@ Bacon.sequentially = function(delay, values) {
       return endEvent();
     }
   }));
-};
+}
 
+Bacon.sequentially = sequentially;

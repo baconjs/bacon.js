@@ -1,3 +1,6 @@
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
 describe "Bacon.Event", ->
   it "can be instatiated without new", ->
     expect(Bacon.Initial()).to.be.an.instanceof(Bacon.Initial)
@@ -5,10 +8,10 @@ describe "Bacon.Event", ->
     expect(Bacon.End()).to.be.an.instanceof(Bacon.End)
     expect(Bacon.Error()).to.be.an.instanceof(Bacon.Error)
   describe "String presentations", ->
-    describe "Initial(1).toString", -> 
+    describe "Initial(1).toString", ->
       it "is 1", ->
         expect(new Bacon.Initial(1).toString()).to.equal("1")
-    describe "Next({a:1i}).toString", -> 
+    describe "Next({a:1i}).toString", ->
       it "is {a:1}", ->
         expect(new Bacon.Next({a:1}).toString()).to.equal("{a:1}")
     describe "Error({a:1}).toString", ->

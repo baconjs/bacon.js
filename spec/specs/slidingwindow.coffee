@@ -1,3 +1,12 @@
+require("../../src/slidingwindow")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectPropertyEvents,
+  series
+} = require("../SpecHelper")
+
 describe "Observable.slidingWindow", ->
   describe "slides the window for EventStreams", ->
     expectPropertyEvents(
@@ -16,4 +25,3 @@ describe "Observable.slidingWindow", ->
       [[0,1], [0, 1, 2], [1,2,3], [2,3,4]])
   it "toString", ->
     expect(Bacon.never().slidingWindow(2).toString()).to.equal("Bacon.never().slidingWindow(2,0)")
-

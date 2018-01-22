@@ -1,3 +1,16 @@
+require("../../src/startwith")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  semiunstable,
+  unstable,
+  fromArray
+} = require("../SpecHelper")
+
 describe "EventStream.startWith", ->
   describe "provides seed value, then the rest", ->
     expectStreamEvents(
@@ -35,5 +48,3 @@ describe "Property.startWith", ->
       [0, 1, 2, 3], semiunstable)
   it "toString", ->
     expect(Bacon.constant(2).startWith(1).toString()).to.equal("Bacon.constant(2).startWith(1)")
-
-

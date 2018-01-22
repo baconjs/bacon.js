@@ -1,11 +1,16 @@
-// build-dependencies: scan, concat, once
+import "./concat";
+import "./scan";
+import once from "./once";
+import Property from "./property";
+import EventStream from "./eventstream";
+import { withDesc, Desc } from "./describe";
 
-Bacon.Property.prototype.startWith = function(seed) {
-  return withDesc(new Bacon.Desc(this, "startWith", [seed]),
+Property.prototype.startWith = function(seed) {
+  return withDesc(new Desc(this, "startWith", [seed]),
     this.scan(seed, (prev, next) => next));
 };
 
-Bacon.EventStream.prototype.startWith = function(seed) {
-  return withDesc(new Bacon.Desc(this, "startWith", [seed]),
-    Bacon.once(seed).concat(this));
+EventStream.prototype.startWith = function(seed) {
+  return withDesc(new Desc(this, "startWith", [seed]),
+    once(seed).concat(this));
 };

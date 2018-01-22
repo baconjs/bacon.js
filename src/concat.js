@@ -1,9 +1,17 @@
-// build-dependencies: core, observable, eventstream, property
-// build-dependencies: updatebarrier, argumentstoobservables, addpropertyinitialvaluetostream
+import "./property";
+import _ from "./_";
+import EventStream from "./eventstream";
+import Property from "./property";
+import Bacon from "./core";
+import { withDesc, Desc } from "./describe";
+import { nop } from "./helpers";
+import never from "./never"
+import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
+import { argumentsToObservables } from "./argumentstoobservables";
 
-Bacon.EventStream.prototype.concat = function(right) {
+EventStream.prototype.concat = function(right) {
   var left = this;
-  return new EventStream(new Bacon.Desc(left, "concat", [right]), function(sink) {
+  return new EventStream(new Desc(left, "concat", [right]), function(sink) {
     var unsubRight = nop;
     var unsubLeft = left.dispatcher.subscribe(function(e) {
       if (e.isEnd()) {
@@ -19,7 +27,7 @@ Bacon.EventStream.prototype.concat = function(right) {
   });
 };
 
-Bacon.Property.prototype.concat = function(right) {
+Property.prototype.concat = function(right) {
   return addPropertyInitValueToStream(this, this.changes().concat(right))
 }
 
@@ -27,10 +35,10 @@ Bacon.concatAll = function() {
   var streams = argumentsToObservables(arguments);
   if (streams.length) {
     return withDesc(
-      new Bacon.Desc(Bacon, "concatAll", streams),
+      new Desc(Bacon, "concatAll", streams),
       _.fold(_.tail(streams), _.head(streams).toEventStream(), (a, b) => a.concat(b))    
     )
   } else {
-    return Bacon.never();
+    return never();
   }
 };

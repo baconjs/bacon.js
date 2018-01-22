@@ -1,4 +1,5 @@
-// build-dependencies: _
+import { inherit, extend } from './helpers';
+import _ from './_';
 
 function Source(obs, sync) {
   this.obs = obs;
@@ -75,3 +76,5 @@ Source.fromObservable = function(s) {
     return new ConsumingSource(s, true);
   }
 };
+
+export { Source, ConsumingSource, BufferingSource };
