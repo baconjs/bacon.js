@@ -27,7 +27,6 @@
     "update-cdnjs",
     "version",
     "assemble*.js",
-    "build-deps.js",
     "test-individually.js"
   ]
 }
