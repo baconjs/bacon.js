@@ -1,7 +1,5 @@
-import EventStream from "./eventstream";
 import Property from "./property";
 import Observable from "./observable";
-import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
 import "./mapend";
 import "./skiperrors";
 import { endEvent, nextEvent } from "./event";

@@ -6,7 +6,6 @@ import { Source } from "./source";
 import { toCombinator } from "./functionconstruction";
 import { withDesc, Desc } from "./describe";
 import map from "./map";
-import when from "./when";
 import Bacon from "./core";
 
 EventStream.prototype.sampledBy = function(sampler, combinator) {

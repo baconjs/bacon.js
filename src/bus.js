@@ -106,8 +106,8 @@ extend(Bus.prototype, {
           var i = 0
           while (i < this.pushQueue.length) {
             //console.log("in loop", i, this.pushQueue[i])
-            var value = this.pushQueue[i]
-            this.sink(nextEvent(value))
+            var v = this.pushQueue[i]
+            this.sink(nextEvent(v))
             i++
           }
           this.pushQueue = null

@@ -1,4 +1,4 @@
-import { makeSpawner, handleEventValueWith } from "./flatmap_"
+import { makeSpawner } from "./flatmap_"
 import { Desc } from "./describe";
 import Observable from "./observable";
 

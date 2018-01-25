@@ -1,6 +1,5 @@
 import Observable from "./observable";
 import Property from "./property";
-import { Some, toOption } from "./optional";
 import { Initial } from "./event";
 import { toCombinator } from "./functionconstruction";
 import { noMore, more } from "./reply";
@@ -52,8 +51,8 @@ export default function scan(seed, f) {
     });
     UpdateBarrier.whenDoneWith(resultProperty, sendInit);
     return unsub;
-  };
+  }
   return resultProperty = new Property(new Desc(this, "scan", [seed, f]), subscribe)
-};
+}
 
 Observable.prototype.scan = scan;

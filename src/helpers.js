@@ -30,7 +30,7 @@ export function assertObservable(event) {
 
 export function assertFunction(f) {
   return assert("not a function : " + f, _.isFunction(f));
-};
+}
 export const isArray = Array.isArray || function(xs) { return xs instanceof Array };
 export const isObservable = function(x) {
   return x && x._isObservable;
@@ -71,7 +71,7 @@ export function inherit(child, parent) {
     }
   }
   return child;
-};
+}
 
 export function symbol(key) {
   if (typeof Symbol !== "undefined" && Symbol[key]) {
@@ -81,4 +81,4 @@ export function symbol(key) {
   } else {
     return "@@" + key;
   }
-};
+}

@@ -40,7 +40,7 @@ export default Bacon.fromArray = function(values) {
         }
         pushing = false;
         return pushing;
-      };
+      }
 
       UpdateBarrier.soonButNotYet(stream, push)
 

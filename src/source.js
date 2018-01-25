@@ -1,5 +1,4 @@
 import { inherit, extend } from './helpers';
-import _ from './_';
 
 function Source(obs, sync) {
   this.obs = obs;

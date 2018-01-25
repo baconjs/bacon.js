@@ -1,9 +1,8 @@
 import "./maperror";
 import "./flatmap";
 import Observable from "./observable";
-import once from "./once";
 import { Error } from "./event";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 
 Observable.prototype.flatMapError = function(fn) {
   return this.flatMap_(

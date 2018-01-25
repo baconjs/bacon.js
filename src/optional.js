@@ -40,7 +40,7 @@ var None = {
 };
 
 var toOption = function(v) {
-  if (v && (v._isSome || v.isNone)) {
+  if (v && (v._isSome || v.isNone)) {
     return v;
   } else {
     return new Some(v);

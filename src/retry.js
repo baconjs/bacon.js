@@ -3,10 +3,8 @@ import "./endonerror";
 import "./filter";
 import "./flatmap";
 import Exception from "./exception";
-import repeat from "./repeat";
 import _ from "./_";
 import { withDesc, Desc } from "./describe";
-import once from "./once";
 import later from "./later";
 import Bacon from "./core";
 

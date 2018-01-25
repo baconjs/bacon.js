@@ -1,12 +1,8 @@
-import EventStream from "./eventstream";
-import Property from "./property";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import "./flatmaplatest";
 import "./delay";
 import "./filter";
 import "./concat";
-import once from "./once";
-import later from "./later";
 import Bacon from "./core";
 
 Bacon.Observable.prototype.debounce = function(delay) { 
