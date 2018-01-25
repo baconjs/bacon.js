@@ -1,3 +1,11 @@
+## 1.0.1
+
+- Fixed unexpected behavior with synchronous sources and flatMapLatest (#699)
+
+## 1.0.0
+
+- No changes. Same as 0.7.95
+
 ## 0.7.95
 
 - Add `Property::concat`
