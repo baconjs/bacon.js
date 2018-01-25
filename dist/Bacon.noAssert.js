@@ -2,7 +2,6 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.Bacon = factory();
 }(this, function () {
     'use strict';
-    var Exception = global.Error;
     function nop() {
     }
     function former(x) {
@@ -948,7 +947,7 @@
                 return left[key](right);
             };
         } else {
-            throw new Exception('not a function or a field key: ' + f);
+            throw new Error('not a function or a field key: ' + f);
         }
     }
     function toFieldKey(f) {
@@ -2790,7 +2789,7 @@
                 ];
             }
         }
-        throw new Exception('No suitable event methods in ' + target);
+        throw new Error('No suitable event methods in ' + target);
     };
     function fromEventTarget(target, eventName, eventTransformer) {
         var _findHandlerMethods = findHandlerMethods(target), sub = _findHandlerMethods[0], unsub = _findHandlerMethods[1];
@@ -3073,7 +3072,7 @@
     Bacon.repeat = repeat;
     Bacon.retry = function (options) {
         if (!_.isFunction(options.source)) {
-            throw new Exception('\'source\' option has to be a function');
+            throw new Error('\'source\' option has to be a function');
         }
         var source = options.source;
         var retries = options.retries || 0;
@@ -3220,7 +3219,7 @@
             if (typeof Promise === 'function') {
                 PromiseCtr = Promise;
             } else {
-                throw new Exception('There isn\'t default Promise, use shim or parameter');
+                throw new Error('There isn\'t default Promise, use shim or parameter');
             }
         }
         return new PromiseCtr(function (resolve, reject) {

@@ -1,1 +1,1 @@
-export default global.Error;
+export default Error;

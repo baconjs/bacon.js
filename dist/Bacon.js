@@ -4,8 +4,6 @@
 	(global.Bacon = factory());
 }(this, (function () { 'use strict';
 
-var Exception = global.Error;
-
 function nop() {}
 
 function former(x) {
@@ -16,24 +14,24 @@ function cloneArray(xs) {
 }
 function assert(message, condition) {
   if (!condition) {
-    throw new Exception(message);
+    throw new Error(message);
   }
 }
 
 function assertObservableIsProperty(x) {
   if ((x != null ? x._isObservable : void 0) && !(x != null ? x._isProperty : void 0)) {
-    throw new Exception("Observable is not a Property : " + x);
+    throw new Error("Observable is not a Property : " + x);
   }
 }
 function assertEventStream(event) {
   if (!(event != null ? event._isEventStream : void 0)) {
-    throw new Exception("not an EventStream : " + event);
+    throw new Error("not an EventStream : " + event);
   }
 }
 
 function assertObservable(event) {
   if (!(event != null ? event._isObservable : void 0)) {
-    throw new Exception("not an Observable : " + event);
+    throw new Error("not an Observable : " + event);
   }
 }
 
@@ -48,7 +46,7 @@ var isObservable = function (x) {
 };
 function assertArray(xs) {
   if (!isArray(xs)) {
-    throw new Exception("not an array : " + xs);
+    throw new Error("not an array : " + xs);
   }
 }
 function assertNoArguments(args) {
@@ -1041,7 +1039,7 @@ function toCombinator(f) {
       return left[key](right);
     };
   } else {
-    throw new Exception("not a function or a field key: " + f);
+    throw new Error("not a function or a field key: " + f);
   }
 }
 
@@ -2989,7 +2987,7 @@ var findHandlerMethods = function (target) {
       return [addListener, function () {}];
     }
   }
-  throw new Exception("No suitable event methods in " + target);
+  throw new Error("No suitable event methods in " + target);
 };
 
 function fromEventTarget(target, eventName, eventTransformer) {
@@ -3292,7 +3290,7 @@ Bacon.repeat = repeat;
 
 Bacon.retry = function (options) {
   if (!_.isFunction(options.source)) {
-    throw new Exception("'source' option has to be a function");
+    throw new Error("'source' option has to be a function");
   }
   var source = options.source;
   var retries = options.retries || 0;
@@ -3451,7 +3449,7 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
     if (typeof Promise === "function") {
       PromiseCtr = Promise;
     } else {
-      throw new Exception("There isn't default Promise, use shim or parameter");
+      throw new Error("There isn't default Promise, use shim or parameter");
     }
   }
 
