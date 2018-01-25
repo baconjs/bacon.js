@@ -1,5 +1,5 @@
 _ = require "lodash"
-Bacon = (require "../src/Bacon").default
+Bacon = require "../dist/Bacon"
 
 class Generator
   constructor: ->
