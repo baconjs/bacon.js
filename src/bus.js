@@ -1,6 +1,11 @@
-// build-dependencies: EventStream
-// build-dependencies: _
-function Bus() {
+import _ from "./_";
+import EventStream from "./eventstream";
+import Bacon from "./core";
+import { assertObservable, inherit, extend, cloneArray } from "./helpers";
+import { nextEvent, endEvent, Error } from "./event";
+import { Desc } from "./describe";
+
+export default function Bus() {
   if (!(this instanceof Bus)) {
     return new Bus();
   }
@@ -12,7 +17,7 @@ function Bus() {
   this.sink = undefined;
   this.subscriptions = [];
   this.ended = false;
-  EventStream.call(this, new Bacon.Desc(Bacon, "Bus", []), this.subscribeAll);
+  EventStream.call(this, new Desc(Bacon, "Bus", []), this.subscribeAll);
 }
 
 inherit(Bus, EventStream);
@@ -101,8 +106,8 @@ extend(Bus.prototype, {
           var i = 0
           while (i < this.pushQueue.length) {
             //console.log("in loop", i, this.pushQueue[i])
-            var value = this.pushQueue[i]
-            this.sink(nextEvent(value))
+            var v = this.pushQueue[i]
+            this.sink(nextEvent(v))
             i++
           }
           this.pushQueue = null

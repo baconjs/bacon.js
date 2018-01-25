@@ -1,6 +1,10 @@
-// build-dependencies: flatmapconcat, doaction
-
-Bacon.EventStream.prototype.flatScan = function(seed, f) {
+import './flatmap_'
+import './flatmapconcat'
+import './doaction'
+import { makeObservable } from "./flatmap_"
+import Observable from "./observable";
+// TODO: toString test, Desc
+Observable.prototype.flatScan = function(seed, f) {
   let current = seed
   return this.flatMapConcat(next =>
     makeObservable(f(current, next)).doAction(updated => current = updated)

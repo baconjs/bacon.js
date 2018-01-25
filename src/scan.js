@@ -1,9 +1,13 @@
-// build-dependencies: core
-// build-dependencies: functionconstruction
-// build-dependencies: when
-// build-dependencies: updatebarrier
+import Observable from "./observable";
+import Property from "./property";
+import { Initial } from "./event";
+import { toCombinator } from "./functionconstruction";
+import { noMore, more } from "./reply";
+import { nop } from "./helpers";
+import { Desc } from "./describe";
+import UpdateBarrier from "./updatebarrier";
 
-Bacon.Observable.prototype.scan = function(seed, f) {
+export default function scan(seed, f) {
   var resultProperty;
   f = toCombinator(f);
   var acc = seed
@@ -11,12 +15,12 @@ Bacon.Observable.prototype.scan = function(seed, f) {
   var subscribe = (sink) => {
     var initSent = false;
     var unsub = nop;
-    var reply = Bacon.more;
+    var reply = more;
     var sendInit = function() {
       if (!initSent) {
         initSent = initHandled = true;
         reply = sink(new Initial(acc));
-        if (reply === Bacon.noMore) {
+        if (reply === noMore) {
           unsub();
           unsub = nop;
         }
@@ -26,7 +30,7 @@ Bacon.Observable.prototype.scan = function(seed, f) {
       if (event.hasValue()) {
         if (initHandled && event.isInitial()) {
           //console.log "skip INITIAL"
-          return Bacon.more; // init already sent, skip this one
+          return more; // init already sent, skip this one
         } else {
           if (!event.isInitial()) { sendInit(); }
           initSent = initHandled = true;
@@ -40,13 +44,15 @@ Bacon.Observable.prototype.scan = function(seed, f) {
         if (event.isEnd()) {
           reply = sendInit();
         }
-        if (reply !== Bacon.noMore) {
+        if (reply !== noMore) {
           return sink(event);
         }
       }
     });
     UpdateBarrier.whenDoneWith(resultProperty, sendInit);
     return unsub;
-  };
-  return resultProperty = new Property(new Bacon.Desc(this, "scan", [seed, f]), subscribe)
-};
+  }
+  return resultProperty = new Property(new Desc(this, "scan", [seed, f]), subscribe)
+}
+
+Observable.prototype.scan = scan;

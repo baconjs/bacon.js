@@ -1,3 +1,13 @@
+require("../../src/fromarray")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  deferred
+} = require("../SpecHelper")
+
 describe "Bacon.fromArray", ->
   describe "Turns an empty array into an EventStream", ->
     expectStreamEvents(

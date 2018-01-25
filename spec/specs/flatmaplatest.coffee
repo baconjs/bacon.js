@@ -1,5 +1,16 @@
-# build-dependencies: map
-#
+require("../../src/flatmaplatest")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  error,
+  fromArray,
+  series,
+  semiunstable,
+  t
+} = require("../SpecHelper")
+
 describe "EventStream.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
     expectStreamEvents(
@@ -32,4 +43,3 @@ describe "Property.flatMapLatest", ->
       ["bacon"], semiunstable)
   it "toString", ->
     expect(Bacon.constant(1).flatMapLatest(->).toString()).to.equal("Bacon.constant(1).flatMapLatest(function)")
-

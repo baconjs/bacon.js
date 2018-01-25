@@ -1,11 +1,13 @@
-// build-dependencies: flatmap_
+import { makeSpawner, handleEventValueWith } from "./flatmap_"
+import { Desc } from "./describe";
+import Observable from "./observable";
 
-Bacon.Observable.prototype.flatMapFirst = function() {
+Observable.prototype.flatMapFirst = function() {
   return this.flatMap_(
     handleEventValueWith(makeSpawner(arguments)), 
     {
       firstOnly: true,
-      desc: new Bacon.Desc(this, "flatMapFirst", arguments)
+      desc: new Desc(this, "flatMapFirst", arguments)
     }
   );
 };

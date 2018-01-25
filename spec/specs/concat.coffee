@@ -1,5 +1,26 @@
-# build-dependencies: bus, doaction, takewhile, property, eventstream
-
+require("../../src/bus")
+require("../../src/doaction")
+require("../../src/never")
+require("../../src/takewhile")
+require("../../src/concat")
+require("../../src/property")
+require("../../src/eventstream")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  error,
+  once,
+  take,
+  fromArray,
+  semiunstable,
+  lessThan,
+  repeat,
+  unstable,
+  sequentially
+} = require("../SpecHelper")
 describe "Property.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
     expectPropertyEvents(
@@ -102,5 +123,3 @@ describe "EventStream.concat", ->
       [1, 2, 3], semiunstable)
   it "toString", ->
     expect(Bacon.never().concat(Bacon.never()).toString()).to.equal("Bacon.never().concat(Bacon.never())")
-
-

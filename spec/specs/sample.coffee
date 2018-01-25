@@ -1,4 +1,23 @@
-# build-dependencies: take, interval, delay
+require("../../src/take")
+require("../../src/interval")
+require("../../src/delay")
+require("../../src/sample")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  error,
+  fromArray,
+  series,
+  repeat,
+  semiunstable,
+  t,
+  later,
+  add,
+  times
+} = require("../SpecHelper")
 
 describe "Property.sampledBy(stream)", ->
   describe "samples property at events, resulting to EventStream", ->
@@ -122,5 +141,3 @@ describe "Property.sample", ->
       [1, 1, 1, 1])
   it "toString", ->
     expect(Bacon.constant(0).sample(1).toString()).to.equal("Bacon.constant(0).sample(1)")
-
-

@@ -1,14 +1,21 @@
-// build-dependencies: eventstream, event, updatebarrier
+import EventStream from "./eventstream";
+import { assertArray } from "./helpers";
+import { withDesc, Desc } from "./describe";
+import never from "./never";
+import { toEvent, endEvent } from "./event";
+import { more, noMore } from "./reply";
+import UpdateBarrier from "./updatebarrier";
+import Bacon from "./core";
 
-Bacon.fromArray = function(values) {
+export default Bacon.fromArray = function(values) {
   assertArray(values);
   if (!values.length) {
-    return withDesc(new Bacon.Desc(Bacon, "fromArray", values), Bacon.never());
+    return withDesc(new Desc(Bacon, "fromArray", values), never());
   } else {
     var i = 0;
-    var stream = new EventStream(new Bacon.Desc(Bacon, "fromArray", [values]), function(sink) {
+    var stream = new EventStream(new Desc(Bacon, "fromArray", [values]), function(sink) {
       var unsubd = false;
-      var reply = Bacon.more;
+      var reply = more;
       var pushing = false;
       var pushNeeded = false;
       function push() {
@@ -19,10 +26,10 @@ Bacon.fromArray = function(values) {
         pushing = true;
         while (pushNeeded) {
           pushNeeded = false;
-          if ((reply !== Bacon.noMore) && !unsubd) {
+          if ((reply !== noMore) && !unsubd) {
             var value = values[i++];
             reply = sink(toEvent(value));
-            if (reply !== Bacon.noMore) {
+            if (reply !== noMore) {
               if (i === values.length) {
                 sink(endEvent());
               } else {
@@ -31,9 +38,9 @@ Bacon.fromArray = function(values) {
             }
           }
         }
-        pushing = false
+        pushing = false;
         return pushing;
-      };
+      }
 
       UpdateBarrier.soonButNotYet(stream, push)
 

@@ -1,5 +1,7 @@
-// build-dependencies: observable
-// build-dependencies: last
+import Exception from "./exception";
+import Observable from "./observable";
+import { noMore } from "./reply";
+import "./last";
 
 Observable.prototype.firstToPromise = function (PromiseCtr) {
   // Can't do in the global scope, as shim can be applied after Bacon is loaded.
@@ -16,7 +18,7 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
       if (event.hasValue()) { resolve(event.value); }
       if (event.isError()) { reject(event.error); }
       // One event is enough
-      return Bacon.noMore;
+      return noMore;
     }));
 };
 

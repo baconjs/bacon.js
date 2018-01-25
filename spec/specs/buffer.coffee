@@ -1,3 +1,22 @@
+require("../../src/buffer")
+require("../../src/never")
+
+{
+  expectStreamEvents,
+  expectStreamTimings,
+  series,
+  error,
+  semiunstable,
+  repeatedly,
+  fromArray,
+  atGivenTimes,
+  take,
+  sc,
+  t
+} = require("../SpecHelper")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
 describe "EventStream.bufferWithTime", ->
   describe "returns events in bursts, passing through errors", ->
     expectStreamEvents(
@@ -58,4 +77,3 @@ describe "EventStream.bufferWithTimeOrCount", ->
 
   it "toString", ->
     expect(Bacon.never().bufferWithTimeOrCount(1, 2).toString()).to.equal("Bacon.never().bufferWithTimeOrCount(1,2)")
-

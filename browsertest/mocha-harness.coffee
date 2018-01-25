@@ -1,3 +1,2 @@
-# insert test files here
-require '../spec/BaconSpec'
+require '../spec/specs/*', mode: 'expand'
 require './jquery-tests'

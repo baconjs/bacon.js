@@ -1,14 +1,19 @@
-// build-dependencies: filter, property, once
-// build-dependencies: concat
-// build-dependencies: flatmapconcat, later
+import "./filter";
+import "./flatmapconcat";
+import "./concat";
+import Observable from "./observable";
+import Property from "./property";
+import later from "./later";
+import once from "./once";
+import { Desc, withDesc } from "./describe";
 
-Bacon.Observable.prototype.bufferingThrottle = function(minimumInterval) {
-  var desc = new Bacon.Desc(this, "bufferingThrottle", [minimumInterval]);
+Observable.prototype.bufferingThrottle = function(minimumInterval) {
+  var desc = new Desc(this, "bufferingThrottle", [minimumInterval]);
   return withDesc(desc, this.flatMapConcat((x) => {
-    return Bacon.once(x).concat(Bacon.later(minimumInterval).filter(false));
+    return once(x).concat(later(minimumInterval).filter(false));
   }));
 };
 
-Bacon.Property.prototype.bufferingThrottle = function() {
-  return Bacon.Observable.prototype.bufferingThrottle.apply(this, arguments).toProperty();
+Property.prototype.bufferingThrottle = function() {
+  return Observable.prototype.bufferingThrottle.apply(this, arguments).toProperty();
 };

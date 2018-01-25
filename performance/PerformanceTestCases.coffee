@@ -1,4 +1,5 @@
-Bacon = (require "../dist/Bacon").Bacon
+_ = require "lodash"
+Bacon = require "../dist/Bacon"
 
 class Generator
   constructor: ->
@@ -99,4 +100,13 @@ cases = {
       gen.stream().holdWhen(gen.stream().map(false))
 }
 
-module.exports = cases
+
+includeCase = (key) ->
+  args = process.argv.slice(2)
+  if args.length
+    args.some (arg) ->
+      key.toLowerCase().indexOf(arg.toLowerCase()) >= 0
+  else
+    true
+
+module.exports = _.pickBy cases, ((value, key) -> includeCase(key))

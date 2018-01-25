@@ -1,6 +1,10 @@
-// build-dependencies: flatmap_
+import "./maperror";
+import "./flatmap";
+import Observable from "./observable";
+import { Error } from "./event";
+import { Desc } from "./describe";
 
-Bacon.Observable.prototype.flatMapError = function(fn) {
+Observable.prototype.flatMapError = function(fn) {
   return this.flatMap_(
     (x) => {
       if (x instanceof Error) {
@@ -11,7 +15,7 @@ Bacon.Observable.prototype.flatMapError = function(fn) {
     }, 
     { 
       mapError: true,
-      desc: new Bacon.Desc(this, "flatMapError", [fn])
+      desc: new Desc(this, "flatMapError", [fn])
     }
   )
 };

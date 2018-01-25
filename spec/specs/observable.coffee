@@ -1,4 +1,8 @@
-# build-dependencies: bus, once, map
+require("../../src/bus")
+require("../../src/once")
+require("../../src/map")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
 
 describe "Observable::onEnd", ->
   it "is called on stream end", ->

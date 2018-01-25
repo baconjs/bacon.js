@@ -1,6 +1,10 @@
-// build-dependencies: _
+import _ from './_';
+import { noMore } from './reply';
+import { assertFunction } from "./helpers";
+import Bacon from "./core";
+import "./scheduler"
 
-var UpdateBarrier = Bacon.UpdateBarrier = (function() {
+var UpdateBarrier = (function() {
   var rootEvent;
   var waiterObs = [];
   var waiters = {};
@@ -34,6 +38,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
   }
 
   function afterTransaction(obs, f) {
+    assertFunction(f)
     if (rootEvent || processingAfters) {
       ensureStackHeight(1)
       var stackIndexForThisObs = 0
@@ -52,7 +57,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     } else {
       return f();
     }
-  };
+  }
 
   function containsObs(obs, aftersList) {
     for (var i = 0; i < aftersList.length; i++) {
@@ -72,7 +77,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
         if (!topOfStack) throw new Error("Unexpected stack top: " + topOfStack)
         var [topAfters, index] = topOfStack
         if (index < topAfters.length) {
-          var [obs, after] = topAfters[index];
+          var [, after] = topAfters[index];
           topOfStack[1]++ // increase index already here to indicate that this level is being processed
           ensureStackHeight(aftersStackHeight+1) // to ensure there's a new level for recursively added afters
           var callSuccess = false
@@ -112,14 +117,14 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     } else {
       return f();
     }
-  };
+  }
 
   function flush() {
     while (waiterObs.length > 0) {
       flushWaiters(0, true);
     }
     flushed = {}
-  };
+  }
 
   function flushWaiters(index, deps) {
     var obs = waiterObs[index];
@@ -134,7 +139,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       f = obsWaiters[i];
       f();
     }
-  };
+  }
 
   function flushDepsOf(obs) {
     if (flushed[obs.id]) return
@@ -148,7 +153,7 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       }
     }
     flushed[obs.id] = true
-  };
+  }
 
   function inTransaction(event, context, f, args) {
     if (rootEvent) {
@@ -167,11 +172,11 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
       }
       return result;
     }
-  };
+  }
 
   function currentEventId() {
     return rootEvent ? rootEvent.id : undefined
-  };
+  }
 
   function wrappedSubscribe(obs, sink) {
     var unsubd = false;
@@ -179,29 +184,30 @@ var UpdateBarrier = Bacon.UpdateBarrier = (function() {
     var doUnsub = function() {
       shouldUnsub = true;
       return shouldUnsub;
-    };
-    var unsub = function() {
+    }
+    function unsub() {
       unsubd = true;
       return doUnsub();
-    };
+    }
     doUnsub = obs.dispatcher.subscribe(function(event) {
       return afterTransaction(obs, function() {
         if (!unsubd) {
           var reply = sink(event);
-          if (reply === Bacon.noMore) {
+          if (reply === noMore) {
             return unsub();
           }
         }
-      });
-    });
+      })
+    })
     if (shouldUnsub) {
       doUnsub();
     }
     return unsub;
-  };
+  }
 
-  var hasWaiters = function() { return waiterObs.length > 0; };
+  function hasWaiters() { return waiterObs.length > 0; }
 
   return { toString, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction, soonButNotYet };
 }
 )();
+export default UpdateBarrier;

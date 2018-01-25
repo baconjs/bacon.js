@@ -1,4 +1,6 @@
-Bacon = (require "../dist/Bacon").Bacon
+process.env.BABEL_ENV="test";
+require "babel-register"
+Bacon = require "../dist/Bacon"
 {noop, createNObservable, eventStream, title} = require "./MemTestHelper"
 
 title "new EventStream"

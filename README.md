@@ -1821,20 +1821,22 @@ First check out the Bacon.js repository and run `npm install`.
 
 Then build the coffeescript sources into javascript:
 
-    ./build
+    npm run dist
 
 Result javascript files will be generated in `dist` directory. If your planning
 to develop Bacon.js yourself, you'll want to run [tests] too.
 
 You can also build a bundle with selected features only. For instance
 
-    ./build flatmap combine takeuntil
+    scripts/dist flatmap combine takeuntil
 
 The build system will do its best to determine the dependencies of the selected
 features and include those into the bundle too. You can also test the integrity
 of the bundle with your selected features using
 
-    ./test flatmap combine takeuntil
+    scripts/runtests flatmap combine takeuntil
+
+TODO: partial testing currently broken.
 
 
 Test

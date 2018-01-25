@@ -1,12 +1,15 @@
-// build-dependencies: core, eventstream, property
-// build-dependencies: addpropertyinitialvaluetostream
-// build-dependencies: mapend
-// build-dependencies: skiperrors
-// build-dependencies: groupsimultaneous
+import Property from "./property";
+import Observable from "./observable";
+import "./mapend";
+import "./skiperrors";
+import { endEvent, nextEvent } from "./event";
+import { more } from "./reply";
+import { withDesc, Desc } from "./describe";
+import groupSimultaneous from "./groupsimultaneous";
 
-Bacon.Observable.prototype.takeUntil = function(stopper) {
+Observable.prototype.takeUntil = function(stopper) {
   var endMarker = {};
-  let withEndMarker = Bacon.groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
+  let withEndMarker = groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
   if (this instanceof Property) withEndMarker = withEndMarker.toProperty()
   let impl = withEndMarker.withHandler(function(event) {
       if (!event.hasValue()) {
@@ -17,7 +20,7 @@ Bacon.Observable.prototype.takeUntil = function(stopper) {
 //            console.log(_.toString(data), "stopped by", _.toString(stopper))
           return this.push(endEvent());
         } else {
-          var reply = Bacon.more;
+          var reply = more;
           for (var i = 0, value; i < data.length; i++) {
             value = data[i];
             if (value === endMarker) {
@@ -31,5 +34,5 @@ Bacon.Observable.prototype.takeUntil = function(stopper) {
       }
     }
     )
-  return withDesc(new Bacon.Desc(this, "takeUntil", [stopper]), impl);
+  return withDesc(new Desc(this, "takeUntil", [stopper]), impl);
 };

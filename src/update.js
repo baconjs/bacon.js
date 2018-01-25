@@ -1,6 +1,10 @@
-// build-dependencies: when, scan
+import { withDesc, Desc } from "./describe";
+import when from "./when";
+import _ from "./_";
+import "./scan";
+import Bacon from "./core";
 
-Bacon.update = function(initial, ...patterns) {
+export default function update(initial, ...patterns) {
   function lateBindFirst(f) {
     return function(...args) {
       return function(i) {
@@ -17,5 +21,7 @@ Bacon.update = function(initial, ...patterns) {
     patterns[i] = lateBindFirst(patterns[i]);
     i = i - 2;
   }
-  return withDesc(new Bacon.Desc(Bacon, "update", [initial, ...patterns]), Bacon.when(...patterns).scan(initial, (function(x,f) { return f(x); })));
-};
+  return withDesc(new Desc(Bacon, "update", [initial, ...patterns]), when(...patterns).scan(initial, (function(x,f) { return f(x); })));
+}
+
+Bacon.update = update;

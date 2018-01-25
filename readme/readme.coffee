@@ -89,4 +89,9 @@ render = (doc) ->
     .join("\n\n")
     .value() + "\n"
 
-module.exports = render
+if require.main == module
+  fs = require 'fs'
+  readmedoc = require '../readme-src.coffee'
+  fs.writeFileSync('README.md', render readmedoc)
+else
+  module.exports = render

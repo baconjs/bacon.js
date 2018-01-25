@@ -1,5 +1,22 @@
-# build-dependencies: EventStream, Property, sample, skip
-#
+require("../../src/map")
+require("../../src/sample")
+require("../../src/skip")
+Bacon = require("../../src/core").default
+expect = require("chai").expect
+
+{
+  expectStreamEvents,
+  expectPropertyEvents,
+  series,
+  error,
+  once,
+  take,
+  times,
+  repeat,
+  fromArray,
+  deferred
+} = require("../SpecHelper")
+
 describe "Property.map", ->
   describe "maps property values", ->
     expectPropertyEvents(
@@ -72,4 +89,3 @@ describe "EventStream.map", ->
       deferred ->
         expect(result).to.deep.equal("result")
         expect(context).to.deep.equal(object)
-

@@ -1,4 +1,4 @@
-Bacon = (require "../dist/Bacon").Bacon
+Bacon = require "../dist/Bacon"
 toKb = (x) -> (x / 1024).toFixed(2) + ' KiB'
 toMb = (x) -> (x / 1024 / 1024).toFixed(2) + ' MiB'
 

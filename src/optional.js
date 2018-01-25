@@ -1,4 +1,4 @@
-// build-dependencies: helpers
+import { extend } from './helpers';
 
 function Some(value) {
   this.value = value;
@@ -40,9 +40,11 @@ var None = {
 };
 
 var toOption = function(v) {
-  if (v && (v._isSome || v.isNone)) {
+  if (v && (v._isSome || v.isNone)) {
     return v;
   } else {
     return new Some(v);
   }
 };
+
+export { Some, None, toOption };

@@ -1,8 +1,12 @@
-// build-dependencies: core
+import Observable from "./observable";
+import never from "./never";
+import { noMore } from "./reply";
+import { withDesc, Desc } from "./describe";
+import { endEvent } from "./event";
 
-Bacon.Observable.prototype.take = function(count) {
-  if (count <= 0) { return Bacon.never(); }
-  return withDesc(new Bacon.Desc(this, "take", [count]), this.withHandler(function(event) {
+Observable.prototype.take = function(count) {
+  if (count <= 0) { return never(); }
+  return withDesc(new Desc(this, "take", [count]), this.withHandler(function(event) {
     if (!event.hasValue()) {
       return this.push(event);
     } else {
@@ -12,7 +16,7 @@ Bacon.Observable.prototype.take = function(count) {
       } else {
         if (count === 0) { this.push(event); }
         this.push(endEvent());
-        return Bacon.noMore;
+        return noMore;
       }
     }
   }));
