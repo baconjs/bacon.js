@@ -9,7 +9,7 @@ notifications:
   flowdock: 3853ef33f6943539cbbed913648575beg
 script:
   - npm test
-  - grunt readme && git diff --exit-code README.md
+  - npm run readme && git diff --exit-code README.md
 env:
   global:
     - secure: VHyJgRz2G9C1gh+BW/ttoWOujZq+QogTdot6gdhvczB3PihZ9FFgglK0S3i4tCZFrfjBz/XMKiqF6tlQhoTQj6FD1ADSRaptel7Xv4qgcsVBffYpZS5g68gDzDG9BFOb6kes8sRJVA7Jf3OL+EhKAsvZ3e5SmHJ1SiCPdaVRSBk=

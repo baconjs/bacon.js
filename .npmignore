@@ -4,8 +4,6 @@ bower.json
 browsertest
 component.json
 examples
-grunt
-Gruntfile.coffee
 icon.png
 lib
 logo.png

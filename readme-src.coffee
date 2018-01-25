@@ -2037,7 +2037,7 @@ doc.section "Contribute"
 doc.text """
 Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
 
-Note: this readme is generated from `readme-src.coffee`. After updating the src file, run `grunt readme`.
+Note: this readme is generated from `readme-src.coffee`. After updating the src file, run `npm run readme`.
 
 """
 

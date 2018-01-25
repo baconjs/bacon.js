@@ -19,7 +19,6 @@
     "coffeelint.json",
     "component.json",
     "package.json",
-    "grunt",
     "release",
     "test",
     "runtests",

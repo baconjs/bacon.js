@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-if [ "${TEST_SUITE}" = "browserstack-status" ]; then
-  browsertest/browserify
-  ./node_modules/.bin/grunt browserstack-status
-else
-  BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs
-fi
+BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs
