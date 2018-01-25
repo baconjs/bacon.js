@@ -93,8 +93,12 @@
   },
   "homepage": "https://github.com/baconjs/bacon.js",
   "scripts": {
-    "test": "./runtests",
-    "pre-publish": "grunt"
+    "test": "./scripts/runtests",
+    "lint": "eslint src",
+    "dist": "./scripts/dist",
+    "readme": "coffee readme/readme.coffee",
+    "prepublish": "npm run lint && npm run dist && npm run readme",
+    "version": "scripts/version"
   },
   "main": "dist/Bacon.js"
 }

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash -e
-
-npm install --silent
-
-PATH=node_modules/.bin:$PATH
-
-./runtests $@

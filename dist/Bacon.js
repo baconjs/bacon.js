@@ -674,7 +674,6 @@ var UpdateBarrier = function () {
 
         if (index < topAfters.length) {
           var _topAfters$index = topAfters[index],
-              obs = _topAfters$index[0],
               after = _topAfters$index[1];
 
           topOfStack[1]++;
@@ -781,10 +780,10 @@ var UpdateBarrier = function () {
       shouldUnsub = true;
       return shouldUnsub;
     };
-    var unsub = function () {
+    function unsub() {
       unsubd = true;
       return doUnsub();
-    };
+    }
     doUnsub = obs.dispatcher.subscribe(function (event) {
       return afterTransaction(obs, function () {
         if (!unsubd) {
@@ -801,9 +800,9 @@ var UpdateBarrier = function () {
     return unsub;
   }
 
-  var hasWaiters = function () {
+  function hasWaiters() {
     return waiterObs.length > 0;
-  };
+  }
 
   return { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet };
 }();
@@ -2359,8 +2358,8 @@ extend(Bus.prototype, {
         if (rootPush && this.pushQueue) {
           var i = 0;
           while (i < this.pushQueue.length) {
-            var value = this.pushQueue[i];
-            this.sink(nextEvent(value));
+            var v = this.pushQueue[i];
+            this.sink(nextEvent(v));
             i++;
           }
           this.pushQueue = null;

@@ -20,9 +20,9 @@ var escodegen = require("escodegen");
 var jsstana = require("jsstana");
 
 var argPieceNames = process.argv.slice(2);
-var defaultOutput = path.join(__dirname, "dist", "Bacon.js");
-var defaultNoAssert = path.join(__dirname, "dist", "Bacon.noAssert.js");
-var defaultMinified = path.join(__dirname, "dist", "Bacon.min.js");
+var defaultOutput = path.join(__dirname, "..", "dist", "Bacon.js");
+var defaultNoAssert = path.join(__dirname, "..", "dist", "Bacon.noAssert.js");
+var defaultMinified = path.join(__dirname, "..", "dist", "Bacon.min.js");
 
 var customBuildPlugin = function(options) {
   var pieces = (options || {}).pieces || [];

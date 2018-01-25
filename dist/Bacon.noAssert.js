@@ -606,7 +606,7 @@
                         throw new Error('Unexpected stack top: ' + topOfStack);
                     var topAfters = topOfStack[0], index = topOfStack[1];
                     if (index < topAfters.length) {
-                        var _topAfters$index = topAfters[index], obs = _topAfters$index[0], after = _topAfters$index[1];
+                        var _topAfters$index = topAfters[index], after = _topAfters$index[1];
                         topOfStack[1]++;
                         ensureStackHeight(aftersStackHeight + 1);
                         var callSuccess = false;
@@ -705,10 +705,10 @@
                 shouldUnsub = true;
                 return shouldUnsub;
             };
-            var unsub = function () {
+            function unsub() {
                 unsubd = true;
                 return doUnsub();
-            };
+            }
             doUnsub = obs.dispatcher.subscribe(function (event) {
                 return afterTransaction(obs, function () {
                     if (!unsubd) {
@@ -724,9 +724,9 @@
             }
             return unsub;
         }
-        var hasWaiters = function () {
+        function hasWaiters() {
             return waiterObs.length > 0;
-        };
+        }
         return {
             toString: toString,
             whenDoneWith: whenDoneWith,
@@ -2174,8 +2174,8 @@
                     if (rootPush && this.pushQueue) {
                         var i = 0;
                         while (i < this.pushQueue.length) {
-                            var value = this.pushQueue[i];
-                            this.sink(nextEvent(value));
+                            var v = this.pushQueue[i];
+                            this.sink(nextEvent(v));
                             i++;
                         }
                         this.pushQueue = null;
