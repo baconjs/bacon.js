@@ -1,12 +1,13 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.Bacon = factory());
-}(this, function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.Bacon = factory());
+}(this, (function () { 'use strict';
 
 var Exception = global.Error;
 
 function nop() {}
+
 function former(x) {
   return x;
 }
@@ -38,7 +39,7 @@ function assertObservable(event) {
 
 function assertFunction(f) {
   return assert("not a function : " + f, _.isFunction(f));
-};
+}
 var isArray = Array.isArray || function (xs) {
   return xs instanceof Array;
 };
@@ -53,6 +54,8 @@ function assertArray(xs) {
 function assertNoArguments(args) {
   return assert("no arguments supported", args.length === 0);
 }
+
+
 
 function extend(target) {
   var length = arguments.length;
@@ -75,7 +78,7 @@ function inherit(child, parent) {
     }
   }
   return child;
-};
+}
 
 function symbol(key) {
   if (typeof Symbol !== "undefined" && Symbol[key]) {
@@ -85,7 +88,7 @@ function symbol(key) {
   } else {
     return "@@" + key;
   }
-};
+}
 
 function Some(value) {
   this.value = value;
@@ -650,7 +653,7 @@ var UpdateBarrier = function () {
     } else {
       return f();
     }
-  };
+  }
 
   function containsObs(obs, aftersList) {
     for (var i = 0; i < aftersList.length; i++) {
@@ -714,14 +717,14 @@ var UpdateBarrier = function () {
     } else {
       return f();
     }
-  };
+  }
 
   function flush() {
     while (waiterObs.length > 0) {
       flushWaiters(0, true);
     }
     flushed = {};
-  };
+  }
 
   function flushWaiters(index, deps) {
     var obs = waiterObs[index];
@@ -736,7 +739,7 @@ var UpdateBarrier = function () {
       f = obsWaiters[i];
       f();
     }
-  };
+  }
 
   function flushDepsOf(obs) {
     if (flushed[obs.id]) return;
@@ -750,7 +753,7 @@ var UpdateBarrier = function () {
       }
     }
     flushed[obs.id] = true;
-  };
+  }
 
   function inTransaction(event, context, f, args) {
     if (rootEvent) {
@@ -767,11 +770,11 @@ var UpdateBarrier = function () {
       }
       return result;
     }
-  };
+  }
 
   function currentEventId() {
     return rootEvent ? rootEvent.id : undefined;
-  };
+  }
 
   function wrappedSubscribe(obs, sink) {
     var unsubd = false;
@@ -798,7 +801,7 @@ var UpdateBarrier = function () {
       doUnsub();
     }
     return unsub;
-  };
+  }
 
   var hasWaiters = function () {
     return waiterObs.length > 0;
@@ -2656,7 +2659,7 @@ function scan(seed, f) {
     return unsub;
   };
   return resultProperty = new Property(new Desc(this, "scan", [seed, f]), subscribe);
-};
+}
 
 Observable.prototype.scan = scan;
 
@@ -2922,7 +2925,7 @@ Bacon.fromArray = function (values) {
         }
         pushing = false;
         return pushing;
-      };
+      }
 
       UpdateBarrier.soonButNotYet(stream, push);
 
@@ -3550,4 +3553,4 @@ Observable.prototype.zip = function (other, f) {
 
 return Bacon;
 
-}));
+})));

@@ -11,7 +11,6 @@
     function cloneArray(xs) {
         return xs.slice(0);
     }
-    ;
     var isArray = Array.isArray || function (xs) {
         return xs instanceof Array;
     };
@@ -40,7 +39,6 @@
         }
         return child;
     }
-    ;
     function symbol(key) {
         if (typeof Symbol !== 'undefined' && Symbol[key]) {
             return Symbol[key];
@@ -50,7 +48,6 @@
             return '@@' + key;
         }
     }
-    ;
     function Some(value) {
         this.value = value;
     }
@@ -590,7 +587,6 @@
                 return f();
             }
         }
-        ;
         function containsObs(obs, aftersList) {
             for (var i = 0; i < aftersList.length; i++) {
                 if (aftersList[i][0].id == obs.id)
@@ -651,14 +647,12 @@
                 return f();
             }
         }
-        ;
         function flush() {
             while (waiterObs.length > 0) {
                 flushWaiters(0, true);
             }
             flushed = {};
         }
-        ;
         function flushWaiters(index, deps) {
             var obs = waiterObs[index];
             var obsId = obs.id;
@@ -673,7 +667,6 @@
                 f();
             }
         }
-        ;
         function flushDepsOf(obs) {
             if (flushed[obs.id])
                 return;
@@ -688,7 +681,6 @@
             }
             flushed[obs.id] = true;
         }
-        ;
         function inTransaction(event, context, f, args) {
             if (rootEvent) {
                 return f.apply(context, args);
@@ -704,11 +696,9 @@
                 return result;
             }
         }
-        ;
         function currentEventId() {
             return rootEvent ? rootEvent.id : undefined;
         }
-        ;
         function wrappedSubscribe(obs, sink) {
             var unsubd = false;
             var shouldUnsub = false;
@@ -735,7 +725,6 @@
             }
             return unsub;
         }
-        ;
         var hasWaiters = function () {
             return waiterObs.length > 0;
         };
@@ -2464,7 +2453,6 @@
             f
         ]), subscribe);
     }
-    ;
     Observable.prototype.scan = scan;
     Observable.prototype.diff = function (start, f) {
         f = toCombinator(f);
@@ -2722,7 +2710,6 @@
                     pushing = false;
                     return pushing;
                 }
-                ;
                 UpdateBarrier.soonButNotYet(stream, push);
                 return function () {
                     unsubd = true;

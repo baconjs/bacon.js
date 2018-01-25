@@ -94,18 +94,18 @@ var main = function(options) {
   }
 
   rollup({
-    entry: 'src/bacon.js',
+    input: 'src/bacon.js',
     plugins: plugins
   }).then((bundle) => {
     return bundle.write({
       format: 'umd',
-      moduleName: 'Bacon',
+      name: 'Bacon',
       globals: {
         jQuery: 'jQuery',
         Bacon: 'Bacon',
         Zepto: 'Zepto'
       },
-      dest: 'dist/Bacon.js',
+      file: 'dist/Bacon.js',
       indent: false
     });
   }).then(function() {
