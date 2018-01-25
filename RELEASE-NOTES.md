@@ -1,3 +1,9 @@
+## 2.0.0
+
+- Remove lazy evaluation of event values (#700)
+- Make Bacon.once and friends asynchronous (#706)
+- Use rollup to build everything from ES6 modules (#708)
+
 ## 1.0.1
 
 - Fixed unexpected behavior with synchronous sources and flatMapLatest (#699)
