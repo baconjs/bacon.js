@@ -1222,7 +1222,6 @@ extend(Property.prototype, {
 
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
 
-    console.log("to eventstream");
     return new EventStream(new Desc(this, "toEventStream", []), function (sink) {
       return _this3.dispatcher.subscribe(function (event) {
         return sink(event.toNext());
