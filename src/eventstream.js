@@ -1,4 +1,5 @@
 import Observable from "./observable";
+import UpdateBarrier from "./updatebarrier";
 import { Desc } from "./describe";
 import { inherit, extend, nop, assertFunction } from "./helpers";
 import { registerObs } from "./spy";
@@ -9,7 +10,14 @@ import _ from "./_";
 import { Initial } from "./event";
 import Dispatcher from "./dispatcher";
 
-export default function EventStream(desc, subscribe, handler) {
+// allowSync option is used for overriding the "force async" behaviour or EventStreams.
+// ideally, this should not exist, but right now the implementation of some operations
+// relies on using internal EventStreams that have synchrnous behavior. These are not exposed
+// to the outside world, though.
+export const defaultOptions = { forceAsync: true }
+export const allowSync = { forceAsync: false }
+
+export default function EventStream(desc, subscribe, handler, options = defaultOptions) {
   if (!(this instanceof EventStream)) {
     return new EventStream(desc, subscribe, handler);
   }
@@ -18,23 +26,33 @@ export default function EventStream(desc, subscribe, handler) {
     subscribe = desc;
     desc = Desc.empty;
   }
-  subscribe = asyncWrapSubscribe(subscribe)
+  if (options !== allowSync) { 
+    subscribe = asyncWrapSubscribe(this, subscribe)
+  }
   Observable.call(this, desc);
   assertFunction(subscribe);
   this.dispatcher = new Dispatcher(subscribe, handler);
   registerObs(this);
 }
 
-function asyncWrapSubscribe(subscribe) {
+function asyncWrapSubscribe(obs, subscribe) {
+  assertFunction(subscribe)
   var subscribing = false
   return function wrappedSubscribe(sink) {
+    assertFunction(sink)
     subscribing = true
     try {
       return subscribe(function wrappedSink(event) {
-        if (subscribing && !event.isEnd()) {
+        if (subscribing) {
           console.log("Stream responded synchronously")
+          UpdateBarrier.soonButNotYet(obs, () => {
+            console.log("delivering async")
+            sink(event)
+          })
+
+        } else {
+          return sink(event)
         }
-        return sink(event)
       })
     } finally {
       subscribing = false

@@ -179,6 +179,7 @@ var UpdateBarrier = (function() {
   }
 
   function wrappedSubscribe(obs, sink) {
+    assertFunction(sink);
     var unsubd = false;
     var shouldUnsub = false;
     var doUnsub = function() {

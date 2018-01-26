@@ -1,13 +1,12 @@
 import "./map";
 import constant from "./constant";
-import {when, whenP} from "./when";
+import { whenP } from "./when";
 import { argumentsToObservables, argumentsToObservablesAndFunction } from "./argumentstoobservables";
 import { withDesc, Desc } from "./describe";
 import { toCombinator } from "./functionconstruction";
 import { isObservable } from "./helpers";
 import { Source } from "./source";
 import Observable from "./observable";
-import Property from "./property";
 import Bacon from "./core";
 
 Bacon.combineAsArray = function() {

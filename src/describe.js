@@ -29,12 +29,12 @@ var describe = function(context, method, ...args) {
   } else {
     return new Desc(context, method, args);
   }
-};
+}
 
 var withDesc = function(desc, obs) {
   obs.desc = desc;
   return obs;
-};
+}
 
 var findDeps = function(x) {
   if (isArray(x)) {
@@ -46,6 +46,6 @@ var findDeps = function(x) {
   } else {
     return [];
   }
-};
+}
 
 export { withDesc, findDeps, describe }

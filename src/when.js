@@ -1,33 +1,27 @@
 import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import EventStream from "./eventstream";
-import Property from "./property";
 import UpdateBarrier from "./updatebarrier";
 import { Source } from "./source";
 import { endEvent } from "./event";
 import { more, noMore } from "./reply";
 import _ from "./_";
-import { assert, assertFunction } from "./helpers";
+import { assert } from "./helpers";
 import never from "./never";
 import Bacon from "./core";
-import { None } from "./optional";
-import { streamSubscribeToPropertySubscribe } from "./eventstream";
+import { propertyFromStreamSubscribe } from "./property"
 
 export function when() {
   return when_(EventStream, arguments)
 }
 
 export function whenP() {
-  let ctr = function(desc, subscribe) { 
-    assertFunction(subscribe)
-    return new Property(desc, streamSubscribeToPropertySubscribe(None, subscribe))
-  }
-  return when_(ctr, arguments)
+  return when_(propertyFromStreamSubscribe, arguments)
 }
 
 export default when;
 
-function when_(ctr, sourceArgs) {
+export function when_(ctor, sourceArgs) {
   if (sourceArgs.length === 0) { return never(); }
   var len = sourceArgs.length;
   var usage = "when: expecting arguments in the form (Observable+,function)+";
@@ -79,7 +73,7 @@ function when_(ctr, sourceArgs) {
   var needsBarrier = (_.any(sources, function(s) { return s.flatten; })) && containsDuplicateDeps(_.map((function(s) { return s.obs; }), sources));
 
   var desc = new Desc(Bacon, "when", patterns);
-  var resultStream = ctr(desc, function(sink) {
+  var resultStream = ctor(desc, function(sink) {
     var triggers = [];
     var ends = false;
     var match = function(p) {

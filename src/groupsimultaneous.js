@@ -1,11 +1,17 @@
 import Bacon from "./core";
-import when from "./when";
+import { when_ } from "./when";
 import "./skipduplicates";
 import { BufferingSource } from "./source";
 import { Desc, withDesc } from "./describe";
 import { isArray } from "./helpers";
+import { defaultOptions } from "./eventstream";
+import EventStream from "./eventstream";
 
 export default function groupSimultaneous(...streams) {
+  return groupSimultaneous_(streams)
+}
+
+export function groupSimultaneous_(streams, options = defaultOptions) {
   if (streams.length === 1 && isArray(streams[0])) {
     streams = streams[0];
   }
@@ -16,7 +22,8 @@ export default function groupSimultaneous(...streams) {
     }
     return result;
   })();
-  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when(sources, (function(...xs) { return xs; })));
+  let ctor = (desc, subscribe) => new EventStream(desc, subscribe, null, options)
+  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, (function(...xs) { return xs; })]));
 }
 
 Bacon.groupSimultaneous = groupSimultaneous;

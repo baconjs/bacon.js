@@ -1,7 +1,6 @@
 import { withDesc, Desc } from "./describe";
 import { when } from "./when";
 import _ from "./_";
-import Property from "./property"
 import "./scan";
 import Bacon from "./core";
 

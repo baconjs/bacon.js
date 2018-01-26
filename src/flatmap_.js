@@ -6,6 +6,7 @@ import _ from "./_";
 import { makeFunctionArgs } from "./functionconstruction";
 import Observable from "./observable";
 import EventStream from "./eventstream";
+import { propertyFromStreamSubscribe } from "./property";
 import { noMore, more } from "./reply";
 import once from "./once";
 
@@ -13,8 +14,11 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
     const root = this
     const rootDep = [root];
     const childDeps = [];
+    const ctor = this._isProperty
+      ? propertyFromStreamSubscribe
+      : EventStream
     
-    var result = new EventStream(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
+    var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
       var spawn = function(event) {

@@ -2,7 +2,11 @@ require("../../src/fromevent")
 Bacon = require("../../src/core").default
 expect = require("chai").expect
 { EventEmitter } = require("events")
-{ expectStreamEvents, take } = require("../SpecHelper")
+{
+  expectStreamEvents, 
+  take,
+  deferred
+} = require("../SpecHelper")
 
 # Wrap EventEmitter as EventTarget
 toEventTarget = (emitter) ->
@@ -70,8 +74,9 @@ describe "Bacon.fromEvent", ->
     src = onOffSource()
     take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
       values.push(value)
-    expect(values).to.deep.equal ["test"]
-    expect(src.cleaned).to.equal(true)
+    deferred ->
+      expect(values).to.deep.equal ["test"]
+      expect(src.cleaned).to.equal(true)
 
   it "should create EventStream even if removeListener method missing", ->
     values = []
@@ -80,7 +85,7 @@ describe "Bacon.fromEvent", ->
     }
     take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
       values.push(value)
-    expect(values).to.deep.equal ["test"]
+    deferred -> expect(values).to.deep.equal ["test"]
 
   bindUnbindSource = -> {
     bind: (type, callback) -> callback(type)
@@ -95,8 +100,9 @@ describe "Bacon.fromEvent", ->
     src = bindUnbindSource()
     take(1, Bacon.fromEvent(src, "test")).onValue (value) ->
       values.push(value)
-    expect(values).to.deep.equal ["test"]
-    expect(src.cleaned).to.equal(true)
+    deferred ->
+      expect(values).to.deep.equal ["test"]
+      expect(src.cleaned).to.equal(true)
 
   it "toString", ->
     expect(Bacon.fromEvent(onOffSource(), "click").toString()).to.equal("Bacon.fromEvent({on:function,off:function},click)")

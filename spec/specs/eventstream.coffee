@@ -12,7 +12,8 @@ expect = require("chai").expect
   series,
   skip,
   later,
-  map
+  map,
+  deferred
 } = require("../SpecHelper")
 
 describe "EventStream constructor", ->
@@ -28,7 +29,7 @@ describe "EventStream constructor", ->
       ->
     s = new Bacon.EventStream(subscribe)
     s.onValue((x) -> values.push(x))
-    expect(values).to.deep.equal(["hello"])
+    deferred -> expect(values).to.deep.equal(["hello"])
   it "Supports Desc argument", ->
     values = []
     subscribe = (sink) ->
@@ -37,7 +38,7 @@ describe "EventStream constructor", ->
       ->
     s = new Bacon.EventStream(new Bacon.Desc([]), subscribe)
     s.onValue((x) -> values.push(x))
-    expect(values).to.deep.equal(["hello"])
+    deferred -> expect(values).to.deep.equal(["hello"])
 
 describe "EventStream.toProperty", ->
   describe "delivers current value and changes to subscribers", ->
