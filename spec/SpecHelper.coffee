@@ -432,9 +432,10 @@ verifyExhausted = (src) ->
   expect(events[0].isEnd()).to.deep.equal(true)
 
 module.exports.verifyCleanup = verifyCleanup = ->
-  for seq in seqs
-    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
-  seqs = []
+  deferred ->
+    for seq in seqs
+      expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
+    seqs = []
 
 lastNonError = (events) ->
   Bacon._.last(Bacon._.filter(((e) -> toValue(e) != "<error>"), events))
