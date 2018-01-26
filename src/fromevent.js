@@ -1,4 +1,4 @@
-// build-dependencies: frombinder
+// build-dependencies: frombinder, _
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
@@ -11,6 +11,9 @@
 // Examples
 //
 //   Bacon.fromEventTarget(document.body, "click")
+//   # => EventStream
+//
+//   Bacon.fromEventTarget(document.body, "scroll", {passive: true})
 //   # => EventStream
 //
 //   Bacon.fromEventTarget (new EventEmitter(), "data")
@@ -39,13 +42,21 @@ var findHandlerMethods = function(target) {
   throw new Error("No suitable event methods in " + target);
 };
 
-Bacon.fromEventTarget = function(target, eventName, eventTransformer) {
+Bacon.fromEventTarget = function(target, eventName, ...args) {
+  let options, eventTransformer;
+
+  if (_.isFunction(args[0])) {
+    [eventTransformer] = args;
+  } else {
+    [options, eventTransformer] = args;
+  }
+
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Bacon.Desc(Bacon, "fromEvent", [target, eventName]);
   return withDesc(desc, Bacon.fromBinder(function(handler) {
-    sub.call(target, eventName, handler);
+    sub.call(target, eventName, handler, options);
     return function() {
-      return unsub.call(target, eventName, handler);
+      return unsub.call(target, eventName, handler, options);
     };
   }, eventTransformer));
 };
