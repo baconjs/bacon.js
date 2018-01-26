@@ -5,11 +5,12 @@ import "./skiperrors";
 import { endEvent, nextEvent } from "./event";
 import { more } from "./reply";
 import { withDesc, Desc } from "./describe";
-import groupSimultaneous from "./groupsimultaneous";
+import { groupSimultaneous_ } from "./groupsimultaneous";
+import { allowSync } from "./eventstream";
 
 Observable.prototype.takeUntil = function(stopper) {
   var endMarker = {};
-  let withEndMarker = groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors())
+  let withEndMarker = groupSimultaneous_([this.mapEnd(endMarker), stopper.skipErrors()], allowSync)
   if (this instanceof Property) withEndMarker = withEndMarker.toProperty()
   let impl = withEndMarker.withHandler(function(event) {
       if (!event.hasValue()) {
