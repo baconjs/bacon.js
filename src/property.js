@@ -111,6 +111,8 @@ extend(Property.prototype, {
   },
 
   toEventStream() {
+    // TODO this should pretty much be removed, because properties respond synchronously
+    console.log("to eventstream")
     return new EventStream(new Desc(this, "toEventStream", []), (sink) => {
       return this.dispatcher.subscribe(function(event) {
         return sink(event.toNext());

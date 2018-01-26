@@ -18,10 +18,28 @@ export default function EventStream(desc, subscribe, handler) {
     subscribe = desc;
     desc = Desc.empty;
   }
+  subscribe = asyncWrapSubscribe(subscribe)
   Observable.call(this, desc);
   assertFunction(subscribe);
   this.dispatcher = new Dispatcher(subscribe, handler);
   registerObs(this);
+}
+
+function asyncWrapSubscribe(subscribe) {
+  var subscribing = false
+  return function wrappedSubscribe(sink) {
+    subscribing = true
+    try {
+      return subscribe(function wrappedSink(event) {
+        if (subscribing && !event.isEnd()) {
+          console.log("Stream responded synchronously")
+        }
+        return sink(event)
+      })
+    } finally {
+      subscribing = false
+    }
+  }
 }
 
 inherit(EventStream, Observable);
