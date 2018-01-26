@@ -92,7 +92,10 @@
     "dist": "./scripts/dist",
     "readme": "coffee readme/readme.coffee",
     "prepublish": "npm run lint && npm run dist && npm run readme",
-    "version": "scripts/version"
+    "version": "scripts/version",
+    "browsertest-bundle": "browsertest/browserify",
+    "browsertest-open": "open browsertest/mocha.runner.html",
+    "browserstack": "browsertest/browserstack"
   },
   "main": "dist/Bacon.js"
 }

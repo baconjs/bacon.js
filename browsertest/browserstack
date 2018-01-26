@@ -1,0 +1,11 @@
+#!/usr/bin/env bash -e
+
+if [ -z $BROWSERSTACK_USERNAME ]; then
+  echo "Environment variable BROWSERSTACK_USERNAME missing"
+  exit 1
+fi
+if [ -z $BROWSERSTACK_KEY ]; then
+  echo "Environment variable BROWSERSTACK_KEY missing"
+  exit 1
+fi
+node_modules/.bin/browserstack-runner

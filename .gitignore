@@ -12,3 +12,4 @@ src/Testing*
 spec/BaconSpec.coffee
 testing
 performance/performance.js
+browserstack-run.pid
