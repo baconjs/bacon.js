@@ -1,5 +1,15 @@
 # build-dependencies: bus, once, map
 
+describe "Observable::onValue", ->
+  it "is chainable", ->
+    values = []
+    s = new Bacon.Bus()
+    s.onValue((v) -> values.push(v))
+     .onValue((v) -> values.push(-v))
+    s.push(1)
+    s.push(2)
+    expect(values).to.deep.equal([1, -1, 2, -2])
+
 describe "Observable::onEnd", ->
   it "is called on stream end", ->
     s = new Bacon.Bus()

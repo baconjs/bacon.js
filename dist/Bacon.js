@@ -1043,35 +1043,39 @@ extend(Observable.prototype, {
 
   onValue: function () {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function (event) {
+    this.subscribe(function (event) {
       if (event.hasValue()) {
         return f(event.value());
       }
     });
+    return this;
   },
 
   onValues: function (f) {
-    return this.onValue(function (args) {
+    this.onValue(function (args) {
       return f.apply(undefined, args);
     });
+    return this;
   },
 
   onError: function () {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function (event) {
+    this.subscribe(function (event) {
       if (event.isError()) {
         return f(event.error);
       }
     });
+    return this;
   },
 
   onEnd: function () {
     var f = makeFunctionArgs(arguments);
-    return this.subscribe(function (event) {
+    this.subscribe(function (event) {
       if (event.isEnd()) {
         return f();
       }
     });
+    return this;
   },
 
   name: function (name) {
