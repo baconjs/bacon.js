@@ -42,6 +42,51 @@ function asyncWrapSubscribe(subscribe) {
   }
 }
 
+function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
+  assertFunction(streamSubscribe)
+  return function(sink) {
+    var initSent = false;
+    var subbed = false;
+    var unsub = nop;
+    var reply = more;
+    var sendInit = function() {
+      if (!initSent) {
+        return initValue.forEach(function(value) {
+          initSent = true;
+          reply = sink(new Initial(value));
+          if (reply === noMore) {
+            unsub();
+            unsub = nop;
+            return nop;
+          }
+        });
+      }
+    };
+
+    unsub = streamSubscribe(function(event) {
+      if (event.hasValue()) {
+        if (event.isInitial() && !subbed) {
+          initValue = new Some(event.value);
+          return more;
+        } else {
+          if (!event.isInitial()) { sendInit(); }
+          initSent = true;
+          initValue = new Some(event.value);
+          return sink(event);
+        }
+      } else {
+        if (event.isEnd()) {
+          reply = sendInit();
+        }
+        if (reply !== noMore) { return sink(event); }
+      }
+    });
+    subbed = true;
+    sendInit();
+    return unsub;
+  }
+}
+
 inherit(EventStream, Observable);
 extend(EventStream.prototype, {
   _isEventStream: true,
@@ -50,48 +95,8 @@ extend(EventStream.prototype, {
     var initValue = arguments.length === 0 ? None : toOption(initValue_);
     var disp = this.dispatcher;
     var desc = new Desc(this, "toProperty", [initValue_]);
-    return new Property(desc, function(sink) {
-      var initSent = false;
-      var subbed = false;
-      var unsub = nop;
-      var reply = more;
-      var sendInit = function() {
-        if (!initSent) {
-          return initValue.forEach(function(value) {
-            initSent = true;
-            reply = sink(new Initial(value));
-            if (reply === noMore) {
-              unsub();
-              unsub = nop;
-              return nop;
-            }
-          });
-        }
-      };
-
-      unsub = disp.subscribe(function(event) {
-        if (event.hasValue()) {
-          if (event.isInitial() && !subbed) {
-            initValue = new Some(event.value);
-            return more;
-          } else {
-            if (!event.isInitial()) { sendInit(); }
-            initSent = true;
-            initValue = new Some(event.value);
-            return sink(event);
-          }
-        } else {
-          if (event.isEnd()) {
-            reply = sendInit();
-          }
-          if (reply !== noMore) { return sink(event); }
-        }
-      });
-      subbed = true;
-      sendInit();
-      return unsub;
-    }
-    );
+    let streamSubscribe = sink => disp.subscribe(sink)
+    return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
   },
 
   toEventStream() { return this; },
@@ -101,4 +106,4 @@ extend(EventStream.prototype, {
   }
 });
 
-export { EventStream };
+export { EventStream, streamSubscribeToPropertySubscribe };

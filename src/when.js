@@ -1,18 +1,35 @@
 import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import EventStream from "./eventstream";
+import Property from "./property";
 import UpdateBarrier from "./updatebarrier";
 import { Source } from "./source";
 import { endEvent } from "./event";
 import { more, noMore } from "./reply";
 import _ from "./_";
-import { assert } from "./helpers";
+import { assert, assertFunction } from "./helpers";
 import never from "./never";
 import Bacon from "./core";
+import { None } from "./optional";
+import { streamSubscribeToPropertySubscribe } from "./eventstream";
 
-export default function when() {
-  if (arguments.length === 0) { return never(); }
-  var len = arguments.length;
+export function when() {
+  return when_(EventStream, arguments)
+}
+
+export function whenP() {
+  let ctr = function(desc, subscribe) { 
+    assertFunction(subscribe)
+    return new Property(desc, streamSubscribeToPropertySubscribe(None, subscribe))
+  }
+  return when_(ctr, arguments)
+}
+
+export default when;
+
+function when_(ctr, sourceArgs) {
+  if (sourceArgs.length === 0) { return never(); }
+  var len = sourceArgs.length;
   var usage = "when: expecting arguments in the form (Observable+,function)+";
 
   assert(usage, (len % 2 === 0));
@@ -21,10 +38,10 @@ export default function when() {
   var i = 0;
   var patterns = [];
   while (i < len) {
-    patterns[i] = arguments[i];
-    patterns[i + 1] = arguments[i + 1];
-    var patSources = _.toArray(arguments[i]);
-    var f = constantToFunction(arguments[i + 1]);
+    patterns[i] = sourceArgs[i];
+    patterns[i + 1] = sourceArgs[i + 1];
+    var patSources = _.toArray(sourceArgs[i]);
+    var f = constantToFunction(sourceArgs[i + 1]);
     var pat = {f, ixs: []};
     var triggerFound = false;
     for (var j = 0, s; j < patSources.length; j++) {
@@ -62,7 +79,7 @@ export default function when() {
   var needsBarrier = (_.any(sources, function(s) { return s.flatten; })) && containsDuplicateDeps(_.map((function(s) { return s.obs; }), sources));
 
   var desc = new Desc(Bacon, "when", patterns);
-  var resultStream = new EventStream(desc, function(sink) {
+  var resultStream = ctr(desc, function(sink) {
     var triggers = [];
     var ends = false;
     var match = function(p) {
