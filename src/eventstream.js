@@ -45,9 +45,9 @@ function asyncWrapSubscribe(obs, subscribe) {
     try {
       return subscribe(function wrappedSink(event) {
         if (subscribing) {
-          console.log("Stream responded synchronously")
+          //console.log("Stream responded synchronously", obs)
           UpdateBarrier.soonButNotYet(obs, () => {
-            console.log("delivering async")
+            //console.log("delivering async")
             sink(event)
           })
 
