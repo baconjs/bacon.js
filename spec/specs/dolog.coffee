@@ -4,11 +4,11 @@ expect = require("chai").expect
 
 {
   expectStreamEvents,
-  once
+  once,
+  deferred
 } = require("../SpecHelper")
 
-# TODO why
-describe.skip "Observable.doLog", ->
+describe "Observable.doLog", ->
   originalConsole = console
   originalLog = console.log
   restoreLog = ->
