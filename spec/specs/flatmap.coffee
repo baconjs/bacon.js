@@ -92,7 +92,7 @@ describe "Property.flatMap", ->
       ->
         once = (x) -> Bacon.once(x)
         series(1, [1, 2]).toProperty(0).flatMap(once)
-      [0, 1, 2], semiunstable)
+      [0, 1, 2], unstable)
   describe "Works also when f returns a Property instead of an EventStream", ->
     expectPropertyEvents(
       -> series(1, [1,2]).toProperty().flatMap(Bacon.constant)
