@@ -9,6 +9,7 @@ import Property from "./property";
 import _ from "./_";
 import { Initial } from "./event";
 import Dispatcher from "./dispatcher";
+import describe from "./describe";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -16,7 +17,7 @@ import Dispatcher from "./dispatcher";
 // to the outside world, though.
 export const defaultOptions = { forceAsync: true }
 export const allowSync = { forceAsync: false }
-
+const defaultDesc = describe("Bacon", "new EventStream", [])
 export default function EventStream(desc, subscribe, handler, options = defaultOptions) {
   if (!(this instanceof EventStream)) {
     return new EventStream(desc, subscribe, handler);
@@ -24,7 +25,7 @@ export default function EventStream(desc, subscribe, handler, options = defaultO
   if (_.isFunction(desc)) {
     handler = subscribe;
     subscribe = desc;
-    desc = Desc.empty;
+    desc = defaultDesc;
   }
   if (options !== allowSync) { 
     subscribe = asyncWrapSubscribe(this, subscribe)

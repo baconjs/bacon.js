@@ -109,7 +109,6 @@ module.exports.testSideEffects = testSideEffects = (wrapper, method) ->
 
 module.exports.t = t = @t = (time) -> time
 seqs = []
-noDesc = Bacon.Desc?.empty
 
 verifyCleanup = ->
   for seq in seqs
@@ -476,7 +475,7 @@ module.exports.deferred = deferred
 Bacon.Observable?.prototype.onUnsub = (f) ->
   self = this
   ended = false
-  return new Bacon.EventStream noDesc, (sink) ->
+  return new Bacon.EventStream (sink) ->
     unsub = self.subscribe sink
     ->
       f()
