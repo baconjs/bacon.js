@@ -240,9 +240,14 @@ verifyPLateEval = (srcF, expectedEvents) ->
 
 verifyPIntermittentSubscriber = (srcF, expectedEvents) ->
   verifyPropertyWith "(with intermittent subscriber)", srcF, expectedEvents, (src, events, done) ->
-    take(1, src).subscribe(->)
+    otherEvents = []
+    take(1, src).subscribe((e) -> otherEvents.push(e))
     src.subscribe (event) ->
       if event.isEnd()
+        expectedValues = events.filter((e) -> e.hasValue()).slice(0, 1)
+        gotValues = otherEvents.filter((e) -> e.hasValue())
+        # verify that the "side subscriber" got expected values
+        expect(toValues(gotValues)).to.deep.equal(toValues(expectedValues))
         done()
       else
         events.push(event)
