@@ -13,7 +13,7 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
 
   return new PromiseCtr((resolve, reject) =>
     this.subscribe((event) => {
-      if (event.hasValue()) { resolve(event.value()); }
+      if (event.hasValue()) { resolve(event.value); }
       if (event.isError()) { reject(event.error); }
       // One event is enough
       return Bacon.noMore;

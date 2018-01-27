@@ -8,7 +8,7 @@ describe "EventStream constructor", ->
   it "Works with subscribe function only", ->
     values = []
     subscribe = (sink) ->
-      sink(new Bacon.Next(-> "hello"))
+      sink(new Bacon.Next("hello"))
       sink(new Bacon.End())
       ->
     s = new Bacon.EventStream(subscribe)
@@ -17,7 +17,7 @@ describe "EventStream constructor", ->
   it "Supports Desc argument", ->
     values = []
     subscribe = (sink) ->
-      sink(new Bacon.Next(-> "hello"))
+      sink(new Bacon.Next("hello"))
       sink(new Bacon.End())
       ->
     s = new Bacon.EventStream(new Bacon.Desc([]), subscribe)
@@ -54,13 +54,6 @@ describe "EventStream.toProperty", ->
     expectPropertyEvents(
       -> fromArray([1,2,3]).toProperty(0)
       [0,1,2,3], unstable)
-  it "preserves laziness", ->
-    calls = 0
-    id = (x) ->
-      calls++
-      x
-    skip(4, map(fromArray([1,2,3,4,5]), id).toProperty()).onValue()
-    expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.never().toProperty(0).toString()).to.equal("Bacon.never().toProperty(0)")
 

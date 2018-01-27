@@ -12,7 +12,7 @@ Bacon.Observable.prototype.takeUntil = function(stopper) {
       if (!event.hasValue()) {
         return this.push(event);
       } else {
-        var [data, stopper] = event.value();
+        var [data, stopper] = event.value;
         if (stopper.length) {
 //            console.log(_.toString(data), "stopped by", _.toString(stopper))
           return this.push(endEvent());

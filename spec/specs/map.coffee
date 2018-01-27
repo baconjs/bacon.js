@@ -44,13 +44,6 @@ describe "EventStream.map", ->
     expectStreamEvents(
       -> series(1, [1,2,3]).map(Bacon.constant(2))
       [2,2,2])
-  it "preserves laziness", ->
-    calls = 0
-    id = (x) ->
-      calls++
-      x
-    fromArray([1,2,3,4,5]).map(id).skip(4).onValue()
-    expect(calls).to.equal(1)
   it "toString", ->
     expect(Bacon.never().map(true).toString()).to.equal("Bacon.never().map(function)")
 

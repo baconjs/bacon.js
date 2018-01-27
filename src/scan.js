@@ -17,7 +17,7 @@ Bacon.Observable.prototype.scan = function(seed, f) {
       if (!initSent) {
         return acc.forEach(function(value) {
           initSent = initHandled = true;
-          reply = sink(new Initial(() => value));
+          reply = sink(new Initial(value));
           if (reply === Bacon.noMore) {
             unsub();
             unsub = nop;
@@ -35,10 +35,10 @@ Bacon.Observable.prototype.scan = function(seed, f) {
           if (!event.isInitial()) { sendInit(); }
           initSent = initHandled = true;
           var prev = acc.getOrElse(undefined);
-          var next = f(prev, event.value());
-          //console.log prev , ",", event.value(), "->", next
+          var next = f(prev, event.value);
+          //console.log prev , ",", event.value, "->", next
           acc = new Some(next);
-          return sink(event.apply(() => next));
+          return sink(event.apply(next));
         }
       } else {
         if (event.isEnd()) {

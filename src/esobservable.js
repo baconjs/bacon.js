@@ -24,7 +24,7 @@ ESObservable.prototype.subscribe = function(observerOrOnNext, onError, onComplet
       subscription.closed = true;
       if (observer.complete) observer.complete();
     } else if (observer.next) {
-      observer.next(event.value());
+      observer.next(event.value);
     }
   });
   return subscription;

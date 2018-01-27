@@ -25,7 +25,7 @@ extend(EventStream.prototype, {
   _isEventStream: true,
 
   toProperty(initValue_) {
-    var initValue = arguments.length === 0 ? None : toOption(function() { return initValue_; });
+    var initValue = arguments.length === 0 ? None : toOption(initValue_);
     var disp = this.dispatcher;
     var desc = new Bacon.Desc(this, "toProperty", [initValue_]);
     return new Property(desc, function(sink) {
@@ -50,12 +50,12 @@ extend(EventStream.prototype, {
       unsub = disp.subscribe(function(event) {
         if (event.hasValue()) {
           if (event.isInitial() && !subbed) {
-            initValue = new Some(() => event.value());
+            initValue = new Some(event.value);
             return Bacon.more;
           } else {
             if (!event.isInitial()) { sendInit(); }
             initSent = true;
-            initValue = new Some(event);
+            initValue = new Some(event.value);
             return sink(event);
           }
         } else {

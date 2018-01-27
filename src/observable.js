@@ -29,7 +29,7 @@ extend(Observable.prototype, {
   onValue() {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
-      if (event.hasValue()) { return f(event.value()); }
+      if (event.hasValue()) { return f(event.value); }
     });
   },
 

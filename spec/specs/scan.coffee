@@ -1,4 +1,4 @@
-# build-dependencies: bus, merge
+# build-dependencies: bus, merge, map
 
 describe "EventStream.scan", ->
   describe "accumulates values with given seed and accumulator function, passing through errors", ->

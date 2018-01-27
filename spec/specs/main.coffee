@@ -190,7 +190,7 @@ describe "Integration tests", ->
       bus = new Bacon.Bus()
       f = (v) ->
         if v.hasValue()
-          values.push(v.value())
+          values.push(v.value)
           return Bacon.noMore
       bus.subscribe(f)
       bus.subscribe(f)
@@ -201,7 +201,7 @@ describe "Integration tests", ->
       bus = new Bacon.Bus()
       f = (v) ->
         if v.hasValue()
-          values.push(v.value())
+          values.push(v.value)
       bus.subscribe(f)
       unsub = bus.subscribe(f)
       unsub()
@@ -484,7 +484,7 @@ describe "Integration tests", ->
               if event.isEnd()
                 bus.end()
               else
-                bus.push(event.value())
+                bus.push(event.value)
           bus
         [1])
     describe "poking for errors 2", ->
@@ -501,7 +501,7 @@ describe "Integration tests", ->
               if event.isEnd()
                 bus.end()
               else
-                bus.push(event.value())
+                bus.push(event.value)
           bus
         [1]
       )

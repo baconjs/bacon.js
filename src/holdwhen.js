@@ -19,7 +19,7 @@ Bacon.EventStream.prototype.holdWhen = function(valve) {
     composite.add(function(unsubAll, unsubMe) {
       return valve.subscribeInternal(function(event) {
         if (event.hasValue()) {
-          onHold = event.value();
+          onHold = event.value;
           if (!onHold) {
             var toSend = bufferedValues;
             bufferedValues = [];
@@ -46,7 +46,7 @@ Bacon.EventStream.prototype.holdWhen = function(valve) {
     composite.add(function(unsubAll, unsubMe) {
       return src.subscribeInternal(function(event) {
         if (onHold && event.hasValue()) {
-          return bufferedValues.push(event.value());
+          return bufferedValues.push(event.value);
         } else if (event.isEnd() && bufferedValues.length) {
           srcIsEnded = true;
           return endIfBothEnded(unsubMe);

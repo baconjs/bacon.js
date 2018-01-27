@@ -21,10 +21,7 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
               checkEnd(unsubMe);
               return Bacon.noMore;
             } else {
-              if ((typeof event !== "undefined" && event !== null) ? event._isInitial : undefined) {
-                // To support Property as the spawned stream
-                event = event.toNext();
-              }
+              event = event.toNext(); // To support Property as the spawned stream
               var reply = sink(event);
               if (reply === Bacon.noMore) { unsubAll(); }
               return reply;
@@ -69,7 +66,7 @@ Bacon.Observable.prototype.flatMap_ = function(f, params = { }) {
     return result;
   };
   
-  const handleEventValueWith = f => event => f(event.value())
+  const handleEventValueWith = f => event => f(event.value)
 
   var makeSpawner = function(args) {
     if (args.length === 1 && isObservable(args[0])) {
