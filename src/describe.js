@@ -1,4 +1,4 @@
-import { extend, isArray, isObservable, assert } from "./helpers";
+import { extend, isArray, isObservable } from "./helpers";
 import _ from "./_";
 
 export function Desc(context, method, args) {

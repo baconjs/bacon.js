@@ -21,12 +21,8 @@ export function whenP() {
 
 export default when;
 
-export function when_(ctor, sourceArgs) {
-  if (sourceArgs.length === 0) { return never(); }
+function extractPatternsAndSources(sourceArgs) {
   var len = sourceArgs.length;
-  var usage = "when: expecting arguments in the form (Observable+,function)+";
-
-  assert(usage, (len % 2 === 0));
   var sources = [];
   var pats = [];
   var i = 0;
@@ -64,6 +60,15 @@ export function when_(ctor, sourceArgs) {
     }
     i = i + 2;
   }
+  var usage = "when: expecting arguments in the form (Observable+,function)+";
+  assert(usage, (len % 2 === 0));
+  return [sources, pats, patterns]
+}
+
+export function when_(ctor, sourceArgs) {
+  if (sourceArgs.length === 0) { return never(); }
+  var [sources, pats, patterns] = extractPatternsAndSources(sourceArgs)
+
 
   if (!sources.length) {
     return never();
@@ -77,37 +82,37 @@ export function when_(ctor, sourceArgs) {
     var triggers = [];
     var ends = false;
     function match(p) {
-      for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
-        i = p.ixs[i1];
-        if (!sources[i.index].hasAtLeast(i.count)) {
+      for (var i = 0; i < p.ixs.length; i++) {
+        let ix = p.ixs[i];
+        if (!sources[ix.index].hasAtLeast(ix.count)) {
           return false;
         }
       }
       return true;
-    };
+    }
     function cannotMatch(p) {
-      for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
-        i = p.ixs[i1];
-        if (!sources[i.index].mayHave(i.count)) {
+      for (var i = 0; i < p.ixs.length; i++) {
+        let ix = p.ixs[i];
+        if (!sources[ix.index].mayHave(ix.count)) {
           return true;
         }
       }
-    };
-    function nonFlattened(trigger) { return !trigger.source.flatten; };
+    }
+    function nonFlattened(trigger) { return !trigger.source.flatten; }
     function part(source) { return function(unsubAll) {
       function flushLater() {
         return UpdateBarrier.whenDoneWith(resultStream, flush);
-      };
+      }
       function flushWhileTriggers() {
         if (triggers.length > 0) {
           var reply = more;
           var trigger = triggers.pop();
-          for (var i1 = 0, p; i1 < pats.length; i1++) {
-            p = pats[i1];
+          for (var i = 0, p; i < pats.length; i++) {
+            p = pats[i];
             if (match(p)) {
               const values = [];
-              for (var i = 0, i; i < p.ixs.length; i++) {
-                let event = sources[p.ixs[i].index].consume()
+              for (var j = 0; j < p.ixs.length; j++) {
+                let event = sources[p.ixs[j].index].consume()
                 values.push(event.value);
               }
               //console.log("flushing values", values)
@@ -127,7 +132,7 @@ export function when_(ctor, sourceArgs) {
         } else {
           return more;
         }
-      };
+      }
       function flush() {
         //console.log "flushing", _.toString(resultStream)
         var reply = flushWhileTriggers();
@@ -142,7 +147,7 @@ export function when_(ctor, sourceArgs) {
         if (reply === noMore) { unsubAll(); }
         //console.log "flushed"
         return reply;
-      };
+      }
       return source.subscribe(function(e) {
         if (e.isEnd()) {
           //console.log "got end"
@@ -163,13 +168,13 @@ export function when_(ctor, sourceArgs) {
         if (reply === noMore) { unsubAll(); }
         return reply || more;
       });
-    };
-    };
+    }
+    }
 
     return new CompositeUnsubscribe((() => {
       var result = [];
-      for (var i1 = 0, s; i1 < sources.length; i1++) {
-        s = sources[i1];
+      for (var i = 0, s; i < sources.length; i++) {
+        s = sources[i];
         result.push(part(s));
       }
       return result;
@@ -192,10 +197,10 @@ function containsDuplicateDeps(observables, state = []) {
         return false;
       }
     }
-  };
+  }
 
   return _.any(observables, checkObservable);
-};
+}
 
 function constantToFunction(f) {
   if (_.isFunction(f)) {
@@ -203,10 +208,10 @@ function constantToFunction(f) {
   } else {
     return _.always(f);
   }
-};
+}
 
 function cannotSync(source) {
   return !source.sync || source.ended;
-};
+}
 
 Bacon.when = when;

@@ -1475,12 +1475,8 @@
     function whenP() {
         return when_(propertyFromStreamSubscribe, arguments);
     }
-    function when_(ctor, sourceArgs) {
-        if (sourceArgs.length === 0) {
-            return never();
-        }
+    function extractPatternsAndSources(sourceArgs) {
         var len = sourceArgs.length;
-        var usage = 'when: expecting arguments in the form (Observable+,function)+';
         var sources = [];
         var pats = [];
         var i = 0;
@@ -1521,6 +1517,18 @@
             }
             i = i + 2;
         }
+        var usage = 'when: expecting arguments in the form (Observable+,function)+';
+        return [
+            sources,
+            pats,
+            patterns
+        ];
+    }
+    function when_(ctor, sourceArgs) {
+        if (sourceArgs.length === 0) {
+            return never();
+        }
+        var _extractPatternsAndSo = extractPatternsAndSources(sourceArgs), sources = _extractPatternsAndSo[0], pats = _extractPatternsAndSo[1], patterns = _extractPatternsAndSo[2];
         if (!sources.length) {
             return never();
         }
@@ -1535,18 +1543,18 @@
             var triggers = [];
             var ends = false;
             function match(p) {
-                for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
-                    i = p.ixs[i1];
-                    if (!sources[i.index].hasAtLeast(i.count)) {
+                for (var i = 0; i < p.ixs.length; i++) {
+                    var ix = p.ixs[i];
+                    if (!sources[ix.index].hasAtLeast(ix.count)) {
                         return false;
                     }
                 }
                 return true;
             }
             function cannotMatch(p) {
-                for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
-                    i = p.ixs[i1];
-                    if (!sources[i.index].mayHave(i.count)) {
+                for (var i = 0; i < p.ixs.length; i++) {
+                    var ix = p.ixs[i];
+                    if (!sources[ix.index].mayHave(ix.count)) {
                         return true;
                     }
                 }
@@ -1563,12 +1571,12 @@
                         if (triggers.length > 0) {
                             var reply = more;
                             var trigger = triggers.pop();
-                            for (var i1 = 0, p; i1 < pats.length; i1++) {
-                                p = pats[i1];
+                            for (var i = 0, p; i < pats.length; i++) {
+                                p = pats[i];
                                 if (match(p)) {
                                     var values = [];
-                                    for (var i = 0, i; i < p.ixs.length; i++) {
-                                        var event = sources[p.ixs[i].index].consume();
+                                    for (var j = 0; j < p.ixs.length; j++) {
+                                        var event = sources[p.ixs[j].index].consume();
                                         values.push(event.value);
                                     }
                                     var applied = p.f.apply(null, values);
@@ -1630,8 +1638,8 @@
             }
             return new CompositeUnsubscribe(function () {
                 var result = [];
-                for (var i1 = 0, s; i1 < sources.length; i1++) {
-                    s = sources[i1];
+                for (var i = 0, s; i < sources.length; i++) {
+                    s = sources[i];
                     result.push(part(s));
                 }
                 return result;

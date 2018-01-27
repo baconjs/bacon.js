@@ -1,7 +1,7 @@
 import Observable from "./observable";
 import UpdateBarrier from "./updatebarrier";
 import { Desc } from "./describe";
-import { inherit, extend, nop, assertFunction } from "./helpers";
+import { inherit, extend, nop } from "./helpers";
 import { registerObs } from "./spy";
 import { more, noMore } from "./reply";
 import { None, Some, toOption } from "./optional";
