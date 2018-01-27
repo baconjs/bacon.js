@@ -14,14 +14,22 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
     const root = this
     const rootDep = [root];
     const childDeps = [];
-    const ctor = this._isProperty
+    const isProperty = this._isProperty
+    const ctor = isProperty
       ? propertyFromStreamSubscribe
       : EventStream
+    let initialSpawned = false
     
     var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
       var spawn = function(event) {
+        if (isProperty && event.isInitial()) {
+          if (initialSpawned) {
+            return more;
+          }
+          initialSpawned = true
+        }
         var child = makeObservable(f(event));
         childDeps.push(child);
         return composite.add(function(unsubAll, unsubMe) {
