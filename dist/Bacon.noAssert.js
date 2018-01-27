@@ -1534,7 +1534,7 @@
         var resultStream = ctor(desc, function (sink) {
             var triggers = [];
             var ends = false;
-            var match = function (p) {
+            function match(p) {
                 for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
                     i = p.ixs[i1];
                     if (!sources[i.index].hasAtLeast(i.count)) {
@@ -1542,27 +1542,24 @@
                     }
                 }
                 return true;
-            };
-            var cannotSync = function (source) {
-                return !source.sync || source.ended;
-            };
-            var cannotMatch = function (p) {
+            }
+            function cannotMatch(p) {
                 for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
                     i = p.ixs[i1];
                     if (!sources[i.index].mayHave(i.count)) {
                         return true;
                     }
                 }
-            };
-            var nonFlattened = function (trigger) {
+            }
+            function nonFlattened(trigger) {
                 return !trigger.source.flatten;
-            };
-            var part = function (source) {
+            }
+            function part(source) {
                 return function (unsubAll) {
-                    var flushLater = function () {
+                    function flushLater() {
                         return UpdateBarrier.whenDoneWith(resultStream, flush);
-                    };
-                    var flushWhileTriggers = function () {
+                    }
+                    function flushWhileTriggers() {
                         if (triggers.length > 0) {
                             var reply = more;
                             var trigger = triggers.pop();
@@ -1589,8 +1586,8 @@
                         } else {
                             return more;
                         }
-                    };
-                    var flush = function () {
+                    }
+                    function flush() {
                         var reply = flushWhileTriggers();
                         if (ends) {
                             if (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
@@ -1602,7 +1599,7 @@
                             unsubAll();
                         }
                         return reply;
-                    };
+                    }
                     return source.subscribe(function (e) {
                         if (e.isEnd()) {
                             ends = true;
@@ -1630,7 +1627,7 @@
                         return reply || more;
                     });
                 };
-            };
+            }
             return new CompositeUnsubscribe(function () {
                 var result = [];
                 for (var i1 = 0, s; i1 < sources.length; i1++) {
@@ -1642,9 +1639,9 @@
         });
         return resultStream;
     }
-    var containsDuplicateDeps = function (observables) {
+    function containsDuplicateDeps(observables) {
         var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-        var checkObservable = function (obs) {
+        function checkObservable(obs) {
             if (_.contains(state, obs)) {
                 return true;
             } else {
@@ -1657,16 +1654,19 @@
                     return false;
                 }
             }
-        };
+        }
         return _.any(observables, checkObservable);
-    };
-    var constantToFunction = function (f) {
+    }
+    function constantToFunction(f) {
         if (_.isFunction(f)) {
             return f;
         } else {
             return _.always(f);
         }
-    };
+    }
+    function cannotSync(source) {
+        return !source.sync || source.ended;
+    }
     Bacon.when = when;
     function groupSimultaneous() {
         for (var _len = arguments.length, streams = Array(_len), _key = 0; _key < _len; _key++) {

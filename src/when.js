@@ -70,13 +70,13 @@ export function when_(ctor, sourceArgs) {
   }
 
   sources = _.map(Source.fromObservable, sources);
-  var needsBarrier = (_.any(sources, function(s) { return s.flatten; })) && containsDuplicateDeps(_.map((function(s) { return s.obs; }), sources));
+  var needsBarrier = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources));
 
   var desc = new Desc(Bacon, "when", patterns);
   var resultStream = ctor(desc, function(sink) {
     var triggers = [];
     var ends = false;
-    var match = function(p) {
+    function match(p) {
       for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
         i = p.ixs[i1];
         if (!sources[i.index].hasAtLeast(i.count)) {
@@ -85,10 +85,7 @@ export function when_(ctor, sourceArgs) {
       }
       return true;
     };
-    var cannotSync = function(source) {
-      return !source.sync || source.ended;
-    };
-    var cannotMatch = function(p) {
+    function cannotMatch(p) {
       for (var i1 = 0, i; i1 < p.ixs.length; i1++) {
         i = p.ixs[i1];
         if (!sources[i.index].mayHave(i.count)) {
@@ -96,12 +93,12 @@ export function when_(ctor, sourceArgs) {
         }
       }
     };
-    var nonFlattened = function(trigger) { return !trigger.source.flatten; };
-    var part = function(source) { return function(unsubAll) {
-      var flushLater = function() {
+    function nonFlattened(trigger) { return !trigger.source.flatten; };
+    function part(source) { return function(unsubAll) {
+      function flushLater() {
         return UpdateBarrier.whenDoneWith(resultStream, flush);
       };
-      var flushWhileTriggers = function() {
+      function flushWhileTriggers() {
         if (triggers.length > 0) {
           var reply = more;
           var trigger = triggers.pop();
@@ -131,7 +128,7 @@ export function when_(ctor, sourceArgs) {
           return more;
         }
       };
-      var flush = function() {
+      function flush() {
         //console.log "flushing", _.toString(resultStream)
         var reply = flushWhileTriggers();
         if (ends) {
@@ -181,8 +178,8 @@ export function when_(ctor, sourceArgs) {
   return resultStream;
 }
 
-var containsDuplicateDeps = function(observables, state = []) {
-  var checkObservable = function(obs) {
+function containsDuplicateDeps(observables, state = []) {
+  function checkObservable(obs) {
     if (_.contains(state, obs)) {
       return true;
     } else {
@@ -200,12 +197,16 @@ var containsDuplicateDeps = function(observables, state = []) {
   return _.any(observables, checkObservable);
 };
 
-var constantToFunction = function(f) {
+function constantToFunction(f) {
   if (_.isFunction(f)) {
     return f;
   } else {
     return _.always(f);
   }
+};
+
+function cannotSync(source) {
+  return !source.sync || source.ended;
 };
 
 Bacon.when = when;
