@@ -108,26 +108,13 @@ export function when_(ctor, sourceArgs) {
           for (var i1 = 0, p; i1 < pats.length; i1++) {
             p = pats[i1];
             if (match(p)) {
-              //console.log "match", p
-              // TODO: simplify
-              var events = ((() => {
-                var result = [];
-                for (var i2 = 0, i; i2 < p.ixs.length; i2++) {
-                  i = p.ixs[i2];
-                  result.push(sources[i.index].consume());
-                }
-                return result;
-              })());
-              var values = ((() => {
-                var result = [];
-                for (var i2 = 0, event; i2 < events.length; i2++) {
-                  event = events[i2];
-                  result.push(event.value);
-                }
-                return result;
-              })());
+              const values = [];
+              for (var i = 0, i; i < p.ixs.length; i++) {
+                let event = sources[p.ixs[i].index].consume()
+                values.push(event.value);
+              }
               //console.log("flushing values", values)
-              let applied = p.f(...values);
+              let applied = p.f.apply(null, values);
               //console.log('sinking', applied)
               reply = sink(trigger.e.apply(applied));
               if (triggers.length) {

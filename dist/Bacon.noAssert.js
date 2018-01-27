@@ -1569,24 +1569,12 @@
                             for (var i1 = 0, p; i1 < pats.length; i1++) {
                                 p = pats[i1];
                                 if (match(p)) {
-                                    var _p;
-                                    var events = function () {
-                                        var result = [];
-                                        for (var i2 = 0, i; i2 < p.ixs.length; i2++) {
-                                            i = p.ixs[i2];
-                                            result.push(sources[i.index].consume());
-                                        }
-                                        return result;
-                                    }();
-                                    var values = function () {
-                                        var result = [];
-                                        for (var i2 = 0, event; i2 < events.length; i2++) {
-                                            event = events[i2];
-                                            result.push(event.value);
-                                        }
-                                        return result;
-                                    }();
-                                    var applied = (_p = p).f.apply(_p, values);
+                                    var values = [];
+                                    for (var i = 0, i; i < p.ixs.length; i++) {
+                                        var event = sources[p.ixs[i].index].consume();
+                                        values.push(event.value);
+                                    }
+                                    var applied = p.f.apply(null, values);
                                     reply = sink(trigger.e.apply(applied));
                                     if (triggers.length) {
                                         triggers = _.filter(nonFlattened, triggers);
