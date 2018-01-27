@@ -13,14 +13,6 @@ Bacon.scheduler = sc
 module.exports.expectError = expectError = (errorText, f) ->
   expect(f).to.throw(Error, errorText)
 
-module.exports.endlessly = endlessly = (values...) ->
-  index = 0
-  reply = Bacon.more
-  Bacon.fromBinder (sink) ->
-    while reply != Bacon.noMore
-      reply = sink(new Bacon.Next(values[index++ % values.length]))
-    -> reply = Bacon.noMore
-
 module.exports.lessThan = lessThan = (limit) ->
   (x) -> x < limit
 module.exports.times = times = (x, y) -> x * y
