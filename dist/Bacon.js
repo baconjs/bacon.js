@@ -635,7 +635,6 @@ var UpdateBarrier = function () {
   }
 
   function afterTransaction(obs, f) {
-    assertFunction(f);
     if (rootEvent || processingAfters) {
       ensureStackHeight(1);
       var stackIndexForThisObs = 0;
