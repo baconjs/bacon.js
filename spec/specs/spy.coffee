@@ -22,4 +22,4 @@ describe "Bacon.spy", ->
     it "map", ->
       testSpy 2, -> once(1).map(->)
     it "combineTemplate (also called for the intermediate combineAsArray property)", ->
-      testSpy 5, -> Bacon.combineTemplate([once(1), Bacon.constant(2)])
+      testSpy 4, -> Bacon.combineTemplate([once(1), Bacon.constant(2)])

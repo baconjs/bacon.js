@@ -88,20 +88,17 @@ describe "EventStream.flatMap", ->
 
 describe "Property.flatMap", ->
   describe "should spawn new stream for all events including Init", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       ->
         once = (x) -> Bacon.once(x)
         series(1, [1, 2]).toProperty(0).flatMap(once)
       [0, 1, 2], semiunstable)
   describe "Works also when f returns a Property instead of an EventStream", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(1, [1,2]).toProperty().flatMap(Bacon.constant)
       [1,2], semiunstable)
-    expectPropertyEvents(
-      -> series(1, [1,2]).toProperty().flatMap(Bacon.constant).toProperty()
-      [1,2], semiunstable)
   describe "works for synchronous source", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       ->
         once = (x) -> Bacon.once(x)
         fromArray([1, 2]).toProperty(0).flatMap(once)

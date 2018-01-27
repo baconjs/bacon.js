@@ -4,6 +4,7 @@ expect = require("chai").expect
 
 {
   expectStreamEvents,
+  expectPropertyEvents,
   error,
   fromArray,
   series,
@@ -33,12 +34,12 @@ describe "EventStream.flatMapLatest", ->
 
 describe "Property.flatMapLatest", ->
   describe "spawns new streams but collects values from the latest spawned stream only", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> series(3, [1, 2]).toProperty(0).flatMapLatest (value) ->
         series(t(2), [value, value])
       [0, 1, 2, 2], semiunstable)
   describe "Accepts a constant EventStream/Property as an alternative to a function", ->
-    expectStreamEvents(
+    expectPropertyEvents(
       -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"], semiunstable)
   it "toString", ->

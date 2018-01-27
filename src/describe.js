@@ -1,13 +1,14 @@
-import { extend, isArray, isObservable } from "./helpers";
+import { extend, isArray, isObservable, assert } from "./helpers";
 import _ from "./_";
 
 export function Desc(context, method, args) {
+  assert("context missing", context)
+  assert("method missing", method)
+  assert("args missing", args)
   this.context = context;
   this.method = method;
   this.args = args;
 }
-
-Desc.empty = new Desc("", "", []);
 
 extend(Desc.prototype, {
   _isDesc: true,
@@ -18,25 +19,26 @@ extend(Desc.prototype, {
     return this.cached;
   },
   toString() {
-    return _.toString(this.context) + "." + _.toString(this.method) + "(" + _.map(_.toString, this.args) + ")";
+    let args = _.map(_.toString, this.args)
+    return  _.toString(this.context) + "." + _.toString(this.method) + "(" + args + ")";
   }
 });
 
-var describe = function(context, method, ...args) {
+export function describe (context, method, ...args) {
   const ref = context || method;
   if (ref && ref._isDesc) {
     return context || method;
   } else {
     return new Desc(context, method, args);
   }
-};
+}
 
-var withDesc = function(desc, obs) {
+export function withDesc(desc, obs) {
   obs.desc = desc;
   return obs;
-};
+}
 
-var findDeps = function(x) {
+export function findDeps (x) {
   if (isArray(x)) {
     return _.flatMap(findDeps, x);
   } else if (isObservable(x)) {
@@ -46,6 +48,6 @@ var findDeps = function(x) {
   } else {
     return [];
   }
-};
+}
 
-export { withDesc, findDeps, describe }
+export default describe

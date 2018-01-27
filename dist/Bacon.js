@@ -535,12 +535,13 @@ var spy = (function (spy) {
 });
 
 function Desc(context, method, args) {
+  assert("context missing", context);
+  assert("method missing", method);
+  assert("args missing", args);
   this.context = context;
   this.method = method;
   this.args = args;
 }
-
-Desc.empty = new Desc("", "", []);
 
 extend(Desc.prototype, {
   _isDesc: true,
@@ -551,11 +552,12 @@ extend(Desc.prototype, {
     return this.cached;
   },
   toString: function () {
-    return _.toString(this.context) + "." + _.toString(this.method) + "(" + _.map(_.toString, this.args) + ")";
+    var args = _.map(_.toString, this.args);
+    return _.toString(this.context) + "." + _.toString(this.method) + "(" + args + ")";
   }
 });
 
-var describe = function (context, method) {
+function describe(context, method) {
   var ref = context || method;
   if (ref && ref._isDesc) {
     return context || method;
@@ -566,14 +568,14 @@ var describe = function (context, method) {
 
     return new Desc(context, method, args);
   }
-};
+}
 
-var withDesc = function (desc, obs) {
+function withDesc(desc, obs) {
   obs.desc = desc;
   return obs;
-};
+}
 
-var findDeps = function (x) {
+function findDeps(x) {
   if (isArray(x)) {
     return _.flatMap(findDeps, x);
   } else if (isObservable(x)) {
@@ -583,7 +585,7 @@ var findDeps = function (x) {
   } else {
     return [];
   }
-};
+}
 
 var scheduler = {
   setTimeout: function (f, d) {
@@ -774,6 +776,7 @@ var UpdateBarrier = function () {
   }
 
   function wrappedSubscribe(obs, sink) {
+    assertFunction(sink);
     var unsubd = false;
     var shouldUnsub = false;
     var doUnsub = function () {
@@ -1049,6 +1052,7 @@ function toFieldKey(f) {
 var idCounter = 0;
 
 function Observable(desc) {
+  assert("desc missing", desc);
   this.desc = desc;
   this.id = ++idCounter;
   this.initialDesc = this.desc;
@@ -1179,6 +1183,11 @@ extend(PropertyDispatcher.prototype, {
   }
 });
 
+function propertyFromStreamSubscribe(desc, subscribe) {
+  assertFunction(subscribe);
+  return new Property(desc, streamSubscribeToPropertySubscribe(None, subscribe));
+}
+
 function Property(desc, subscribe, handler) {
   Observable.call(this, desc);
   assertFunction(subscribe);
@@ -1211,27 +1220,108 @@ extend(Property.prototype, {
   toEventStream: function () {
     var _this3 = this;
 
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
+
     return new EventStream(new Desc(this, "toEventStream", []), function (sink) {
       return _this3.dispatcher.subscribe(function (event) {
         return sink(event.toNext());
       });
-    });
+    }, null, options);
   }
 });
 
+var defaultOptions = { forceAsync: true };
+var allowSync = { forceAsync: false };
+var defaultDesc = describe("Bacon", "new EventStream", []);
 function EventStream(desc, subscribe, handler) {
+  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : defaultOptions;
+
   if (!(this instanceof EventStream)) {
     return new EventStream(desc, subscribe, handler);
   }
   if (_.isFunction(desc)) {
     handler = subscribe;
     subscribe = desc;
-    desc = Desc.empty;
+    desc = defaultDesc;
+  }
+  if (options !== allowSync) {
+    subscribe = asyncWrapSubscribe(this, subscribe);
   }
   Observable.call(this, desc);
   assertFunction(subscribe);
   this.dispatcher = new Dispatcher(subscribe, handler);
   registerObs(this);
+}
+
+function asyncWrapSubscribe(obs, subscribe) {
+  assertFunction(subscribe);
+  var subscribing = false;
+  return function wrappedSubscribe(sink) {
+    assertFunction(sink);
+    subscribing = true;
+    try {
+      return subscribe(function wrappedSink(event) {
+        if (subscribing) {
+          UpdateBarrier.soonButNotYet(obs, function () {
+            sink(event);
+          });
+        } else {
+          return sink(event);
+        }
+      });
+    } finally {
+      subscribing = false;
+    }
+  };
+}
+
+function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
+  assertFunction(streamSubscribe);
+  return function (sink) {
+    var initSent = false;
+    var subbed = false;
+    var unsub = nop;
+    var reply = more;
+    var sendInit = function () {
+      if (!initSent) {
+        return initValue.forEach(function (value) {
+          initSent = true;
+          reply = sink(new Initial(value));
+          if (reply === noMore) {
+            unsub();
+            unsub = nop;
+            return nop;
+          }
+        });
+      }
+    };
+
+    unsub = streamSubscribe(function (event) {
+      if (event.hasValue()) {
+        if (event.isInitial() && !subbed) {
+          initValue = new Some(event.value);
+          return more;
+        } else {
+          if (!event.isInitial()) {
+            sendInit();
+          }
+          initSent = true;
+          initValue = new Some(event.value);
+          return sink(event);
+        }
+      } else {
+        if (event.isEnd()) {
+          reply = sendInit();
+        }
+        if (reply !== noMore) {
+          return sink(event);
+        }
+      }
+    });
+    subbed = true;
+    sendInit();
+    return unsub;
+  };
 }
 
 inherit(EventStream, Observable);
@@ -1242,51 +1332,10 @@ extend(EventStream.prototype, {
     var initValue = arguments.length === 0 ? None : toOption(initValue_);
     var disp = this.dispatcher;
     var desc = new Desc(this, "toProperty", [initValue_]);
-    return new Property(desc, function (sink) {
-      var initSent = false;
-      var subbed = false;
-      var unsub = nop;
-      var reply = more;
-      var sendInit = function () {
-        if (!initSent) {
-          return initValue.forEach(function (value) {
-            initSent = true;
-            reply = sink(new Initial(value));
-            if (reply === noMore) {
-              unsub();
-              unsub = nop;
-              return nop;
-            }
-          });
-        }
-      };
-
-      unsub = disp.subscribe(function (event) {
-        if (event.hasValue()) {
-          if (event.isInitial() && !subbed) {
-            initValue = new Some(event.value);
-            return more;
-          } else {
-            if (!event.isInitial()) {
-              sendInit();
-            }
-            initSent = true;
-            initValue = new Some(event.value);
-            return sink(event);
-          }
-        } else {
-          if (event.isEnd()) {
-            reply = sendInit();
-          }
-          if (reply !== noMore) {
-            return sink(event);
-          }
-        }
-      });
-      subbed = true;
-      sendInit();
-      return unsub;
-    });
+    var streamSubscribe = function (sink) {
+      return disp.subscribe(sink);
+    };
+    return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
   },
   toEventStream: function () {
     return this;
@@ -1568,10 +1617,18 @@ Source.fromObservable = function (s) {
 };
 
 function when() {
-  if (arguments.length === 0) {
+  return when_(EventStream, arguments);
+}
+
+function whenP() {
+  return when_(propertyFromStreamSubscribe, arguments);
+}
+
+function when_(ctor, sourceArgs) {
+  if (sourceArgs.length === 0) {
     return never();
   }
-  var len = arguments.length;
+  var len = sourceArgs.length;
   var usage = "when: expecting arguments in the form (Observable+,function)+";
 
   assert(usage, len % 2 === 0);
@@ -1580,10 +1637,10 @@ function when() {
   var i = 0;
   var patterns = [];
   while (i < len) {
-    patterns[i] = arguments[i];
-    patterns[i + 1] = arguments[i + 1];
-    var patSources = _.toArray(arguments[i]);
-    var f = constantToFunction(arguments[i + 1]);
+    patterns[i] = sourceArgs[i];
+    patterns[i + 1] = sourceArgs[i + 1];
+    var patSources = _.toArray(sourceArgs[i]);
+    var f = constantToFunction(sourceArgs[i + 1]);
     var pat = { f: f, ixs: [] };
     var triggerFound = false;
     for (var j = 0, s; j < patSources.length; j++) {
@@ -1625,7 +1682,7 @@ function when() {
   }, sources));
 
   var desc = new Desc(Bacon, "when", patterns);
-  var resultStream = new EventStream(desc, function (sink) {
+  var resultStream = ctor(desc, function (sink) {
     var triggers = [];
     var ends = false;
     var match = function (p) {
@@ -1787,6 +1844,12 @@ function groupSimultaneous() {
     streams[_key] = arguments[_key];
   }
 
+  return groupSimultaneous_(streams);
+}
+
+function groupSimultaneous_(streams) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultOptions;
+
   if (streams.length === 1 && isArray(streams[0])) {
     streams = streams[0];
   }
@@ -1797,20 +1860,23 @@ function groupSimultaneous() {
     }
     return result;
   }();
-  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when(sources, function () {
+  var ctor = function (desc, subscribe) {
+    return new EventStream(desc, subscribe, null, options);
+  };
+  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, function () {
     for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       xs[_key2] = arguments[_key2];
     }
 
     return xs;
-  }));
+  }]));
 }
 
 Bacon.groupSimultaneous = groupSimultaneous;
 
 function awaiting(other) {
   var desc = new Desc(this, "awaiting", [other]);
-  return withDesc(desc, groupSimultaneous(this, other).map(function (values) {
+  return withDesc(desc, groupSimultaneous_([this, other], allowSync).map(function (values) {
     return values[1].length === 0;
   }).toProperty(false).skipDuplicates());
 }
@@ -1841,13 +1907,13 @@ Bacon.combineAsArray = function () {
       var stream = isObservable(streams[i]) ? streams[i] : Bacon.constant(streams[i]);
       sources.push(new Source(stream, true));
     }
-    return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), when(sources, function () {
+    return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), whenP(sources, function () {
       for (var _len = arguments.length, xs = Array(_len), _key = 0; _key < _len; _key++) {
         xs[_key] = arguments[_key];
       }
 
       return xs;
-    }).toProperty());
+    }));
   } else {
     return constant([]);
   }
@@ -2018,11 +2084,20 @@ Observable.prototype.flatMap_ = function (f) {
   var root = this;
   var rootDep = [root];
   var childDeps = [];
+  var isProperty = this._isProperty;
+  var ctor = isProperty ? propertyFromStreamSubscribe : EventStream;
+  var initialSpawned = false;
 
-  var result = new EventStream(params.desc || new Desc(this, "flatMap_", arguments), function (sink) {
+  var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function (sink) {
     var composite = new CompositeUnsubscribe();
     var queue = [];
     var spawn = function (event) {
+      if (isProperty && event.isInitial()) {
+        if (initialSpawned) {
+          return more;
+        }
+        initialSpawned = true;
+      }
       var child = makeObservable(f(event));
       childDeps.push(child);
       return composite.add(function (unsubAll, unsubMe) {
@@ -2141,7 +2216,7 @@ function addPropertyInitValueToStream(property, stream) {
       return sink(endEvent());
     });
     return unsub;
-  });
+  }, null, allowSync);
   return justInitValue.concat(stream).toProperty();
 }
 
@@ -2391,7 +2466,7 @@ var liftCallback = function (desc, wrapped) {
       args[_key - 1] = arguments[_key];
     }
 
-    return withDesc(new Desc(Bacon, desc, [f].concat(args)), Bacon.combineAsArray(args).flatMap(stream));
+    return withDesc(new Desc(Bacon, desc, [f].concat(args)), Bacon.combineAsArray(args).flatMap(stream).changes());
   });
 };
 
@@ -2533,7 +2608,7 @@ Observable.prototype.skipErrors = function () {
 
 Observable.prototype.takeUntil = function (stopper) {
   var endMarker = {};
-  var withEndMarker = groupSimultaneous(this.mapEnd(endMarker), stopper.skipErrors());
+  var withEndMarker = groupSimultaneous_([this.mapEnd(endMarker), stopper.skipErrors()], allowSync);
   if (this instanceof Property) withEndMarker = withEndMarker.toProperty();
   var impl = withEndMarker.withHandler(function (event) {
     if (!event.hasValue()) {
@@ -2564,10 +2639,12 @@ Observable.prototype.takeUntil = function (stopper) {
 
 Observable.prototype.flatMapLatest = function () {
   var f = makeSpawner(arguments);
-  var stream = this.toEventStream();
-  return withDesc(new Desc(this, "flatMapLatest", [f]), stream.flatMap(function (value) {
+  var stream = this._isProperty ? this.toEventStream(allowSync) : this;
+  var flatMapped = stream.flatMap(function (value) {
     return makeObservable(f(value)).takeUntil(stream);
-  }));
+  });
+  if (this._isProperty) flatMapped = flatMapped.toProperty();
+  return withDesc(new Desc(this, "flatMapLatest", [f]), flatMapped);
 };
 
 Property.prototype.delayChanges = function (desc, f) {
@@ -2866,8 +2943,8 @@ Property.prototype.sampledBy = function (sampler, combinator) {
   }
   var thisSource = new Source(this, false);
   var samplerSource = new Source(sampler, true);
-  var stream = Bacon.when([thisSource, samplerSource], combinator);
-  var result = sampler._isProperty ? stream.toProperty() : stream;
+  var w = sampler._isProperty ? whenP : when;
+  var result = w([thisSource, samplerSource], combinator);
   return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 

@@ -1,6 +1,6 @@
 import "./map";
 import constant from "./constant";
-import when from "./when";
+import { whenP } from "./when";
 import { argumentsToObservables, argumentsToObservablesAndFunction } from "./argumentstoobservables";
 import { withDesc, Desc } from "./describe";
 import { toCombinator } from "./functionconstruction";
@@ -20,7 +20,7 @@ Bacon.combineAsArray = function() {
       sources.push(new Source(stream, true));
     }
     return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), 
-                    when(sources, (function(...xs) { return xs; })).toProperty());
+        whenP(sources, function(...xs) { return xs; }));
   } else {
     return constant([]);
   }

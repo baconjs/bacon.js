@@ -9,10 +9,21 @@ import _ from "./_";
 import { assert } from "./helpers";
 import never from "./never";
 import Bacon from "./core";
+import { propertyFromStreamSubscribe } from "./property"
 
-export default function when() {
-  if (arguments.length === 0) { return never(); }
-  var len = arguments.length;
+export function when() {
+  return when_(EventStream, arguments)
+}
+
+export function whenP() {
+  return when_(propertyFromStreamSubscribe, arguments)
+}
+
+export default when;
+
+export function when_(ctor, sourceArgs) {
+  if (sourceArgs.length === 0) { return never(); }
+  var len = sourceArgs.length;
   var usage = "when: expecting arguments in the form (Observable+,function)+";
 
   assert(usage, (len % 2 === 0));
@@ -21,10 +32,10 @@ export default function when() {
   var i = 0;
   var patterns = [];
   while (i < len) {
-    patterns[i] = arguments[i];
-    patterns[i + 1] = arguments[i + 1];
-    var patSources = _.toArray(arguments[i]);
-    var f = constantToFunction(arguments[i + 1]);
+    patterns[i] = sourceArgs[i];
+    patterns[i + 1] = sourceArgs[i + 1];
+    var patSources = _.toArray(sourceArgs[i]);
+    var f = constantToFunction(sourceArgs[i + 1]);
     var pat = {f, ixs: []};
     var triggerFound = false;
     for (var j = 0, s; j < patSources.length; j++) {
@@ -62,7 +73,7 @@ export default function when() {
   var needsBarrier = (_.any(sources, function(s) { return s.flatten; })) && containsDuplicateDeps(_.map((function(s) { return s.obs; }), sources));
 
   var desc = new Desc(Bacon, "when", patterns);
-  var resultStream = new EventStream(desc, function(sink) {
+  var resultStream = ctor(desc, function(sink) {
     var triggers = [];
     var ends = false;
     var match = function(p) {

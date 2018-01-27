@@ -1,5 +1,5 @@
 import { withDesc, Desc } from "./describe";
-import when from "./when";
+import { when } from "./when";
 import _ from "./_";
 import "./scan";
 import Bacon from "./core";

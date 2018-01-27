@@ -135,7 +135,7 @@ describe "Integration tests", ->
 
   describe "Property.flatMapLatest", ->
     describe "works in combination with synchronous sources in a complex scenario #699", ->
-      expectStreamEvents(
+      expectPropertyEvents(
         ->
           bar = Bacon.once('first').merge(Bacon.later(10, 'success')).toProperty()
 
@@ -228,7 +228,7 @@ describe "Integration tests", ->
           -> Bacon.constant(-> "hello").map((f) -> f())
           ["hello"])
       describe "case 4", ->
-        expectStreamEvents(
+        expectPropertyEvents(
           -> Bacon.constant(-> "hello").flatMap(Bacon.once).map((f) -> f())
           ["hello"])
     it "handles one subscriber added twice just like two separate subscribers (case Bacon.noMore)", ->
@@ -553,7 +553,7 @@ describe "Integration tests", ->
         [1]
       )
     describe "Complex setup by niklas", ->
-      expectStreamEvents(
+      expectPropertyEvents(
         ->
           Bacon.constant(1).flatMapLatest((e) ->
             return Bacon.combineAsArray(
@@ -582,21 +582,3 @@ describe "Integration tests", ->
           expect(values).to.deep.equal([1])
           done()
         Bacon.scheduler.setTimeout verify, 20
-    describe "Infinite synchronous sequences", ->
-      describe "Limiting length with take(n)", ->
-        expectStreamEvents(
-          -> endlessly(1,2,3).take(4)
-          [1,2,3,1], unstable)
-        expectStreamEvents(
-          -> endlessly(1,2,3).take(4).concat(Bacon.once(5))
-          [1,2,3,1,5], unstable)
-        expectStreamEvents(
-          -> endlessly(1,2,3).take(4).concat(endlessly(5, 6).take(2))
-          [1,2,3,1,5,6], unstable)
-      describe "With flatMap", ->
-        expectStreamEvents(
-          -> fromArray([1,2]).flatMap((x) -> endlessly(x)).take(2)
-          [1,1], unstable)
-        expectStreamEvents(
-          -> endlessly(1,2).flatMap((x) -> endlessly(x)).take(2)
-          [1,1], unstable)

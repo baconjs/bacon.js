@@ -1,11 +1,12 @@
 import UpdateBarrier from "./updatebarrier";
 import { describe } from "./describe";
 import { makeFunctionArgs } from "./functionconstruction";
-import { extend } from "./helpers";
+import { extend, assert } from "./helpers";
 
 var idCounter = 0;
 
 export default function Observable(desc) {
+  assert("desc missing", desc) 
   this.desc = desc;
   this.id = ++idCounter;
   this.initialDesc = this.desc;

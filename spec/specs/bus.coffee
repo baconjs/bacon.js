@@ -139,7 +139,7 @@ describe "Bacon.Bus", ->
     bus.end()
     bus.onValue(-> failed = true;)
     bus.push('foo')
-    expect(failed).to.deep.equal(false)
+    deferred -> expect(failed).to.deep.equal(false)
 
   it "bounces End event to new subscribers after end() called, with subscribers", ->
     called = false
@@ -147,14 +147,14 @@ describe "Bacon.Bus", ->
     bus.onValue ->
     bus.end()
     bus.onEnd(-> called = true)
-    expect(called).to.equal(true)
+    deferred -> expect(called).to.equal(true)
 
   it "bounces End event to new subscribers after end() called, without subscribers", ->
     called = false
     bus = new Bacon.Bus()
     bus.end()
     bus.onEnd(-> called = true)
-    expect(called).to.equal(true)
+    deferred -> expect(called).to.equal(true)
 
   it "returns unplug function from plug", ->
     values = []

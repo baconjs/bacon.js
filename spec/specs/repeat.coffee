@@ -55,11 +55,6 @@ describe "Bacon.repeat", ->
       ->
         take(3, Bacon.repeat(-> repeatedly(1, [1])))
       [1,1,1])
-  describe "Works with endless synchronous streams", ->
-    expectStreamEvents(
-      ->
-        take(3, Bacon.repeat(-> endlessly(1)))
-      [1,1,1])
   describe "Works with endless synchronous generators", ->
     expectStreamEvents(
       ->

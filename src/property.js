@@ -9,7 +9,8 @@ import { initialEvent, endEvent } from "./event";
 import { Desc } from "./describe";
 import { registerObs } from "./spy";
 import Bacon from "./core";
-
+import { streamSubscribeToPropertySubscribe } from "./eventstream";
+import { defaultOptions } from "./eventstream";
 
 function PropertyDispatcher(property, subscribe, handleEvent) {
   Dispatcher.call(this, subscribe, handleEvent);
@@ -82,6 +83,11 @@ extend(PropertyDispatcher.prototype, {
   }
 });
 
+export function propertyFromStreamSubscribe(desc, subscribe) {
+  assertFunction(subscribe)
+  return new Property(desc, streamSubscribeToPropertySubscribe(None, subscribe))
+}
+
 export default function Property(desc, subscribe, handler) {
   Observable.call(this, desc);
   assertFunction(subscribe);
@@ -110,11 +116,12 @@ extend(Property.prototype, {
     return this;
   },
 
-  toEventStream() {
-    return new EventStream(new Desc(this, "toEventStream", []), (sink) => {
-      return this.dispatcher.subscribe(function(event) {
-        return sink(event.toNext());
-      });
-    });
+  toEventStream( options = defaultOptions) {
+    return new EventStream(
+      new Desc(this, "toEventStream", []), 
+      (sink) => this.dispatcher.subscribe(function(event) { return sink(event.toNext()); }),
+      null,
+      options
+    );
   }
 });

@@ -13,14 +13,6 @@ Bacon.scheduler = sc
 module.exports.expectError = expectError = (errorText, f) ->
   expect(f).to.throw(Error, errorText)
 
-module.exports.endlessly = endlessly = (values...) ->
-  index = 0
-  reply = Bacon.more
-  Bacon.fromBinder (sink) ->
-    while reply != Bacon.noMore
-      reply = sink(new Bacon.Next(values[index++ % values.length]))
-    -> reply = Bacon.noMore
-
 module.exports.lessThan = lessThan = (limit) ->
   (x) -> x < limit
 module.exports.times = times = (x, y) -> x * y
@@ -109,7 +101,6 @@ module.exports.testSideEffects = testSideEffects = (wrapper, method) ->
 
 module.exports.t = t = @t = (time) -> time
 seqs = []
-noDesc = Bacon.Desc?.empty
 
 verifyCleanup = ->
   for seq in seqs
@@ -241,9 +232,14 @@ verifyPLateEval = (srcF, expectedEvents) ->
 
 verifyPIntermittentSubscriber = (srcF, expectedEvents) ->
   verifyPropertyWith "(with intermittent subscriber)", srcF, expectedEvents, (src, events, done) ->
-    take(1, src).subscribe(->)
+    otherEvents = []
+    take(1, src).subscribe((e) -> otherEvents.push(e))
     src.subscribe (event) ->
       if event.isEnd()
+        expectedValues = events.filter((e) -> e.hasValue()).slice(0, 1)
+        gotValues = otherEvents.filter((e) -> e.hasValue())
+        # verify that the "side subscriber" got expected values
+        expect(toValues(gotValues)).to.deep.equal(toValues(expectedValues))
         done()
       else
         events.push(event)
@@ -433,9 +429,10 @@ verifyExhausted = (src) ->
   expect(events[0].isEnd()).to.deep.equal(true)
 
 module.exports.verifyCleanup = verifyCleanup = ->
-  for seq in seqs
-    expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
-  seqs = []
+  deferred ->
+    for seq in seqs
+      expect(seq.source.dispatcher.hasSubscribers()).to.deep.equal(false)
+    seqs = []
 
 lastNonError = (events) ->
   Bacon._.last(Bacon._.filter(((e) -> toValue(e) != "<error>"), events))
@@ -476,7 +473,7 @@ module.exports.deferred = deferred
 Bacon.Observable?.prototype.onUnsub = (f) ->
   self = this
   ended = false
-  return new Bacon.EventStream noDesc, (sink) ->
+  return new Bacon.EventStream (sink) ->
     unsub = self.subscribe sink
     ->
       f()
