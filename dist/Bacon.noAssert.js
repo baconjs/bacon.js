@@ -1907,11 +1907,19 @@
         var root = this;
         var rootDep = [root];
         var childDeps = [];
-        var ctor = this._isProperty ? propertyFromStreamSubscribe : EventStream;
+        var isProperty = this._isProperty;
+        var ctor = isProperty ? propertyFromStreamSubscribe : EventStream;
+        var initialSpawned = false;
         var result = ctor(params.desc || new Desc(this, 'flatMap_', arguments), function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
             var spawn = function (event) {
+                if (isProperty && event.isInitial()) {
+                    if (initialSpawned) {
+                        return more;
+                    }
+                    initialSpawned = true;
+                }
                 var child = makeObservable(f(event));
                 childDeps.push(child);
                 return composite.add(function (unsubAll, unsubMe) {
