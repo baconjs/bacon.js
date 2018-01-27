@@ -1,5 +1,6 @@
 _ = require "lodash"
 Bacon = require "../dist/Bacon"
+runId = 0
 
 class Generator
   constructor: ->
@@ -24,8 +25,9 @@ f =
   everyNth: (n, stream) ->
     stream.filter (x) -> x % n == 0
   withGenerator: (fun, rounds=100) ->
+    myRunId = ++runId
     gen = f.generator()
-    fun(gen).onValue((v) -> )
+    fun(gen).onValue((v) -> console.error("async result detected!") if myRunId != runId)
     gen.ticks(rounds)
   combineTemplate: (gen, width, depth) ->
     if depth == 0
