@@ -31,16 +31,16 @@ export default function EventStream(desc, subscribe, handler, options = defaultO
     subscribe = asyncWrapSubscribe(this, subscribe)
   }
   Observable.call(this, desc);
-  assertFunction(subscribe);
+  //assertFunction(subscribe);
   this.dispatcher = new Dispatcher(subscribe, handler);
   registerObs(this);
 }
 
 function asyncWrapSubscribe(obs, subscribe) {
-  assertFunction(subscribe)
+  //assertFunction(subscribe)
   var subscribing = false
   return function wrappedSubscribe(sink) {
-    assertFunction(sink)
+    //assertFunction(sink)
     subscribing = true
     try {
       return subscribe(function wrappedSink(event) {
@@ -62,7 +62,7 @@ function asyncWrapSubscribe(obs, subscribe) {
 }
 
 function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
-  assertFunction(streamSubscribe)
+  //assertFunction(streamSubscribe)
   return function(sink) {
     var initSent = false;
     var subbed = false;

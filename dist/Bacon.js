@@ -535,9 +535,6 @@ var spy = (function (spy) {
 });
 
 function Desc(context, method, args) {
-  assert("context missing", context);
-  assert("method missing", method);
-  assert("args missing", args);
   this.context = context;
   this.method = method;
   this.args = args;
@@ -1247,16 +1244,14 @@ function EventStream(desc, subscribe, handler) {
     subscribe = asyncWrapSubscribe(this, subscribe);
   }
   Observable.call(this, desc);
-  assertFunction(subscribe);
+
   this.dispatcher = new Dispatcher(subscribe, handler);
   registerObs(this);
 }
 
 function asyncWrapSubscribe(obs, subscribe) {
-  assertFunction(subscribe);
   var subscribing = false;
   return function wrappedSubscribe(sink) {
-    assertFunction(sink);
     subscribing = true;
     try {
       return subscribe(function wrappedSink(event) {
@@ -1275,7 +1270,6 @@ function asyncWrapSubscribe(obs, subscribe) {
 }
 
 function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
-  assertFunction(streamSubscribe);
   return function (sink) {
     var initSent = false;
     var subbed = false;

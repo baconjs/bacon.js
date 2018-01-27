@@ -2,9 +2,9 @@ import { extend, isArray, isObservable, assert } from "./helpers";
 import _ from "./_";
 
 export function Desc(context, method, args) {
-  assert("context missing", context)
-  assert("method missing", method)
-  assert("args missing", args)
+  //assert("context missing", context)
+  //assert("method missing", method)
+  //assert("args missing", args)
   this.context = context;
   this.method = method;
   this.args = args;
