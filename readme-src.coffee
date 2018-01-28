@@ -862,9 +862,9 @@ numbers in the stream and output the value on stream end:
 ```js
 Bacon.fromArray([1,2,3])
   .withStateMachine(0, function(sum, event) {
-    if (event.hasValue())
+    if (event.hasValue)
       return [sum + event.value, []]
-    else if (event.isEnd())
+    else if (event.isEnd)
       return [undefined, [new Bacon.Next(sum), event]]
     else
       return [sum, [event]]
@@ -922,7 +922,7 @@ and end the stream if you choose. For example, to send an error and end
 the stream in case a value is below zero:
 
 ```js
-if (event.hasValue() && event.value < 0) {
+if (event.hasValue && event.value < 0) {
   this.push(new Bacon.Error("Value below zero"));
   return this.push(end());
 } else {
@@ -1447,35 +1447,35 @@ has subclasses `Bacon.Next`, `Bacon.End`, `Bacon.Error` and `Bacon.Initial`
 """
 
 doc.fn "Bacon.Next", """
-next value in an EventStream or a Property. Call isNext() to
+next value in an EventStream or a Property. Check `event.isNext` to
 distinguish a Next event from other events.
 """
 
 doc.fn "Bacon.End", """
-an end-of-stream event of EventStream or Property. Call isEnd() to
+an end-of-stream event of EventStream or Property. Check `event.isEnd` to
 distinguish an End from other events.
 """
 
 doc.fn "Bacon.Error", """
-an error event. Call isError() to distinguish these events
+an error event. Check `event.isError` to distinguish these events
 in your subscriber, or use `onError` to react to error events only.
 `errorEvent.error` returns the associated error object (usually string).
 """
 
 doc.fn "Bacon.Initial", """
-the initial (current) value of a Property. Call isInitial() to
+the initial (current) value of a Property. Check `event.isInitial` to
 distinguish from other events. Only sent immediately after subscription
 to a Property.
 """
 
-doc.subsubsection "Event properties and methods"
+doc.subsubsection "Event properties"
 
-doc.fn "event.value(@ : Event[A]) : A", "returns the value associated with a Next or Initial event"
-doc.fn "event.hasValue(@ : Event[A]) : Bool", "returns true for events of type Initial and Next"
-doc.fn "event.isNext(@ : Event[A]) : Bool", "true for Next events"
-doc.fn "event.isInitial(@ : Event[A]) : Bool", "true for Initial events"
-doc.fn "event.isError()", "true for Error events"
-doc.fn "event.isEnd()", "true for End events"
+doc.fn "event.value", "the value associated with a Next or Initial event"
+doc.fn "event.hasValue", "true for events of type Initial and Next"
+doc.fn "event.isNext", "true for Next events"
+doc.fn "event.isInitial", "true for Initial events"
+doc.fn "event.isError", "true for Error events"
+doc.fn "event.isEnd", "true for End events"
 doc.fn "event.error", "the error value of Error events"
 
 doc.subsection "Errors"

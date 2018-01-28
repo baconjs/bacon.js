@@ -60,7 +60,7 @@ Table of contents
     - [Latest value of Property or EventStream](#latest-value-of-property-or-eventstream)
     - [Bus](#bus)
     - [Event](#event)
-        - [Event properties and methods](#event-properties-and-methods)
+        - [Event properties](#event-properties)
     - [Errors](#errors)
     - [Join Patterns](#join-patterns)
         - [Join patterns as a "chemical machine"](#join-patterns-as-a-chemical-machine)
@@ -834,9 +834,9 @@ numbers in the stream and output the value on stream end:
 ```js
 Bacon.fromArray([1,2,3])
   .withStateMachine(0, function(sum, event) {
-    if (event.hasValue())
+    if (event.hasValue)
       return [sum + event.value, []]
-    else if (event.isEnd())
+    else if (event.isEnd)
       return [undefined, [new Bacon.Next(sum), event]]
     else
       return [sum, [event]]
@@ -889,7 +889,7 @@ and end the stream if you choose. For example, to send an error and end
 the stream in case a value is below zero:
 
 ```js
-if (event.hasValue() && event.value < 0) {
+if (event.hasValue && event.value < 0) {
   this.push(new Bacon.Error("Value below zero"));
   return this.push(end());
 } else {
@@ -1369,42 +1369,42 @@ Event
 [`Bacon.Event`](#bacon-event "Bacon.Event") has subclasses [`Bacon.Next`](#bacon-next), [`Bacon.End`](#bacon-end), [`Bacon.Error`](#bacon-error) and [`Bacon.Initial`](#bacon-initial)
 
 <a name="bacon-next"></a>
-[`Bacon.Next`](#bacon-next "Bacon.Next") next value in an EventStream or a Property. Call isNext() to
+[`Bacon.Next`](#bacon-next "Bacon.Next") next value in an EventStream or a Property. Check [`event.isNext`](#event-isnext) to
 distinguish a Next event from other events.
 
 <a name="bacon-end"></a>
-[`Bacon.End`](#bacon-end "Bacon.End") an end-of-stream event of EventStream or Property. Call isEnd() to
+[`Bacon.End`](#bacon-end "Bacon.End") an end-of-stream event of EventStream or Property. Check [`event.isEnd`](#event-isend) to
 distinguish an End from other events.
 
 <a name="bacon-error"></a>
-[`Bacon.Error`](#bacon-error "Bacon.Error") an error event. Call isError() to distinguish these events
+[`Bacon.Error`](#bacon-error "Bacon.Error") an error event. Check [`event.isError`](#event-iserror) to distinguish these events
 in your subscriber, or use [`onError`](#observable-onerror) to react to error events only.
 `errorEvent.error` returns the associated error object (usually string).
 
 <a name="bacon-initial"></a>
-[`Bacon.Initial`](#bacon-initial "Bacon.Initial") the initial (current) value of a Property. Call isInitial() to
+[`Bacon.Initial`](#bacon-initial "Bacon.Initial") the initial (current) value of a Property. Check [`event.isInitial`](#event-isinitial) to
 distinguish from other events. Only sent immediately after subscription
 to a Property.
 
-### Event properties and methods
+### Event properties
 
 <a name="event-value"></a>
-[`event.value()`](#event-value "event.value(@ : Event[A]) : A") returns the value associated with a Next or Initial event
+[`event.value`](#event-value "event.value") the value associated with a Next or Initial event
 
 <a name="event-hasvalue"></a>
-[`event.hasValue()`](#event-hasvalue "event.hasValue(@ : Event[A]) : Bool") returns true for events of type Initial and Next
+[`event.hasValue`](#event-hasvalue "event.hasValue") true for events of type Initial and Next
 
 <a name="event-isnext"></a>
-[`event.isNext()`](#event-isnext "event.isNext(@ : Event[A]) : Bool") true for Next events
+[`event.isNext`](#event-isnext "event.isNext") true for Next events
 
 <a name="event-isinitial"></a>
-[`event.isInitial()`](#event-isinitial "event.isInitial(@ : Event[A]) : Bool") true for Initial events
+[`event.isInitial`](#event-isinitial "event.isInitial") true for Initial events
 
 <a name="event-iserror"></a>
-[`event.isError()`](#event-iserror "event.isError()") true for Error events
+[`event.isError`](#event-iserror "event.isError") true for Error events
 
 <a name="event-isend"></a>
-[`event.isEnd()`](#event-isend "event.isEnd()") true for End events
+[`event.isEnd`](#event-isend "event.isEnd") true for End events
 
 <a name="event-error"></a>
 [`event.error`](#event-error "event.error") the error value of Error events
