@@ -12,9 +12,9 @@ var isNone = function(object){
 Observable.prototype.skipDuplicates = function(isEqual = equals) {
   var desc = new Desc(this, "skipDuplicates", []);
   return withDesc(desc, this.withStateMachine(None, function(prev, event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return [prev, [event]];
-    } else if (event.isInitial() || isNone(prev) || !isEqual(prev.get(), event.value)) {
+    } else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), event.value)) {
       return [new Some(event.value), [event]];
     } else {
       return [prev, []];

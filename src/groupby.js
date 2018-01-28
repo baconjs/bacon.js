@@ -17,7 +17,7 @@ Observable.prototype.groupBy = function(keyF, limitF = _.id) {
       var data = once(x).concat(similar);
       var limited = limitF(data, x).withHandler(function(event) {
         this.push(event);
-        if (event.isEnd()) {
+        if (event.isEnd) {
           return delete streams[key];
         }
       });

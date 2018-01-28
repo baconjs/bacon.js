@@ -24,10 +24,10 @@ function PropertyDispatcher(property, subscribe, handleEvent) {
 inherit(PropertyDispatcher, Dispatcher);
 extend(PropertyDispatcher.prototype, {
   push(event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       this.propertyEnded = true;
     }
-    if (event.hasValue()) {
+    if (event.hasValue) {
       //console.log('push', event.value)
       this.current = new Some(event);
       this.currentValueRootId = UpdateBarrier.currentEventId();
@@ -102,7 +102,7 @@ extend(Property.prototype, {
   changes() {
     return new EventStream(new Desc(this, "changes", []), (sink) => {
       return this.dispatcher.subscribe(function(event) {
-        if (!event.isInitial()) { return sink(event); }
+        if (!event.isInitial) { return sink(event); }
       });
     });
   },

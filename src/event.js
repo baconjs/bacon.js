@@ -8,12 +8,12 @@ export function Event() {
 }
 
 Event.prototype._isEvent = true;
-Event.prototype.isEvent = function() { return true; };
-Event.prototype.isEnd = function() { return false; };
-Event.prototype.isInitial = function() { return false; };
-Event.prototype.isNext = function() { return false; };
-Event.prototype.isError = function() { return false; };
-Event.prototype.hasValue = function() { return false; };
+Event.prototype.isEvent = true
+Event.prototype.isEnd = false
+Event.prototype.isInitial = false
+Event.prototype.isNext = false
+Event.prototype.isError = false
+Event.prototype.hasValue = false
 Event.prototype.filter = function() { return true; };
 Event.prototype.inspect = function() { return this.toString(); };
 Event.prototype.log = function() { return this.toString(); };
@@ -29,8 +29,8 @@ export function Next(value) {
 
 inherit(Next, Event);
 
-Next.prototype.isNext = function() { return true; };
-Next.prototype.hasValue = function() { return true; };
+Next.prototype.isNext = true
+Next.prototype.hasValue = true
 
 Next.prototype.fmap = function(f) {
   return this.apply(f(this.value))
@@ -52,8 +52,8 @@ export function Initial(value) {
 inherit(Initial, Next);
 
 Initial.prototype._isInitial = true;
-Initial.prototype.isInitial = function() { return true; };
-Initial.prototype.isNext = function() { return false; };
+Initial.prototype.isInitial = true
+Initial.prototype.isNext = false
 Initial.prototype.apply = function(value) { return new Initial(value); };
 Initial.prototype.toNext = function() { return new Next(this.value); };
 
@@ -65,7 +65,7 @@ export function End() {
 }
 
 inherit(End, Event);
-End.prototype.isEnd = function() { return true; };
+End.prototype.isEnd = true
 End.prototype.fmap = function() { return this; };
 End.prototype.apply = function() { return this; };
 End.prototype.toString = function() { return "<end>"; };
@@ -80,7 +80,7 @@ export function Error(error) {
 }
 
 inherit(Error, Event);
-Error.prototype.isError = function() { return true; };
+Error.prototype.isError = true
 Error.prototype.fmap = function() { return this; };
 Error.prototype.apply = function() { return this; };
 Error.prototype.toString = function() { return "<error> " + _.toString(this.error); };

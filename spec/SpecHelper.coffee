@@ -24,7 +24,7 @@ module.exports.activate = activate = (obs) ->
 
 module.exports.take = take = (count, obs) ->
   obs.withHandler (event) ->
-    unless event.hasValue()
+    unless event.hasValue
       @push event
     else
       count--
@@ -41,7 +41,7 @@ module.exports.map = map = (obs, f) ->
 
 module.exports.skip = skip = (count, obs) ->
   obs.withHandler (event) ->
-    unless event.hasValue()
+    unless event.hasValue
       @push event
     else if (count > 0)
       count--
@@ -133,7 +133,7 @@ module.exports.semiunstable = { semiunstable: true }
 
 take = (count, obs) ->
   obs.withHandler (event) ->
-    unless event.hasValue()
+    unless event.hasValue
       @push event
     else
       count--
@@ -208,15 +208,15 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
     gotNext = false
     sync = true
     src.subscribe (event) ->
-      if event.isEnd()
+      if event.isEnd
         done()
       else
-        if event.isInitial()
+        if event.isInitial
           if gotInitial then done(new Error "got more than one Initial event: " + toValue(event))
           if gotNext then done(new Error "got Initial event after the Next one: " + toValue(event))
           unless sync then done(new Error "got async Initial event: " + toValue(event))
           gotInitial = true
-        else if event.hasValue()
+        else if event.hasValue
           gotNext = true
         events.push(toValue(event))
     sync = false
@@ -225,7 +225,7 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
 verifyPLateEval = (srcF, expectedEvents) ->
   verifyPropertyWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) ->
-      if event.isEnd()
+      if event.isEnd
         done()
       else
         events.push(event)
@@ -235,9 +235,9 @@ verifyPIntermittentSubscriber = (srcF, expectedEvents) ->
     otherEvents = []
     take(1, src).subscribe((e) -> otherEvents.push(e))
     src.subscribe (event) ->
-      if event.isEnd()
-        expectedValues = events.filter((e) -> e.hasValue()).slice(0, 1)
-        gotValues = otherEvents.filter((e) -> e.hasValue())
+      if event.isEnd
+        expectedValues = events.filter((e) -> e.hasValue).slice(0, 1)
+        gotValues = otherEvents.filter((e) -> e.hasValue)
         # verify that the "side subscriber" got expected values
         expect(toValues(gotValues)).to.deep.equal(toValues(expectedValues))
         done()
@@ -247,12 +247,12 @@ verifyPIntermittentSubscriber = (srcF, expectedEvents) ->
 verifyPSwitching = (srcF, expectedEvents) ->
   verifyPropertyWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) ->
-      if event.isEnd()
+      if event.isEnd
         done()
       else
-        if event.hasValue()
+        if event.hasValue
           src.subscribe (event) ->
-            if event.isInitial()
+            if event.isInitial
               events.push(event.value)
             Bacon.noMore
 
@@ -271,9 +271,9 @@ verifyPSwitchingAggressively = (srcF, expectedEvents, done) ->
         gotMine = false
         (event) ->
           #console.log "at", Bacon.scheduler.now(), "got", event, "for", myId
-          if event.isEnd() and myId == idCounter
+          if event.isEnd and myId == idCounter
             done()
-          else if event.hasValue()
+          else if event.hasValue
             if gotMine
               #console.log "  -> ditch it"
               if unsub?
@@ -309,7 +309,7 @@ verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) -
 verifyLateEval = (srcF, expectedEvents) ->
   verifyStreamWith "(late eval)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) ->
-      if event.isEnd()
+      if event.isEnd
         done()
       else
         expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
@@ -319,7 +319,7 @@ verifyLateEval = (srcF, expectedEvents) ->
 verifySingleSubscriber = (srcF, expectedEvents) ->
   verifyStreamWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) ->
-      if event.isEnd()
+      if event.isEnd
         done()
       else
         expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
@@ -330,7 +330,7 @@ verifySwitching = (srcF, expectedEvents, done) ->
   verifyStreamWith "(switching subscribers)", srcF, expectedEvents, (src, events, done) ->
     newSink = ->
       (event) ->
-        if event.isEnd()
+        if event.isEnd
           done()
         else
           expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
@@ -353,7 +353,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
         (event) ->
           if noMoreExpected
             console.log "got unexp", event.toString(), "usedUnsub", usedUnsub
-          if event.isEnd()
+          if event.isEnd
             if ended
               console.log("one stream, two ends")
             else if globalEnded
@@ -402,7 +402,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
       newSink = ->
         unsub = null
         (event) ->
-          if event.isEnd()
+          if event.isEnd
             done()
           else
             expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
@@ -426,7 +426,7 @@ verifyExhausted = (src) ->
     events.push(event)
   if (events.length == 0)
     throw new Error("got zero events")
-  expect(events[0].isEnd()).to.deep.equal(true)
+  expect(events[0].isEnd).to.deep.equal(true)
 
 module.exports.verifyCleanup = verifyCleanup = ->
   deferred ->
@@ -450,9 +450,9 @@ module.exports.toValues = toValues = (xs) ->
   values
 module.exports.toValue = toValue = (x) ->
   switch true
-    when !x?.isEvent?() then x
-    when x.isError() then "<error>"
-    when x.isEnd() then "<end>"
+    when !x?.isEvent then x
+    when x.isError then "<error>"
+    when x.isEnd then "<end>"
     else x.value
 
 justValues = (xs) ->

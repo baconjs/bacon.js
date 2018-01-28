@@ -10,7 +10,7 @@ export default function repeat(generator) {
     var reply = more;
     var unsub = function() {};
     function handleEvent(event) {
-      if (event.isEnd()) {
+      if (event.isEnd) {
         if (!flag) {
           return flag = true;
         } else {

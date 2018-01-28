@@ -11,9 +11,9 @@ expect = require("chai").expect
 
 describe "EventStream.withStateMachine", ->
   f = (sum, event) ->
-    if event.hasValue()
+    if event.hasValue
       [sum + event.value, []]
-    else if event.isEnd()
+    else if event.isEnd
       [sum, [new Bacon.Next(sum), event]]
     else
       [sum, [event]]
@@ -26,9 +26,9 @@ describe "Property.withStateMachine", ->
   describe "runs state machine on the stream", ->
     expectPropertyEvents(
       -> series(1, [1,2,3]).toProperty().withStateMachine(0, (sum, event) ->
-        if event.hasValue()
+        if event.hasValue
           [sum + event.value, []]
-        else if event.isEnd()
+        else if event.isEnd
           [sum, [new Bacon.Next(sum), event]]
         else
           [sum, [event]])

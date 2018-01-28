@@ -23,7 +23,7 @@ function mergeAll() {
       var smartSink = function(obs) {
         return function(unsubBoth) {
           return obs.dispatcher.subscribe(function(event) {
-            if (event.isEnd()) {
+            if (event.isEnd) {
               ends++;
               if (ends === streams.length) {
                 return sink(endEvent());

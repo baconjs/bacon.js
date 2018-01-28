@@ -7,7 +7,7 @@ Observable.prototype.last = function () {
   var lastEvent;
   // It's important not to use fat arrow here!
   return withDesc(new Desc(this, "last", []), this.withHandler(function (event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       // Push last event or `undefined`
       if (lastEvent) {
         this.push(lastEvent);

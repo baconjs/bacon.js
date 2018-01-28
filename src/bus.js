@@ -46,7 +46,7 @@ extend(Bus.prototype, {
 
   guardedSink(input) {
     return (event) => {
-      if (event.isEnd()) {
+      if (event.isEnd) {
         this.unsubscribeInput(input);
         return Bacon.noMore;
       } else {

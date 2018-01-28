@@ -7,7 +7,7 @@ import { noMore } from "./reply";
 Observable.prototype.mapEnd = function() {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "mapEnd", [f]), this.withHandler(function(event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       this.push(nextEvent(f(event)));
       this.push(endEvent());
       return noMore;

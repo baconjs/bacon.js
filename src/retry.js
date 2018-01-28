@@ -27,14 +27,14 @@ Bacon.retry = function(options) {
   return withDesc(new Desc(Bacon, "retry", [options]), Bacon.repeat(function(count) {
     function valueStream() {
       return source(count).endOnError().withHandler(function(event) {
-        if (event.isError()) {
+        if (event.isError) {
           error = event;
           if (!(isRetryable(error.error) && (retries===0 || retriesDone < retries))) {
             finished = true;
             return this.push(event);
           }
         } else {
-          if (event.hasValue()) {
+          if (event.hasValue) {
             error = null;
             finished = true;
           }

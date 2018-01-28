@@ -18,10 +18,10 @@ ESObservable.prototype.subscribe = function(observerOrOnNext, onError, onComplet
   };
 
   const cancel = this.observable.subscribe(function(event) {
-    if (event.isError()) {
+    if (event.isError) {
       if (observer.error) observer.error(event.error);
       subscription.unsubscribe();
-    } else if (event.isEnd()) {
+    } else if (event.isEnd) {
       subscription.closed = true;
       if (observer.complete) observer.complete();
     } else if (observer.next) {

@@ -7,7 +7,7 @@ import { endEvent } from "./event";
 Observable.prototype.take = function(count) {
   if (count <= 0) { return never(); }
   return withDesc(new Desc(this, "take", [count]), this.withHandler(function(event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return this.push(event);
     } else {
       count--;

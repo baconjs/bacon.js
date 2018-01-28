@@ -27,12 +27,12 @@ export default function scan(seed, f) {
       }
     };
     unsub = this.dispatcher.subscribe(function(event) {
-      if (event.hasValue()) {
-        if (initHandled && event.isInitial()) {
+      if (event.hasValue) {
+        if (initHandled && event.isInitial) {
           //console.log "skip INITIAL"
           return more; // init already sent, skip this one
         } else {
-          if (!event.isInitial()) { sendInit(); }
+          if (!event.isInitial) { sendInit(); }
           initSent = initHandled = true;
           var prev = acc
           var next = f(prev, event.value);
@@ -41,7 +41,7 @@ export default function scan(seed, f) {
           return sink(event.apply(next));
         }
       } else {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           reply = sendInit();
         }
         if (reply !== noMore) {

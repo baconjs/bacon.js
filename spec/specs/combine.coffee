@@ -49,7 +49,7 @@ describe "Property.combine", ->
     bus = new Bacon.Bus()
     other = Bacon.constant(["rolfcopter"])
     bus.toProperty(["lollerskates"]).combine(other, ".concat").subscribe (e) ->
-      if !e.isInitial()
+      if !e.isInitial
         calls += 1
       Bacon.noMore
 
@@ -99,9 +99,9 @@ describe "Bacon.combineAsArray", ->
     before ->
       prop = Bacon.constant(1)
       Bacon.combineAsArray(prop).subscribe (x) ->
-        event = x if x.hasValue()
+        event = x if x.hasValue
     it "is output as Initial event", ->
-      expect(event.isInitial()).to.equal(true)
+      expect(event.isInitial).to.equal(true)
   describe "combines properties and latest values of streams, into a Property having arrays as values", ->
     expectPropertyEvents(
       ->

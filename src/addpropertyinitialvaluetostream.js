@@ -12,7 +12,7 @@ export default function addPropertyInitValueToStream(property, stream) {
     function(sink) {
       let value;
       const unsub = property.dispatcher.subscribe(function(event) {
-        if (!event.isEnd()) {
+        if (!event.isEnd) {
           value = event;
         }
         return noMore;

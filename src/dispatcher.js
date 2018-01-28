@@ -27,7 +27,7 @@ Dispatcher.prototype.removeSub = function(subscription) {
 };
 
 Dispatcher.prototype.push = function(event) {
-  if (event.isEnd()) {
+  if (event.isEnd) {
     this.ended = true;
   }
   return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
@@ -40,7 +40,7 @@ Dispatcher.prototype.pushToSubscriptions = function(event) {
     for (let i = 0; i < len; i++) {
       const sub = tmp[i];
       let reply = sub.sink(event);
-      if (reply === noMore || event.isEnd()) {
+      if (reply === noMore || event.isEnd) {
         this.removeSub(sub);
       }
     }
@@ -57,7 +57,7 @@ Dispatcher.prototype.pushIt = function(event) {
     if (event === this.prevError) {
       return;
     }
-    if (event.isError()) {
+    if (event.isError) {
       this.prevError = event;
     }
     this.pushing = true;

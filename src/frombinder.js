@@ -31,7 +31,7 @@ export default function fromBinder(binder, eventTransformer = _.id) {
       for (var i = 0, event; i < value.length; i++) {
         event = value[i];
         reply = sink(event = toEvent(event));
-        if (reply === Bacon.noMore || event.isEnd()) {
+        if (reply === Bacon.noMore || event.isEnd) {
           // defer if binder calls handler in sync before returning unbinder
           unbind();
           return reply;

@@ -235,7 +235,7 @@ describe "Integration tests", ->
       values = []
       bus = new Bacon.Bus()
       f = (v) ->
-        if v.hasValue()
+        if v.hasValue
           values.push(v.value)
           return Bacon.noMore
       bus.subscribe(f)
@@ -246,7 +246,7 @@ describe "Integration tests", ->
       values = []
       bus = new Bacon.Bus()
       f = (v) ->
-        if v.hasValue()
+        if v.hasValue
           values.push(v.value)
       bus.subscribe(f)
       unsub = bus.subscribe(f)
@@ -528,7 +528,7 @@ describe "Integration tests", ->
           root.onValue ->
           later(1).onValue ->
             root.map(-> 1).subscribe (event) ->
-              if event.isEnd()
+              if event.isEnd
                 bus.end()
               else
                 bus.push(event.value)
@@ -545,7 +545,7 @@ describe "Integration tests", ->
 
           later(3).onValue ->
             outdatedChild.subscribe (event) ->
-              if event.isEnd()
+              if event.isEnd
                 bus.end()
               else
                 bus.push(event.value)

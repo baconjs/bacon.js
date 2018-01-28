@@ -70,9 +70,9 @@ EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
   }
   return withDesc(new Desc(this, "buffer", []), this.withHandler(function(event) {
     buffer.push = (event) => this.push(event);
-    if (event.isError()) {
+    if (event.isError) {
       reply = this.push(event);
-    } else if (event.isEnd()) {
+    } else if (event.isEnd) {
       buffer.end = event;
       if (!buffer.scheduled) {
         //console.log Bacon.scheduler.now() + ": end-flush"

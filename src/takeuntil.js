@@ -13,7 +13,7 @@ Observable.prototype.takeUntil = function(stopper) {
   let withEndMarker = groupSimultaneous_([this.mapEnd(endMarker), stopper.skipErrors()], allowSync)
   if (this instanceof Property) withEndMarker = withEndMarker.toProperty()
   let impl = withEndMarker.withHandler(function(event) {
-      if (!event.hasValue()) {
+      if (!event.hasValue) {
         return this.push(event);
       } else {
         var [data, stopper] = event.value;

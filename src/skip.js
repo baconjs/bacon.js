@@ -4,7 +4,7 @@ import Observable from "./observable";
 
 Observable.prototype.skip = function(count) {
   return withDesc(new Desc(this, "skip", [count]), this.withHandler(function(event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return this.push(event);
     } else if (count > 0) {
       count--;

@@ -27,7 +27,7 @@ extend(Observable.prototype, {
   onValue() {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
-      if (event.hasValue()) { return f(event.value); }
+      if (event.hasValue) { return f(event.value); }
     });
   },
 
@@ -38,14 +38,14 @@ extend(Observable.prototype, {
   onError() {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
-      if (event.isError()) { return f(event.error); }
+      if (event.isError) { return f(event.error); }
     });
   },
 
   onEnd() {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function(event) {
-      if (event.isEnd()) { return f(); }
+      if (event.isEnd) { return f(); }
     });
   },
 

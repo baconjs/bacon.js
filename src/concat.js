@@ -14,7 +14,7 @@ EventStream.prototype.concat = function(right) {
   return new EventStream(new Desc(left, "concat", [right]), function(sink) {
     var unsubRight = nop;
     var unsubLeft = left.dispatcher.subscribe(function(e) {
-      if (e.isEnd()) {
+      if (e.isEnd) {
         unsubRight = right.toEventStream().dispatcher.subscribe(sink);
         return unsubRight;
       } else {

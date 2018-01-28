@@ -24,7 +24,7 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
       var spawn = function(event) {
-        if (isProperty && event.isInitial()) {
+        if (isProperty && event.isInitial) {
           if (initialSpawned) {
             return more;
           }
@@ -34,7 +34,7 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
         childDeps.push(child);
         return composite.add(function(unsubAll, unsubMe) {
           return child.dispatcher.subscribe(function(event) {
-            if (event.isEnd()) {
+            if (event.isEnd) {
               _.remove(child, childDeps);
               checkQueue();
               checkEnd(unsubMe);
@@ -57,9 +57,9 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
         if (composite.empty()) { return sink(endEvent()); }
       };
       composite.add(function(__, unsubRoot) { return root.dispatcher.subscribe(function(event) {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           return checkEnd(unsubRoot);
-        } else if (event.isError() && !params.mapError) {
+        } else if (event.isError && !params.mapError) {
           return sink(event);
         } else if (params.firstOnly && composite.count() > 1) {
           return more;

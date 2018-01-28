@@ -149,12 +149,12 @@ export function when_(ctor, sourceArgs) {
         return reply;
       }
       return source.subscribe(function(e) {
-        if (e.isEnd()) {
+        if (e.isEnd) {
           //console.log "got end"
           ends = true;
           source.markEnded();
           flushLater();
-        } else if (e.isError()) {
+        } else if (e.isError) {
           var reply = sink(e);
         } else {
           //console.log "got value", e.value

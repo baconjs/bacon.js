@@ -19,7 +19,7 @@ EventStream.prototype.holdWhen = function(valve) {
     };
     composite.add(function(unsubAll, unsubMe) {
       return valve.subscribeInternal(function(event) {
-        if (event.hasValue()) {
+        if (event.hasValue) {
           onHold = event.value;
           if (!onHold) {
             var toSend = bufferedValues;
@@ -37,7 +37,7 @@ EventStream.prototype.holdWhen = function(valve) {
               return result;
             })();
           }
-        } else if (event.isEnd()) {
+        } else if (event.isEnd) {
           return endIfBothEnded(unsubMe);
         } else {
           return sink(event);
@@ -46,9 +46,9 @@ EventStream.prototype.holdWhen = function(valve) {
     });
     composite.add(function(unsubAll, unsubMe) {
       return src.subscribeInternal(function(event) {
-        if (onHold && event.hasValue()) {
+        if (onHold && event.hasValue) {
           return bufferedValues.push(event.value);
-        } else if (event.isEnd() && bufferedValues.length) {
+        } else if (event.isEnd && bufferedValues.length) {
           srcIsEnded = true;
           return endIfBothEnded(unsubMe);
         } else {

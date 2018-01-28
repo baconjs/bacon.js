@@ -83,18 +83,18 @@ function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
     };
 
     unsub = streamSubscribe(function(event) {
-      if (event.hasValue()) {
-        if (event.isInitial() && !subbed) {
+      if (event.hasValue) {
+        if (event.isInitial && !subbed) {
           initValue = new Some(event.value);
           return more;
         } else {
-          if (!event.isInitial()) { sendInit(); }
+          if (!event.isInitial) { sendInit(); }
           initSent = true;
           initValue = new Some(event.value);
           return sink(event);
         }
       } else {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           reply = sendInit();
         }
         if (reply !== noMore) { return sink(event); }
