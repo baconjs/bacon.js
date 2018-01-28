@@ -362,24 +362,12 @@ function Event() {
 }
 
 Event.prototype._isEvent = true;
-Event.prototype.isEvent = function () {
-  return true;
-};
-Event.prototype.isEnd = function () {
-  return false;
-};
-Event.prototype.isInitial = function () {
-  return false;
-};
-Event.prototype.isNext = function () {
-  return false;
-};
-Event.prototype.isError = function () {
-  return false;
-};
-Event.prototype.hasValue = function () {
-  return false;
-};
+Event.prototype.isEvent = true;
+Event.prototype.isEnd = false;
+Event.prototype.isInitial = false;
+Event.prototype.isNext = false;
+Event.prototype.isError = false;
+Event.prototype.hasValue = false;
 Event.prototype.filter = function () {
   return true;
 };
@@ -403,12 +391,8 @@ function Next(value) {
 
 inherit(Next, Event);
 
-Next.prototype.isNext = function () {
-  return true;
-};
-Next.prototype.hasValue = function () {
-  return true;
-};
+Next.prototype.isNext = true;
+Next.prototype.hasValue = true;
 
 Next.prototype.fmap = function (f) {
   return this.apply(f(this.value));
@@ -438,12 +422,8 @@ function Initial(value) {
 inherit(Initial, Next);
 
 Initial.prototype._isInitial = true;
-Initial.prototype.isInitial = function () {
-  return true;
-};
-Initial.prototype.isNext = function () {
-  return false;
-};
+Initial.prototype.isInitial = true;
+Initial.prototype.isNext = false;
 Initial.prototype.apply = function (value) {
   return new Initial(value);
 };
@@ -459,9 +439,7 @@ function End() {
 }
 
 inherit(End, Event);
-End.prototype.isEnd = function () {
-  return true;
-};
+End.prototype.isEnd = true;
 End.prototype.fmap = function () {
   return this;
 };
@@ -481,9 +459,7 @@ function Error$1(error) {
 }
 
 inherit(Error$1, Event);
-Error$1.prototype.isError = function () {
-  return true;
-};
+Error$1.prototype.isError = true;
 Error$1.prototype.fmap = function () {
   return this;
 };
@@ -829,7 +805,7 @@ Dispatcher.prototype.removeSub = function (subscription) {
 };
 
 Dispatcher.prototype.push = function (event) {
-  if (event.isEnd()) {
+  if (event.isEnd) {
     this.ended = true;
   }
   return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
@@ -842,7 +818,7 @@ Dispatcher.prototype.pushToSubscriptions = function (event) {
     for (var i = 0; i < len; i++) {
       var sub = tmp[i];
       var reply = sub.sink(event);
-      if (reply === noMore || event.isEnd()) {
+      if (reply === noMore || event.isEnd) {
         this.removeSub(sub);
       }
     }
@@ -859,7 +835,7 @@ Dispatcher.prototype.pushIt = function (event) {
     if (event === this.prevError) {
       return;
     }
-    if (event.isError()) {
+    if (event.isError) {
       this.prevError = event;
     }
     this.pushing = true;
@@ -1066,7 +1042,7 @@ extend(Observable.prototype, {
   onValue: function () {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function (event) {
-      if (event.hasValue()) {
+      if (event.hasValue) {
         return f(event.value);
       }
     });
@@ -1079,7 +1055,7 @@ extend(Observable.prototype, {
   onError: function () {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function (event) {
-      if (event.isError()) {
+      if (event.isError) {
         return f(event.error);
       }
     });
@@ -1087,7 +1063,7 @@ extend(Observable.prototype, {
   onEnd: function () {
     var f = makeFunctionArgs(arguments);
     return this.subscribe(function (event) {
-      if (event.isEnd()) {
+      if (event.isEnd) {
         return f();
       }
     });
@@ -1131,10 +1107,10 @@ function PropertyDispatcher(property, subscribe, handleEvent) {
 inherit(PropertyDispatcher, Dispatcher);
 extend(PropertyDispatcher.prototype, {
   push: function (event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       this.propertyEnded = true;
     }
-    if (event.hasValue()) {
+    if (event.hasValue) {
       this.current = new Some(event);
       this.currentValueRootId = UpdateBarrier.currentEventId();
     }
@@ -1200,7 +1176,7 @@ extend(Property.prototype, {
 
     return new EventStream(new Desc(this, "changes", []), function (sink) {
       return _this2.dispatcher.subscribe(function (event) {
-        if (!event.isInitial()) {
+        if (!event.isInitial) {
           return sink(event);
         }
       });
@@ -1290,12 +1266,12 @@ function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
     };
 
     unsub = streamSubscribe(function (event) {
-      if (event.hasValue()) {
-        if (event.isInitial() && !subbed) {
+      if (event.hasValue) {
+        if (event.isInitial && !subbed) {
           initValue = new Some(event.value);
           return more;
         } else {
-          if (!event.isInitial()) {
+          if (!event.isInitial) {
             sendInit();
           }
           initSent = true;
@@ -1303,7 +1279,7 @@ function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
           return sink(event);
         }
       } else {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           reply = sendInit();
         }
         if (reply !== noMore) {
@@ -1502,9 +1478,9 @@ Observable.prototype.skipDuplicates = function () {
 
   var desc = new Desc(this, "skipDuplicates", []);
   return withDesc(desc, this.withStateMachine(None, function (prev, event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return [prev, [event]];
-    } else if (event.isInitial() || isNone(prev) || !isEqual(prev.get(), event.value)) {
+    } else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), event.value)) {
       return [new Some(event.value), [event]];
     } else {
       return [prev, []];
@@ -1756,11 +1732,11 @@ function when_(ctor, sourceArgs) {
           return reply;
         }
         return source.subscribe(function (e) {
-          if (e.isEnd()) {
+          if (e.isEnd) {
             ends = true;
             source.markEnded();
             flushLater();
-          } else if (e.isError()) {
+          } else if (e.isError) {
             var reply = sink(e);
           } else {
             source.push(e);
@@ -2020,9 +1996,9 @@ EventStream.prototype.buffer = function (delay) {
     buffer.push = function (event) {
       return _this2.push(event);
     };
-    if (event.isError()) {
+    if (event.isError) {
       reply = this.push(event);
-    } else if (event.isEnd()) {
+    } else if (event.isEnd) {
       buffer.end = event;
       if (!buffer.scheduled) {
         buffer.flush();
@@ -2081,7 +2057,7 @@ Observable.prototype.flatMap_ = function (f) {
     var composite = new CompositeUnsubscribe();
     var queue = [];
     var spawn = function (event) {
-      if (isProperty && event.isInitial()) {
+      if (isProperty && event.isInitial) {
         if (initialSpawned) {
           return more;
         }
@@ -2091,7 +2067,7 @@ Observable.prototype.flatMap_ = function (f) {
       childDeps.push(child);
       return composite.add(function (unsubAll, unsubMe) {
         return child.dispatcher.subscribe(function (event) {
-          if (event.isEnd()) {
+          if (event.isEnd) {
             _.remove(child, childDeps);
             checkQueue();
             checkEnd(unsubMe);
@@ -2121,9 +2097,9 @@ Observable.prototype.flatMap_ = function (f) {
     };
     composite.add(function (__, unsubRoot) {
       return root.dispatcher.subscribe(function (event) {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           return checkEnd(unsubRoot);
-        } else if (event.isError() && !params.mapError) {
+        } else if (event.isError && !params.mapError) {
           return sink(event);
         } else if (params.firstOnly && composite.count() > 1) {
           return more;
@@ -2193,7 +2169,7 @@ function addPropertyInitValueToStream(property, stream) {
   var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
     var value = void 0;
     var unsub = property.dispatcher.subscribe(function (event) {
-      if (!event.isEnd()) {
+      if (!event.isEnd) {
         value = event;
       }
       return noMore;
@@ -2214,7 +2190,7 @@ EventStream.prototype.concat = function (right) {
   return new EventStream(new Desc(left, "concat", [right]), function (sink) {
     var unsubRight = nop;
     var unsubLeft = left.dispatcher.subscribe(function (e) {
-      if (e.isEnd()) {
+      if (e.isEnd) {
         unsubRight = right.toEventStream().dispatcher.subscribe(sink);
         return unsubRight;
       } else {
@@ -2274,7 +2250,7 @@ function fromBinder(binder) {
       for (var i = 0, event; i < value.length; i++) {
         event = value[i];
         reply = sink(event = toEvent(event));
-        if (reply === Bacon.noMore || event.isEnd()) {
+        if (reply === Bacon.noMore || event.isEnd) {
           unbind();
           return reply;
         }
@@ -2358,7 +2334,7 @@ extend(Bus.prototype, {
     var _this = this;
 
     return function (event) {
-      if (event.isEnd()) {
+      if (event.isEnd) {
         _this.unsubscribeInput(input);
         return Bacon.noMore;
       } else {
@@ -2575,7 +2551,7 @@ Bacon.combineTemplate = combineTemplate;
 Observable.prototype.mapEnd = function () {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "mapEnd", [f]), this.withHandler(function (event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       this.push(nextEvent(f(event)));
       this.push(endEvent());
       return noMore;
@@ -2587,7 +2563,7 @@ Observable.prototype.mapEnd = function () {
 
 Observable.prototype.skipErrors = function () {
   return withDesc(new Desc(this, "skipErrors", []), this.withHandler(function (event) {
-    if (event.isError()) {
+    if (event.isError) {
       return more;
     } else {
       return this.push(event);
@@ -2600,7 +2576,7 @@ Observable.prototype.takeUntil = function (stopper) {
   var withEndMarker = groupSimultaneous_([this.mapEnd(endMarker), stopper.skipErrors()], allowSync);
   if (this instanceof Property) withEndMarker = withEndMarker.toProperty();
   var impl = withEndMarker.withHandler(function (event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return this.push(event);
     } else {
       var _event$value = event.value,
@@ -2695,11 +2671,11 @@ function scan(seed, f) {
       }
     };
     unsub = _this.dispatcher.subscribe(function (event) {
-      if (event.hasValue()) {
-        if (initHandled && event.isInitial()) {
+      if (event.hasValue) {
+        if (initHandled && event.isInitial) {
           return more;
         } else {
-          if (!event.isInitial()) {
+          if (!event.isInitial) {
             sendInit();
           }
           initSent = initHandled = true;
@@ -2710,7 +2686,7 @@ function scan(seed, f) {
           return sink(event.apply(next));
         }
       } else {
-        if (event.isEnd()) {
+        if (event.isEnd) {
           reply = sendInit();
         }
         if (reply !== noMore) {
@@ -2740,7 +2716,7 @@ Observable.prototype.diff = function (start, f) {
 Observable.prototype.doAction = function () {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "doAction", [f]), this.withHandler(function (event) {
-    if (event.hasValue()) {
+    if (event.hasValue) {
       f(event.value);
     }
     return this.push(event);
@@ -2750,7 +2726,7 @@ Observable.prototype.doAction = function () {
 Observable.prototype.doEnd = function () {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "doEnd", [f]), this.withHandler(function (event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       f();
     }
     return this.push(event);
@@ -2760,7 +2736,7 @@ Observable.prototype.doEnd = function () {
 Observable.prototype.doError = function () {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "doError", [f]), this.withHandler(function (event) {
-    if (event.isError()) {
+    if (event.isError) {
       f(event.error);
     }
     return this.push(event);
@@ -2793,7 +2769,7 @@ Observable.prototype.endOnError = function (f) {
 
   return convertArgsToFunction(this, f, args, function (f) {
     return withDesc(new Desc(this, "endOnError", []), this.withHandler(function (event) {
-      if (event.isError() && f(event.error)) {
+      if (event.isError && f(event.error)) {
         this.push(event);
         return this.push(endEvent());
       } else {
@@ -2824,10 +2800,10 @@ ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComple
   };
 
   var cancel = this.observable.subscribe(function (event) {
-    if (event.isError()) {
+    if (event.isError) {
       if (observer.error) observer.error(event.error);
       subscription.unsubscribe();
-    } else if (event.isEnd()) {
+    } else if (event.isEnd) {
       subscription.closed = true;
       if (observer.complete) observer.complete();
     } else if (observer.next) {
@@ -2852,7 +2828,7 @@ Observable.prototype.take = function (count) {
     return never();
   }
   return withDesc(new Desc(this, "take", [count]), this.withHandler(function (event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return this.push(event);
     } else {
       count--;
@@ -2890,7 +2866,7 @@ Observable.prototype.flatMapFirst = function () {
 Observable.prototype.mapError = function () {
   var f = makeFunctionArgs(arguments);
   return withDesc(new Desc(this, "mapError", [f]), this.withHandler(function (event) {
-    if (event.isError()) {
+    if (event.isError) {
       return this.push(nextEvent(f(event.error)));
     } else {
       return this.push(event);
@@ -3127,7 +3103,7 @@ Observable.prototype.groupBy = function (keyF) {
     var data = once(x).concat(similar);
     var limited = limitF(data, x).withHandler(function (event) {
       this.push(event);
-      if (event.isEnd()) {
+      if (event.isEnd) {
         return delete streams[key];
       }
     });
@@ -3154,7 +3130,7 @@ EventStream.prototype.holdWhen = function (valve) {
     };
     composite.add(function (unsubAll, unsubMe) {
       return valve.subscribeInternal(function (event) {
-        if (event.hasValue()) {
+        if (event.hasValue) {
           onHold = event.value;
           if (!onHold) {
             var toSend = bufferedValues;
@@ -3172,7 +3148,7 @@ EventStream.prototype.holdWhen = function (valve) {
               return result;
             }();
           }
-        } else if (event.isEnd()) {
+        } else if (event.isEnd) {
           return endIfBothEnded(unsubMe);
         } else {
           return sink(event);
@@ -3181,9 +3157,9 @@ EventStream.prototype.holdWhen = function (valve) {
     });
     composite.add(function (unsubAll, unsubMe) {
       return src.subscribeInternal(function (event) {
-        if (onHold && event.hasValue()) {
+        if (onHold && event.hasValue) {
           return bufferedValues.push(event.value);
-        } else if (event.isEnd() && bufferedValues.length) {
+        } else if (event.isEnd && bufferedValues.length) {
           srcIsEnded = true;
           return endIfBothEnded(unsubMe);
         } else {
@@ -3236,7 +3212,7 @@ Observable.prototype.last = function () {
   var lastEvent;
 
   return withDesc(new Desc(this, "last", []), this.withHandler(function (event) {
-    if (event.isEnd()) {
+    if (event.isEnd) {
       if (lastEvent) {
         this.push(lastEvent);
       }
@@ -3277,7 +3253,7 @@ function mergeAll() {
       var smartSink = function (obs) {
         return function (unsubBoth) {
           return obs.dispatcher.subscribe(function (event) {
-            if (event.isEnd()) {
+            if (event.isEnd) {
               ends++;
               if (ends === streams.length) {
                 return sink(endEvent());
@@ -3320,7 +3296,7 @@ function repeat(generator) {
     var reply = more;
     var unsub = function () {};
     function handleEvent(event) {
-      if (event.isEnd()) {
+      if (event.isEnd) {
         if (!flag) {
           return flag = true;
         } else {
@@ -3372,14 +3348,14 @@ Bacon.retry = function (options) {
   return withDesc(new Desc(Bacon, "retry", [options]), Bacon.repeat(function (count) {
     function valueStream() {
       return source(count).endOnError().withHandler(function (event) {
-        if (event.isError()) {
+        if (event.isError) {
           error = event;
           if (!(isRetryable(error.error) && (retries === 0 || retriesDone < retries))) {
             finished = true;
             return this.push(event);
           }
         } else {
-          if (event.hasValue()) {
+          if (event.hasValue) {
             error = null;
             finished = true;
           }
@@ -3422,7 +3398,7 @@ Bacon.sequentially = sequentially;
 
 Observable.prototype.skip = function (count) {
   return withDesc(new Desc(this, "skip", [count]), this.withHandler(function (event) {
-    if (!event.hasValue()) {
+    if (!event.hasValue) {
       return this.push(event);
     } else if (count > 0) {
       count--;
@@ -3448,8 +3424,8 @@ EventStream.prototype.skipWhile = function (f) {
 
   return convertArgsToFunction(this, f, args, function (f) {
     return withDesc(new Desc(this, "skipWhile", [f]), this.withHandler(function (event) {
-      if (ok || !event.hasValue() || !f(event.value)) {
-        if (event.hasValue()) {
+      if (ok || !event.hasValue || !f(event.value)) {
+        if (event.hasValue) {
           ok = true;
         }
         return this.push(event);
@@ -3520,10 +3496,10 @@ Observable.prototype.firstToPromise = function (PromiseCtr) {
 
   return new PromiseCtr(function (resolve, reject) {
     return _this.subscribe(function (event) {
-      if (event.hasValue()) {
+      if (event.hasValue) {
         resolve(event.value);
       }
-      if (event.isError()) {
+      if (event.isError) {
         reject(event.error);
       }
 
