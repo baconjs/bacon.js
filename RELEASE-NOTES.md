@@ -3,6 +3,7 @@
 - Remove lazy evaluation of event values (#700)
 - Make Bacon.once and friends asynchronous (#706)
 - Use rollup to build everything from ES6 modules (#708)
+- Force asyncness of all streams created with any of the stream constructors (#711)
 
 ## 1.0.1
 
