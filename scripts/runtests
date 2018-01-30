@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -e
-
+echo TEST_SUITE=$TEST_SUITE
 if [ "${TEST_SUITE}" = "browserstack-status" ]; then
-  browsertest/browserify
+  echo "building browser test suite"
+  npm run browsertest-bundle
+  echo "running on browserstack"
   npm run browserstack
 else
   BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs
