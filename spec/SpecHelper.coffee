@@ -185,22 +185,24 @@ module.exports.expectStreamTimings = expectStreamTimings = (src, expectedEventsA
 
 module.exports.expectStreamEvents = expectStreamEvents = (src, expectedEvents, {unstable, semiunstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
-  verifyLateEval src, expectedEvents
-  if not unstable
-    verifySwitching src, expectedEvents unless browser
-    verifySwitchingWithUnsub src, expectedEvents unless browser
-  if not (unstable or semiunstable)
-    verifySwitchingAggressively src, expectedEvents
+  unless browser
+    verifyLateEval src, expectedEvents
+    if not unstable
+      verifySwitching src, expectedEvents
+      verifySwitchingWithUnsub src, expectedEvents
+    if not (unstable or semiunstable)
+      verifySwitchingAggressively src, expectedEvents
 
 expectPropertyEvents = (src, expectedEvents, {unstable, semiunstable, extraCheck} = {}) ->
   expect(expectedEvents.length > 0).to.deep.equal(true, "at least one expected event is specified")
   verifyPSingleSubscriber src, expectedEvents, extraCheck
-  verifyPLateEval src, expectedEvents
-  if not unstable
-    verifyPIntermittentSubscriber src, expectedEvents
-    verifyPSwitching src, justValues(expectedEvents)
-  if not (unstable or semiunstable)
-    verifyPSwitchingAggressively src, justValues(expectedEvents)
+  unless browser
+    verifyPLateEval src, expectedEvents
+    if not unstable
+      verifyPIntermittentSubscriber src, expectedEvents
+      verifyPSwitching src, justValues(expectedEvents)
+    if not (unstable or semiunstable)
+      verifyPSwitchingAggressively src, justValues(expectedEvents)
 
 verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
   verifyPropertyWith "(single subscriber)", srcF, expectedEvents, ((src, events, done) ->
