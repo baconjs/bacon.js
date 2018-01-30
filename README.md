@@ -38,7 +38,6 @@ Please contribute!
 [![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
 [![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)](https://www.browserstack.com/automate/public-build/RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)
 [![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
-[![NuGet version](http://img.shields.io/nuget/v/Bacon.js.svg)](https://www.nuget.org/packages/Bacon.js)
 [![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
 [![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
@@ -102,9 +101,6 @@ Starting from 0.7.45, you can build your own Bacon.js bundle with selected featu
 only. See instructions [here](#build).
 
 Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
-
-Visual Studio users can obtain version 0.7.76 via NuGet Packages
-    https://www.nuget.org/packages/Bacon.js/0.7.76
 
 
 Intro
