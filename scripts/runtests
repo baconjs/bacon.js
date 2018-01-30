@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs
+if [ "${TEST_SUITE}" = "browserstack-status" ]; then
+  browsertest/browserify
+  npm run browserstack
+else
+  BABEL_ENV=test ./node_modules/.bin/mocha --compilers coffee:coffee-script/register,js:babel-register spec/specs
+fi
+
