@@ -1,5 +1,5 @@
-#!/usr/bin/env bash -e
-
+#!/usr/bin/env bash
+set -e
 if [ -z $BROWSERSTACK_USERNAME ]; then
   echo "Environment variable BROWSERSTACK_USERNAME missing"
   exit 1
