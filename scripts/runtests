@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 echo TEST_SUITE=$TEST_SUITE
-if [ "${TEST_SUITE}" = "browserstack-status" ]; then
+if [ "${TEST_SUITE}" = "browserstack" ]; then
   echo "building browser test suite"
   npm run browsertest-bundle
   echo "running on browserstack"

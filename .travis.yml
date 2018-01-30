@@ -22,8 +22,5 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - env: TEST_SUITE=browserstack-status
-      node_js: '9.0'
-  allow_failures:
-    - env: TEST_SUITE=browserstack-status
+    - env: TEST_SUITE=browserstack
       node_js: '9.0'
