@@ -5,6 +5,7 @@ node_js:
   - 5
   - 6
   - 8
+  - 9
 notifications:
   flowdock: 3853ef33f6943539cbbed913648575beg
 script:
