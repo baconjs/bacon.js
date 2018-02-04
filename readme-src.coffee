@@ -28,8 +28,7 @@ Here's the stuff.
 - [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/bacon.js) for well-formed questions. Use the "bacon.js" tag.
 - [Gitter](https://gitter.im/baconjs/bacon.js) chat for developers of Bacon.
-
-You can also check out my entertaining (LOL), interactive, solid-ass [slideshow](http://raimohanska.github.com/bacon.js-slides/).
+- [Migrating to 2.0](https://github.com/baconjs/bacon.js/wiki/Migration-from-version-1.0-to-2.0)
 
 And remember to give me feedback on the bacon! Let me know if you've
 used it. Tell me how it worked for you. What's missing? What's wrong?
