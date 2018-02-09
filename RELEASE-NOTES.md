@@ -1,3 +1,7 @@
+## 2.0.4
+
+- Correct version information included in descriptor files and published dist/*.js files
+
 ## 2.0.1
 
 - Support custom binder function in `Bacon.fromEvent` (#710)
