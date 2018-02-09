@@ -1297,7 +1297,7 @@
         CompositeUnsubscribe: CompositeUnsubscribe,
         never: never,
         constant: constant,
-        version: '2.0.3'
+        version: '2.0.4'
     };
     Bacon.Bacon = Bacon;
     function map(p) {
