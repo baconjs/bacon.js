@@ -16,15 +16,11 @@ echo "Building"
 npm install
 npm test
 
-if [ -z $2 ] ; then
-  node ./test-individually.js
-fi
-
-./build
-
 echo "Updating files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
 sed -i "" 's/<version>/'$version'/' dist/*.js
+
+npm run dist # run once again to get updated version info into dist js
 
 echo "Commit and tag"
 git add .
