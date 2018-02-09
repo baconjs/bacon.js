@@ -2,18 +2,22 @@ import Exception from './exception';
 import { Desc, withDesc } from './describe';
 import fromBinder from './frombinder';
 import Bacon from './core';
+import _ from './_';
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
 // common in MVCs as EventStream
 //
 // target - EventTarget or EventEmitter, source of events
-// eventName - event name to bind
+// eventSource - event name to bind or a function that performs custom binding
 // eventTransformer - defaults to returning the first argument to handler
 //
 // Examples
 //
 //   Bacon.fromEventTarget(document.body, "click")
+//   # => EventStream
+//
+//   Bacon.fromEventTarget(document.body, "scroll", {passive: true})
 //   # => EventStream
 //
 //   Bacon.fromEventTarget (new EventEmitter(), "data")
@@ -42,14 +46,21 @@ var findHandlerMethods = function(target) {
   throw new Exception("No suitable event methods in " + target);
 };
 
-export default function fromEventTarget(target, eventName, eventTransformer) {
+export default function fromEventTarget(target, eventSource, eventTransformer) {
   var [sub, unsub] = findHandlerMethods(target);
-  var desc = new Desc(Bacon, "fromEvent", [target, eventName]);
+  var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
   return withDesc(desc, fromBinder(function(handler) {
-    sub.call(target, eventName, handler);
-    return function() {
-      return unsub.call(target, eventName, handler);
-    };
+    if (_.isFunction(eventSource)) {
+      eventSource(sub.bind(target), handler);
+      return function() {
+        return eventSource(unsub.bind(target), handler);
+      }
+    } else {
+      sub.call(target, eventSource, handler);
+      return function () {
+        return unsub.call(target, eventSource, handler);
+      };
+    }
   }, eventTransformer));
 }
 

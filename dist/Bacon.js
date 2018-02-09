@@ -3031,17 +3031,24 @@ var findHandlerMethods = function (target) {
   throw new Error("No suitable event methods in " + target);
 };
 
-function fromEventTarget(target, eventName, eventTransformer) {
+function fromEventTarget(target, eventSource, eventTransformer) {
   var _findHandlerMethods = findHandlerMethods(target),
       sub = _findHandlerMethods[0],
       unsub = _findHandlerMethods[1];
 
-  var desc = new Desc(Bacon, "fromEvent", [target, eventName]);
+  var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
   return withDesc(desc, fromBinder(function (handler) {
-    sub.call(target, eventName, handler);
-    return function () {
-      return unsub.call(target, eventName, handler);
-    };
+    if (_.isFunction(eventSource)) {
+      eventSource(sub.bind(target), handler);
+      return function () {
+        return eventSource(unsub.bind(target), handler);
+      };
+    } else {
+      sub.call(target, eventSource, handler);
+      return function () {
+        return unsub.call(target, eventSource, handler);
+      };
+    }
   }, eventTransformer));
 }
 
