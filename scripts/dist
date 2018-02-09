@@ -2,3 +2,8 @@
 set -e
 
 node_modules/.bin/babel-node scripts/assemble.js $@
+
+if [ ! -z $DIST_VERSION ]; then
+  echo "Setting version info to dist/*.js files"
+  sed -i "" 's/<version>/'$DIST_VERSION'/' dist/*.js
+fi

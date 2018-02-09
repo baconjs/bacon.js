@@ -5,6 +5,7 @@ if [ -z $version ]; then
   echo "Enter release version:"
   read version
 fi
+export DIST_VERSION=$version
 
 files="component.json package.json bower.json"
 echo "Releasing with version $version"
@@ -16,9 +17,8 @@ echo "2. Building and testing"
 npm install
 npm test
 
-echo "3. Setting version info to files"
+echo "3. Setting version info to descriptor files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
-sed -i "" 's/<version>/'$version'/' dist/*.js
 
 echo "4. Commit and tag"
 git add .
