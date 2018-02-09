@@ -96,7 +96,8 @@
     "version": "2.0.2",
     "browsertest-bundle": "browsertest/browserify",
     "browsertest-open": "open browsertest/mocha.runner.html",
-    "browserstack": "browsertest/browserstack"
+    "browserstack": "browsertest/browserstack",
+    "release": "scripts/release"
   },
   "main": "dist/Bacon.js"
 }

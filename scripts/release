@@ -1,37 +1,35 @@
 #!/usr/bin/env bash -e
 
-if [ -z $1 ]; then
-  echo "usage: release <version>"
-  exit 1
+version=$1
+if [ -z $version ]; then
+  echo "Enter release version:"
+  read version
 fi
 
-version=$1
 files="component.json package.json bower.json"
 echo "Releasing with version $version"
 
-echo "Pulling from origin"
+echo "1. Pulling from origin"
 git pull --ff-only --no-rebase origin
 
-echo "Building"
+echo "2. Building and testing"
 npm install
 npm test
 
-echo "Updating files"
+echo "3. Setting version info to files"
 sed -i "" 's/\("version".*:.*\)".*"/\1"'$version'"/' $files
 sed -i "" 's/<version>/'$version'/' dist/*.js
 
-npm run dist # run once again to get updated version info into dist js
-
-echo "Commit and tag"
+echo "4. Commit and tag"
 git add .
 git commit -m "release $version"
 git tag $version
 
-echo "Push to origin/master"
+echo "5. Push to origin/master"
 git push
 git push --tags origin
 
-echo "Publish to npm"
+echo "6. Publish to npm"
 npm publish
 
-echo "DONE!"
+echo "DONE! Released version $version"
