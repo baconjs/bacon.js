@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Support custom binder function in `Bacon.fromEvent` (#710)
+
 ## 2.0.0
 
 - Remove lazy evaluation of event values (#700)
