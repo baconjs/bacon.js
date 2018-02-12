@@ -1434,7 +1434,7 @@ var Bacon = {
   CompositeUnsubscribe: CompositeUnsubscribe,
   never: never,
   constant: constant,
-  version: '2.0.5'
+  version: '<version>'
 };
 
 Bacon.Bacon = Bacon;
@@ -3489,12 +3489,53 @@ Observable.prototype.takeWhile = function (f) {
   });
 };
 
+var defaultOptions = { trailing: true };
+
 Observable.prototype.throttle = function (delay) {
-  return this.delayChanges(new Desc(this, "throttle", [delay]), function (changes) {
-    return changes.bufferWithTime(delay).map(function (values) {
-      return values[values.length - 1];
-    });
-  });
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultOptions;
+  var leading = options.leading,
+      trailing = options.trailing;
+
+  var lastCallTime = 0;
+  var trailingValue, timeoutId, trailingEnd;
+  var cancelTrailing = function () {
+    if (timeoutId !== null) {
+      Bacon.scheduler.clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+  var stream = void 0;
+  var trailingCall = function () {
+    stream.dispatcher.push(trailingValue);
+    timeoutId = null;
+    trailingValue = null;
+    lastCallTime = Bacon.scheduler.now();
+    if (trailingEnd) {
+      stream.dispatcher.push(trailingEnd);
+    }
+  };
+  return stream = withDesc(new Desc(this, "throttle", options === defaultOptions ? [delay] : [delay, options]), this.withHandler(function (event) {
+    if (event.isNext) {
+      var curTime = Bacon.scheduler.now();
+      if (lastCallTime === 0 && !leading) {
+        lastCallTime = curTime;
+      }
+      var remaining = delay - (curTime - lastCallTime);
+      if (remaining <= 0) {
+        cancelTrailing();
+        lastCallTime = curTime;
+        return this.push(event);
+      } else if (trailing) {
+        trailingValue = event;
+        cancelTrailing();
+        timeoutId = Bacon.scheduler.setTimeout(trailingCall, remaining);
+      }
+    } else if (event.isEnd && timeoutId !== null) {
+      trailingEnd = event;
+    } else {
+      return this.push(event);
+    }
+  }));
 };
 
 Property.prototype.toEventStream = function (options) {
