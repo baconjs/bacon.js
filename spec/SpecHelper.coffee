@@ -1,3 +1,4 @@
+require('es6-promise').polyfill()
 Bacon = require("../src/bacon").default
 fromArray = require("../src/fromarray").default
 expect = require("chai").expect

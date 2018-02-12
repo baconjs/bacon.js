@@ -4,7 +4,6 @@ Bacon = require("../../src/core").default
 expect = require("chai").expect
 { later, sequentially, fromArray, once } = require("../SpecHelper")
 
-require('es6-promise').polyfill()
 Bluebird = require "bluebird"
 
 describe "firstToPromise", ->
