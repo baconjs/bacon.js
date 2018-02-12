@@ -31,7 +31,7 @@ describe "Property.concat", ->
       [1, error(), 2, 3, 4, 5, 6], semiunstable)
   describe "works with Bacon.never()", ->
     expectPropertyEvents(
-      -> Bacon.constant(1).toProperty().concat(Bacon.never())
+      -> Bacon.constant(1).concat(Bacon.never())
       [1])
   describe "works with Bacon.once()", ->
     expectPropertyEvents(
