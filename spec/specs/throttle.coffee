@@ -21,6 +21,15 @@ describe "EventStream.throttle(delay)", ->
     expectStreamTimings(
       -> series(2, [1, 2, 3]).throttle(t(3))
       [[5, 2], [8, 3]])
+  describe "options", ->
+    describe "{ leading: true }", ->
+      expectStreamTimings(
+        -> series(2, [1, 2, 3]).throttle(t(3), { leading: true })
+        [[2, 1], [6, 3]])
+    describe "{ trailing: true, leading: true }", ->
+      expectStreamTimings(
+        -> series(2, [1, 2, 3]).throttle(t(3), { leading: true, trailing: true })
+        [[2, 1], [5, 2], [8, 3]])
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3]).throttle(t(3))
