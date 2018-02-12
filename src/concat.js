@@ -25,7 +25,7 @@ EventStream.prototype.concat = function(right, options) {
       return unsubLeft() , unsubRight();
     };
   }, null, options);
-};
+}
 
 Property.prototype.concat = function(right) {
   return addPropertyInitValueToStream(this, this.changes().concat(right))
@@ -41,4 +41,4 @@ Bacon.concatAll = function() {
   } else {
     return never();
   }
-};
+}
