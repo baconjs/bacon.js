@@ -1,3 +1,7 @@
+## 2.0.5
+
+- Fix force-async behavior in EventStream constructor (#713)
+
 ## 2.0.4
 
 - Correct version information included in descriptor files and published dist/*.js files
