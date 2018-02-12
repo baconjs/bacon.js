@@ -57,7 +57,7 @@ function asyncWrapSubscribe(obs, subscribe) {
 
     try {
       return subscribe(function wrappedSink(event) {
-        if (subscribing || asyncDeliveries) {
+        if (subscribing || asyncDeliveries) {
           // Deliver async if currently subscribing
           // Also queue further events until async delivery has been completed
           
