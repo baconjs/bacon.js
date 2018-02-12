@@ -1078,15 +1078,6 @@
         },
         toProperty: function () {
             return this;
-        },
-        toEventStream: function () {
-            var _this3 = this;
-            var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
-            return new EventStream(new Desc(this, 'toEventStream', []), function (sink) {
-                return _this3.dispatcher.subscribe(function (event) {
-                    return sink(event.toNext());
-                });
-            }, null, options);
         }
     });
     var defaultOptions = { forceAsync: true };
@@ -1297,7 +1288,7 @@
         CompositeUnsubscribe: CompositeUnsubscribe,
         never: never,
         constant: constant,
-        version: '2.0.4'
+        version: '<version>'
     };
     Bacon.Bacon = Bacon;
     function map(p) {
@@ -3261,6 +3252,15 @@
                 return values[values.length - 1];
             });
         });
+    };
+    Property.prototype.toEventStream = function () {
+        var _this = this;
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
+        return new EventStream(new Desc(this, 'toEventStream', []), function (sink) {
+            return _this.dispatcher.subscribe(function (event) {
+                return sink(event.toNext());
+            });
+        }, null, options);
     };
     Observable.prototype.firstToPromise = function (PromiseCtr) {
         var _this = this;

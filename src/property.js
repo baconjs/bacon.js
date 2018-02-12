@@ -10,7 +10,6 @@ import { Desc } from "./describe";
 import { registerObs } from "./spy";
 import Bacon from "./core";
 import { streamSubscribeToPropertySubscribe } from "./eventstream";
-import { defaultOptions } from "./eventstream";
 
 function PropertyDispatcher(property, subscribe, handleEvent) {
   Dispatcher.call(this, subscribe, handleEvent);
@@ -114,14 +113,5 @@ extend(Property.prototype, {
   toProperty() {
     assertNoArguments(arguments);
     return this;
-  },
-
-  toEventStream( options = defaultOptions) {
-    return new EventStream(
-      new Desc(this, "toEventStream", []), 
-      (sink) => this.dispatcher.subscribe(function(event) { return sink(event.toNext()); }),
-      null,
-      options
-    );
   }
 });
