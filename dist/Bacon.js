@@ -579,7 +579,7 @@ var scheduler = {
 };
 
 var UpdateBarrier = function () {
-  var rootEvent;
+  var rootEvent = null;
   var waiterObs = [];
   var waiters = {};
   var aftersStack = [];
@@ -597,6 +597,10 @@ var UpdateBarrier = function () {
       aftersStack[h - 1] = [[], 0];
     }
     aftersStackHeight = h;
+  }
+
+  function isInTransaction() {
+    return rootEvent !== null;
   }
 
   function soonButNotYet(obs, f) {
@@ -736,7 +740,7 @@ var UpdateBarrier = function () {
 
         flush();
       } finally {
-        rootEvent = undefined;
+        rootEvent = null;
         processAfters();
       }
       return result;
@@ -779,7 +783,7 @@ var UpdateBarrier = function () {
     return waiterObs.length > 0;
   }
 
-  return { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet };
+  return { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
 }();
 
 function Dispatcher(_subscribe, _handleEvent) {
@@ -1191,12 +1195,9 @@ extend(Property.prototype, {
   }
 });
 
-var defaultOptions = { forceAsync: true };
 var allowSync = { forceAsync: false };
 var defaultDesc = describe("Bacon", "new EventStream", []);
-function EventStream(desc, subscribe, handler) {
-  var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : defaultOptions;
-
+function EventStream(desc, subscribe, handler, options) {
   if (!(this instanceof EventStream)) {
     return new EventStream(desc, subscribe, handler);
   }
@@ -1216,14 +1217,33 @@ function EventStream(desc, subscribe, handler) {
 
 function asyncWrapSubscribe(obs, subscribe) {
   var subscribing = false;
+
   return function wrappedSubscribe(sink) {
+    var inTransaction = UpdateBarrier.isInTransaction();
     subscribing = true;
+    var asyncDeliveries;
+    function deliverAsync() {
+      var toDeliverNow = asyncDeliveries;
+      asyncDeliveries = null;
+      for (var i = 0; i < toDeliverNow.length; i++) {
+        var event = toDeliverNow[i];
+        sink(event);
+      }
+    }
+
     try {
       return subscribe(function wrappedSink(event) {
-        if (subscribing) {
-          UpdateBarrier.soonButNotYet(obs, function () {
-            sink(event);
-          });
+        if (subscribing || asyncDeliveries) {
+          if (!asyncDeliveries) {
+            asyncDeliveries = [event];
+            if (inTransaction) {
+              UpdateBarrier.soonButNotYet(obs, deliverAsync);
+            } else {
+              Bacon.scheduler.setTimeout(deliverAsync, 0);
+            }
+          } else {
+            asyncDeliveries.push(event);
+          }
         } else {
           return sink(event);
         }
@@ -1299,7 +1319,7 @@ extend(EventStream.prototype, {
     return this;
   },
   withHandler: function (handler) {
-    return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+    return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
   }
 });
 
@@ -1801,9 +1821,7 @@ function groupSimultaneous() {
   return groupSimultaneous_(streams);
 }
 
-function groupSimultaneous_(streams) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultOptions;
-
+function groupSimultaneous_(streams, options) {
   if (streams.length === 1 && isArray(streams[0])) {
     streams = streams[0];
   }
@@ -2171,10 +2189,10 @@ function addPropertyInitValueToStream(property, stream) {
     });
     return unsub;
   }, null, allowSync);
-  return justInitValue.concat(stream).toProperty();
+  return justInitValue.concat(stream, allowSync).toProperty();
 }
 
-EventStream.prototype.concat = function (right) {
+EventStream.prototype.concat = function (right, options) {
   var left = this;
   return new EventStream(new Desc(left, "concat", [right]), function (sink) {
     var unsubRight = nop;
@@ -2189,7 +2207,7 @@ EventStream.prototype.concat = function (right) {
     return function () {
       return unsubLeft(), unsubRight();
     };
-  });
+  }, null, options);
 };
 
 Property.prototype.concat = function (right) {
@@ -3479,10 +3497,8 @@ Observable.prototype.throttle = function (delay) {
   });
 };
 
-Property.prototype.toEventStream = function () {
+Property.prototype.toEventStream = function (options) {
   var _this = this;
-
-  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultOptions;
 
   return new EventStream(new Desc(this, "toEventStream", []), function (sink) {
     return _this.dispatcher.subscribe(function (event) {
