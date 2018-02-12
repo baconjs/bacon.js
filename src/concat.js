@@ -9,7 +9,7 @@ import never from "./never"
 import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
 import { argumentsToObservables } from "./argumentstoobservables";
 
-EventStream.prototype.concat = function(right) {
+EventStream.prototype.concat = function(right, options) {
   var left = this;
   return new EventStream(new Desc(left, "concat", [right]), function(sink) {
     var unsubRight = nop;
@@ -24,7 +24,7 @@ EventStream.prototype.concat = function(right) {
     return function() {
       return unsubLeft() , unsubRight();
     };
-  });
+  }, null, options);
 };
 
 Property.prototype.concat = function(right) {

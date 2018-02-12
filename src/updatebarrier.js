@@ -5,7 +5,7 @@ import Bacon from "./core";
 import "./scheduler"
 
 var UpdateBarrier = (function() {
-  var rootEvent;
+  var rootEvent = null;
   var waiterObs = [];
   var waiters = {};
   var aftersStack = []
@@ -23,6 +23,10 @@ var UpdateBarrier = (function() {
       aftersStack[h-1]=[[],0]
     }
     aftersStackHeight = h
+  }
+
+  function isInTransaction() {
+    return rootEvent !== null
   }
 
   function soonButNotYet(obs, f) {
@@ -166,7 +170,7 @@ var UpdateBarrier = (function() {
         //console.log("done with tx")
         flush();
       } finally {
-        rootEvent = undefined;
+        rootEvent = null;
         processAfters()
       }
       return result;
@@ -207,7 +211,7 @@ var UpdateBarrier = (function() {
 
   function hasWaiters() { return waiterObs.length > 0; }
 
-  return { toString, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction, soonButNotYet };
+  return { toString, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction, soonButNotYet, isInTransaction };
 }
 )();
 export default UpdateBarrier;

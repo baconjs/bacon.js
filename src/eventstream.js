@@ -10,15 +10,15 @@ import _ from "./_";
 import { Initial } from "./event";
 import Dispatcher from "./dispatcher";
 import describe from "./describe";
+import Bacon from "./core";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchrnous behavior. These are not exposed
 // to the outside world, though.
-export const defaultOptions = { forceAsync: true }
 export const allowSync = { forceAsync: false }
 const defaultDesc = describe("Bacon", "new EventStream", [])
-export default function EventStream(desc, subscribe, handler, options = defaultOptions) {
+export default function EventStream(desc, subscribe, handler, options) {
   if (!(this instanceof EventStream)) {
     return new EventStream(desc, subscribe, handler);
   }
@@ -39,18 +39,39 @@ export default function EventStream(desc, subscribe, handler, options = defaultO
 function asyncWrapSubscribe(obs, subscribe) {
   //assertFunction(subscribe)
   var subscribing = false
+
   return function wrappedSubscribe(sink) {
     //assertFunction(sink)
+    const inTransaction = UpdateBarrier.isInTransaction()
     subscribing = true
+    var asyncDeliveries
+    function deliverAsync() { 
+      //console.log("delivering async", obs, asyncDeliveries)
+      var toDeliverNow = asyncDeliveries
+      asyncDeliveries = null
+      for (var i = 0; i < toDeliverNow.length; i++) {
+        var event = toDeliverNow[i]
+        sink(event)
+      }
+    }
+
     try {
       return subscribe(function wrappedSink(event) {
-        if (subscribing) {
+        if (subscribing || asyncDeliveries) {
+          // Deliver async if currently subscribing
+          // Also queue further events until async delivery has been completed
+          
           //console.log("Stream responded synchronously", obs)
-          UpdateBarrier.soonButNotYet(obs, () => {
-            //console.log("delivering async")
-            sink(event)
-          })
-
+          if (!asyncDeliveries) {
+            asyncDeliveries = [event]
+            if (inTransaction) {
+              UpdateBarrier.soonButNotYet(obs, deliverAsync)
+            } else {
+              Bacon.scheduler.setTimeout(deliverAsync, 0)
+            }
+          } else {
+            asyncDeliveries.push(event)
+          }
         } else {
           return sink(event)
         }
@@ -121,7 +142,7 @@ extend(EventStream.prototype, {
   toEventStream() { return this; },
 
   withHandler(handler) {
-    return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+    return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
   }
 });
 

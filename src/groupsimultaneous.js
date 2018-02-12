@@ -4,14 +4,13 @@ import "./skipduplicates";
 import { BufferingSource } from "./source";
 import { Desc, withDesc } from "./describe";
 import { isArray } from "./helpers";
-import { defaultOptions } from "./eventstream";
 import EventStream from "./eventstream";
 
 export default function groupSimultaneous(...streams) {
   return groupSimultaneous_(streams)
 }
 
-export function groupSimultaneous_(streams, options = defaultOptions) {
+export function groupSimultaneous_(streams, options) {
   if (streams.length === 1 && isArray(streams[0])) {
     streams = streams[0];
   }

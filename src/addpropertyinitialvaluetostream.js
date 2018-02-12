@@ -28,5 +28,5 @@ export default function addPropertyInitValueToStream(property, stream) {
     null,
     allowSync
   );
-  return justInitValue.concat(stream).toProperty();
+  return justInitValue.concat(stream, allowSync).toProperty();
 }
