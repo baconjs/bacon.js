@@ -11,14 +11,22 @@ Observable.prototype.throttle = function (delay) {
       .bufferWithTime(delay)
       .map((values) => values[values.length - 1]));
 };
+
 Observable.prototype.throttleImmediate = function (delay) {
-  return this.delayChanges(new Desc(this, "throttleImmediate", [delay]), (changes) => 
-    Bacon.mergeAll(
-      changes.debounceImmediate(delay),
-      changes.debounce(delay)
-    )
-    /*changes.flatMapFirst(value =>
-      Bacon.once(value).concat(Bacon.later(delay).filter(false))
-    )*/
+  return this.delayChanges(new Desc(this, "throttleImmediate", [delay]), (changes) =>
+      changes.flatMapFirst(first => {
+        let holding;
+        const flushHolding = () => {
+          const flushing = holding ? [holding] : [];
+          holding = null;
+          return Bacon.fromArray(flushing);
+        };
+        const silence = Bacon.once()
+          .concat(this.doAction(value => holding = value))
+          .flatMapLatest(() => Bacon.later(delay, true))
+          .take(1);
+        const sampler = Bacon.interval(delay).takeUntil(silence);
+        return Bacon.once(first).concat(sampler.flatMap(flushHolding));
+      })
   );
 };

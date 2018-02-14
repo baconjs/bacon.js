@@ -33,7 +33,7 @@ describe "EventStream.throttleImmediate(delay)", ->
   describe "outputs first event immediately, then ignores events for given amount of milliseconds", ->
     expectStreamTimings(
       -> series(2, [1, 2, 3, 4]).throttleImmediate(t(3))
-      [[2, 1], [6, 3], [11, 4]], semiunstable) # why 11?
+      [[2, 1], [5, 2], [8, 3], [11, 4]], semiunstable)
   describe "works with synchronous source", ->
     expectStreamEvents(
       -> fromArray([1, 2, 3, 4]).throttleImmediate(t(3))
