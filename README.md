@@ -616,7 +616,7 @@ source.debounceImmediate(2): a-d-----a-d-----
 ```
 
 <a name="observable-bufferingthrottle"></a>
-[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInteval is issued.
+[`observable.bufferingThrottle(minimumInterval)`](#observable-bufferingthrottle "observable.bufferingThrottle(@ : Observable[A], minimumInterval) : EventStream[A]") throttles the observable using a buffer so that at most one value event in minimumInterval is issued.
 Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputting
 them with a rate of at most one value per minimumInterval.
 
@@ -649,15 +649,15 @@ is executed for each error, before dispatching to subscribers.
 That is, same as [`doAction`](#observable-doaction) but for errors.
 
 <a name="observable-not"></a>
-[`observable.not()`](#observable-not "observable.not(@ : Obserable[A]) : Observable[Bool]") returns a stream/property that inverts boolean values
+[`observable.not()`](#observable-not "observable.not(@ : Observable[A]) : Observable[Bool]") returns a stream/property that inverts boolean values
 
 <a name="observable-flatmap"></a>
-[`observable.flatMap(f)`](#observable-flatmap "observable.flatMap(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : EventStream[B]") for each element in the source stream, spawn a new
+[`observable.flatMap(f)`](#observable-flatmap "observable.flatMap(@ : Observable[A], f : A -> Observable[B] | Event[B] | B) : Observable[B]") for each element in the source stream, spawn a new
 stream using the function `f`. Collect events from each of the spawned
-streams into the result [`EventStream`](#eventstream). Note that instead of a function, you can provide a
+streams into the result [`EventStream`](#eventstream) / [`Property`](#property). Note that instead of a function, you can provide a
 stream/property too. Also, the return value of function `f` can be either an
 `Observable` (stream/property) or a constant value. The result of
-[`flatMap`](#observable-flatmap) is always an [`EventStream`](#eventstream).
+[`flatMap`](#observable-flatmap) is of the same type as the source stream.
 
 The [Function Construction rules](#function-construction-rules) below apply here.
 
