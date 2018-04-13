@@ -67,7 +67,7 @@
     "git-rev": "^0.2.1",
     "github": "^0.2.4",
     "jasmine-node": "^1.14.5",
-    "jquery": "^2.1.4",
+    "jquery": "^3.3.1",
     "jsstana": "^0.1.5",
     "lodash": "^4.0.0",
     "mocha": "^2.1.0",
