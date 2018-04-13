@@ -1434,7 +1434,7 @@ var Bacon = {
   CompositeUnsubscribe: CompositeUnsubscribe,
   never: never,
   constant: constant,
-  version: '2.0.5'
+  version: '2.0.6'
 };
 
 Bacon.Bacon = Bacon;
