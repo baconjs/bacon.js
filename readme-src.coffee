@@ -1260,7 +1260,7 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 """
 
 doc.fn "Bacon.mergeAll(streams)", """
-merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#observable-merge)
+merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#stream-merge)
 
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 """
