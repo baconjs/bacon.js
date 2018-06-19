@@ -24,7 +24,7 @@ var defaultOutput = path.join(__dirname, "..", "dist", "Bacon.js");
 var defaultNoAssert = path.join(__dirname, "..", "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "..", "dist", "Bacon.min.js");
 
-var customBuildPlugin = function(options) {
+function partialBuildPlugin(options) {
   var pieces = (options || {}).pieces || [];
   var filter = function(id) {
     return path.basename(id) === 'bacon.js';
@@ -90,7 +90,7 @@ var main = function(options) {
 
   var plugins = [babelPlugin()];
   if (process.argv.length > 2) {
-    plugins.push(customBuildPlugin({ pieces: argPieceNames }));
+    plugins.push(partialBuildPlugin({ pieces: argPieceNames }));
   }
 
   rollup({
