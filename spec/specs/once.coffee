@@ -1,5 +1,4 @@
-require("../../src/once")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

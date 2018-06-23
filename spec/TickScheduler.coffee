@@ -1,4 +1,4 @@
-Bacon = require("../src/bacon").default
+Bacon = require("../dist/bacon")
 _ = Bacon._
 
 exports.TickScheduler = ->

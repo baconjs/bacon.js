@@ -1,4 +1,4 @@
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -17,20 +17,7 @@ expect = require("chai").expect
 } = require("../SpecHelper")
 
 describe "EventStream constructor", ->
-  it "Can be instantiated without new", ->
-    subscribe = (sink) -> (->)
-    s = Bacon.EventStream(subscribe)
-    expect(s).to.be.an.instanceof(Bacon.EventStream)
-  it "Works with subscribe function only", ->
-    values = []
-    subscribe = (sink) ->
-      sink(new Bacon.Next("hello"))
-      sink(new Bacon.End())
-      ->
-    s = new Bacon.EventStream(subscribe)
-    s.onValue((x) -> values.push(x))
-    deferred -> expect(values).to.deep.equal(["hello"])
-  it "Supports Desc argument", ->
+  it "Requires Desc argument", ->
     values = []
     subscribe = (sink) ->
       sink(new Bacon.Next("hello"))
@@ -41,39 +28,6 @@ describe "EventStream constructor", ->
     expect(s.toString()).to.equal("context.method(arg)")
     deferred -> expect(values).to.deep.equal(["hello"])
 
-describe "EventStream.toProperty", ->
-  describe "delivers current value and changes to subscribers", ->
-    expectPropertyEvents(
-      -> later(1, "b").toProperty("a")
-      ["a", "b"])
-  describe "passes through also Errors", ->
-    expectPropertyEvents(
-      -> series(1, [1, error(), 2]).toProperty()
-      [1, error(), 2])
-
-  describe "supports null as value", ->
-    expectPropertyEvents(
-      -> series(1, [null, 1, null]).toProperty(null)
-      [null, null, 1, null])
-
-  describe "does not get messed-up by a transient subscriber (bug fix)", ->
-    expectPropertyEvents(
-      ->
-        prop = series(1, [1,2,3]).toProperty(0)
-        prop.subscribe (event) =>
-          Bacon.noMore
-        prop
-      [0, 1, 2, 3])
-  describe "works with synchronous source", ->
-    expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty()
-      [1,2,3])
-    expectPropertyEvents(
-      -> fromArray([1,2,3]).toProperty(0)
-      [0,1,2,3], unstable)
-  it "toString", ->
-    expect(Bacon.never().toProperty(0).toString()).to.equal("Bacon.never().toProperty(0)")
-
 describe "Observable.name", ->
   it "sets return value of toString and inspect", ->
     expect(Bacon.never().name("one").toString()).to.equal("one")
@@ -83,7 +37,7 @@ describe "Observable.name", ->
     obs.name("one")
     expect(obs.toString()).to.equal("one")
   it "supports composition", ->
-    expect(Bacon.never().name("raimo").toProperty().inspect()).to.equal("raimo.toProperty(undefined)")
+    expect(Bacon.never().name("raimo").toProperty().inspect()).to.equal("raimo.toProperty()")
 
 describe "Observable.withDescription", ->
   it "affects toString and inspect", ->

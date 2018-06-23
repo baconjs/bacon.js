@@ -1,4 +1,4 @@
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 {
   expectPropertyEvents,
@@ -33,5 +33,5 @@ describe "EventStream.flatScan", ->
 
   it "yields the seed value immediately", ->
     outputs = []
-    Bacon.Bus().flatScan(0, -> 1).onValue((value) -> outputs.push(value))
+    new Bacon.Bus().flatScan(0, -> 1).onValue((value) -> outputs.push(value))
     expect(outputs).to.deep.equal([0])

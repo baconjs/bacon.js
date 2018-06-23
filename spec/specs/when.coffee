@@ -1,9 +1,4 @@
-require("../../src/filter")
-require("../../src/map")
-require("../../src/scan")
-require("../../src/take")
-require("../../src/when")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

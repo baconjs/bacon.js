@@ -1,8 +1,4 @@
-require("../../src/take")
-require("../../src/interval")
-require("../../src/delay")
-require("../../src/sample")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -51,7 +47,7 @@ describe "Property.sampledBy(stream)", ->
   describe "allows method name instead of function too", ->
     expectStreamEvents(
       ->
-        Bacon.constant([1]).sampledBy(Bacon.once([2]), ".concat")
+        Bacon.constant([1]).sampledBy(Bacon.once([2]), (a, b) -> a.concat(b))
       [[1, 2]])
   describe "works with same origin", ->
     expectStreamEvents(

@@ -1,8 +1,4 @@
-require("../../src/doaction")
-require("../../src/doerror")
-require("../../src/flatmap")
-require("../../src/try")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 describe "Bacon.try", ->

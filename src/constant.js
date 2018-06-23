@@ -11,3 +11,5 @@ export default function constant(value) {
     return nop;
   });
 }
+
+Bacon.constant = constant

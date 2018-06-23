@@ -1,17 +1,4 @@
-require("../../src/startwith")
-require("../../src/filter")
-require("../../src/delay")
-require("../../src/interval")
-require("../../src/take")
-require("../../src/bus")
-require("../../src/map")
-require("../../src/mapend")
-require("../../src/merge")
-require("../../src/doaction")
-require("../../src/holdwhen")
-require("../../src/fromarray")
-require("../../src/startwith")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -70,7 +57,6 @@ describe "EventStream.holdWhen", ->
         flag = source.map((x) -> x != count-1).toProperty(true)
         source.holdWhen(flag).fold(0, ((x,y) -> x+1), { eager: true})
       [count-1])
-
   describe "Works with synchronous sources", ->
     expectStreamTimings(
       ->

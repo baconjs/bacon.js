@@ -1,5 +1,4 @@
-require("../../src/flatmapconcat")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -23,7 +22,7 @@ describe "EventStream.flatMapConcat", ->
       [1, error(), 1, 2, error(), 2], semiunstable)
   describe "Respects function construction rules", ->
     expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat(".bacon")
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapConcat((x) -> x.bacon)
       ["sir francis"])
   it "toString", ->
     expect(Bacon.once(1).flatMapConcat(->).toString()).to.equal("Bacon.once(1).flatMapConcat(function)")

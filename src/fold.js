@@ -9,7 +9,7 @@ import { withDesc, Desc } from "./describe";
 Observable.prototype.fold = function(seed, f) {
   return withDesc(
     new Desc(this, "fold", [seed, f]),
-    this.scan(seed, f).sampledBy(this.filter(false).mapEnd().toProperty())
+    this.scan(seed, f).sampledBy(this.errors().mapEnd().toProperty())
   );
 };
 

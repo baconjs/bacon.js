@@ -1,5 +1,4 @@
 import Bacon from "./core";
-
 import "./awaiting";
 import "./groupsimultaneous";
 import "./boolean";
@@ -23,6 +22,8 @@ import "./doerror";
 import "./dolog";
 import "./endonerror";
 import "./errors";
+import "./event.ts";
+import "./eventstream.ts";
 import "./esobservable";
 import "./filter";
 import "./first";
@@ -53,7 +54,9 @@ import "./mapend";
 import "./maperror";
 import "./merge";
 import "./never";
+import "./observable";
 import "./once";
+import "./property";
 import "./repeatedly";
 import "./repeat";
 import "./retry";
@@ -77,6 +80,17 @@ import "./try";
 import "./update";
 import "./when";
 import "./withstatemachine";
+import "./withlatestfrom";
 import "./zip";
+
+import EventStream from "./eventstream"
+import Observable from "./observable"
+import UpdateBarrier from "./updatebarrier"
+import Property from "./property"
+
+Bacon.EventStream = EventStream
+Bacon.UpdateBarrier = UpdateBarrier
+Bacon.Observable = Observable
+Bacon.Property = Property
 
 export default Bacon;

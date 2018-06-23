@@ -10,3 +10,5 @@ export default function never() {
     return nop;
   });
 }
+
+Bacon.never = never

@@ -1,6 +1,3 @@
-require("../../src/buffer")
-require("../../src/never")
-
 {
   expectStreamEvents,
   expectStreamTimings,
@@ -14,7 +11,7 @@ require("../../src/never")
   sc,
   t
 } = require("../SpecHelper")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 describe "EventStream.bufferWithTime", ->

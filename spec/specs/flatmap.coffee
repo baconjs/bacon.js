@@ -1,7 +1,4 @@
-#
-require("../../src/concat")
-require("../../src/flatmap")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -72,10 +69,10 @@ describe "EventStream.flatMap", ->
       ["bacon"])
   describe "Respects function construction rules", ->
     expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap(".bacon")
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap((x) -> x.bacon)
       ["sir francis"], semiunstable)
     expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMap(".bacon")
+      -> Bacon.once({ bacon: "sir francis"}).flatMap((x) -> x.bacon)
       ["sir francis"], semiunstable)
     expectStreamEvents(
       ->

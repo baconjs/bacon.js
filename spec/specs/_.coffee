@@ -1,4 +1,4 @@
-_ = require("../../src/_").default
+_ = require("../../dist/Bacon")._
 expect = require("chai").expect
 
 describe "Bacon._", ->

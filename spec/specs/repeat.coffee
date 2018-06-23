@@ -1,9 +1,4 @@
-require("../../src/concat")
-require("../../src/filter")
-require("../../src/flatmap")
-require("../../src/repeat")
-require("../../src/take")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

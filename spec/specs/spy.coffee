@@ -1,7 +1,4 @@
-require("../../src/combine")
-require("../../src/combinetemplate")
-require("../../src/spy")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 { once } = require("../SpecHelper")
 

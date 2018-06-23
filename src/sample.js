@@ -8,6 +8,16 @@ import { withDesc, Desc } from "./describe";
 import { when, whenP } from "./when";
 import map from "./map";
 import Bacon from "./core";
+import { withLatestFromE, withLatestFromP } from "./withlatestfrom"
+import _ from "./_"
+
+const makeCombinator = (combinator) => {
+  if ((typeof combinator !== "undefined" && combinator !== null)) {
+    return toCombinator(combinator);
+  } else {
+    return Bacon._.id
+  }
+}
 
 EventStream.prototype.sampledBy = function(sampler, combinator) {
   return withDesc(
@@ -16,15 +26,10 @@ EventStream.prototype.sampledBy = function(sampler, combinator) {
 };
 
 Property.prototype.sampledBy = function(sampler, combinator) {
-  if ((typeof combinator !== "undefined" && combinator !== null)) {
-    combinator = toCombinator(combinator);
-  } else {
-    combinator = Bacon._.id
-  }
-  var thisSource = new Source(this, false); // false = doesn't trigger event
-  var samplerSource = new Source(sampler, true); // true = triggers event
-  var w = sampler._isProperty ? whenP : when
-  var result = w([thisSource, samplerSource], combinator);
+  combinator = makeCombinator(combinator)
+  var result = sampler._isProperty
+    ? withLatestFromP(sampler, this, _.flip(combinator))
+    : withLatestFromE(sampler, this, _.flip(combinator))
   return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 
@@ -32,12 +37,4 @@ Property.prototype.sample = function(interval) {
   return withDesc(
     new Desc(this, "sample", [interval]),
     this.sampledBy(Bacon.interval(interval, {})));
-};
-
-Observable.prototype.map = function(p) {
-  if (p && p._isProperty) {
-    return p.sampledBy(this, former);
-  } else {
-    return map.apply(this, arguments);
-  }
 };

@@ -1,6 +1,4 @@
-require("../../src/frompromise")
-require("../../src/topromise")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 { later, sequentially, fromArray, once } = require("../SpecHelper")
 

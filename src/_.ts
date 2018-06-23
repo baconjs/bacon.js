@@ -22,28 +22,29 @@ var _ = {
     }
     return -1;
   },
+  flip<A, B, C>(f: (A, B) => C): ((B, A) => C) {
+    return (a, b) => f(b, a)
+  },
   head(xs) { return xs[0]; },
   always(x) { return () => x; },
   negate(f) { return function(x) { return !f(x); }; },
   empty(xs) { return xs.length === 0; },
   tail(xs) { return xs.slice(1, xs.length); },
-  filter(f, xs) {
-    var filtered = [];
+  filter<A>(f: (A) => boolean, xs: A[]) {
+    var filtered: A[] = [];
     for (var i = 0, x; i < xs.length; i++) {
       x = xs[i];
       if (f(x)) { filtered.push(x); }
     }
     return filtered;
   },
-  map(f, xs) {
-    return (() => {
-      var result = [];
-      for (var i = 0, x; i < xs.length; i++) {
-        x = xs[i];
-        result.push(f(x));
-      }
-      return result;
-    })();
+  map<A, B>(f: (A) => B, xs: A[]) {
+    var result: B[] = [];
+    for (var i = 0, x; i < xs.length; i++) {
+      x = xs[i];
+      result.push(f(x));
+    }
+    return result;
   },
   each(xs, f) {
     for (var key in xs) {
@@ -107,7 +108,6 @@ var _ = {
   },
   isFunction(f) { return typeof f === "function"; },
   toString(obj) {
-    var internals, key, value;
     var hasProp = {}.hasOwnProperty;
     try {
       recursionDepth++;
@@ -126,22 +126,19 @@ var _ = {
         if (recursionDepth > 5) {
           return "{..}";
         }
-        internals = (function() {
-          var results = [];
-          for (key in obj) {
-            if (!hasProp.call(obj, key)) continue;
-            value = (function() {
-              try {
-                return obj[key];
-              } catch (error) {
-                return error;
-              }
-            })();
-            results.push(_.toString(key) + ":" + _.toString(value));
-          }
-          return results;
-        })();
-        return "{" + internals + "}";
+        var results: string[] = [];
+        for (var key in obj) {
+          if (!hasProp.call(obj, key)) continue;
+          let value = (function() {
+            try {
+              return obj[key];
+            } catch (error) {
+              return error;
+            }
+          })();
+          results.push(_.toString(key) + ":" + _.toString(value));
+        }
+        return "{" + results + "}";
       } else {
         return obj;
       }

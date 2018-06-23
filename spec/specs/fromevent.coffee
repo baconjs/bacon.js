@@ -1,5 +1,4 @@
-require("../../src/fromevent")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 { EventEmitter } = require("events")
 {

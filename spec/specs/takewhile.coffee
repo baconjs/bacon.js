@@ -1,5 +1,4 @@
-require("../../src/takewhile")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -18,12 +17,6 @@ describe "EventStream.takeWhile", ->
     expectStreamEvents(
       -> repeat(1, [1, error("wat"), 2, 3]).takeWhile(lessThan(3))
       [1, error("wat"), 2])
-  describe "extracts field values", ->
-    expectStreamEvents(
-      ->
-        map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .takeWhile(".good"), (x) -> x.value)
-      ["yes"])
   describe "can filter by Property value", ->
     expectStreamEvents(
       ->
@@ -45,12 +38,6 @@ describe "Property.takeWhile", ->
         series(1, [1, error("wat"), 2, 3])
           .toProperty().takeWhile(lessThan(3))
       [1, error("wat"), 2])
-  describe "extracts field values", ->
-    expectPropertyEvents(
-      ->
-        map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .toProperty().takeWhile(".good"), (x) -> x.value)
-      ["yes"])
   describe "can filter by Property value", ->
     expectPropertyEvents(
       ->

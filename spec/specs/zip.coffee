@@ -1,7 +1,4 @@
-require("../../src/delay")
-require("../../src/skip")
-require("../../src/zip")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

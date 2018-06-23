@@ -1,5 +1,4 @@
-require("../../src/dolog")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -33,25 +32,18 @@ describe "Observable.doLog", ->
     preservingLog ->
       console.log = undefined
       Bacon.constant(1).doLog().onValue()
-  it "logs event values as themselves (doesn't stringify)", ->
-    loggedValues = undefined
+  it "logs event values as themselves (doesn't stringify), and End events as strings", ->
+    loggedValues = []
     preservingLog ->
-      console.log = (args...) -> loggedValues = args
+      console.log = (args...) -> loggedValues.push(args)
       Bacon.constant(1).doLog(true).onValue(->)
-    expect(loggedValues[0]).to.equal(true)
+    expect(loggedValues).to.deep.equal([[true, 1],[true, "<end>"]])
   it "logs Error events as strings", ->
-    loggedValues = undefined
-    console.log = (args...) -> loggedValues = args
-    once(Bacon.Error('err')).doLog(true).onValue(->)
+    loggedValues = []
+    console.log = (args...) -> loggedValues.push(args)
+    once(new Bacon.Error('err')).doLog(true).onValue(->)
     deferred -> 
-      expect(loggedValues).to.deep.equal [true, '<end>']
       restoreLog()
-  it "logs End events as strings", ->
-    loggedValues = undefined
-    console.log = (args...) -> loggedValues = args
-    once(new Bacon.End()).doLog(true).onValue(->)
-    deferred -> 
-      expect(loggedValues).to.deep.equal [true, '<end>']
-      restoreLog()
+      expect(loggedValues).to.deep.equal([[true, "<error> err"], [true, '<end>']])
   it "toString", ->
     expect(Bacon.never().doLog().toString()).to.equal("Bacon.never().doLog()")

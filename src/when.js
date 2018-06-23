@@ -9,10 +9,14 @@ import _ from "./_";
 import { assert } from "./helpers";
 import never from "./never";
 import Bacon from "./core";
-import { propertyFromStreamSubscribe } from "./property"
+import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
+
+function newEventStream(...args) {
+  return new EventStream(...args)
+}
 
 export function when() {
-  return when_(EventStream, arguments)
+  return when_(newEventStream, arguments)
 }
 
 export function whenP() {

@@ -1,7 +1,4 @@
-require("../../src/takeuntil")
-require("../../src/delay")
-require("../../src/constant")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

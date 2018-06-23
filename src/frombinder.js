@@ -3,7 +3,7 @@ import { toEvent } from './event';
 import { isArray } from './helpers';
 import Bacon from './core';
 import { Desc } from "./describe";
-import { EventStream } from "./eventstream";
+import EventStream from "./eventstream";
 
 // eventTransformer - should return one value or one or many events
 export default function fromBinder(binder, eventTransformer = _.id) {

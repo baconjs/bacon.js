@@ -1,14 +1,4 @@
-require("../../src/concat")
-require("../../src/flatmap")
-require("../../src/flatmaplatest")
-require("../../src/fold")
-require("../../src/groupby")
-require("../../src/map")
-require("../../src/merge")
-require("../../src/take")
-require("../../src/takeuntil")
-require("../../src/takewhile")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -92,7 +82,7 @@ describe "EventStream.groupBy", ->
         limitF = (stream, origX) ->
           cancel = stream.filter((x) -> x.type == "cancel").take(1)
           adds = stream.filter((x) -> x.type == "add")
-          adds.takeUntil(cancel).map(".val")
+          adds.takeUntil(cancel).map((x) => x.val)
 
         series(2, events)
           .groupBy(keyF, limitF)

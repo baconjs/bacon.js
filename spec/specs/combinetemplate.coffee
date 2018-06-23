@@ -1,10 +1,4 @@
-require("../../src/bus")
-require("../../src/constant")
-require("../../src/combinetemplate")
-require("../../src/delay")
-require("../../src/flatmap")
-require("../../src/slidingwindow")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 {
   expectPropertyEvents,
@@ -136,6 +130,6 @@ describe "combineTemplate", ->
         expect(x).to.equal(object)
     Bacon
       .combineTemplate({a: object})
-      .map(".a")
+      .map((x) => x.a)
       .onValue (x) ->
         expect(x).to.equal(object)

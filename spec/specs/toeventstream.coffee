@@ -1,5 +1,4 @@
-require("../../src/constant")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 { mockFunction, mock } = require( "../Mock")
 
@@ -21,7 +20,7 @@ describe "Property.toEventStream", ->
     expectStreamEvents(
       -> fromArray([1, 2]).toProperty(0).toEventStream()
       [0, 1, 2], unstable)
-  describe "responds asynchronously", ->
+  it "responds asynchronously", ->
     sync = false
     vals = Bacon.interval(150)
       .scan(0, (x) -> x + 1)

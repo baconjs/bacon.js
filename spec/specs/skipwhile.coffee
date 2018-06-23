@@ -1,6 +1,4 @@
-require("../../src/sample")
-require("../../src/skipwhile")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -17,12 +15,6 @@ describe "EventStream.skipWhile", ->
     expectStreamEvents(
       -> series(1, [1, error(), 2, error(), 3, 2]).skipWhile(lessThan(3))
       [error(), error(), 3, 2])
-  describe "extracts field values", ->
-    expectStreamEvents(
-      ->
-        series(1, [{good:true, value:"yes"}, {good:false, value:"no"}])
-          .skipWhile(".good").map(".value")
-      ["no"])
   describe "can filter by Property value", ->
     expectStreamEvents(
       ->

@@ -1,5 +1,4 @@
-require("../../src/flatmaplatest")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -22,13 +21,6 @@ describe "EventStream.flatMapLatest", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"], semiunstable)
-  describe "Accepts a field extractor string instead of function", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapLatest(".bacon")
-      ["sir francis"])
-    expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMapLatest(".bacon")
-      ["sir francis"])
   it "toString", ->
     expect(Bacon.never().flatMapLatest(->).toString()).to.equal("Bacon.never().flatMapLatest(function)")
 

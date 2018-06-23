@@ -11,6 +11,7 @@ var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
 var babelPlugin = require("rollup-plugin-babel");
+var typescriptPlugin = require("rollup-plugin-typescript");
 
 var recast = require("recast");
 var uglifyjs = require("uglify-js");
@@ -33,13 +34,21 @@ function main(options) {
     // directory exists, do nothing
   }
 
-  var plugins = [babelPlugin()];
+  var plugins = [
+    babelPlugin({ 
+      include: "**/*.js"
+    }),
+    typescriptPlugin({
+      typescript: require("typescript")
+    })
+  ];
+
   if (process.argv.length > 2) {
     plugins.push(partialBuildPlugin({ pieces: argPieceNames }));
   }
 
   rollup({
-    input: 'src/bacon.js',
+    input: 'src/bacon.ts',
     plugins: plugins
   }).then((bundle) => {
     return bundle.write({

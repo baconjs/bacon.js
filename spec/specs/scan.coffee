@@ -1,8 +1,4 @@
-require("../../src/bus")
-require("../../src/merge")
-require("../../src/scan")
-require("../../src/map")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -21,10 +17,6 @@ describe "EventStream.scan", ->
     expectPropertyEvents(
       -> series(1, [1, 2, error(), 3]).scan(0, add)
       [0, 1, 3, error(), 6])
-  describe "also works with method name", ->
-    expectPropertyEvents(
-      -> series(1, [[1], [2]]).scan([], ".concat")
-      [[], [1], [1, 2]])
   it "yields the seed value immediately", ->
     outputs = []
     bus = new Bacon.Bus()

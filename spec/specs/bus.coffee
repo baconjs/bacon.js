@@ -1,7 +1,4 @@
-require("../../src/filter")
-require("../../src/map")
-require("../../src/bus")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 
 {
   expectStreamEvents,
@@ -22,8 +19,6 @@ Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "Bacon.Bus", ->
-  it "can be instatiated without new", ->
-    expect(Bacon.Bus()).to.be.an.instanceof(Bacon.Bus)
   it "merges plugged-in streams", ->
     bus = new Bacon.Bus()
     values = []
@@ -39,16 +34,20 @@ describe "Bacon.Bus", ->
       ->
         bus = new Bacon.Bus()
         bus.plug(later(t(2), "lol"))
-        bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
+        filter = (value) => "lol" == value
+        bus.plug(bus.filter(filter).map(=> "wut"))
         later(t(4)).onValue(=> bus.end())
         bus
       ["lol", "wut"], unstable)
-  it "dispose works with looped streams", ->
-    bus = new Bacon.Bus()
-    bus.plug(later(t(2), "lol"))
-    bus.plug(bus.filter((value) => "lol" == value).map(=> "wut"))
-    dispose = bus.onValue(=>)
-    dispose()
+    it "dispose works with looped streams", ->
+      bus = new Bacon.Bus()
+      bus.plug(later(t(2), "lol"))
+      filter = (value) =>
+        console.log("filtering", value)
+        "lol" == value
+      bus.plug(bus.filter(filter).map(=> "wut"))
+      dispose = bus.onValue(=>)
+      dispose()
   it "Removes input from input list on End event", ->
     subscribed = 0
     bus = new Bacon.Bus()

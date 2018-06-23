@@ -10,7 +10,7 @@ import { Desc, withDesc } from "./describe";
 Observable.prototype.bufferingThrottle = function(minimumInterval) {
   var desc = new Desc(this, "bufferingThrottle", [minimumInterval]);
   return withDesc(desc, this.flatMapConcat((x) => {
-    return once(x).concat(later(minimumInterval).filter(false));
+    return once(x).concat(later(minimumInterval).errors());
   }));
 };
 

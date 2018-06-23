@@ -1,13 +1,9 @@
-require("../../src/delay")
-require("../../src/filter")
-require("../../src/sample")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
   expectStreamEvents,
   expectPropertyEvents,
-  testSideEffects,
   unstable,
   error,
   once,
@@ -25,10 +21,7 @@ describe "EventStream.filter", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 3]).filter(lessThan(3))
       [1, 2, error()])
-  describe "extracts field values", ->
-    expectStreamEvents(
-      -> map(series(1, [{good:true, value:"yes"}, {good:false, value:"no"}]).filter(".good"), (x) -> x.value)
-      ["yes"])
+
   describe "can filter by Property value", ->
     expectStreamEvents(
       ->
@@ -37,7 +30,7 @@ describe "EventStream.filter", ->
         src.filter(odd)
       [1,1,3,7])
   it "toString", ->
-    expect(Bacon.never().filter(false).toString()).to.equal("Bacon.never().filter(function)")
+    expect(Bacon.never().filter(() => false).toString()).to.equal("Bacon.never().filter(function)")
 
 describe "Property.filter", ->
   describe "should filter values", ->
@@ -62,4 +55,4 @@ describe "Observable.filter(EventStream)", ->
   it "should throw an error", ->
     expect(
       -> once(true).filter(once(true))
-    ).to.throw(Error, "Observable is not a Property : Bacon.once(true)")
+    ).to.throw(Error)

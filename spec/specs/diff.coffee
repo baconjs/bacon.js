@@ -1,8 +1,4 @@
-require("../../src/bus")
-require("../../src/constant")
-require("../../src/diff")
-require("../../src/never")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -19,10 +15,6 @@ describe "EventStream.diff", ->
     expectPropertyEvents(
       -> series(1, [1, 2, error(), 3]).diff(0, add)
       [1, 3, error(), 5])
-  describe "also works with method name", ->
-    expectPropertyEvents(
-      -> series(1, [[1], [2]]).diff([0], ".concat")
-      [[0, 1], [1, 2]])
   it "does not yields the start value immediately", ->
     outputs = []
     bus = new Bacon.Bus()

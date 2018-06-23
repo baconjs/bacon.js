@@ -1,6 +1,4 @@
-require("../../src/filter")
-require("../../src/update")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 {
   expectPropertyEvents

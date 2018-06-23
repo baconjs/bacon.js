@@ -1,5 +1,4 @@
-require("../../src/constant")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 { mockFunction, mock } = require( "../Mock")
 
@@ -83,19 +82,4 @@ describe "Observable.onValues", ->
     Bacon.constant([1,2,3]).onValues(f)
     f.verify(1,2,3)
 
-describe "Property.assign", ->
-  it "calls given objects given method with property values", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").assign(target, "pow")
-    target.verify().pow("kaboom")
-  it "allows partial application of method (i.e. adding fixed args)", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").assign(target, "pow", "smack")
-    target.verify().pow("smack", "kaboom")
-  it "allows partial application of method with 2 args (i.e. adding fixed args)", ->
-    target = mock("pow")
-    Bacon.constant("kaboom").assign(target, "pow", "smack", "whack")
-    target.verify().pow("smack", "whack", "kaboom")
-
 describe "Property.onValue", testSideEffects(Bacon.constant, "onValue")
-describe "Property.assign", testSideEffects(Bacon.constant, "assign")

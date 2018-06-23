@@ -1,6 +1,4 @@
-require("../../src/bus")
-require("../../src/doend")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

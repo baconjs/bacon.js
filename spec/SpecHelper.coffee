@@ -1,6 +1,6 @@
 require('es6-promise').polyfill()
-Bacon = require("../src/bacon").default
-fromArray = require("../src/fromarray").default
+Bacon = require("../dist/Bacon")
+fromArray = Bacon.fromArray
 expect = require("chai").expect
 
 _ = Bacon._
@@ -23,44 +23,18 @@ module.exports.activate = activate = (obs) ->
   obs.onValue(->)
   obs
 
-module.exports.take = take = (count, obs) ->
-  obs.withHandler (event) ->
-    unless event.hasValue
-      @push event
-    else
-      count--
-      if count > 0
-        @push event
-      else
-        @push event if count == 0
-        @push new Bacon.End()
-        Bacon.noMore
+module.exports.take = take = (count, obs) -> obs.take(count)
+module.exports.map = map = (obs, f) -> obs.map(f)
+module.exports.skip = skip = (count, obs) -> obs.skip(count)
 
-module.exports.map = map = (obs, f) ->
-  obs.withHandler (event) ->
-    @push event.fmap(f)
-
-module.exports.skip = skip = (count, obs) ->
-  obs.withHandler (event) ->
-    unless event.hasValue
-      @push event
-    else if (count > 0)
-      count--
-      Bacon.more
-    else
-      @push event
-
-toEvent = (x) -> if (x instanceof Bacon.Event) then x else new Bacon.Next(-> x)
+toEvent = (x) -> if (x.isEvent) then x else new Bacon.Next(-> x)
 
 fromBinder = Bacon.fromBinder
 module.exports.fromPoll = fromPoll = Bacon.fromPoll
 module.exports.later = Bacon.later
 module.exports.sequentially = sequentially = Bacon.sequentially
-module.exports.repeatedly = repeatedly = Bacon.repeatedly || (delay, values) ->
-  index = 0
-  fromPoll(delay, -> values[index++ % values.length])
-
-module.exports.fromArray = fromArray = Bacon.fromArray || fromArray
+module.exports.repeatedly = repeatedly = Bacon.repeatedly
+module.exports.fromArray = fromArray = Bacon.fromArray
 module.exports.once = once = Bacon.once
 isArray = (xs) -> xs instanceof Array
 
@@ -73,33 +47,6 @@ module.exports.testSideEffects = testSideEffects = (wrapper, method) ->
       f = mockFunction()
       wrapper("kaboom")[method](f)
       deferred -> f.verify("kaboom")
-    it "(f, param) calls function, partially applied with param", ->
-      f = mockFunction()
-      wrapper("kaboom")[method](f, "pow")
-      deferred -> f.verify("pow", "kaboom")
-    it "('.method') calls event value object method", ->
-      value = mock("get")
-      value.when().get().thenReturn("pow")
-      wrapper(value)[method](".get")
-      deferred -> value.verify().get()
-    it "('.method', param) calls event value object method with param", ->
-      value = mock("get")
-      value.when().get("value").thenReturn("pow")
-      wrapper(value)[method](".get", "value")
-      deferred -> value.verify().get("value")
-    it "(object, method) calls object method with property value", ->
-      target = mock("pow")
-      wrapper("kaboom")[method](target, "pow")
-      deferred -> target.verify().pow("kaboom")
-    it "(object, method, param) partially applies object method with param", ->
-      target = mock("pow")
-      wrapper("kaboom")[method](target, "pow", "smack")
-      deferred -> target.verify().pow("smack", "kaboom")
-    it "(object, method, param1, param2) partially applies with 2 args", ->
-      target = mock("pow")
-      wrapper("kaboom")[method](target, "pow", "smack", "whack")
-      deferred -> target.verify().pow("smack", "whack", "kaboom")
-
 module.exports.t = t = @t = (time) -> time
 seqs = []
 
@@ -221,7 +168,7 @@ verifyPSingleSubscriber = (srcF, expectedEvents, extraCheck) ->
           gotInitial = true
         else if event.hasValue
           gotNext = true
-        events.push(toValue(event))
+        events.push(event)
     sync = false
   ), extraCheck
 
@@ -300,7 +247,7 @@ verifyPropertyWith = (description, srcF, expectedEvents, collectF, extraCheck) -
     before (done) ->
       collectF(src, events, done)
     it "is a Property", ->
-      expect(src instanceof Bacon.Property).to.deep.equal(true)
+      expect(src._isProperty).to.deep.equal(true)
     it "outputs expected events in order", ->
       expect(toValues(events)).to.deep.equal(toValues(expectedEvents))
     it "has correct final state", ->
@@ -315,7 +262,7 @@ verifyLateEval = (srcF, expectedEvents) ->
       if event.isEnd
         done()
       else
-        expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
+        expect(event.isInitial).to.deep.equal(false, "no Initial events")
         events.push(event)
 
 
@@ -325,7 +272,7 @@ verifySingleSubscriber = (srcF, expectedEvents) ->
       if event.isEnd
         done()
       else
-        expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
+        expect(event.isInitial).to.deep.equal(false, "no Initial events")
         events.push(toValue(event))
 
 # get each event with new subscriber
@@ -336,7 +283,7 @@ verifySwitching = (srcF, expectedEvents, done) ->
         if event.isEnd
           done()
         else
-          expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
+          expect(event.isInitial).to.deep.equal(false, "no Initial events")
           events.push(toValue(event))
           src.subscribe(newSink())
           Bacon.noMore
@@ -365,7 +312,7 @@ verifySwitchingWithUnsub = (srcF, expectedEvents, done) ->
             ended = true
             done()
           else
-            expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
+            expect(event.isInitial).to.deep.equal(false, "no Initial events")
             events.push(toValue(event))
             prevUnsub = unsub
             noMoreExpected = true
@@ -384,7 +331,7 @@ verifyStreamWith = (description, srcF, expectedEvents, collectF) ->
     events = []
     before ->
       src = srcF()
-      expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
+      expect(src._isEventStream).to.equal(true, "is an EventStream")
     before (done) ->
       collectF(src, events, done)
     it "outputs expected values in order", ->
@@ -400,7 +347,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
     unsub = null
     before ->
       src = srcF()
-      expect(src instanceof Bacon.EventStream).to.equal(true, "is an EventStream")
+      expect(src._isEventStream).to.equal(true, "is an EventStream")
     before (done) ->
       newSink = ->
         unsub = null
@@ -408,7 +355,7 @@ verifySwitchingAggressively = (srcF, expectedEvents, done) ->
           if event.isEnd
             done()
           else
-            expect(event instanceof Bacon.Initial).to.deep.equal(false, "no Initial events")
+            expect(event.isInitial).to.deep.equal(false, "no Initial events")
             events.push(toValue(event))
             if unsub?
               unsub()
@@ -447,10 +394,7 @@ verifyFinalState = (property, value) ->
   expect(toValues(events)).to.deep.equal(toValues([value, "<end>"]))
 
 module.exports.toValues = toValues = (xs) ->
-  values = []
-  for x in xs
-    values.push(toValue(x))
-  values
+  xs.map(toValue)
 module.exports.toValue = toValue = (x) ->
   switch true
     when !x?.isEvent then x
@@ -476,7 +420,8 @@ module.exports.deferred = deferred
 Bacon.Observable?.prototype.onUnsub = (f) ->
   self = this
   ended = false
-  return new Bacon.EventStream (sink) ->
+  desc = new Bacon.Desc(this, "onUnsub", [])
+  return new Bacon.EventStream desc, (sink) ->
     unsub = self.subscribe sink
     ->
       f()

@@ -1,9 +1,4 @@
-require("../../src/bus")
-require("../../src/delay")
-require("../../src/combine")
-require("../../src/constant")
-require("../../src/flatmap")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -28,13 +23,6 @@ describe "Property.combine", ->
         right = series(2, [4, error(), 5, 6]).delay(t(1)).toProperty()
         left.combine(right, add)
       [5, error(), error(), 6, 7, 8, 9])
-  describe "also accepts a field name instead of combinator function", ->
-    expectPropertyEvents(
-      ->
-        left = series(1, [[1]]).toProperty()
-        right = series(2, [[2]]).toProperty()
-        left.combine(right, ".concat")
-      [[1, 2]])
 
   describe "combines with null values", ->
     expectPropertyEvents(
@@ -48,7 +36,7 @@ describe "Property.combine", ->
     calls = 0
     bus = new Bacon.Bus()
     other = Bacon.constant(["rolfcopter"])
-    bus.toProperty(["lollerskates"]).combine(other, ".concat").subscribe (e) ->
+    bus.toProperty(["lollerskates"]).combine(other, (a, b) -> a.concat(b)).subscribe (e) ->
       if !e.isInitial
         calls += 1
       Bacon.noMore

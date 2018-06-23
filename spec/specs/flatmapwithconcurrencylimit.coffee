@@ -1,5 +1,4 @@
-require("../../src/flatmapwithconcurrencylimit")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -24,7 +23,7 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
       [1, 2, 1, 2, 3, 3], semiunstable)
   describe "Respects function construction rules", ->
     expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, ".bacon")
+      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, (x) -> x.bacon)
       ["sir francis"])
   it "toString", ->
     expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())

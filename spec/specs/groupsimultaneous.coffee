@@ -1,8 +1,4 @@
-require("../../src/map")
-require("../../src/mapend")
-require("../../src/merge")
-require("../../src/groupsimultaneous")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

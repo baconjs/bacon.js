@@ -1,10 +1,6 @@
-require("../../src/flatmap")
-require("../../src/constant")
-require("../../src/awaiting")
-require("../../src/once")
+Bacon = require("../../dist/Bacon")
 
 { expectPropertyEvents, unstable, semiunstable, later, series } = require("../SpecHelper")
-Bacon = require("../../src/core").default
 expect = require("chai").expect
 
 describe "EventStream.awaiting(other)", ->
@@ -30,6 +26,12 @@ describe "EventStream.awaiting(other)", ->
   it "toString", ->
     expect(Bacon.never().awaiting(Bacon.never()).toString()).to.equal("Bacon.never().awaiting(Bacon.never())")
 
+describe "Property.awaiting(eventstream)", ->
+  describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
+    expectPropertyEvents(
+      -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]))
+      [false, true, false, true], semiunstable)
+
 describe "Property.awaiting(property)", ->
   describe "works for awaiting self", ->
     expectPropertyEvents(
@@ -39,23 +41,23 @@ describe "Property.awaiting(property)", ->
       [false])
   describe "indicates whether p1 has produced output after p2 (or only the former has output so far)", ->
     expectPropertyEvents(
-      -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]))
+      -> series(2, [1, 1]).toProperty().awaiting(series(3, [2]).toProperty())
       [false, true, false, true], semiunstable)
-  describe "works for awaiting self.map", ->
+  describe "works for awaiting slf.map", ->
     expectPropertyEvents(
       ->
         p = Bacon.constant(1)
-        p.awaiting(p.map())
+        p.awaiting(p.map(->))
       [false])
     expectPropertyEvents(
       ->
         p = Bacon.constant(1)
-        p.map().awaiting(p.map())
+        p.map().awaiting(p.map(->))
       [false])
     expectPropertyEvents(
       ->
         p = Bacon.constant(1)
-        p.map().awaiting(p)
+        p.map(->).awaiting(p)
       [false])
   describe "works for awaiting self.flatMap", ->
     expectPropertyEvents(

@@ -1,7 +1,4 @@
-require("../../src/bus")
-require("../../src/once")
-require("../../src/map")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 describe "Observable::onEnd", ->

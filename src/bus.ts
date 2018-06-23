@@ -1,36 +1,42 @@
 import _ from "./_";
 import EventStream from "./eventstream";
+import Observable from "./observable"
 import Bacon from "./core";
-import { assertObservable, inherit, extend, cloneArray } from "./helpers";
+import { assertObservable, cloneArray } from "./helpers";
 import { nextEvent, endEvent, Error } from "./event";
 import { Desc } from "./describe";
+import { EventSink } from "./types"
 
-export default function Bus() {
-  if (!(this instanceof Bus)) {
-    return new Bus();
-  }
-
-  this.unsubAll = _.bind(this.unsubAll, this);
-  this.subscribeAll = _.bind(this.subscribeAll, this);
-  this.guardedSink = _.bind(this.guardedSink, this);
-
-  this.sink = undefined;
-  this.subscriptions = [];
-  this.ended = false;
-  EventStream.call(this, new Desc(Bacon, "Bus", []), this.subscribeAll);
+interface Subscription<V> {
+  input: Observable<V>
 }
 
-inherit(Bus, EventStream);
-extend(Bus.prototype, {
+export default class Bus<V> extends EventStream<V> {
+  sink?: EventSink<V>;
+  pushing: boolean = false
+  pushQueue? : V[] = undefined
+  ended: boolean = false
+  subscriptions: Subscription<V>[] = []
+
+  constructor() {
+    super(new Desc(Bacon, "Bus", []), (sink: EventSink<V>) => this.subscribeAll(sink))
+    this.unsubAll = _.bind(this.unsubAll, this);
+    this.subscribeAll = _.bind(this.subscribeAll, this);
+    this.guardedSink = _.bind(this.guardedSink, this);
+    this.subscriptions = [] // new array for each Bus instance
+    this.ended = false;
+    EventStream.call(this, new Desc(Bacon, "Bus", []), this.subscribeAll);
+  }
+
   unsubAll() {
     var iterable = this.subscriptions;
     for (var i = 0, sub; i < iterable.length; i++) {
       sub = iterable[i];
       if (typeof sub.unsub === "function") { sub.unsub(); }
     }
-  },
+  }
 
-  subscribeAll(newSink) {
+  subscribeAll(newSink: EventSink<V>) {
     if (this.ended) {
       newSink(endEvent());
     } else {
@@ -42,25 +48,25 @@ extend(Bus.prototype, {
       }
     }
     return this.unsubAll;
-  },
+  }
 
-  guardedSink(input) {
+  guardedSink(input: Observable<V>) {
     return (event) => {
       if (event.isEnd) {
         this.unsubscribeInput(input);
         return Bacon.noMore;
-      } else {
+      } else if (this.sink) {
         return this.sink(event);
       }
     };
-  },
+  }
 
   subscribeInput(subscription) {
     subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
     return subscription.unsub;
-  },
+  }
 
-  unsubscribeInput(input) {
+  unsubscribeInput(input: Observable<V>) {
     var iterable = this.subscriptions;
     for (var i = 0, sub; i < iterable.length; i++) {
       sub = iterable[i];
@@ -70,24 +76,24 @@ extend(Bus.prototype, {
         return;
       }
     }
-  },
+  }
 
-  plug(input) {
+  plug(input: Observable<V>) {
     assertObservable(input);
     if (this.ended) { return; }
     var sub = { input: input };
     this.subscriptions.push(sub);
     if (typeof this.sink !== "undefined") { this.subscribeInput(sub); }
     return (() => this.unsubscribeInput(input));
-  },
+  }
 
   end() {
     this.ended = true;
     this.unsubAll();
     if (typeof this.sink === "function") { return this.sink(endEvent()); }
-  },
+  }
 
-  push(value) {
+  push(value: V) {
     if (!this.ended && typeof this.sink === "function") {
       var rootPush = !this.pushing
       if (!rootPush) {
@@ -110,16 +116,15 @@ extend(Bus.prototype, {
             this.sink(nextEvent(v))
             i++
           }
-          this.pushQueue = null
+          this.pushQueue = undefined
         }
         this.pushing = false
       }
     }
-  },
+  }
 
-  error(error) {
+  error(error: any) {
     if (typeof this.sink === "function") { return this.sink(new Error(error)); }
   }
-});
-
+}
 Bacon.Bus = Bus;

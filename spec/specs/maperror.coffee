@@ -1,5 +1,4 @@
-require("../../src/maperror")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {

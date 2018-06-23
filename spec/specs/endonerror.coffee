@@ -1,5 +1,4 @@
-require("../../src/endonerror")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -19,10 +18,6 @@ describe "EventStream.endOnError", ->
   describe "accepts predicate function", ->
     expectStreamEvents(
       -> series(1, [1, 2, error(), 3, new Bacon.Error({serious:true}), 4]).endOnError((e) -> e?.serious)
-      [1,2,error(),3,error()])
-  describe "accepts extractor string", ->
-    expectStreamEvents(
-      -> series(1, [1, 2, error(), 3, new Bacon.Error({serious:true}), 4]).endOnError(".serious")
       [1,2,error(),3,error()])
   describe "works with synchronous source", ->
     expectStreamEvents(

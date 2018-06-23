@@ -3,18 +3,12 @@ import { Event, Next, Initial, Error, End } from './event';
 import { noMore, more } from './reply';
 import spy from './spy';
 import { Desc } from './describe';
-import UpdateBarrier from './updatebarrier';
 
 import scheduler from './scheduler';
 import Dispatcher from "./dispatcher";
-import Observable from "./observable";
-import EventStream from "./eventstream";
-import Property from "./property";
 import CompositeUnsubscribe from "./compositeunsubscribe";
-import never from "./never";
-import constant from "./constant";
 
-var Bacon = {
+const Bacon = {
   toString() { return "Bacon"; },
   _,
   Event,
@@ -26,15 +20,8 @@ var Bacon = {
   more,
   Desc,
   spy,
-  UpdateBarrier,
   scheduler,
-  Dispatcher,
-  Observable,
-  EventStream,
-  Property,
   CompositeUnsubscribe,
-  never,
-  constant,
   version: '<version>'
 };
 

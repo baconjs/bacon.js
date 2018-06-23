@@ -1,5 +1,4 @@
-require("../../src/later")
-Bacon = require("../../src/bacon").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 {
@@ -152,15 +151,15 @@ describe "Integration tests", ->
         ->
           changes = series(1, [{a:0,b:0},{a:1,b:1}])
 
-          a = changes.map '.a'
-          b = changes.map '.b'
+          a = changes.map((x) -> x.a)
+          b = changes.map((x) -> x.a)
 
           ab = Bacon.combineAsArray a, b
 
           f = ab.flatMapLatest (values) ->
             Bacon.once 'f' + values
 
-          Bacon.combineAsArray(f, b).map(".0")
+          Bacon.combineAsArray(f, b).map((x) -> x[0])
         ["f0,0","f1,1"], semiunstable)
     it "Works with flatMap source spawning fromArrays", ->
       result = []
@@ -312,7 +311,7 @@ describe "Integration tests", ->
       expectPropertyEvents(
         ->
            a = series(1, [1, 2]).toProperty()
-           b = a.map((x) -> x).filter(true)
+           b = a.map((x) -> x).filter(() => true)
            a.combine(b, (x, y) -> x + y)
         [2, 4])
     describe "when flatMap is involved (spawning synchronous streams)", ->
@@ -469,7 +468,7 @@ describe "Integration tests", ->
         s = Bacon.once(1).concat(Bacon.once(2))), [1,2]
     verifyWhileDispatching "with Property.delay", (->
         c = Bacon.constant(1)
-        Bacon.combineAsArray([c, c]).delay(1).map(".0")), [1]
+        Bacon.combineAsArray([c, c]).delay(1).map((x) -> x[0])), [1]
 
   describe "when subscribing while dispatching", ->
     describe "single subscriber", ->

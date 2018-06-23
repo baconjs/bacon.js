@@ -1,8 +1,5 @@
-require("../../src/boolean")
-require("../../src/constant")
-
 { expectPropertyEvents } = require("../SpecHelper")
-Bacon = require("../../src/core").default
+Bacon = require("../../dist/Bacon")
 expect = require("chai").expect
 
 describe "Boolean logic", ->
