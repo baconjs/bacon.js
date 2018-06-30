@@ -102,7 +102,7 @@
     "browsertest-open": "open browsertest/mocha.runner.html",
     "browserstack": "browsertest/browserstack",
     "release": "scripts/release",
-    "tsc": "tsc", 
+    "tsc": "tsc --outDir /tmp/deleteme", 
     "watch": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'scripts/dist'",
     "watch-ts": "tsc --outDir /tmp/deleteme --watch"
   },
