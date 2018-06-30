@@ -9,6 +9,7 @@ node_js:
 notifications:
   flowdock: 3853ef33f6943539cbbed913648575beg
 script:
+  - npm run dist
   - npm test
   - npm run readme && git diff --exit-code README.md
 env:
