@@ -514,6 +514,100 @@ var scheduler = {
   }
 };
 
+function CompositeUnsubscribe() {
+  var ss = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+
+  this.unsubscribe = _.bind(this.unsubscribe, this);
+  this.unsubscribed = false;
+  this.subscriptions = [];
+  this.starting = [];
+  for (var i = 0, s; i < ss.length; i++) {
+    s = ss[i];
+    this.add(s);
+  }
+}
+
+extend(CompositeUnsubscribe.prototype, {
+  add: function (subscription) {
+    var _this = this;
+
+    if (this.unsubscribed) {
+      return;
+    }
+    var ended = false;
+    var unsub = nop;
+    this.starting.push(subscription);
+    var unsubMe = function () {
+      if (_this.unsubscribed) {
+        return;
+      }
+      ended = true;
+      _this.remove(unsub);
+      return _.remove(subscription, _this.starting);
+    };
+    unsub = subscription(this.unsubscribe, unsubMe);
+    if (!(this.unsubscribed || ended)) {
+      this.subscriptions.push(unsub);
+    } else {
+      unsub();
+    }
+    _.remove(subscription, this.starting);
+    return unsub;
+  },
+  remove: function (unsub) {
+    if (this.unsubscribed) {
+      return;
+    }
+    if (_.remove(unsub, this.subscriptions) !== undefined) {
+      return unsub();
+    }
+  },
+  unsubscribe: function () {
+    if (this.unsubscribed) {
+      return;
+    }
+    this.unsubscribed = true;
+    var iterable = this.subscriptions;
+    for (var i = 0; i < iterable.length; i++) {
+      iterable[i]();
+    }
+    this.subscriptions = [];
+    this.starting = [];
+    return [];
+  },
+  count: function () {
+    if (this.unsubscribed) {
+      return 0;
+    }
+    return this.subscriptions.length + this.starting.length;
+  },
+  empty: function () {
+    return this.count() === 0;
+  }
+});
+
+var Bacon = {
+  toString: function () {
+    return "Bacon";
+  },
+
+  _: _,
+  Event: Event,
+  Next: Next,
+  Initial: Initial,
+  Error: Error$1,
+  End: End,
+  noMore: noMore,
+  more: more,
+  Desc: Desc,
+  spy: spy,
+  scheduler: scheduler,
+  CompositeUnsubscribe: CompositeUnsubscribe,
+  version: '<version>'
+};
+
+Bacon.Bacon = Bacon;
+
 var rootEvent = undefined;
 var waiterObs = [];
 var waiters = {};
@@ -719,6 +813,81 @@ function wrappedSubscribe(obs, subscribe, sink) {
 function hasWaiters() { return waiterObs.length > 0; }
 var UpdateBarrier = { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
 
+var idCounter = 0;
+var Observable = /** @class */ (function () {
+    function Observable(desc) {
+        this.id = ++idCounter;
+        this._isObservable = true;
+        this.desc = desc;
+        this.initialDesc = desc;
+    }
+    Observable.prototype.subscribe = function (sink) {
+        var _this = this;
+        if (sink === void 0) { sink = nop; }
+        return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
+    };
+    Observable.prototype.onValue = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.hasValue) {
+                return f(event.value);
+            }
+        });
+    };
+    Observable.prototype.forEach = function (f) {
+        if (f === void 0) { f = nop; }
+        // TODO: inefficient alias. Also, similar assign alias missing.
+        return this.onValue(f);
+    };
+    Observable.prototype.onValues = function (f) {
+        return this.onValue(function (args) { return f.apply(void 0, args); });
+    };
+    Observable.prototype.onError = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.isError) {
+                return f(event.error);
+            }
+        });
+    };
+    Observable.prototype.onEnd = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.isEnd) {
+                return f();
+            }
+        });
+    };
+    Observable.prototype.name = function (name) {
+        this._name = name;
+        return this;
+    };
+    Observable.prototype.withDescription = function (context, method) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        this.desc = describe.apply(void 0, [context, method].concat(args));
+        return this;
+    };
+    Observable.prototype.toString = function () {
+        if (this._name) {
+            return this._name;
+        }
+        else {
+            return this.desc.toString();
+        }
+    };
+    Observable.prototype.inspect = function () { return this.toString(); };
+    Observable.prototype.deps = function () {
+        return this.desc.deps();
+    };
+    Observable.prototype.internalDeps = function () {
+        return this.initialDesc.deps();
+    };
+    return Observable;
+}());
+
 var Dispatcher = /** @class */ (function () {
     function Dispatcher(observable, _subscribe, _handleEvent) {
         this.pushing = false;
@@ -841,175 +1010,6 @@ var Dispatcher = /** @class */ (function () {
         return this.observable.toString();
     };
     return Dispatcher;
-}());
-
-function CompositeUnsubscribe() {
-  var ss = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-
-  this.unsubscribe = _.bind(this.unsubscribe, this);
-  this.unsubscribed = false;
-  this.subscriptions = [];
-  this.starting = [];
-  for (var i = 0, s; i < ss.length; i++) {
-    s = ss[i];
-    this.add(s);
-  }
-}
-
-extend(CompositeUnsubscribe.prototype, {
-  add: function (subscription) {
-    var _this = this;
-
-    if (this.unsubscribed) {
-      return;
-    }
-    var ended = false;
-    var unsub = nop;
-    this.starting.push(subscription);
-    var unsubMe = function () {
-      if (_this.unsubscribed) {
-        return;
-      }
-      ended = true;
-      _this.remove(unsub);
-      return _.remove(subscription, _this.starting);
-    };
-    unsub = subscription(this.unsubscribe, unsubMe);
-    if (!(this.unsubscribed || ended)) {
-      this.subscriptions.push(unsub);
-    } else {
-      unsub();
-    }
-    _.remove(subscription, this.starting);
-    return unsub;
-  },
-  remove: function (unsub) {
-    if (this.unsubscribed) {
-      return;
-    }
-    if (_.remove(unsub, this.subscriptions) !== undefined) {
-      return unsub();
-    }
-  },
-  unsubscribe: function () {
-    if (this.unsubscribed) {
-      return;
-    }
-    this.unsubscribed = true;
-    var iterable = this.subscriptions;
-    for (var i = 0; i < iterable.length; i++) {
-      iterable[i]();
-    }
-    this.subscriptions = [];
-    this.starting = [];
-    return [];
-  },
-  count: function () {
-    if (this.unsubscribed) {
-      return 0;
-    }
-    return this.subscriptions.length + this.starting.length;
-  },
-  empty: function () {
-    return this.count() === 0;
-  }
-});
-
-var Bacon = {
-  toString: function () {
-    return "Bacon";
-  },
-
-  _: _,
-  Event: Event,
-  Next: Next,
-  Initial: Initial,
-  Error: Error$1,
-  End: End,
-  noMore: noMore,
-  more: more,
-  Desc: Desc,
-  spy: spy,
-  scheduler: scheduler,
-  CompositeUnsubscribe: CompositeUnsubscribe,
-  version: '<version>'
-};
-
-Bacon.Bacon = Bacon;
-
-var idCounter = 0;
-var Observable = /** @class */ (function () {
-    function Observable(desc) {
-        this.id = ++idCounter;
-        this._isObservable = true;
-        this.desc = desc;
-        this.initialDesc = desc;
-    }
-    Observable.prototype.subscribe = function (sink) {
-        var _this = this;
-        if (sink === void 0) { sink = nop; }
-        return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
-    };
-    Observable.prototype.onValue = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.hasValue) {
-                return f(event.value);
-            }
-        });
-    };
-    Observable.prototype.forEach = function (f) {
-        if (f === void 0) { f = nop; }
-        // TODO: inefficient alias. Also, similar assign alias missing.
-        return this.onValue(f);
-    };
-    Observable.prototype.onValues = function (f) {
-        return this.onValue(function (args) { return f.apply(void 0, args); });
-    };
-    Observable.prototype.onError = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.isError) {
-                return f(event.error);
-            }
-        });
-    };
-    Observable.prototype.onEnd = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.isEnd) {
-                return f();
-            }
-        });
-    };
-    Observable.prototype.name = function (name) {
-        this._name = name;
-        return this;
-    };
-    Observable.prototype.withDescription = function (context, method) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        this.desc = describe.apply(void 0, [context, method].concat(args));
-        return this;
-    };
-    Observable.prototype.toString = function () {
-        if (this._name) {
-            return this._name;
-        }
-        else {
-            return this.desc.toString();
-        }
-    };
-    Observable.prototype.inspect = function () { return this.toString(); };
-    Observable.prototype.deps = function () {
-        return this.desc.deps();
-    };
-    Observable.prototype.internalDeps = function () {
-        return this.initialDesc.deps();
-    };
-    return Observable;
 }());
 
 function asyncWrapSubscribe(obs, subscribe) {

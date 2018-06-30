@@ -5,7 +5,6 @@ import spy from './spy';
 import { Desc } from './describe';
 
 import scheduler from './scheduler';
-import Dispatcher from "./dispatcher";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 
 const Bacon = {

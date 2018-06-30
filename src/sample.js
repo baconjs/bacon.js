@@ -1,14 +1,9 @@
 import EventStream from "./eventstream";
-import Observable from "./observable";
 import Property from "./property";
-import { former } from "./helpers";
-import { Source } from "./source";
 import { toCombinator } from "./functionconstruction";
-import { withDesc, Desc } from "./describe";
-import { when, whenP } from "./when";
-import map from "./map";
+import { Desc, withDesc } from "./describe";
 import Bacon from "./core";
-import { withLatestFromE, withLatestFromP } from "./withlatestfrom"
+import { withLatestFromE, withLatestFromP } from "./withlatestfrom"
 import _ from "./_"
 
 const makeCombinator = (combinator) => {
