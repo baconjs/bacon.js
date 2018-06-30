@@ -1,6 +1,5 @@
 sinon = require 'sinon'
 Bacon = require '../dist/Bacon'
-require '../src/jquery'
 expect = require('chai').expect
 $.fn.asEventStream = Bacon.$.asEventStream
 
