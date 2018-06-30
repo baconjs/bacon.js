@@ -94,7 +94,7 @@
     "test": "./scripts/runtests",
     "perftest": "performance/PerformanceTest.coffee",
     "lint": "eslint src",
-    "dist": "./scripts/dist",
+    "dist": "npm run tsc&&./scripts/dist",
     "readme": "coffee readme/readme.coffee",
     "prepublish": "npm run lint && npm run dist && npm run readme",
     "version": "2.0.7",
