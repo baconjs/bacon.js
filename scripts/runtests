@@ -8,7 +8,7 @@ if [ "${TEST_SUITE}" = "browserstack" ]; then
   echo "building browser test suite"
   npm run browsertest-bundle
   echo "running on browserstack"
-  npm run browserstackstrictNullChecks
+  npm run browserstack
 else
   BABEL_ENV=test ./node_modules/.bin/mocha $DEBUG --compilers ts:ts-node/register,coffee:coffee-script/register,js:babel-register spec/specs
 fi
