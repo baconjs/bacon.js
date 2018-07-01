@@ -92,3 +92,4 @@ export function toEvent<V>(x: V | Event<V>): Event<V> {
     return nextEvent(<V>x);
   }
 }
+export default Event

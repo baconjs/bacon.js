@@ -5,7 +5,7 @@ import { argumentsToObservables, argumentsToObservablesAndFunction } from "./arg
 import { withDesc, Desc } from "./describe";
 import { toCombinator } from "./functionconstruction";
 import { isObservable } from "./helpers";
-import { Source } from "./source";
+import { DefaultSource } from "./source";
 import Observable from "./observable";
 import Bacon from "./core";
 
@@ -17,7 +17,7 @@ Bacon.combineAsArray = function() {
       let stream = isObservable(streams[i])
         ? streams[i]
         : Bacon.constant(streams[i])
-      sources.push(new Source(stream, true));
+      sources.push(new DefaultSource(stream, true));
     }
     return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), 
         whenP(sources, function(...xs) { return xs; }));

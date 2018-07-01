@@ -2,7 +2,7 @@ import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import EventStream from "./eventstream";
 import UpdateBarrier from "./updatebarrier";
-import { Source } from "./source";
+import { isTrigger, fromObservable } from "./source";
 import { endEvent } from "./event";
 import { more, noMore } from "./reply";
 import _ from "./_";
@@ -42,7 +42,7 @@ function extractPatternsAndSources(sourceArgs) {
       s = patSources[j];
       var index = _.indexOf(sources, s);
       if (!triggerFound) {
-        triggerFound = Source.isTrigger(s);
+        triggerFound = isTrigger(s);
       }
       if (index < 0) {
         sources.push(s);
@@ -78,7 +78,7 @@ export function when_(ctor, sourceArgs) {
     return never();
   }
 
-  sources = _.map(Source.fromObservable, sources);
+  sources = _.map(fromObservable, sources);
   var needsBarrier = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources));
 
   var desc = new Desc(Bacon, "when", patterns);

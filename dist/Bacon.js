@@ -53,28 +53,9 @@ function assertNoArguments(args) {
 
 
 
-function extend(target) {
-  var length = arguments.length;
-  for (var i = 1; 1 < length ? i < length : i > length; 1 < length ? i++ : i--) {
-    for (var prop in arguments[i]) {
-      target[prop] = arguments[i][prop];
-    }
-  }
-  return target;
-}
 
-function inherit(child, parent) {
-  var hasProp = {}.hasOwnProperty;
-  function ctor() {}
-  ctor.prototype = parent.prototype;
-  child.prototype = new ctor();
-  for (var key in parent) {
-    if (hasProp.call(parent, key)) {
-      child[key] = parent[key];
-    }
-  }
-  return child;
-}
+
+
 
 function symbol(key) {
   if (typeof Symbol !== "undefined" && Symbol[key]) {
@@ -1081,102 +1062,107 @@ function takeT(count) {
     };
 }
 
-function Source(obs, sync) {
-  this.obs = obs;
-  this.sync = sync;
-  this.queue = [];
-}
-
-extend(Source.prototype, {
-  _isSource: true,
-
-  subscribe: function (sink) {
-    return this.obs.dispatcher.subscribe(sink);
-  },
-  toString: function () {
-    return this.obs.toString();
-  },
-  markEnded: function () {
-    this.ended = true;
-    return true;
-  },
-  consume: function () {
-    return this.queue[0];
-  },
-  push: function (x) {
-    this.queue = [x];
-  },
-  mayHave: function () {
-    return true;
-  },
-  hasAtLeast: function () {
-    return this.queue.length;
-  },
-
-  flatten: true
-});
-
-function ConsumingSource() {
-  Source.apply(this, arguments);
-}
-
-inherit(ConsumingSource, Source);
-extend(ConsumingSource.prototype, {
-  consume: function () {
-    return this.queue.shift();
-  },
-  push: function (x) {
-    return this.queue.push(x);
-  },
-  mayHave: function (c) {
-    return !this.ended || this.queue.length >= c;
-  },
-  hasAtLeast: function (c) {
-    return this.queue.length >= c;
-  },
-
-  flatten: false
-});
-
-function BufferingSource(obs) {
-  Source.call(this, obs, true);
-}
-
-inherit(BufferingSource, Source);
-extend(BufferingSource.prototype, {
-  consume: function () {
-    var values = this.queue;
-    this.queue = [];
-    return {
-      value: values
+var Source = /** @class */ (function () {
+    function Source(obs, sync) {
+        this._isSource = true;
+        this.flatten = true;
+        this.ended = false;
+        this.obs = obs;
+        this.sync = sync;
+    }
+    Source.prototype.subscribe = function (sink) {
+        return this.obs.subscribeInternal(sink);
     };
-  },
-  push: function (x) {
-    return this.queue.push(x.value);
-  },
-  hasAtLeast: function () {
-    return true;
-  }
-});
-
-Source.isTrigger = function (s) {
-  if (s == null) return false;
-  if (s._isSource) {
-    return s.sync;
-  } else {
-    return s._isEventStream;
-  }
-};
-
-Source.fromObservable = function (s) {
-  if (s != null && s._isSource) {
-    return s;
-  } else if (s != null && s._isProperty) {
-    return new Source(s, false);
-  } else {
-    return new ConsumingSource(s, true);
-  }
-};
+    Source.prototype.toString = function () {
+        return this.obs.toString();
+    };
+    Source.prototype.markEnded = function () {
+        this.ended = true;
+    };
+    Source.prototype.mayHave = function (count) { return true; };
+    return Source;
+}());
+var DefaultSource = /** @class */ (function (_super) {
+    __extends(DefaultSource, _super);
+    function DefaultSource() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    DefaultSource.prototype.consume = function () {
+        return this.value;
+    };
+    DefaultSource.prototype.push = function (x) {
+        this.value = x;
+    };
+    DefaultSource.prototype.hasAtLeast = function (c) {
+        return !!this.value;
+    };
+    return DefaultSource;
+}(Source));
+var ConsumingSource = /** @class */ (function (_super) {
+    __extends(ConsumingSource, _super);
+    function ConsumingSource(obs, sync) {
+        var _this = _super.call(this, obs, sync) || this;
+        _this.flatten = false;
+        _this.queue = [];
+        return _this;
+    }
+    ConsumingSource.prototype.consume = function () {
+        return this.queue.shift();
+    };
+    ConsumingSource.prototype.push = function (x) {
+        return this.queue.push(x);
+    };
+    ConsumingSource.prototype.mayHave = function (count) {
+        return !this.ended || this.queue.length >= count;
+    };
+    ConsumingSource.prototype.hasAtLeast = function (count) {
+        return this.queue.length >= count;
+    };
+    return ConsumingSource;
+}(Source));
+var BufferingSource = /** @class */ (function (_super) {
+    __extends(BufferingSource, _super);
+    function BufferingSource(obs) {
+        var _this = _super.call(this, obs, true) || this;
+        _this.queue = [];
+        return _this;
+    }
+    BufferingSource.prototype.consume = function () {
+        var values = this.queue;
+        this.queue = [];
+        return {
+            value: values
+        };
+    };
+    BufferingSource.prototype.push = function (x) {
+        return this.queue.push(x.value);
+    };
+    BufferingSource.prototype.hasAtLeast = function (count) {
+        return true;
+    };
+    return BufferingSource;
+}(Source));
+function isTrigger(s) {
+    if (s == null)
+        return false;
+    if (s._isSource) {
+        return s.sync;
+    }
+    else {
+        return s._isEventStream;
+    }
+}
+function fromObservable(s) {
+    if (s != null && s._isSource) {
+        return s;
+    }
+    else if (s != null && s._isProperty) {
+        return new DefaultSource(s, false);
+    }
+    else {
+        return new ConsumingSource(s, true);
+    }
+}
 
 function never() {
   return new EventStream(describe(Bacon, "never"), function (sink) {
@@ -1275,7 +1261,7 @@ function extractPatternsAndSources(sourceArgs) {
       s = patSources[j];
       var index = _.indexOf(sources, s);
       if (!triggerFound) {
-        triggerFound = Source.isTrigger(s);
+        triggerFound = isTrigger(s);
       }
       if (index < 0) {
         sources.push(s);
@@ -1316,7 +1302,7 @@ function when_(ctor, sourceArgs) {
     return never();
   }
 
-  sources = _.map(Source.fromObservable, sources);
+  sources = _.map(fromObservable, sources);
   var needsBarrier = _.any(sources, function (s) {
     return s.flatten;
   }) && containsDuplicateDeps(_.map(function (s) {
@@ -1470,11 +1456,11 @@ function cannotSync(source) {
 Bacon.when = when;
 
 function withLatestFromE(sampler, samplee, f) {
-    var result = when([new Source(samplee.toProperty(), false), new Source(sampler, true)], _.flip(f));
+    var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true)], _.flip(f));
     return withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]), result);
 }
 function withLatestFromP(sampler, samplee, f) {
-    var result = whenP([new Source(samplee.toProperty(), false), new Source(sampler, true)], _.flip(f));
+    var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true)], _.flip(f));
     return withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]), result);
 }
 function withLatestFrom(sampler, samplee, f) {
@@ -1970,7 +1956,7 @@ Bacon.combineAsArray = function () {
     var sources = [];
     for (var i = 0; i < streams.length; i++) {
       var stream = isObservable(streams[i]) ? streams[i] : Bacon.constant(streams[i]);
-      sources.push(new Source(stream, true));
+      sources.push(new DefaultSource(stream, true));
     }
     return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), whenP(sources, function () {
       for (var _len = arguments.length, xs = Array(_len), _key = 0; _key < _len; _key++) {
