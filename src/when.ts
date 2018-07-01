@@ -3,7 +3,7 @@ import CompositeUnsubscribe from "./compositeunsubscribe";
 import EventStream from "./eventstream";
 import UpdateBarrier from "./updatebarrier";
 import { fromObservable, isTrigger, Source } from "./source";
-import { endEvent, Value, Event } from "./event";
+import { endEvent, Event, Value } from "./event";
 import { more, noMore, Reply } from "./reply";
 import _ from "./_";
 import { assert } from "./helpers";
@@ -12,93 +12,57 @@ import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
 import Observable from "./observable";
 import { Subscribe, Unsub } from "./types";
+import Property from "./property";
 
-type AnySource = Source<any, any>
-type AnyFunction = Function
+
+export type ObservableOrSource<V> = Observable<V> | Source<any, V>
+
+export type Pattern1<I1,O> = [ObservableOrSource<I1>, (I1) => O]
+export type Pattern2<I1,I2,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, (I1, I2) => O]
+export type Pattern3<I1,I2,I3,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, (I1, I2, I3) => O]
+export type Pattern4<I1,I2,I3,I4,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, (I1, I2, I3, I4) => O]
+export type Pattern5<I1,I2,I3,I4,I5,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, (I1, I2, I3, I4, I5) => O]
+export type Pattern6<I1,I2,I3,I4,I5,I6,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, ObservableOrSource<I6>, (I1, I2, I3, I4, I5, I6) => O]
+export type RawPattern = [AnyObservableOrSource[], AnyFunction]
+export type Pattern<O> = Pattern1<any, O> | Pattern2<any, any, O> | Pattern3<any, any, any, O> |
+                         Pattern4<any, any, any, any, O> | Pattern5<any, any, any, any, any, O> | Pattern6<any, any, any, any, any, any, O> |
+                         RawPattern
+
+export type AnySource = Source<any, any>
+export type AnyFunction = Function
 type AnyValue = Value<any>
-type AnyObservable = Observable<any>
-type ObservableOrSource = AnyObservable | AnySource
-interface Ctor {
-  (description: Desc, subscribe: Subscribe<any>): Observable<any>
-}
-interface Pattern {
-  ixs: { index: number, count: number }[]
-  f: AnyFunction
-}
+export type AnyObservable = Observable<any>
+export type AnyObservableOrSource = AnyObservable | AnySource
 
 function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
   return new EventStream(description, subscribe)
 }
 
-export function when() {
-  return when_(newEventStream, arguments)
+export function when<O>(...patterns: Pattern<O>[]): EventStream<O> {
+  return <any>when_(newEventStream, patterns)
 }
 
-export function whenP() {
-  return when_(propertyFromStreamSubscribe, arguments)
+export function whenP<O>(...patterns: Pattern<O>[]): Property<O> {
+  return <any>when_(propertyFromStreamSubscribe, patterns)
 }
 
 export default when;
 
-function extractPatternsAndSources(sourceArgs: any[]): [AnySource[], Pattern[]] {
-  var len = sourceArgs.length;
-  var sources: ObservableOrSource[] = [];
-  var pats: Pattern[] = [];
-  var i = 0;
-  while (i < len) {
-    var patSources: (AnySource | AnyObservable)[] = _.toArray(sourceArgs[i]);
-    var f = _.toFunction(sourceArgs[i + 1]);
-    var pat: Pattern = {f, ixs: []};
-    var triggerFound = false;
-    for (var j = 0, s; j < patSources.length; j++) {
-      s = patSources[j];
-      var index = _.indexOf(sources, s);
-      if (!triggerFound) {
-        triggerFound = isTrigger(s);
-      }
-      if (index < 0) {
-        sources.push(s);
-        index = sources.length - 1;
-      }
-      for (var k = 0; k < pat.ixs.length; k++) {
-        let ix = pat.ixs[k];
-        if (ix.index === index) {
-          ix.count++;
-        }
-      }
-      pat.ixs.push({index: index, count: 1});
-    }
-
-    assert("At least one EventStream required", (triggerFound || (!patSources.length)));
-
-    if (patSources.length > 0) {
-      pats.push(pat);
-    }
-    i = i + 2;
-  }
-  var usage = "when: expecting arguments in the form (Observable+,function)+";
-  assert(usage, (len % 2 === 0));
-
-  return [_.map(fromObservable, sources), pats]
+export interface ObservableConstructor {
+  (description: Desc, subscribe: Subscribe<any>): Observable<any>
 }
 
-interface Trigger {
-  e: Value<any>
-  source: AnySource
-}
-
-export function when_(ctor: Ctor, sourceArgs) {
-  if (sourceArgs.length === 0) { return never() }
-  var [sources, pats] = extractPatternsAndSources(sourceArgs)
+export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): Observable<O> {
+  if (patterns.length === 0) { return never() }
+  var [sources, ixPats] = processRawPatterns(extractTypedPatterns(patterns))
 
   if (!sources.length) {
     return never()
   }
 
-
   var needsBarrier: boolean = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources))
 
-  var desc = new Desc(Bacon, "when", Array.prototype.slice.call(sourceArgs))
+  var desc = new Desc(Bacon, "when", Array.prototype.slice.call(patterns))
 
   var resultStream = ctor(desc, function(sink) {
     var triggers: Trigger[] = [];
@@ -112,7 +76,7 @@ export function when_(ctor: Ctor, sourceArgs) {
       }
       return true;
     }
-    function cannotMatch(p: Pattern): boolean {
+    function cannotMatch(p: IndexPattern): boolean {
       for (var i = 0; i < p.ixs.length; i++) {
         let ix = p.ixs[i];
         if (!sources[ix.index].mayHave(ix.count)) {
@@ -130,8 +94,8 @@ export function when_(ctor: Ctor, sourceArgs) {
         var trigger: Trigger | undefined
         if ((trigger = triggers.pop()) !== undefined) {
           var reply = more;
-          for (var i = 0, p; i < pats.length; i++) {
-            p = pats[i];
+          for (var i = 0, p; i < ixPats.length; i++) {
+            p = ixPats[i];
             if (match(p)) {
               const values: any[] = [];
               for (var j = 0; j < p.ixs.length; j++) {
@@ -162,7 +126,7 @@ export function when_(ctor: Ctor, sourceArgs) {
         var reply: Reply = flushWhileTriggers();
         if (ends) {
           //console.log "ends detected"
-          if  (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
+          if  (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
             //console.log "actually ending"
             reply = noMore;
             sink(endEvent());
@@ -197,6 +161,96 @@ export function when_(ctor: Ctor, sourceArgs) {
     return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
   });
   return resultStream;
+}
+
+interface IndexPattern {
+  ixs: { index: number, count: number }[]
+  f: AnyFunction
+}
+
+function processRawPatterns(rawPatterns: RawPattern[]): [AnySource[], IndexPattern[]] {
+  var sources: AnyObservableOrSource[] = [];
+  var pats: IndexPattern[] = [];
+  for (let i = 0; i < rawPatterns.length; i++) {
+
+    let [patSources, f] = rawPatterns[i]
+    var pat: IndexPattern = {f, ixs: []};
+    var triggerFound = false;
+    for (var j = 0, s; j < patSources.length; j++) {
+      s = patSources[j];
+      var index = _.indexOf(sources, s);
+      if (!triggerFound) {
+        triggerFound = isTrigger(s);
+      }
+      if (index < 0) {
+        sources.push(s);
+        index = sources.length - 1;
+      }
+      for (var k = 0; k < pat.ixs.length; k++) {
+        let ix = pat.ixs[k];
+        if (ix.index === index) {
+          ix.count++;
+        }
+      }
+      pat.ixs.push({index: index, count: 1});
+    }
+
+    if (patSources.length > 0 && !triggerFound) {
+      throw new Error("At least one EventStream required, none found in " + patSources)
+    }
+
+    if (patSources.length > 0) {
+      pats.push(pat);
+    }
+  }
+  return [_.map(fromObservable, sources), pats]
+}
+
+function extractLegacyPatterns(sourceArgs: any[]): RawPattern[] {
+  var i = 0
+  var len = sourceArgs.length;
+  var rawPatterns: RawPattern[] = []
+  while (i < len) {
+    let patSources: AnyObservableOrSource[] = _.toArray(sourceArgs[i++]);
+    let f: AnyFunction = _.toFunction(sourceArgs[i++]);
+    rawPatterns.push([patSources, f])
+  }
+  var usage = "when: expecting arguments in the form (Observable+,function)+";
+  assert(usage, (len % 2 === 0));
+
+  return rawPatterns
+}
+
+function isTypedOrRawPattern(pattern: Pattern<any>) {
+  return (pattern instanceof Array) && (typeof pattern[pattern.length - 1] == "function")
+}
+
+function isRawPattern(pattern: Pattern<any>): pattern is RawPattern {
+  return pattern[0] instanceof Array
+}
+
+function extractTypedPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
+  let rawPatterns: RawPattern[] = []
+  for (let i = 0; i < patterns.length; i++) {
+    let pattern = patterns[i]
+    if (!isTypedOrRawPattern(pattern)) {
+      // Fallback to legacy patterns
+      return extractLegacyPatterns(patterns)
+    }
+    if (isRawPattern(pattern)) {
+      rawPatterns.push(pattern)
+    } else { // typed pattern, then
+      let sources: AnySource[] = <any>pattern.slice(0, pattern.length - 1)
+      let f: AnyFunction = <any>pattern[pattern.length - 1]
+      rawPatterns.push([sources, f])
+    }
+  }
+  return rawPatterns
+}
+
+interface Trigger {
+  e: Value<any>
+  source: AnySource
 }
 
 function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservable[] = []) {

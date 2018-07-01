@@ -133,13 +133,6 @@ module.exports.expectStreamTimings = expectStreamTimings = (src, expectedEventsA
 
 module.exports.expectStreamEvents = expectStreamEvents = (src, expectedEvents, {unstable, semiunstable} = {}) ->
   verifySingleSubscriber src, expectedEvents
-  unless browser
-    verifyLateEval src, expectedEvents
-    if not unstable
-      verifySwitching src, expectedEvents
-      verifySwitchingWithUnsub src, expectedEvents
-    if not (unstable or semiunstable)
-      verifySwitchingAggressively src, expectedEvents
 
 expectPropertyEvents = (src, expectedEvents, {unstable, semiunstable, extraCheck} = {}) ->
   expect(expectedEvents.length > 0).to.deep.equal(true, "at least one expected event is specified")

@@ -4,8 +4,8 @@ import { describe } from "./describe";
 import { nop } from "./helpers";
 import Bacon from "./core";
 
-export default function never() {
-  return new EventStream(describe(Bacon, "never"), (sink) => {
+export default function never<V>(): EventStream<V> {
+  return new EventStream<V>(describe(Bacon, "never"), (sink) => {
     sink(endEvent());
     return nop;
   });

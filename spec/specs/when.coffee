@@ -15,6 +15,18 @@ expect = require("chai").expect
 } = require("../SpecHelper")
 
 describe "Bacon.when", ->
+  describe "handles the new typed format", ->
+    expectStreamEvents(
+      ->
+        a = series(1, [1,2])
+        b = series(6, [6,7])
+        c = Bacon.constant("c")
+
+        Bacon.when(
+          [a, c, ((a,c) ->  c+a) ],
+          [b, ((b) ->  "" + b)])
+      ["c1", "c2", "6", "7"], semiunstable)
+
   describe "synchronizes on join patterns", ->
     expectStreamEvents(
       ->

@@ -16,7 +16,6 @@ import "./delay";
 import "./delaychanges";
 import "./diff";
 import "./doaction";
-import "./doaction";
 import "./doend";
 import "./doerror";
 import "./dolog";
