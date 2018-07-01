@@ -1748,13 +1748,9 @@
         if (streams.length === 1 && isArray(streams[0])) {
             streams = streams[0];
         }
-        var sources = function () {
-            var result = [];
-            for (var i = 0; i < streams.length; i++) {
-                result.push(new BufferingSource(streams[i]));
-            }
-            return result;
-        }();
+        var sources = _.map(function (stream) {
+            return new BufferingSource(stream);
+        }, streams);
         var ctor = function (desc, subscribe) {
             return new EventStream(desc, subscribe, null, options);
         };
