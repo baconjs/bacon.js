@@ -521,7 +521,7 @@
             return [];
         }
     }
-    var scheduler = {
+    var defaultScheduler = {
         setTimeout: function (f, d) {
             return setTimeout(f, d);
         },
@@ -538,6 +538,7 @@
             return new Date().getTime();
         }
     };
+    var Scheduler = { scheduler: defaultScheduler };
     function CompositeUnsubscribe() {
         var ss = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         this.unsubscribe = _.bind(this.unsubscribe, this);
@@ -620,7 +621,12 @@
         more: more,
         Desc: Desc,
         spy: spy,
-        scheduler: scheduler,
+        setScheduler: function (newScheduler) {
+            return Scheduler.scheduler = newScheduler;
+        },
+        getScheduler: function () {
+            return Scheduler.scheduler;
+        },
         CompositeUnsubscribe: CompositeUnsubscribe,
         version: '<version>'
     };
@@ -661,7 +667,7 @@
         if (rootEvent) {
             whenDoneWith(obs, f);
         } else {
-            Bacon.scheduler.setTimeout(f, 0);
+            Scheduler.scheduler.setTimeout(f, 0);
         }
     }
     function afterTransaction(obs, f) {
@@ -1062,7 +1068,7 @@
                             if (inTransaction) {
                                 UpdateBarrier.soonButNotYet(obs, deliverAsync);
                             } else {
-                                Bacon.scheduler.setTimeout(deliverAsync, 0);
+                                Scheduler.scheduler.setTimeout(deliverAsync, 0);
                             }
                         } else {
                             asyncDeliveries.push(event);
@@ -2015,7 +2021,7 @@
             values: [],
             flush: function () {
                 if (this.scheduled) {
-                    Bacon.scheduler.clearTimeout(this.scheduled);
+                    Scheduler.scheduler.clearTimeout(this.scheduled);
                     this.scheduled = null;
                 }
                 if (this.values.length > 0) {
@@ -2046,7 +2052,7 @@
         if (!_.isFunction(delay)) {
             var delayMs = delay;
             delay = function (f) {
-                return Bacon.scheduler.setTimeout(f, delayMs);
+                return Scheduler.scheduler.setTimeout(f, delayMs);
             };
         }
         return withDesc(new Desc(this, 'buffer', []), this.withHandler(function (event) {
@@ -2304,9 +2310,9 @@
                     endEvent()
                 ]);
             };
-            var id = Bacon.scheduler.setTimeout(sender, delay);
+            var id = Scheduler.scheduler.setTimeout(sender, delay);
             return function () {
-                return Bacon.scheduler.clearTimeout(id);
+                return Scheduler.scheduler.clearTimeout(id);
             };
         }));
     }
@@ -3046,9 +3052,9 @@
             poll
         ]);
         return withDesc(desc, fromBinder(function (handler) {
-            var id = Bacon.scheduler.setInterval(handler, delay);
+            var id = Scheduler.scheduler.setInterval(handler, delay);
             return function () {
-                return Bacon.scheduler.clearInterval(id);
+                return Scheduler.scheduler.clearInterval(id);
             };
         }, poll));
     }

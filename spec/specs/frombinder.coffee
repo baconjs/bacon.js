@@ -32,12 +32,12 @@ describe "Bacon.fromBinder", ->
   describe "unbind works in synchronous case", ->
     expectStreamEvents( ->
         Bacon.fromBinder (sink) ->
-          unsubTest = Bacon.scheduler.setInterval((->), 10)
+          unsubTest = Bacon.getScheduler().setInterval((->), 10)
           sink("hello")
           sink(new Bacon.End())
           ->
             # test hangs if any interval is left uncleared
-            Bacon.scheduler.clearInterval(unsubTest)
+            Bacon.getScheduler().clearInterval(unsubTest)
       ,
       ["hello"])
 

@@ -10,7 +10,7 @@ mock = Mocks.mock
 mockFunction = Mocks.mockFunction
 EventEmitter = require("events").EventEmitter
 module.exports.sc = sc = TickScheduler()
-Bacon.scheduler = sc
+Bacon.setScheduler(sc)
 module.exports.expectError = expectError = (errorText, f) ->
   expect(f).to.throw(Error, errorText)
 
@@ -93,13 +93,13 @@ take = (count, obs) ->
         Bacon.noMore
 
 module.exports.atGivenTimes = atGivenTimes = (timesAndValues) ->
-  startTime = Bacon.scheduler.now()
+  startTime = sc.now()
   fromBinder (sink) ->
     shouldStop = false
     schedule = (timeOffset, index) ->
       first = timesAndValues[index]
       scheduledTime = first[0]
-      delay = scheduledTime - Bacon.scheduler.now() + startTime
+      delay = scheduledTime - sc.now() + startTime
       push = ->
         return if shouldStop
         value = first[1]
@@ -108,7 +108,7 @@ module.exports.atGivenTimes = atGivenTimes = (timesAndValues) ->
           schedule(scheduledTime, index+1)
         else
           sink(new Bacon.End())
-      Bacon.scheduler.setTimeout push, delay
+      sc.setTimeout push, delay
     schedule(0, 0)
     ->
       shouldStop = true
@@ -120,7 +120,7 @@ if browser
 
 module.exports.expectStreamTimings = expectStreamTimings = (src, expectedEventsAndTimings, options) ->
   srcWithRelativeTime = () ->
-    now = Bacon.scheduler.now
+    now = sc.now
     t0 = now()
     relativeTime = () ->
       Math.floor(now() - t0)
@@ -220,7 +220,7 @@ verifyPSwitchingAggressively = (srcF, expectedEvents, done) ->
         unsub = null
         gotMine = false
         (event) ->
-          #console.log "at", Bacon.scheduler.now(), "got", event, "for", myId
+          #console.log "at", sc.now(), "got", event, "for", myId
           if event.isEnd and myId == idCounter
             done()
           else if event.hasValue

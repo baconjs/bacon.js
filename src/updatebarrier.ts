@@ -1,9 +1,9 @@
 import _ from './_';
 import { noMore } from './reply';
 import { assertFunction } from "./helpers";
-import { Event } from "./event"
-import Bacon from "./core"
-import { Subscribe } from "./types"
+import { Event } from "./event"
+import { Subscribe } from "./types"
+import Scheduler from "./scheduler";
 
 interface Observable {
   id: number
@@ -48,7 +48,7 @@ function soonButNotYet(obs, f) {
     // Otherwise -> perform with timeout
     //console.log('with timeout')
     
-    Bacon.scheduler.setTimeout(f, 0)
+    Scheduler.scheduler.setTimeout(f, 0)
   }
 }
 

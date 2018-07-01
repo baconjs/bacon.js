@@ -5,7 +5,7 @@ import { more, noMore } from "./reply";
 import { nop } from "./helpers";
 import _ from "./_";
 import Bacon from "./core";
-
+import Scheduler from "./scheduler"
 EventStream.prototype.bufferWithTime = function(delay) {
   return withDesc(new Desc(this, "bufferWithTime", [delay]), this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
 };
@@ -34,7 +34,7 @@ EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
     values: [],
     flush() {
       if (this.scheduled) {
-        Bacon.scheduler.clearTimeout(this.scheduled);
+        Scheduler.scheduler.clearTimeout(this.scheduled);
         this.scheduled = null;
       }
       if (this.values.length > 0) {
@@ -65,7 +65,7 @@ EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
     var delayMs = delay;
     delay = function(f) {
       //console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
-      return Bacon.scheduler.setTimeout(f, delayMs);
+      return Scheduler.scheduler.setTimeout(f, delayMs);
     };
   }
   return withDesc(new Desc(this, "buffer", []), this.withHandler(function(event) {

@@ -496,22 +496,15 @@ function findDeps(x) {
     }
 }
 
-var scheduler = {
-  setTimeout: function (f, d) {
-    return setTimeout(f, d);
-  },
-  setInterval: function (f, i) {
-    return setInterval(f, i);
-  },
-  clearInterval: function (id) {
-    return clearInterval(id);
-  },
-  clearTimeout: function (id) {
-    return clearTimeout(id);
-  },
-  now: function () {
-    return new Date().getTime();
-  }
+var defaultScheduler = {
+    setTimeout: function (f, d) { return setTimeout(f, d); },
+    setInterval: function (f, i) { return setInterval(f, i); },
+    clearInterval: function (id) { return clearInterval(id); },
+    clearTimeout: function (id) { return clearTimeout(id); },
+    now: function () { return new Date().getTime(); }
+};
+var Scheduler = {
+    scheduler: defaultScheduler
 };
 
 function CompositeUnsubscribe() {
@@ -601,7 +594,12 @@ var Bacon = {
   more: more,
   Desc: Desc,
   spy: spy,
-  scheduler: scheduler,
+  setScheduler: function (newScheduler) {
+    return Scheduler.scheduler = newScheduler;
+  },
+  getScheduler: function () {
+    return Scheduler.scheduler;
+  },
   CompositeUnsubscribe: CompositeUnsubscribe,
   version: '<version>'
 };
@@ -638,7 +636,7 @@ function soonButNotYet(obs, f) {
     else {
         // Otherwise -> perform with timeout
         //console.log('with timeout')
-        Bacon.scheduler.setTimeout(f, 0);
+        Scheduler.scheduler.setTimeout(f, 0);
     }
 }
 function afterTransaction(obs, f) {
@@ -1041,7 +1039,7 @@ function asyncWrapSubscribe(obs, subscribe) {
                             UpdateBarrier.soonButNotYet(obs, deliverAsync);
                         }
                         else {
-                            Bacon.scheduler.setTimeout(deliverAsync, 0);
+                            Scheduler.scheduler.setTimeout(deliverAsync, 0);
                         }
                     }
                     else {
@@ -2060,7 +2058,7 @@ EventStream.prototype.buffer = function (delay) {
     values: [],
     flush: function () {
       if (this.scheduled) {
-        Bacon.scheduler.clearTimeout(this.scheduled);
+        Scheduler.scheduler.clearTimeout(this.scheduled);
         this.scheduled = null;
       }
       if (this.values.length > 0) {
@@ -2092,7 +2090,7 @@ EventStream.prototype.buffer = function (delay) {
   if (!_.isFunction(delay)) {
     var delayMs = delay;
     delay = function (f) {
-      return Bacon.scheduler.setTimeout(f, delayMs);
+      return Scheduler.scheduler.setTimeout(f, delayMs);
     };
   }
   return withDesc(new Desc(this, "buffer", []), this.withHandler(function (event) {
@@ -2365,9 +2363,9 @@ function later(delay, value) {
     var sender = function () {
       return sink([value, endEvent()]);
     };
-    var id = Bacon.scheduler.setTimeout(sender, delay);
+    var id = Scheduler.scheduler.setTimeout(sender, delay);
     return function () {
-      return Bacon.scheduler.clearTimeout(id);
+      return Scheduler.scheduler.clearTimeout(id);
     };
   }));
 }
@@ -3126,9 +3124,9 @@ Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;
 function fromPoll(delay, poll) {
   var desc = new Desc(Bacon, "fromPoll", [delay, poll]);
   return withDesc(desc, fromBinder(function (handler) {
-    var id = Bacon.scheduler.setInterval(handler, delay);
+    var id = Scheduler.scheduler.setInterval(handler, delay);
     return function () {
-      return Bacon.scheduler.clearInterval(id);
+      return Scheduler.scheduler.clearInterval(id);
     };
   }, poll));
 }

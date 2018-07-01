@@ -580,4 +580,4 @@ describe "Integration tests", ->
         verify = ->
           expect(values).to.deep.equal([1])
           done()
-        Bacon.scheduler.setTimeout verify, 20
+        Bacon.getScheduler().setTimeout verify, 20

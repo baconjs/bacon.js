@@ -4,7 +4,7 @@ import { noMore, more } from './reply';
 import spy from './spy';
 import { Desc } from './describe';
 
-import scheduler from './scheduler';
+import Scheduler from './scheduler';
 import CompositeUnsubscribe from "./compositeunsubscribe";
 
 const Bacon = {
@@ -19,7 +19,8 @@ const Bacon = {
   more,
   Desc,
   spy,
-  scheduler,
+  setScheduler: (newScheduler) => Scheduler.scheduler = newScheduler,
+  getScheduler: () => Scheduler.scheduler,
   CompositeUnsubscribe,
   version: '<version>'
 };
