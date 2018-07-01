@@ -2,17 +2,32 @@ import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import EventStream from "./eventstream";
 import UpdateBarrier from "./updatebarrier";
-import { isTrigger, fromObservable } from "./source";
-import { endEvent } from "./event";
-import { more, noMore } from "./reply";
+import { fromObservable, isTrigger, Source } from "./source";
+import { endEvent, Value, Event } from "./event";
+import { more, noMore, Reply } from "./reply";
 import _ from "./_";
 import { assert } from "./helpers";
 import never from "./never";
 import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
+import Observable from "./observable";
+import { Subscribe, Unsub } from "./types";
 
-function newEventStream(...args) {
-  return new EventStream(...args)
+type AnySource = Source<any, any>
+type AnyFunction = Function
+type AnyValue = Value<any>
+type AnyObservable = Observable<any>
+type ObservableOrSource = AnyObservable | AnySource
+interface Ctor {
+  (description: Desc, subscribe: Subscribe<any>): Observable<any>
+}
+interface Pattern {
+  ixs: { index: number, count: number }[]
+  f: AnyFunction
+}
+
+function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
+  return new EventStream(description, subscribe)
 }
 
 export function when() {
@@ -25,18 +40,15 @@ export function whenP() {
 
 export default when;
 
-function extractPatternsAndSources(sourceArgs) {
+function extractPatternsAndSources(sourceArgs: any[]): [AnySource[], Pattern[]] {
   var len = sourceArgs.length;
-  var sources = [];
-  var pats = [];
+  var sources: ObservableOrSource[] = [];
+  var pats: Pattern[] = [];
   var i = 0;
-  var patterns = [];
   while (i < len) {
-    patterns[i] = sourceArgs[i];
-    patterns[i + 1] = sourceArgs[i + 1];
-    var patSources = _.toArray(sourceArgs[i]);
-    var f = constantToFunction(sourceArgs[i + 1]);
-    var pat = {f, ixs: []};
+    var patSources: (AnySource | AnyObservable)[] = _.toArray(sourceArgs[i]);
+    var f = _.toFunction(sourceArgs[i + 1]);
+    var pat: Pattern = {f, ixs: []};
     var triggerFound = false;
     for (var j = 0, s; j < patSources.length; j++) {
       s = patSources[j];
@@ -48,8 +60,8 @@ function extractPatternsAndSources(sourceArgs) {
         sources.push(s);
         index = sources.length - 1;
       }
-      for (var k = 0, ix; k < pat.ixs.length; k++) {
-        ix = pat.ixs[k];
+      for (var k = 0; k < pat.ixs.length; k++) {
+        let ix = pat.ixs[k];
         if (ix.index === index) {
           ix.count++;
         }
@@ -66,24 +78,30 @@ function extractPatternsAndSources(sourceArgs) {
   }
   var usage = "when: expecting arguments in the form (Observable+,function)+";
   assert(usage, (len % 2 === 0));
-  return [sources, pats, patterns]
+
+  return [_.map(fromObservable, sources), pats]
 }
 
-export function when_(ctor, sourceArgs) {
-  if (sourceArgs.length === 0) { return never(); }
-  var [sources, pats, patterns] = extractPatternsAndSources(sourceArgs)
+interface Trigger {
+  e: Value<any>
+  source: AnySource
+}
 
+export function when_(ctor: Ctor, sourceArgs) {
+  if (sourceArgs.length === 0) { return never() }
+  var [sources, pats] = extractPatternsAndSources(sourceArgs)
 
   if (!sources.length) {
-    return never();
+    return never()
   }
 
-  sources = _.map(fromObservable, sources);
-  var needsBarrier = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources));
 
-  var desc = new Desc(Bacon, "when", patterns);
+  var needsBarrier: boolean = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources))
+
+  var desc = new Desc(Bacon, "when", Array.prototype.slice.call(sourceArgs))
+
   var resultStream = ctor(desc, function(sink) {
-    var triggers = [];
+    var triggers: Trigger[] = [];
     var ends = false;
     function match(p) {
       for (var i = 0; i < p.ixs.length; i++) {
@@ -94,35 +112,37 @@ export function when_(ctor, sourceArgs) {
       }
       return true;
     }
-    function cannotMatch(p) {
+    function cannotMatch(p: Pattern): boolean {
       for (var i = 0; i < p.ixs.length; i++) {
         let ix = p.ixs[i];
         if (!sources[ix.index].mayHave(ix.count)) {
           return true;
         }
       }
+      return false
     }
-    function nonFlattened(trigger) { return !trigger.source.flatten; }
-    function part(source) { return function(unsubAll) {
+    function nonFlattened(trigger: Trigger): boolean { return !trigger.source.flatten; }
+    function part(source: AnySource): (Unsub) => Unsub { return function(unsubAll): Unsub {
       function flushLater() {
         return UpdateBarrier.whenDoneWith(resultStream, flush);
       }
-      function flushWhileTriggers() {
-        if (triggers.length > 0) {
+      function flushWhileTriggers(): Reply {
+        var trigger: Trigger | undefined
+        if ((trigger = triggers.pop()) !== undefined) {
           var reply = more;
-          var trigger = triggers.pop();
           for (var i = 0, p; i < pats.length; i++) {
             p = pats[i];
             if (match(p)) {
-              const values = [];
+              const values: any[] = [];
               for (var j = 0; j < p.ixs.length; j++) {
                 let event = sources[p.ixs[j].index].consume()
+                if (!event) throw new Error("Event was undefined")
                 values.push(event.value);
               }
               //console.log("flushing values", values)
               let applied = p.f.apply(null, values);
               //console.log('sinking', applied)
-              reply = sink(trigger.e.apply(applied));
+              reply = sink((trigger).e.apply(applied));
               if (triggers.length) {
                 triggers = _.filter(nonFlattened, triggers);
               }
@@ -137,9 +157,9 @@ export function when_(ctor, sourceArgs) {
           return more;
         }
       }
-      function flush() {
+      function flush(): void {
         //console.log "flushing", _.toString(resultStream)
-        var reply = flushWhileTriggers();
+        var reply: Reply = flushWhileTriggers();
         if (ends) {
           //console.log "ends detected"
           if  (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
@@ -149,10 +169,9 @@ export function when_(ctor, sourceArgs) {
           }
         }
         if (reply === noMore) { unsubAll(); }
-        //console.log "flushed"
-        return reply;
       }
-      return source.subscribe(function(e) {
+
+      return source.subscribe(function(e: Event<any>) {
         if (e.isEnd) {
           //console.log "got end"
           ends = true;
@@ -161,34 +180,27 @@ export function when_(ctor, sourceArgs) {
         } else if (e.isError) {
           var reply = sink(e);
         } else {
+          let valueEvent = <AnyValue>e
           //console.log "got value", e.value
-          source.push(e);
+          source.push(valueEvent);
           if (source.sync) {
             //console.log "queuing", e.toString(), _.toString(resultStream)
-            triggers.push({source: source, e: e});
+            triggers.push({source: source, e: valueEvent});
             if (needsBarrier || UpdateBarrier.hasWaiters()) { flushLater(); } else { flush(); }
           }
         }
         if (reply === noMore) { unsubAll(); }
         return reply || more;
       });
-    }
-    }
+    }}
 
-    return new CompositeUnsubscribe((() => {
-      var result = [];
-      for (var i = 0, s; i < sources.length; i++) {
-        s = sources[i];
-        result.push(part(s));
-      }
-      return result;
-    })()).unsubscribe;
+    return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
   });
   return resultStream;
 }
 
-function containsDuplicateDeps(observables, state = []) {
-  function checkObservable(obs) {
+function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservable[] = []) {
+  function checkObservable(obs: AnyObservable) {
     if (_.contains(state, obs)) {
       return true;
     } else {
@@ -206,15 +218,7 @@ function containsDuplicateDeps(observables, state = []) {
   return _.any(observables, checkObservable);
 }
 
-function constantToFunction(f) {
-  if (_.isFunction(f)) {
-    return f;
-  } else {
-    return _.always(f);
-  }
-}
-
-function cannotSync(source) {
+function cannotSync(source: AnySource) {
   return !source.sync || source.ended;
 }
 

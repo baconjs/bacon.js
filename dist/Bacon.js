@@ -241,6 +241,12 @@ var _ = {
         return function () { return fn.apply(me, arguments); };
     },
     isFunction: function (f) { return typeof f === "function"; },
+    toFunction: function (f) {
+        if (typeof f == "function") {
+            return f;
+        }
+        return function (x) { return f; };
+    },
     toString: function (obj) {
         var hasProp = {}.hasOwnProperty;
         try {
@@ -401,6 +407,11 @@ function toEvent(x) {
 
 var noMore = "<no-more>";
 var more = "<more>";
+var Reply;
+(function (Reply) {
+    Reply[Reply["more"] = 0] = "more";
+    Reply[Reply["noMore"] = 1] = "noMore";
+})(Reply || (Reply = {}));
 
 var spies = [];
 function registerObs(obs) {
@@ -1228,231 +1239,198 @@ function propertyFromStreamSubscribe(desc, subscribe) {
     return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
 }
 
-function newEventStream() {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  return new (Function.prototype.bind.apply(EventStream, [null].concat(args)))();
+function newEventStream(description, subscribe) {
+    return new EventStream(description, subscribe);
 }
-
 function when() {
-  return when_(newEventStream, arguments);
+    return when_(newEventStream, arguments);
 }
-
 function whenP() {
-  return when_(propertyFromStreamSubscribe, arguments);
+    return when_(propertyFromStreamSubscribe, arguments);
 }
-
 function extractPatternsAndSources(sourceArgs) {
-  var len = sourceArgs.length;
-  var sources = [];
-  var pats = [];
-  var i = 0;
-  var patterns = [];
-  while (i < len) {
-    patterns[i] = sourceArgs[i];
-    patterns[i + 1] = sourceArgs[i + 1];
-    var patSources = _.toArray(sourceArgs[i]);
-    var f = constantToFunction(sourceArgs[i + 1]);
-    var pat = { f: f, ixs: [] };
-    var triggerFound = false;
-    for (var j = 0, s; j < patSources.length; j++) {
-      s = patSources[j];
-      var index = _.indexOf(sources, s);
-      if (!triggerFound) {
-        triggerFound = isTrigger(s);
-      }
-      if (index < 0) {
-        sources.push(s);
-        index = sources.length - 1;
-      }
-      for (var k = 0, ix; k < pat.ixs.length; k++) {
-        ix = pat.ixs[k];
-        if (ix.index === index) {
-          ix.count++;
+    var len = sourceArgs.length;
+    var sources = [];
+    var pats = [];
+    var i = 0;
+    while (i < len) {
+        var patSources = _.toArray(sourceArgs[i]);
+        var f = _.toFunction(sourceArgs[i + 1]);
+        var pat = { f: f, ixs: [] };
+        var triggerFound = false;
+        for (var j = 0, s; j < patSources.length; j++) {
+            s = patSources[j];
+            var index = _.indexOf(sources, s);
+            if (!triggerFound) {
+                triggerFound = isTrigger(s);
+            }
+            if (index < 0) {
+                sources.push(s);
+                index = sources.length - 1;
+            }
+            for (var k = 0; k < pat.ixs.length; k++) {
+                var ix = pat.ixs[k];
+                if (ix.index === index) {
+                    ix.count++;
+                }
+            }
+            pat.ixs.push({ index: index, count: 1 });
         }
-      }
-      pat.ixs.push({ index: index, count: 1 });
+        assert("At least one EventStream required", (triggerFound || (!patSources.length)));
+        if (patSources.length > 0) {
+            pats.push(pat);
+        }
+        i = i + 2;
     }
-
-    assert("At least one EventStream required", triggerFound || !patSources.length);
-
-    if (patSources.length > 0) {
-      pats.push(pat);
-    }
-    i = i + 2;
-  }
-  var usage = "when: expecting arguments in the form (Observable+,function)+";
-  assert(usage, len % 2 === 0);
-  return [sources, pats, patterns];
+    var usage = "when: expecting arguments in the form (Observable+,function)+";
+    assert(usage, (len % 2 === 0));
+    return [_.map(fromObservable, sources), pats];
 }
-
 function when_(ctor, sourceArgs) {
-  if (sourceArgs.length === 0) {
-    return never();
-  }
-
-  var _extractPatternsAndSo = extractPatternsAndSources(sourceArgs),
-      sources = _extractPatternsAndSo[0],
-      pats = _extractPatternsAndSo[1],
-      patterns = _extractPatternsAndSo[2];
-
-  if (!sources.length) {
-    return never();
-  }
-
-  sources = _.map(fromObservable, sources);
-  var needsBarrier = _.any(sources, function (s) {
-    return s.flatten;
-  }) && containsDuplicateDeps(_.map(function (s) {
-    return s.obs;
-  }, sources));
-
-  var desc = new Desc(Bacon, "when", patterns);
-  var resultStream = ctor(desc, function (sink) {
-    var triggers = [];
-    var ends = false;
-    function match(p) {
-      for (var i = 0; i < p.ixs.length; i++) {
-        var ix = p.ixs[i];
-        if (!sources[ix.index].hasAtLeast(ix.count)) {
-          return false;
-        }
-      }
-      return true;
+    if (sourceArgs.length === 0) {
+        return never();
     }
-    function cannotMatch(p) {
-      for (var i = 0; i < p.ixs.length; i++) {
-        var ix = p.ixs[i];
-        if (!sources[ix.index].mayHave(ix.count)) {
-          return true;
-        }
-      }
+    var _a = extractPatternsAndSources(sourceArgs), sources = _a[0], pats = _a[1];
+    if (!sources.length) {
+        return never();
     }
-    function nonFlattened(trigger) {
-      return !trigger.source.flatten;
-    }
-    function part(source) {
-      return function (unsubAll) {
-        function flushLater() {
-          return UpdateBarrier.whenDoneWith(resultStream, flush);
-        }
-        function flushWhileTriggers() {
-          if (triggers.length > 0) {
-            var reply = more;
-            var trigger = triggers.pop();
-            for (var i = 0, p; i < pats.length; i++) {
-              p = pats[i];
-              if (match(p)) {
-                var values = [];
-                for (var j = 0; j < p.ixs.length; j++) {
-                  var event = sources[p.ixs[j].index].consume();
-                  values.push(event.value);
+    var needsBarrier = (_.any(sources, function (s) { return s.flatten; })) && containsDuplicateDeps(_.map((function (s) { return s.obs; }), sources));
+    var desc = new Desc(Bacon, "when", Array.prototype.slice.call(sourceArgs));
+    var resultStream = ctor(desc, function (sink) {
+        var triggers = [];
+        var ends = false;
+        function match(p) {
+            for (var i = 0; i < p.ixs.length; i++) {
+                var ix = p.ixs[i];
+                if (!sources[ix.index].hasAtLeast(ix.count)) {
+                    return false;
                 }
-
-                var applied = p.f.apply(null, values);
-
-                reply = sink(trigger.e.apply(applied));
-                if (triggers.length) {
-                  triggers = _.filter(nonFlattened, triggers);
-                }
-                if (reply === noMore) {
-                  return reply;
-                } else {
-                  return flushWhileTriggers();
-                }
-              }
             }
-          } else {
-            return more;
-          }
+            return true;
         }
-        function flush() {
-          var reply = flushWhileTriggers();
-          if (ends) {
-            if (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
-              reply = noMore;
-              sink(endEvent());
+        function cannotMatch(p) {
+            for (var i = 0; i < p.ixs.length; i++) {
+                var ix = p.ixs[i];
+                if (!sources[ix.index].mayHave(ix.count)) {
+                    return true;
+                }
             }
-          }
-          if (reply === noMore) {
-            unsubAll();
-          }
-
-          return reply;
+            return false;
         }
-        return source.subscribe(function (e) {
-          if (e.isEnd) {
-            ends = true;
-            source.markEnded();
-            flushLater();
-          } else if (e.isError) {
-            var reply = sink(e);
-          } else {
-            source.push(e);
-            if (source.sync) {
-              triggers.push({ source: source, e: e });
-              if (needsBarrier || UpdateBarrier.hasWaiters()) {
-                flushLater();
-              } else {
-                flush();
-              }
+        function nonFlattened(trigger) { return !trigger.source.flatten; }
+        function part(source) {
+            return function (unsubAll) {
+                function flushLater() {
+                    return UpdateBarrier.whenDoneWith(resultStream, flush);
+                }
+                function flushWhileTriggers() {
+                    var trigger;
+                    if ((trigger = triggers.pop()) !== undefined) {
+                        var reply = more;
+                        for (var i = 0, p; i < pats.length; i++) {
+                            p = pats[i];
+                            if (match(p)) {
+                                var values = [];
+                                for (var j = 0; j < p.ixs.length; j++) {
+                                    var event = sources[p.ixs[j].index].consume();
+                                    if (!event)
+                                        throw new Error("Event was undefined");
+                                    values.push(event.value);
+                                }
+                                //console.log("flushing values", values)
+                                var applied = p.f.apply(null, values);
+                                //console.log('sinking', applied)
+                                reply = sink((trigger).e.apply(applied));
+                                if (triggers.length) {
+                                    triggers = _.filter(nonFlattened, triggers);
+                                }
+                                if (reply === noMore) {
+                                    return reply;
+                                }
+                                else {
+                                    return flushWhileTriggers();
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        return more;
+                    }
+                }
+                function flush() {
+                    //console.log "flushing", _.toString(resultStream)
+                    var reply = flushWhileTriggers();
+                    if (ends) {
+                        //console.log "ends detected"
+                        if (_.all(sources, cannotSync) || _.all(pats, cannotMatch)) {
+                            //console.log "actually ending"
+                            reply = noMore;
+                            sink(endEvent());
+                        }
+                    }
+                    if (reply === noMore) {
+                        unsubAll();
+                    }
+                }
+                return source.subscribe(function (e) {
+                    if (e.isEnd) {
+                        //console.log "got end"
+                        ends = true;
+                        source.markEnded();
+                        flushLater();
+                    }
+                    else if (e.isError) {
+                        var reply = sink(e);
+                    }
+                    else {
+                        var valueEvent = e;
+                        //console.log "got value", e.value
+                        source.push(valueEvent);
+                        if (source.sync) {
+                            //console.log "queuing", e.toString(), _.toString(resultStream)
+                            triggers.push({ source: source, e: valueEvent });
+                            if (needsBarrier || UpdateBarrier.hasWaiters()) {
+                                flushLater();
+                            }
+                            else {
+                                flush();
+                            }
+                        }
+                    }
+                    if (reply === noMore) {
+                        unsubAll();
+                    }
+                    return reply || more;
+                });
+            };
+        }
+        return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
+    });
+    return resultStream;
+}
+function containsDuplicateDeps(observables, state) {
+    if (state === void 0) { state = []; }
+    function checkObservable(obs) {
+        if (_.contains(state, obs)) {
+            return true;
+        }
+        else {
+            var deps = obs.internalDeps();
+            if (deps.length) {
+                state.push(obs);
+                return _.any(deps, checkObservable);
             }
-          }
-          if (reply === noMore) {
-            unsubAll();
-          }
-          return reply || more;
-        });
-      };
+            else {
+                state.push(obs);
+                return false;
+            }
+        }
     }
-
-    return new CompositeUnsubscribe(function () {
-      var result = [];
-      for (var i = 0, s; i < sources.length; i++) {
-        s = sources[i];
-        result.push(part(s));
-      }
-      return result;
-    }()).unsubscribe;
-  });
-  return resultStream;
+    return _.any(observables, checkObservable);
 }
-
-function containsDuplicateDeps(observables) {
-  var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-
-  function checkObservable(obs) {
-    if (_.contains(state, obs)) {
-      return true;
-    } else {
-      var deps = obs.internalDeps();
-      if (deps.length) {
-        state.push(obs);
-        return _.any(deps, checkObservable);
-      } else {
-        state.push(obs);
-        return false;
-      }
-    }
-  }
-
-  return _.any(observables, checkObservable);
-}
-
-function constantToFunction(f) {
-  if (_.isFunction(f)) {
-    return f;
-  } else {
-    return _.always(f);
-  }
-}
-
 function cannotSync(source) {
-  return !source.sync || source.ended;
+    return !source.sync || source.ended;
 }
-
 Bacon.when = when;
 
 function withLatestFromE(sampler, samplee, f) {
@@ -1701,13 +1679,7 @@ function map(f, src) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (a, b) { return b; });
     }
-    return src.transform(mapT(toFunc(f)), new Desc(src, "map", [f]));
-}
-function toFunc(f) {
-    if (typeof f == "function") {
-        return f;
-    }
-    return function (x) { return f; };
+    return src.transform(mapT(_.toFunction(f)), new Desc(src, "map", [f]));
 }
 function mapT(f) {
     return function (e, sink) {

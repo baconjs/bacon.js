@@ -1,10 +1,11 @@
 import Observable from "./observable";
-import { EventSink } from "./types";
+import { EventSink, Unsub } from "./types";
+
 interface Event<V> {
   value: V
 }
 
-abstract class Source<In, Out> {
+export abstract class Source<In, Out> {
   _isSource = true
   obs: Observable<In>
   sync: boolean
@@ -16,7 +17,7 @@ abstract class Source<In, Out> {
     this.sync = sync;
   }
 
-  subscribe(sink: EventSink<In>) {
+  subscribe(sink: EventSink<In>): Unsub {
     return this.obs.subscribeInternal(sink);
   }
   toString(): string {

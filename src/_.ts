@@ -56,9 +56,9 @@ var _ = {
   },
   toArray(xs) { return isArray(xs) ? xs : [xs]; },
   contains(xs, x) { return _.indexOf(xs, x) !== -1; },
-  id(x) { return x; },
+  id<A>(x): A { return x; },
   last(xs) { return xs[xs.length - 1]; },
-  all(xs, f = _.id) {
+  all<A>(xs: A[], f: (A) => boolean = _.id): boolean {
     for (var i = 0, x; i < xs.length; i++) {
       x = xs[i];
       if (!f(x)) { return false; }
@@ -107,6 +107,14 @@ var _ = {
     return function() { return fn.apply(me, arguments); };
   },
   isFunction(f) { return typeof f === "function"; },
+
+  toFunction<V, V2>(f: ((V) => V2) | V2): ((V) => V2) {
+    if (typeof f == "function") {
+      return f
+    }
+    return x => f
+  },
+
   toString(obj) {
     var hasProp = {}.hasOwnProperty;
     try {

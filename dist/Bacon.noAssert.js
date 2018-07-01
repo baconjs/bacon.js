@@ -258,6 +258,14 @@
         isFunction: function (f) {
             return typeof f === 'function';
         },
+        toFunction: function (f) {
+            if (typeof f == 'function') {
+                return f;
+            }
+            return function (x) {
+                return f;
+            };
+        },
         toString: function (obj) {
             var hasProp = {}.hasOwnProperty;
             try {
@@ -435,6 +443,11 @@
     }
     var noMore = '<no-more>';
     var more = '<more>';
+    var Reply;
+    (function (Reply) {
+        Reply[Reply['more'] = 0] = 'more';
+        Reply[Reply['noMore'] = 1] = 'noMore';
+    }(Reply || (Reply = {})));
     var spies = [];
     function registerObs(obs) {
         if (spies.length) {
@@ -1239,11 +1252,8 @@
     function propertyFromStreamSubscribe(desc, subscribe) {
         return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
     }
-    function newEventStream() {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-        }
-        return new (Function.prototype.bind.apply(EventStream, [null].concat(args)))();
+    function newEventStream(description, subscribe) {
+        return new EventStream(description, subscribe);
     }
     function when() {
         return when_(newEventStream, arguments);
@@ -1256,12 +1266,9 @@
         var sources = [];
         var pats = [];
         var i = 0;
-        var patterns = [];
         while (i < len) {
-            patterns[i] = sourceArgs[i];
-            patterns[i + 1] = sourceArgs[i + 1];
             var patSources = _.toArray(sourceArgs[i]);
-            var f = constantToFunction(sourceArgs[i + 1]);
+            var f = _.toFunction(sourceArgs[i + 1]);
             var pat = {
                 f: f,
                 ixs: []
@@ -1277,8 +1284,8 @@
                     sources.push(s);
                     index = sources.length - 1;
                 }
-                for (var k = 0, ix; k < pat.ixs.length; k++) {
-                    ix = pat.ixs[k];
+                for (var k = 0; k < pat.ixs.length; k++) {
+                    var ix = pat.ixs[k];
                     if (ix.index === index) {
                         ix.count++;
                     }
@@ -1295,26 +1302,24 @@
         }
         var usage = 'when: expecting arguments in the form (Observable+,function)+';
         return [
-            sources,
-            pats,
-            patterns
+            _.map(fromObservable, sources),
+            pats
         ];
     }
     function when_(ctor, sourceArgs) {
         if (sourceArgs.length === 0) {
             return never();
         }
-        var _extractPatternsAndSo = extractPatternsAndSources(sourceArgs), sources = _extractPatternsAndSo[0], pats = _extractPatternsAndSo[1], patterns = _extractPatternsAndSo[2];
+        var _a = extractPatternsAndSources(sourceArgs), sources = _a[0], pats = _a[1];
         if (!sources.length) {
             return never();
         }
-        sources = _.map(fromObservable, sources);
         var needsBarrier = _.any(sources, function (s) {
             return s.flatten;
         }) && containsDuplicateDeps(_.map(function (s) {
             return s.obs;
         }, sources));
-        var desc = new Desc(Bacon, 'when', patterns);
+        var desc = new Desc(Bacon, 'when', Array.prototype.slice.call(sourceArgs));
         var resultStream = ctor(desc, function (sink) {
             var triggers = [];
             var ends = false;
@@ -1334,6 +1339,7 @@
                         return true;
                     }
                 }
+                return false;
             }
             function nonFlattened(trigger) {
                 return !trigger.source.flatten;
@@ -1344,15 +1350,17 @@
                         return UpdateBarrier.whenDoneWith(resultStream, flush);
                     }
                     function flushWhileTriggers() {
-                        if (triggers.length > 0) {
+                        var trigger;
+                        if ((trigger = triggers.pop()) !== undefined) {
                             var reply = more;
-                            var trigger = triggers.pop();
                             for (var i = 0, p; i < pats.length; i++) {
                                 p = pats[i];
                                 if (match(p)) {
                                     var values = [];
                                     for (var j = 0; j < p.ixs.length; j++) {
                                         var event = sources[p.ixs[j].index].consume();
+                                        if (!event)
+                                            throw new Error('Event was undefined');
                                         values.push(event.value);
                                     }
                                     var applied = p.f.apply(null, values);
@@ -1382,7 +1390,6 @@
                         if (reply === noMore) {
                             unsubAll();
                         }
-                        return reply;
                     }
                     return source.subscribe(function (e) {
                         if (e.isEnd) {
@@ -1392,11 +1399,12 @@
                         } else if (e.isError) {
                             var reply = sink(e);
                         } else {
-                            source.push(e);
+                            var valueEvent = e;
+                            source.push(valueEvent);
                             if (source.sync) {
                                 triggers.push({
                                     source: source,
-                                    e: e
+                                    e: valueEvent
                                 });
                                 if (needsBarrier || UpdateBarrier.hasWaiters()) {
                                     flushLater();
@@ -1412,19 +1420,14 @@
                     });
                 };
             }
-            return new CompositeUnsubscribe(function () {
-                var result = [];
-                for (var i = 0, s; i < sources.length; i++) {
-                    s = sources[i];
-                    result.push(part(s));
-                }
-                return result;
-            }()).unsubscribe;
+            return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
         });
         return resultStream;
     }
-    function containsDuplicateDeps(observables) {
-        var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    function containsDuplicateDeps(observables, state) {
+        if (state === void 0) {
+            state = [];
+        }
         function checkObservable(obs) {
             if (_.contains(state, obs)) {
                 return true;
@@ -1440,13 +1443,6 @@
             }
         }
         return _.any(observables, checkObservable);
-    }
-    function constantToFunction(f) {
-        if (_.isFunction(f)) {
-            return f;
-        } else {
-            return _.always(f);
-        }
     }
     function cannotSync(source) {
         return !source.sync || source.ended;
@@ -1686,15 +1682,7 @@
                 return b;
             });
         }
-        return src.transform(mapT(toFunc(f)), new Desc(src, 'map', [f]));
-    }
-    function toFunc(f) {
-        if (typeof f == 'function') {
-            return f;
-        }
-        return function (x) {
-            return f;
-        };
+        return src.transform(mapT(_.toFunction(f)), new Desc(src, 'map', [f]));
     }
     function mapT(f) {
         return function (e, sink) {
