@@ -539,52 +539,53 @@
         }
     };
     var Scheduler = { scheduler: defaultScheduler };
-    function CompositeUnsubscribe() {
-        var ss = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-        this.unsubscribe = _.bind(this.unsubscribe, this);
-        this.unsubscribed = false;
-        this.subscriptions = [];
-        this.starting = [];
-        for (var i = 0, s; i < ss.length; i++) {
-            s = ss[i];
-            this.add(s);
+    var CompositeUnsubscribe = function () {
+        function CompositeUnsubscribe(ss) {
+            if (ss === void 0) {
+                ss = [];
+            }
+            this.unsubscribed = false;
+            this.unsubscribe = _.bind(this.unsubscribe, this);
+            this.unsubscribed = false;
+            this.subscriptions = [];
+            this.starting = [];
+            for (var i = 0, s; i < ss.length; i++) {
+                s = ss[i];
+                this.add(s);
+            }
         }
-    }
-    extend(CompositeUnsubscribe.prototype, {
-        add: function (subscription) {
+        CompositeUnsubscribe.prototype.add = function (subscription) {
             var _this = this;
-            if (this.unsubscribed) {
-                return;
-            }
-            var ended = false;
-            var unsub = nop;
-            this.starting.push(subscription);
-            var unsubMe = function () {
-                if (_this.unsubscribed) {
-                    return;
+            if (!this.unsubscribed) {
+                var ended = false;
+                var unsub = nop;
+                this.starting.push(subscription);
+                var unsubMe = function () {
+                    if (_this.unsubscribed) {
+                        return;
+                    }
+                    ended = true;
+                    _this.remove(unsub);
+                    _.remove(subscription, _this.starting);
+                };
+                unsub = subscription(this.unsubscribe, unsubMe);
+                if (!(this.unsubscribed || ended)) {
+                    this.subscriptions.push(unsub);
+                } else {
+                    unsub();
                 }
-                ended = true;
-                _this.remove(unsub);
-                return _.remove(subscription, _this.starting);
-            };
-            unsub = subscription(this.unsubscribe, unsubMe);
-            if (!(this.unsubscribed || ended)) {
-                this.subscriptions.push(unsub);
-            } else {
-                unsub();
+                _.remove(subscription, this.starting);
             }
-            _.remove(subscription, this.starting);
-            return unsub;
-        },
-        remove: function (unsub) {
+        };
+        CompositeUnsubscribe.prototype.remove = function (unsub) {
             if (this.unsubscribed) {
                 return;
             }
             if (_.remove(unsub, this.subscriptions) !== undefined) {
                 return unsub();
             }
-        },
-        unsubscribe: function () {
+        };
+        CompositeUnsubscribe.prototype.unsubscribe = function () {
             if (this.unsubscribed) {
                 return;
             }
@@ -595,18 +596,18 @@
             }
             this.subscriptions = [];
             this.starting = [];
-            return [];
-        },
-        count: function () {
+        };
+        CompositeUnsubscribe.prototype.count = function () {
             if (this.unsubscribed) {
                 return 0;
             }
             return this.subscriptions.length + this.starting.length;
-        },
-        empty: function () {
+        };
+        CompositeUnsubscribe.prototype.empty = function () {
             return this.count() === 0;
-        }
-    });
+        };
+        return CompositeUnsubscribe;
+    }();
     var Bacon = {
         toString: function () {
             return 'Bacon';
