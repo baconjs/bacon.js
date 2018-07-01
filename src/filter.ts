@@ -16,7 +16,7 @@ export function filter<V>(f: ((V) => boolean) | boolean | Property<boolean>, src
   return src.transform(filterT(f), new Desc(src, "filter", [f]))
 }
 
-export function filterT<V>(f_: ((V) => boolean) | boolean) { 
+function filterT<V>(f_: ((V) => boolean) | boolean) {
   let f: (V) => boolean 
   if (typeof f_ == "boolean") {
     f = _.always(f_)

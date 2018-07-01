@@ -3,7 +3,7 @@ import Property from "./property";
 import { toCombinator } from "./functionconstruction";
 import { Desc, withDesc } from "./describe";
 import Bacon from "./core";
-import { withLatestFromE, withLatestFromP } from "./withlatestfrom"
+import { withLatestFrom } from "./withlatestfrom"
 import _ from "./_"
 
 const makeCombinator = (combinator) => {
@@ -22,9 +22,7 @@ EventStream.prototype.sampledBy = function(sampler, combinator) {
 
 Property.prototype.sampledBy = function(sampler, combinator) {
   combinator = makeCombinator(combinator)
-  var result = sampler._isProperty
-    ? withLatestFromP(sampler, this, _.flip(combinator))
-    : withLatestFromE(sampler, this, _.flip(combinator))
+  var result = withLatestFrom(sampler, this, _.flip(combinator))
   return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 

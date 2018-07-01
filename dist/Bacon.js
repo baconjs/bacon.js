@@ -2987,7 +2987,7 @@ EventStream.prototype.sampledBy = function (sampler, combinator) {
 
 Property.prototype.sampledBy = function (sampler, combinator) {
   combinator = makeCombinator(combinator);
-  var result = sampler._isProperty ? withLatestFromP(sampler, this, _.flip(combinator)) : withLatestFromE(sampler, this, _.flip(combinator));
+  var result = withLatestFrom(sampler, this, _.flip(combinator));
   return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
 };
 

@@ -19,7 +19,7 @@ function toFunc<V, V2>(f: ((V) => V2) | V2): ((V) => V2) {
   return x => f
 }
 
-export function mapT<V, V2>(f: ((V) => V2)) {
+function mapT<V, V2>(f: ((V) => V2)) {
   return (e: Event<V>, sink: EventSink<V2>) => {
     return sink(e.fmap(f))
   }
