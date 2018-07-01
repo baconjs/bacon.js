@@ -2118,16 +2118,15 @@ EventStream.prototype.buffer = function (delay) {
 };
 
 function once(value) {
-  var s = new EventStream(new Desc(Bacon, "once", [value]), function (sink) {
-    UpdateBarrier.soonButNotYet(s, function () {
-      sink(toEvent(value));
-      sink(endEvent());
+    var s = new EventStream(new Desc(Bacon, "once", [value]), function (sink) {
+        UpdateBarrier.soonButNotYet(s, function () {
+            sink(toEvent(value));
+            sink(endEvent());
+        });
+        return nop;
     });
-    return nop;
-  });
-  return s;
+    return s;
 }
-
 Bacon.once = once;
 
 function newEventStream$1() {

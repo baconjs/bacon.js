@@ -82,13 +82,13 @@ export class Error<V> extends NoValue<V> {
   }
 }
 
-export function initialEvent(value) { return new Initial(value); }
-export function nextEvent(value) { return new Next(value); }
-export function endEvent() { return new End(); }
-export function toEvent(x: any) {
-  if (x && x._isEvent) {
-    return x;
+export function initialEvent<V>(value: V): Initial<V> { return new Initial(value); }
+export function nextEvent<V>(value: V): Next<V> { return new Next(value); }
+export function endEvent<V>(): End<V> { return new End(); }
+export function toEvent<V>(x: V | Event<V>): Event<V> {
+  if (x && (<any>x)._isEvent) {
+    return <Event<V>>x;
   } else {
-    return nextEvent(x);
+    return nextEvent(<V>x);
   }
 }

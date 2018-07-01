@@ -4,9 +4,10 @@ import { Desc } from "./describe";
 import { toEvent, endEvent } from "./event";
 import Bacon from "./core";
 import { nop } from "./helpers";
+import { EventSink } from "./types";
 
-export default function once(value) {
-  const s = new EventStream(new Desc(Bacon, "once", [value]), function(sink) {
+export default function once<V>(value: V): EventStream<V> {
+  const s = new EventStream<V>(new Desc(Bacon, "once", [value]), function(sink: EventSink<V>) {
     UpdateBarrier.soonButNotYet(s, function() {
       sink(toEvent(value));
       sink(endEvent());  
