@@ -6,6 +6,7 @@ import Property from "./property"
 import { StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
+import log from "./log";
 
 var idCounter = 0;
 
@@ -67,6 +68,11 @@ export default abstract class Observable<V> {
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): Observable<V>
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
+
+  log(...args: any[]): this {
+    log(args, this)
+    return this
+  }
 
   skipDuplicates(isEqual?: Equals<V>): this {
     return <any>skipDuplicates(this, isEqual)

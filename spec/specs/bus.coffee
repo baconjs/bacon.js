@@ -43,7 +43,6 @@ describe "Bacon.Bus", ->
       bus = new Bacon.Bus()
       bus.plug(later(t(2), "lol"))
       filter = (value) =>
-        console.log("filtering", value)
         "lol" == value
       bus.plug(bus.filter(filter).map(=> "wut"))
       dispose = bus.onValue(=>)

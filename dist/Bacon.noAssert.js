@@ -897,6 +897,13 @@
             }
         };
     }
+    function log(args, src) {
+        src.subscribe(function (event) {
+            if (typeof console !== 'undefined' && typeof console.log === 'function') {
+                console.log.apply(console, args.concat([event.log()]));
+            }
+        });
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -957,6 +964,14 @@
         };
         Observable.prototype.take = function (count) {
             return take(count, this);
+        };
+        Observable.prototype.log = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            log(args, this);
+            return this;
         };
         Observable.prototype.skipDuplicates = function (isEqual) {
             return skipDuplicates(this, isEqual);
@@ -3237,18 +3252,6 @@
                 lastEvent = event;
             }
         }));
-    };
-    Observable.prototype.log = function () {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-        }
-        this.subscribe(function (event) {
-            if (typeof console !== 'undefined' && typeof console.log === 'function') {
-                var _console;
-                (_console = console).log.apply(_console, args.concat([event.log()]));
-            }
-        });
-        return this;
     };
     EventStream.prototype.merge = function (right) {
         var left = this;
