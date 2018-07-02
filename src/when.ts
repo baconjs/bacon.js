@@ -6,7 +6,7 @@ import { fromObservable, isTrigger, Source } from "./source";
 import { endEvent, Event, Value } from "./event";
 import { more, noMore, Reply } from "./reply";
 import _ from "./_";
-import { assert } from "./helpers";
+import { assert } from "./assert";
 import never from "./never";
 import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
@@ -110,7 +110,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
               if (triggers.length) {
                 triggers = _.filter(nonFlattened, triggers);
               }
-              if (reply === noMore) {
+              if (reply === Reply.noMore) {
                 return reply;
               } else {
                 return flushWhileTriggers();
@@ -128,11 +128,11 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
           //console.log "ends detected"
           if  (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
             //console.log "actually ending"
-            reply = noMore;
+            reply = Reply.noMore;
             sink(endEvent());
           }
         }
-        if (reply === noMore) { unsubAll(); }
+        if (reply === Reply.noMore) { unsubAll(); }
       }
 
       return source.subscribe(function(e: Event<any>) {

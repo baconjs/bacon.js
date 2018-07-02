@@ -1,9 +1,10 @@
 import _ from "./_";
 import { more, noMore } from "./reply";
-import { assertFunction, nop } from "./helpers";
-import { Event, endEvent } from "./event";
+import { nop } from "./helpers";
+import { endEvent, Event } from "./event";
 import UpdateBarrier from "./updatebarrier";
 import { EventSink, Subscribe, Unsub } from "./types"
+import { assertFunction } from "./assert";
 
 interface Subscription<V> {
   sink: EventSink<V>

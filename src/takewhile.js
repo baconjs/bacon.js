@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import { assertObservableIsProperty } from "./helpers";
+import { assertObservableIsProperty } from "./assert";
 import { convertArgsToFunction } from "./functionconstruction";
 import "./sample";
 import "./filter";

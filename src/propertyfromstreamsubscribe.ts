@@ -1,5 +1,5 @@
 import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe"
-import { assertFunction } from "./helpers"
+import { assertFunction } from "./assert"
 import { none } from "./optional"
 import Property from "./property"
 

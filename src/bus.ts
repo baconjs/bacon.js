@@ -2,10 +2,10 @@ import _ from "./_";
 import EventStream from "./eventstream";
 import Observable from "./observable"
 import Bacon from "./core";
-import { assertObservable, cloneArray } from "./helpers";
 import { nextEvent, endEvent, Error } from "./event";
 import { Desc } from "./describe";
 import { EventSink } from "./types"
+import { assertObservable } from "./assert";
 
 interface Subscription<V> {
   input: Observable<V>
@@ -41,7 +41,7 @@ export default class Bus<V> extends EventStream<V> {
       newSink(endEvent());
     } else {
       this.sink = newSink;
-      var iterable = cloneArray(this.subscriptions);
+      var iterable = this.subscriptions.slice();
       for (var i = 0, subscription; i < iterable.length; i++) {
         subscription = iterable[i];
         this.subscribeInput(subscription);

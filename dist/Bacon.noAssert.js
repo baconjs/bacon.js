@@ -2,26 +2,6 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.Bacon = factory();
 }(this, function () {
     'use strict';
-    function nop() {
-    }
-    function cloneArray(xs) {
-        return xs.slice(0);
-    }
-    var isArray = Array.isArray || function (xs) {
-        return xs instanceof Array;
-    };
-    var isObservable = function (x) {
-        return x && x._isObservable;
-    };
-    function symbol(key) {
-        if (typeof Symbol !== 'undefined' && Symbol[key]) {
-            return Symbol[key];
-        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
-            return Symbol[key] = Symbol['for'](key);
-        } else {
-            return '@@' + key;
-        }
-    }
     function __extends(d, b) {
         for (var p in b)
             if (b.hasOwnProperty(p))
@@ -31,6 +11,14 @@
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
+    function nop() {
+    }
+    var isArray = Array.isArray || function (xs) {
+        return xs instanceof Array;
+    };
+    var isObservable = function (x) {
+        return x && x._isObservable;
+    };
     var Some = function () {
         function Some(value) {
             this._isSome = true;
@@ -1331,7 +1319,7 @@
                                     if (triggers.length) {
                                         triggers = _.filter(nonFlattened, triggers);
                                     }
-                                    if (reply === noMore) {
+                                    if (reply === Reply.noMore) {
                                         return reply;
                                     } else {
                                         return flushWhileTriggers();
@@ -1346,11 +1334,11 @@
                         var reply = flushWhileTriggers();
                         if (ends) {
                             if (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
-                                reply = noMore;
+                                reply = Reply.noMore;
                                 sink(endEvent());
                             }
                         }
-                        if (reply === noMore) {
+                        if (reply === Reply.noMore) {
                             unsubAll();
                         }
                     }
@@ -2381,7 +2369,7 @@
                 newSink(endEvent());
             } else {
                 this.sink = newSink;
-                var iterable = cloneArray(this.subscriptions);
+                var iterable = this.subscriptions.slice();
                 for (var i = 0, subscription; i < iterable.length; i++) {
                     subscription = iterable[i];
                     this.subscribeInput(subscription);
@@ -2819,6 +2807,15 @@
     Observable.prototype.errors = function () {
         return withDesc(new Desc(this, 'errors', []), this.filter(alwaysFalse));
     };
+    function symbol(key) {
+        if (typeof Symbol !== 'undefined' && Symbol[key]) {
+            return Symbol[key];
+        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
+            return Symbol[key] = Symbol['for'](key);
+        } else {
+            return '@@' + key;
+        }
+    }
     function ESObservable(observable) {
         this.observable = observable;
     }

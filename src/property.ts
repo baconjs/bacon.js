@@ -1,6 +1,7 @@
 import Observable from "./observable";
 import EventStream from "./eventstream";
-import { nop, assertFunction, assertNoArguments } from "./helpers";
+import { nop } from "./helpers";
+import { assertFunction, assertNoArguments } from "./assert";
 import { Event } from "./event";
 import { Desc } from "./describe";
 import { registerObs } from "./spy";

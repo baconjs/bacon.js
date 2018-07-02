@@ -4,74 +4,17 @@
 	(global.Bacon = factory());
 }(this, (function () { 'use strict';
 
-function nop() {}
-
-
-function cloneArray(xs) {
-  return xs.slice(0);
-}
-function assert(message, condition) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-function assertObservableIsProperty(x) {
-  if ((x != null ? x._isObservable : void 0) && !(x != null ? x._isProperty : void 0)) {
-    throw new Error("Observable is not a Property : " + x);
-  }
-}
-function assertEventStream(event) {
-  if (!(event != null ? event._isEventStream : void 0)) {
-    throw new Error("not an EventStream : " + event);
-  }
-}
-
-function assertObservable(event) {
-  if (!(event != null ? event._isObservable : void 0)) {
-    throw new Error("not an Observable : " + event);
-  }
-}
-
-function assertFunction(f) {
-  return assert("not a function : " + f, _.isFunction(f));
-}
-var isArray = Array.isArray || function (xs) {
-  return xs instanceof Array;
-};
-var isObservable = function (x) {
-  return x && x._isObservable;
-};
-function assertArray(xs) {
-  if (!isArray(xs)) {
-    throw new Error("not an array : " + xs);
-  }
-}
-function assertNoArguments(args) {
-  return assert("no arguments supported", args.length === 0);
-}
-
-
-
-
-
-
-
-function symbol(key) {
-  if (typeof Symbol !== "undefined" && Symbol[key]) {
-    return Symbol[key];
-  } else if (typeof Symbol !== "undefined" && typeof Symbol['for'] === "function") {
-    return Symbol[key] = Symbol['for'](key);
-  } else {
-    return "@@" + key;
-  }
-}
-
 function __extends(d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
+
+function nop() { }
+var isArray = Array.isArray || function (xs) { return xs instanceof Array; };
+var isObservable = function (x) {
+    return x && x._isObservable;
+};
 
 var Some = /** @class */ (function () {
     function Some(value) {
@@ -594,6 +537,38 @@ var Bacon = {
 };
 
 Bacon.Bacon = Bacon;
+
+function assert(message, condition) {
+    if (!condition) {
+        throw new Error(message);
+    }
+}
+function assertObservableIsProperty(x) {
+    if ((x != null ? x._isObservable : void 0) && !(x != null ? x._isProperty : void 0)) {
+        throw new Error("Observable is not a Property : " + x);
+    }
+}
+function assertEventStream(event) {
+    if (!(event != null ? event._isEventStream : void 0)) {
+        throw new Error("not an EventStream : " + event);
+    }
+}
+function assertObservable(observable) {
+    if (!(observable != null ? observable._isObservable : void 0)) {
+        throw new Error("not an Observable : " + observable);
+    }
+}
+function assertFunction(f) {
+    return assert("not a function : " + f, _.isFunction(f));
+}
+function assertArray(xs) {
+    if (!isArray(xs)) {
+        throw new Error("not an array : " + xs);
+    }
+}
+function assertNoArguments(args) {
+    return assert("no arguments supported", args.length === 0);
+}
 
 var rootEvent = undefined;
 var waiterObs = [];
@@ -1313,7 +1288,7 @@ function when_(ctor, patterns) {
                                 if (triggers.length) {
                                     triggers = _.filter(nonFlattened, triggers);
                                 }
-                                if (reply === noMore) {
+                                if (reply === Reply.noMore) {
                                     return reply;
                                 }
                                 else {
@@ -1333,11 +1308,11 @@ function when_(ctor, patterns) {
                         //console.log "ends detected"
                         if (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
                             //console.log "actually ending"
-                            reply = noMore;
+                            reply = Reply.noMore;
                             sink(endEvent());
                         }
                     }
-                    if (reply === noMore) {
+                    if (reply === Reply.noMore) {
                         unsubAll();
                     }
                 }
@@ -2407,7 +2382,7 @@ var Bus = /** @class */ (function (_super) {
         }
         else {
             this.sink = newSink;
-            var iterable = cloneArray(this.subscriptions);
+            var iterable = this.subscriptions.slice();
             for (var i = 0, subscription; i < iterable.length; i++) {
                 subscription = iterable[i];
                 this.subscribeInput(subscription);
@@ -2873,6 +2848,16 @@ var alwaysFalse = function () {
 Observable.prototype.errors = function () {
   return withDesc(new Desc(this, "errors", []), this.filter(alwaysFalse));
 };
+
+function symbol(key) {
+  if (typeof Symbol !== "undefined" && Symbol[key]) {
+    return Symbol[key];
+  } else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
+    return Symbol[key] = Symbol["for"](key);
+  } else {
+    return "@@" + key;
+  }
+}
 
 function ESObservable(observable) {
   this.observable = observable;

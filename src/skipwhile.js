@@ -1,4 +1,4 @@
-import { assertObservableIsProperty } from "./helpers";
+import { assertObservableIsProperty } from "./assert";
 import { withDesc, Desc } from "./describe";
 import EventStream from "./eventstream";
 import { convertArgsToFunction } from "./functionconstruction";

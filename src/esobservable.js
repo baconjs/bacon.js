@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import { symbol } from "./helpers";
+import { symbol } from "./symbol";
 
 function ESObservable(observable) {
   this.observable = observable;

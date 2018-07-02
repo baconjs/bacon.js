@@ -1,6 +1,6 @@
 import _ from './_';
 import { noMore } from './reply';
-import { assertFunction } from "./helpers";
+import { assertFunction } from "./assert";
 import { Event } from "./event"
 import { Subscribe } from "./types"
 import Scheduler from "./scheduler";

@@ -1,7 +1,7 @@
 import EventStream from "./eventstream";
 import { Desc } from "./describe";
 import Bacon from "./core";
-import { symbol } from "./helpers";
+import { symbol } from "./symbol";
 
 Bacon.fromESObservable = function(_observable) {
   var observable;

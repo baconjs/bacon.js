@@ -1,5 +1,5 @@
 import EventStream from "./eventstream";
-import { assertArray } from "./helpers";
+import { assertArray } from "./assert";
 import { withDesc, Desc } from "./describe";
 import never from "./never";
 import { toEvent, endEvent } from "./event";

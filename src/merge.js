@@ -1,7 +1,7 @@
 import EventStream from "./eventstream";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { argumentsToObservables } from "./argumentstoobservables";
-import { assertEventStream } from "./helpers";
+import { assertEventStream } from "./assert";
 import never from "./never";
 import _ from "./_";
 import { noMore, more } from "./reply";
