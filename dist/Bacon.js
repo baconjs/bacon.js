@@ -1504,6 +1504,26 @@ function filterT(f_) {
     };
 }
 
+function withStateMachine(initState, f, src) {
+    var state = initState;
+    var desc = new Desc(src, "withStateMachine", [initState, f]);
+    var transformer = function (event, sink) {
+        var fromF = f(state, event);
+        var newState = fromF[0], outputs = fromF[1];
+        state = newState;
+        var reply = Reply.more;
+        for (var i = 0; i < outputs.length; i++) {
+            var output = outputs[i];
+            reply = sink(output);
+            if (reply === Reply.noMore) {
+                return reply;
+            }
+        }
+        return reply;
+    };
+    return src.transform(transformer, desc);
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -1533,6 +1553,9 @@ var EventStream = /** @class */ (function (_super) {
                 return transformer(e, sink);
             });
         }, undefined, allowSync);
+    };
+    EventStream.prototype.withStateMachine = function (initState, f) {
+        return withStateMachine(initState, f, this);
     };
     EventStream.prototype.withHandler = function (handler) {
         return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
@@ -1672,6 +1695,9 @@ var Property = /** @class */ (function (_super) {
             });
         });
     };
+    Property.prototype.withStateMachine = function (initState, f) {
+        return withStateMachine(initState, f, this);
+    };
     Property.prototype.take = function (count) {
         return takeP(count, this);
     };
@@ -1702,27 +1728,6 @@ function mapT(f) {
         return sink(e.fmap(f));
     };
 }
-
-Observable.prototype.withStateMachine = function (initState, f) {
-  var state = initState;
-  var desc = new Desc(this, "withStateMachine", [initState, f]);
-  return withDesc(desc, this.withHandler(function (event) {
-    var fromF = f(state, event);
-    var newState = fromF[0],
-        outputs = fromF[1];
-
-    state = newState;
-    var reply = more;
-    for (var i = 0, output; i < outputs.length; i++) {
-      output = outputs[i];
-      reply = this.push(output);
-      if (reply === noMore) {
-        return reply;
-      }
-    }
-    return reply;
-  }));
-};
 
 var equals = function (a, b) {
   return a === b;

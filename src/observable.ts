@@ -3,6 +3,7 @@ import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
 import { EventSink, Sink, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
+import { StateF } from "./withstatemachine";
 
 var idCounter = 0;
 
@@ -54,6 +55,8 @@ export default abstract class Observable<V> {
   abstract toProperty(): Property<V> 
 
   abstract transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Observable<V2>
+
+  abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
 
   abstract take(count: number): Observable<V>
 

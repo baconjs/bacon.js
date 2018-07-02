@@ -10,6 +10,7 @@ import PropertyDispatcher from "./propertydispatcher"
 import { takeP } from "./take"
 import { filter } from "./filter"
 import map from "./map"
+import { default as withStateMachine, StateF } from "./withstatemachine";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -43,6 +44,10 @@ export default class Property<V> extends Observable<V> {
             transformer(e, sink)
         )
       );
+  }
+
+  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
+    return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
   take(count: number): Property<V> {

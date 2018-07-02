@@ -11,6 +11,7 @@ import Property from "./property"
 import { none, Option, toOption } from "./optional"
 import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe"
 import map from "./map"
+import { StateF, default as withStateMachine } from "./withstatemachine";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -47,6 +48,10 @@ export default class EventStream<V> extends Observable<V> {
       undefined,
         allowSync
       )
+  }
+
+  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
+    return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
   withHandler(handler: EventSink<V>) {

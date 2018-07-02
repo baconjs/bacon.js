@@ -1546,6 +1546,28 @@
             }
         };
     }
+    function withStateMachine(initState, f, src) {
+        var state = initState;
+        var desc = new Desc(src, 'withStateMachine', [
+            initState,
+            f
+        ]);
+        var transformer = function (event, sink) {
+            var fromF = f(state, event);
+            var newState = fromF[0], outputs = fromF[1];
+            state = newState;
+            var reply = Reply.more;
+            for (var i = 0; i < outputs.length; i++) {
+                var output = outputs[i];
+                reply = sink(output);
+                if (reply === Reply.noMore) {
+                    return reply;
+                }
+            }
+            return reply;
+        };
+        return src.transform(transformer, desc);
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -1575,6 +1597,9 @@
                     return transformer(e, sink);
                 });
             }, undefined, allowSync);
+        };
+        EventStream.prototype.withStateMachine = function (initState, f) {
+            return withStateMachine(initState, f, this);
         };
         EventStream.prototype.withHandler = function (handler) {
             return new EventStream(new Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler, allowSync);
@@ -1694,6 +1719,9 @@
                 });
             });
         };
+        Property.prototype.withStateMachine = function (initState, f) {
+            return withStateMachine(initState, f, this);
+        };
         Property.prototype.take = function (count) {
             return takeP(count, this);
         };
@@ -1724,27 +1752,6 @@
             return sink(e.fmap(f));
         };
     }
-    Observable.prototype.withStateMachine = function (initState, f) {
-        var state = initState;
-        var desc = new Desc(this, 'withStateMachine', [
-            initState,
-            f
-        ]);
-        return withDesc(desc, this.withHandler(function (event) {
-            var fromF = f(state, event);
-            var newState = fromF[0], outputs = fromF[1];
-            state = newState;
-            var reply = more;
-            for (var i = 0, output; i < outputs.length; i++) {
-                output = outputs[i];
-                reply = this.push(output);
-                if (reply === noMore) {
-                    return reply;
-                }
-            }
-            return reply;
-        }));
-    };
     var equals = function (a, b) {
         return a === b;
     };
