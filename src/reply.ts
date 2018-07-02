@@ -1,7 +1,6 @@
-const noMore = "<no-more>";
-const more = "<more>";
-enum Reply {
-  more,
-  noMore
+export enum Reply {
+  more = "<more>",
+  noMore = "<no-more>"
 }
-export { noMore, more, Reply };
+export const more = Reply.more
+export const noMore = Reply.noMore

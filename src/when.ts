@@ -93,7 +93,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
       function flushWhileTriggers(): Reply {
         var trigger: Trigger | undefined
         if ((trigger = triggers.pop()) !== undefined) {
-          var reply = more;
+          var reply = Reply.more;
           for (var i = 0, p; i < ixPats.length; i++) {
             p = ixPats[i];
             if (match(p)) {
@@ -117,9 +117,8 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
               }
             }
           }
-        } else {
-          return more;
         }
+        return Reply.more;
       }
       function flush(): void {
         //console.log "flushing", _.toString(resultStream)

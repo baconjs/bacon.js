@@ -429,13 +429,13 @@
             return nextEvent(x);
         }
     }
-    var noMore = '<no-more>';
-    var more = '<more>';
     var Reply;
     (function (Reply) {
-        Reply[Reply['more'] = 0] = 'more';
-        Reply[Reply['noMore'] = 1] = 'noMore';
+        Reply['more'] = '<more>';
+        Reply['noMore'] = '<no-more>';
     }(Reply || (Reply = {})));
+    var more = Reply.more;
+    var noMore = Reply.noMore;
     var spies = [];
     function registerObs(obs) {
         if (spies.length) {
@@ -1303,7 +1303,7 @@
                     function flushWhileTriggers() {
                         var trigger;
                         if ((trigger = triggers.pop()) !== undefined) {
-                            var reply = more;
+                            var reply = Reply.more;
                             for (var i = 0, p; i < ixPats.length; i++) {
                                 p = ixPats[i];
                                 if (match(p)) {
@@ -1326,9 +1326,8 @@
                                     }
                                 }
                             }
-                        } else {
-                            return more;
                         }
+                        return Reply.more;
                     }
                     function flush() {
                         var reply = flushWhileTriggers();
@@ -1486,8 +1485,9 @@
     function withLatestFromE(sampler, samplee, f) {
         var result = when([
             new DefaultSource(samplee.toProperty(), false),
-            new DefaultSource(sampler, true)
-        ], _.flip(f));
+            new DefaultSource(sampler, true),
+            _.flip(f)
+        ]);
         return withDesc(new Desc(sampler, 'withLatestFrom', [
             samplee,
             f
@@ -1496,8 +1496,9 @@
     function withLatestFromP(sampler, samplee, f) {
         var result = whenP([
             new DefaultSource(samplee.toProperty(), false),
-            new DefaultSource(sampler, true)
-        ], _.flip(f));
+            new DefaultSource(sampler, true),
+            _.flip(f)
+        ]);
         return withDesc(new Desc(sampler, 'withLatestFrom', [
             samplee,
             f

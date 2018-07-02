@@ -67,7 +67,7 @@ export default class Property<V> extends Observable<V> {
     return <any>skipDuplicates(this, isEqual)
   }
 
-  // deprecated
+  // deprecated : use transform() instead
   withHandler(handler: EventSink<V>) {
     return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
   }

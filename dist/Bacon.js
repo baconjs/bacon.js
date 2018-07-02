@@ -348,13 +348,13 @@ function toEvent(x) {
     }
 }
 
-var noMore = "<no-more>";
-var more = "<more>";
 var Reply;
 (function (Reply) {
-    Reply[Reply["more"] = 0] = "more";
-    Reply[Reply["noMore"] = 1] = "noMore";
+    Reply["more"] = "<more>";
+    Reply["noMore"] = "<no-more>";
 })(Reply || (Reply = {}));
+var more = Reply.more;
+var noMore = Reply.noMore;
 
 var spies = [];
 function registerObs(obs) {
@@ -1270,7 +1270,7 @@ function when_(ctor, patterns) {
                 function flushWhileTriggers() {
                     var trigger;
                     if ((trigger = triggers.pop()) !== undefined) {
-                        var reply = more;
+                        var reply = Reply.more;
                         for (var i = 0, p; i < ixPats.length; i++) {
                             p = ixPats[i];
                             if (match(p)) {
@@ -1297,9 +1297,7 @@ function when_(ctor, patterns) {
                             }
                         }
                     }
-                    else {
-                        return more;
-                    }
+                    return Reply.more;
                 }
                 function flush() {
                     //console.log "flushing", _.toString(resultStream)
@@ -1450,11 +1448,11 @@ function cannotSync(source) {
 Bacon.when = when;
 
 function withLatestFromE(sampler, samplee, f) {
-    var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true)], _.flip(f));
+    var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), _.flip(f)]);
     return withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]), result);
 }
 function withLatestFromP(sampler, samplee, f) {
-    var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true)], _.flip(f));
+    var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), _.flip(f)]);
     return withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]), result);
 }
 function withLatestFrom(sampler, samplee, f) {
@@ -1579,7 +1577,7 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
     };
-    // deprecated
+    // deprecated : use transform() instead
     EventStream.prototype.withHandler = function (handler) {
         return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
     };
@@ -1736,7 +1734,7 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
     };
-    // deprecated
+    // deprecated : use transform() instead
     Property.prototype.withHandler = function (handler) {
         return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
     };
