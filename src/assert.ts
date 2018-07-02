@@ -37,9 +37,3 @@ export function assertArray(xs) {
 export function assertNoArguments(args) {
   return assert("no arguments supported", args.length === 0);
 }
-
-export function assertString(x) {
-  if (typeof x === "string") {
-    throw new Exception("not a string : " + x);
-  }
-}
