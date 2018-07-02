@@ -1,5 +1,3 @@
-import EventStream from "./eventstream";
-import Property from "./property"
 import { noMore } from "./reply";
 import { endEvent, Event } from "./event";
 import { EventSink } from "./types"
@@ -7,13 +5,6 @@ import { Desc } from "./describe"
 import Observable from "./observable";
 
 export function take<V>(count: number, src: Observable<V>): Observable<V> {
-  return src.transform(takeT(count), new Desc(src, "take", [count]))
-}
-
-export function takeE<V>(count: number, src: EventStream<V>): EventStream<V> {
-  return src.transform(takeT(count), new Desc(src, "take", [count]))
-}
-export function takeP<V>(count: number, src: Property<V>): Property<V> {
   return src.transform(takeT(count), new Desc(src, "take", [count]))
 }
 

@@ -829,8 +829,6 @@ function skipDuplicates(src, isEqual) {
 function take(count, src) {
     return src.transform(takeT(count), new Desc(src, "take", [count]));
 }
-
-
 function takeT(count) {
     return function (e, sink) {
         if (!e.hasValue) {
