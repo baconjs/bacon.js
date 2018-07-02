@@ -11,6 +11,7 @@ import doLogT from "./dolog";
 import doErrorT from "./doerror";
 import doActionT from "./doaction";
 import doEndT from "./doend";
+import { Accumulator, default as scan } from "./scan";
 
 var idCounter = 0;
 
@@ -96,6 +97,10 @@ export default abstract class Observable<V> {
 
   skipDuplicates(isEqual?: Equals<V>): this {
     return <any>skipDuplicates(this, isEqual)
+  }
+
+  scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
+    return scan(this, seed, f)
   }
 
   name(name: string) {

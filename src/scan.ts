@@ -1,22 +1,25 @@
 import Observable from "./observable";
 import Property from "./property";
-import { Initial } from "./event";
-import { toCombinator } from "./functionconstruction";
-import { noMore, more } from "./reply";
+import { Initial, Event, hasValue } from "./event";
+import { more, noMore } from "./reply";
 import { nop } from "./helpers";
 import { Desc } from "./describe";
 import UpdateBarrier from "./updatebarrier";
+import { EventSink, Subscribe } from "./types";
 
-export default function scan(seed, f) {
-  var resultProperty;
-  f = toCombinator(f);
-  var acc = seed
-  var initHandled = false;
-  var subscribe = (sink) => {
+export interface Accumulator<In, Out> {
+  (acc: Out, next: In): Out
+}
+
+export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumulator<In, Out>): Property<Out> {
+  let resultProperty;
+  let acc = seed
+  let initHandled = false;
+  const subscribe: Subscribe<Out> = (sink: EventSink<Out>) => {
     var initSent = false;
     var unsub = nop;
     var reply = more;
-    var sendInit = function() {
+    const sendInit = function() {
       if (!initSent) {
         initSent = initHandled = true;
         reply = sink(new Initial(acc));
@@ -25,9 +28,10 @@ export default function scan(seed, f) {
           unsub = nop;
         }
       }
+      return reply
     };
-    unsub = this.dispatcher.subscribe(function(event) {
-      if (event.hasValue) {
+    unsub = src.subscribeInternal(function(event: Event<In>) {
+      if (hasValue(event)) {
         if (initHandled && event.isInitial) {
           //console.log "skip INITIAL"
           return more; // init already sent, skip this one
@@ -52,7 +56,5 @@ export default function scan(seed, f) {
     UpdateBarrier.whenDoneWith(resultProperty, sendInit);
     return unsub;
   }
-  return resultProperty = new Property(new Desc(this, "scan", [seed, f]), subscribe)
+  return resultProperty = new Property(new Desc(src, "scan", [seed, f]), subscribe)
 }
-
-Observable.prototype.scan = scan;

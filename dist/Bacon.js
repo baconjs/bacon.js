@@ -896,6 +896,58 @@ function doEndT(f) {
     };
 }
 
+function scan(src, seed, f) {
+    var resultProperty;
+    var acc = seed;
+    var initHandled = false;
+    var subscribe = function (sink) {
+        var initSent = false;
+        var unsub = nop;
+        var reply = more;
+        var sendInit = function () {
+            if (!initSent) {
+                initSent = initHandled = true;
+                reply = sink(new Initial(acc));
+                if (reply === noMore) {
+                    unsub();
+                    unsub = nop;
+                }
+            }
+            return reply;
+        };
+        unsub = src.subscribeInternal(function (event) {
+            if (hasValue(event)) {
+                if (initHandled && event.isInitial) {
+                    //console.log "skip INITIAL"
+                    return more; // init already sent, skip this one
+                }
+                else {
+                    if (!event.isInitial) {
+                        sendInit();
+                    }
+                    initSent = initHandled = true;
+                    var prev = acc;
+                    var next = f(prev, event.value);
+                    //console.log prev , ",", event.value, "->", next
+                    acc = next;
+                    return sink(event.apply(next));
+                }
+            }
+            else {
+                if (event.isEnd) {
+                    reply = sendInit();
+                }
+                if (reply !== noMore) {
+                    return sink(event);
+                }
+            }
+        });
+        UpdateBarrier.whenDoneWith(resultProperty, sendInit);
+        return unsub;
+    };
+    return resultProperty = new Property(new Desc(src, "scan", [seed, f]), subscribe);
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -970,6 +1022,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
+    };
+    Observable.prototype.scan = function (seed, f) {
+        return scan(this, seed, f);
     };
     Observable.prototype.name = function (name) {
         this._name = name;
@@ -2777,59 +2832,6 @@ Observable.prototype.decode = function (cases) {
     return values[key];
   }));
 };
-
-function scan(seed, f) {
-  var _this = this;
-
-  var resultProperty;
-  f = toCombinator(f);
-  var acc = seed;
-  var initHandled = false;
-  var subscribe = function (sink) {
-    var initSent = false;
-    var unsub = nop;
-    var reply = more;
-    var sendInit = function () {
-      if (!initSent) {
-        initSent = initHandled = true;
-        reply = sink(new Initial(acc));
-        if (reply === noMore) {
-          unsub();
-          unsub = nop;
-        }
-      }
-    };
-    unsub = _this.dispatcher.subscribe(function (event) {
-      if (event.hasValue) {
-        if (initHandled && event.isInitial) {
-          return more;
-        } else {
-          if (!event.isInitial) {
-            sendInit();
-          }
-          initSent = initHandled = true;
-          var prev = acc;
-          var next = f(prev, event.value);
-
-          acc = next;
-          return sink(event.apply(next));
-        }
-      } else {
-        if (event.isEnd) {
-          reply = sendInit();
-        }
-        if (reply !== noMore) {
-          return sink(event);
-        }
-      }
-    });
-    UpdateBarrier.whenDoneWith(resultProperty, sendInit);
-    return unsub;
-  };
-  return resultProperty = new Property(new Desc(this, "scan", [seed, f]), subscribe);
-}
-
-Observable.prototype.scan = scan;
 
 Observable.prototype.diff = function (start, f) {
   f = toCombinator(f);
