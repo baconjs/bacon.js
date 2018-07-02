@@ -11,7 +11,8 @@ import Property from "./property"
 import { none, Option, toOption } from "./optional"
 import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe"
 import map from "./map"
-import { StateF, default as withStateMachine } from "./withstatemachine";
+import { default as withStateMachine, StateF } from "./withstatemachine";
+import { default as skipDuplicates, Equals } from "./skipduplicates";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -69,6 +70,9 @@ export default class EventStream<V> extends Observable<V> {
   }
   map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> {
     return <any>map(f, this)
+  }
+  skipDuplicates(isEqual?: Equals<V>): EventStream<V> {
+    return <any>skipDuplicates(this, isEqual)
   }
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
     let initValue: Option<V> = initValue_.length 

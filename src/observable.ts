@@ -4,6 +4,7 @@ import { nop } from "./helpers";
 import { EventSink, Sink, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
 import { StateF } from "./withstatemachine";
+import { Equals } from "./skipduplicates";
 
 var idCounter = 0;
 
@@ -63,6 +64,8 @@ export default abstract class Observable<V> {
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): Observable<V>
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
+
+  abstract skipDuplicates(isEqual?: Equals<V>): Observable<V>
 
   name(name: string) {
     this._name = name;

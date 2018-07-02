@@ -8,12 +8,14 @@ export interface StateF<In, State, Out> {
   (state: State, event: Event<In>): [State, Event<Out>[]]
 }
 
-export default function withStateMachine<In,State,Out>(initState: State, f: StateF<In, State, Out>, src: Observable<In>): Observable<Out> {
+export function withStateMachine<In,State,Out>(initState: State, f: StateF<In, State, Out>, src: Observable<In>): Observable<Out> {
   return src.transform<Out>(
     withStateMachineT(initState, f),
     new Desc(src, "withStateMachine", [initState, f])
   )
 }
+
+export default withStateMachine
 
 function withStateMachineT<In,State,Out>(initState: State, f: StateF<In, State, Out>): Transformer<In, Out> {
   let state = initState;
