@@ -5,7 +5,6 @@ import { registerObs } from "./spy";
 import Dispatcher from "./dispatcher";
 import asyncWrapSubscribe from "./asyncwrapsubscribe"
 import { EventSink, Subscribe, Transformer, Unsub } from "./types"
-import { takeE } from "./take"
 import { filter } from "./filter"
 import Property from "./property"
 import { none, Option, toOption } from "./optional"
@@ -61,9 +60,6 @@ export default class EventStream<V> extends Observable<V> {
       this.dispatcher.subscribe, 
       handler, 
       allowSync);
-  }
-  take(count: number): EventStream<V> {
-    return takeE(count, this)
   }
   filter(f: ((V) => boolean) | boolean | Property<boolean>): EventStream<V> {
     return <any>filter(f, this)

@@ -5,6 +5,7 @@ import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./type
 import Property from "./property"
 import { StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
+import { take } from "./take";
 
 var idCounter = 0;
 
@@ -59,7 +60,9 @@ export default abstract class Observable<V> {
 
   abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
 
-  abstract take(count: number): Observable<V>
+  take(count: number): this {
+    return <any>take(count, this)
+  }
 
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): Observable<V>
 

@@ -7,7 +7,6 @@ import { Desc } from "./describe";
 import { registerObs } from "./spy";
 import { EventSink, Subscribe, Transformer, Unsub } from "./types"
 import PropertyDispatcher from "./propertydispatcher"
-import { takeP } from "./take"
 import { filter } from "./filter"
 import map from "./map"
 import { default as withStateMachine, StateF } from "./withstatemachine";
@@ -48,10 +47,6 @@ export default class Property<V> extends Observable<V> {
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
-  }
-
-  take(count: number): Property<V> {
-    return takeP(count, this)
   }
 
   filter(f: ((V) => boolean) | boolean | Property<boolean>): Property<V> {

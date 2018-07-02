@@ -817,6 +817,32 @@ function skipDuplicates(src, isEqual) {
     }, src));
 }
 
+function take(count, src) {
+    return src.transform(takeT(count), new Desc(src, "take", [count]));
+}
+
+
+function takeT(count) {
+    return function (e, sink) {
+        if (!e.hasValue) {
+            return sink(e);
+        }
+        else {
+            count--;
+            if (count > 0) {
+                return sink(e);
+            }
+            else {
+                if (count === 0) {
+                    sink(e);
+                }
+                sink(endEvent());
+                return noMore;
+            }
+        }
+    };
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -861,6 +887,9 @@ var Observable = /** @class */ (function () {
                 return f();
             }
         });
+    };
+    Observable.prototype.take = function (count) {
+        return take(count, this);
     };
     Observable.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
@@ -1062,33 +1091,6 @@ function asyncWrapSubscribe(obs, subscribe) {
         }
         finally {
             subscribing = false;
-        }
-    };
-}
-
-function takeE(count, src) {
-    return src.transform(takeT(count), new Desc(src, "take", [count]));
-}
-function takeP(count, src) {
-    return src.transform(takeT(count), new Desc(src, "take", [count]));
-}
-function takeT(count) {
-    return function (e, sink) {
-        if (!e.hasValue) {
-            return sink(e);
-        }
-        else {
-            count--;
-            if (count > 0) {
-                return sink(e);
-            }
-            else {
-                if (count === 0) {
-                    sink(e);
-                }
-                sink(endEvent());
-                return noMore;
-            }
         }
     };
 }
@@ -1581,9 +1583,6 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.withHandler = function (handler) {
         return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
     };
-    EventStream.prototype.take = function (count) {
-        return takeE(count, this);
-    };
     EventStream.prototype.filter = function (f) {
         return filter(f, this);
     };
@@ -1721,9 +1720,6 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
-    };
-    Property.prototype.take = function (count) {
-        return takeP(count, this);
     };
     Property.prototype.filter = function (f) {
         return filter(f, this);
