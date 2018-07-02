@@ -429,6 +429,15 @@
             return nextEvent(x);
         }
     }
+    function isError(e) {
+        return e.isError;
+    }
+    function hasValue(e) {
+        return e.hasValue;
+    }
+    function isEnd(e) {
+        return e.isEnd;
+    }
     var Reply;
     (function (Reply) {
         Reply['more'] = '<more>';
@@ -912,6 +921,30 @@
             return sink(event);
         };
     }
+    function doErrorT(f) {
+        return function (event, sink) {
+            if (isError(event)) {
+                f(event.error);
+            }
+            return sink(event);
+        };
+    }
+    function doActionT(f) {
+        return function (event, sink) {
+            if (hasValue(event)) {
+                f(event.value);
+            }
+            return sink(event);
+        };
+    }
+    function doEndT(f) {
+        return function (event, sink) {
+            if (isEnd(event)) {
+                f();
+            }
+            return sink(event);
+        };
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -987,6 +1020,15 @@
                 args[_i] = arguments[_i];
             }
             return this.transform(doLogT(args), new Desc(this, 'doLog', args));
+        };
+        Observable.prototype.doAction = function (f) {
+            return this.transform(doActionT(f), new Desc(this, 'doAction', [f]));
+        };
+        Observable.prototype.doEnd = function (f) {
+            return this.transform(doEndT(f), new Desc(this, 'doEnd', [f]));
+        };
+        Observable.prototype.doError = function (f) {
+            return this.transform(doErrorT(f), new Desc(this, 'doError', [f]));
         };
         Observable.prototype.skipDuplicates = function (isEqual) {
             return skipDuplicates(this, isEqual);
@@ -2777,33 +2819,6 @@
             return tuple.length === 2;
         }).map(function (tuple) {
             return tuple[1];
-        }));
-    };
-    Observable.prototype.doAction = function () {
-        var f = makeFunctionArgs(arguments);
-        return withDesc(new Desc(this, 'doAction', [f]), this.withHandler(function (event) {
-            if (event.hasValue) {
-                f(event.value);
-            }
-            return this.push(event);
-        }));
-    };
-    Observable.prototype.doEnd = function () {
-        var f = makeFunctionArgs(arguments);
-        return withDesc(new Desc(this, 'doEnd', [f]), this.withHandler(function (event) {
-            if (event.isEnd) {
-                f();
-            }
-            return this.push(event);
-        }));
-    };
-    Observable.prototype.doError = function () {
-        var f = makeFunctionArgs(arguments);
-        return withDesc(new Desc(this, 'doError', [f]), this.withHandler(function (event) {
-            if (event.isError) {
-                f(event.error);
-            }
-            return this.push(event);
         }));
     };
     Observable.prototype.endOnError = function (f) {

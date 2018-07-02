@@ -8,6 +8,9 @@ import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
 import log from "./log";
 import doLogT from "./dolog";
+import doErrorT from "./doerror";
+import doActionT from "./doaction";
+import doEndT from "./doend";
 
 var idCounter = 0;
 
@@ -77,6 +80,18 @@ export default abstract class Observable<V> {
 
   doLog(...args: any[]): this {
     return <any>this.transform(doLogT<V>(args), new Desc(this, "doLog", args))
+  }
+
+  doAction(f: (V) => any): this {
+    return <any>this.transform(doActionT(f), new Desc(this, "doAction", [f]))
+  }
+
+  doEnd(f: Function): this {
+    return <any>this.transform(doEndT(f), new Desc(this, "doEnd", [f]))
+  }
+
+  doError(f: Function): this {
+    return <any>this.transform(doErrorT(f), new Desc(this, "doError", [f]))
   }
 
   skipDuplicates(isEqual?: Equals<V>): this {
