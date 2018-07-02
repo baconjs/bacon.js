@@ -2128,7 +2128,7 @@
         var result = ctor(desc, function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
-            var spawn = function (event) {
+            function spawn(event) {
                 if (isProperty && event.isInitial) {
                     if (initialSpawned) {
                         return more;
@@ -2154,19 +2154,20 @@
                         }
                     });
                 });
-            };
-            var checkQueue = function () {
+            }
+            function checkQueue() {
                 var event = queue.shift();
                 if (event) {
-                    return spawn(event);
+                    spawn(event);
                 }
-            };
-            var checkEnd = function (unsub) {
+            }
+            function checkEnd(unsub) {
                 unsub();
                 if (composite.empty()) {
                     return sink(endEvent());
                 }
-            };
+                return more;
+            }
             composite.add(function (__, unsubRoot) {
                 return root.subscribeInternal(function (event) {
                     if (event.isEnd) {
