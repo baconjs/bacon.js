@@ -55,6 +55,7 @@ export default class EventStream<V> extends Observable<V> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
+  // deprecated
   withHandler(handler: EventSink<V>) {
     return new EventStream(
       new Desc(this, "withHandler", [handler]), 

@@ -1579,6 +1579,7 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
     };
+    // deprecated
     EventStream.prototype.withHandler = function (handler) {
         return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
     };
@@ -1735,6 +1736,7 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
     };
+    // deprecated
     Property.prototype.withHandler = function (handler) {
         return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
     };
