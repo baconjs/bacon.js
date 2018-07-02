@@ -2121,6 +2121,7 @@
     }
     Observable.prototype.flatMap_ = function (f) {
         var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        f = _.toFunction(f);
         var root = this;
         var rootDep = [root];
         var childDeps = [];
@@ -2201,17 +2202,11 @@
         return result;
     };
     var handleEventValueWith = function (f) {
+        f = _.toFunction(f);
         return function (event) {
             return f(event.value);
         };
     };
-    function makeSpawner(args) {
-        if (args.length === 1 && isObservable(args[0])) {
-            return _.always(args[0]);
-        } else {
-            return makeFunctionArgs(args);
-        }
-    }
     function makeObservable(x) {
         if (isObservable(x)) {
             return x;
@@ -2219,13 +2214,13 @@
             return once(x);
         }
     }
-    Observable.prototype.flatMapWithConcurrencyLimit = function (limit) {
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
-        }
-        return this.flatMap_(handleEventValueWith(makeSpawner(args)), {
+    Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
+        return this.flatMap_(handleEventValueWith(f), {
             limit: limit,
-            desc: new Desc(this, 'flatMapWithConcurrencyLimit', [limit].concat(args))
+            desc: new Desc(this, 'flatMapWithConcurrencyLimit', [
+                limit,
+                f
+            ])
         });
     };
     Observable.prototype.flatMapConcat = function () {
@@ -2477,8 +2472,8 @@
         return Bus;
     }(EventStream);
     Bacon.Bus = Bus;
-    Observable.prototype.flatMap = function () {
-        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), { desc: new Desc(this, 'flatMap', arguments) });
+    Observable.prototype.flatMap = function (f) {
+        return this.flatMap_(handleEventValueWith(f), { desc: new Desc(this, 'flatMap', arguments) });
     };
     var liftCallback = function (desc, wrapped) {
         return withMethodCallSupport(function (f) {
@@ -2651,8 +2646,8 @@
         });
         return withDesc(new Desc(this, 'takeUntil', [stopper]), impl);
     };
-    Observable.prototype.flatMapLatest = function () {
-        var f = makeSpawner(arguments);
+    Observable.prototype.flatMapLatest = function (f) {
+        f = _.toFunction(f);
         var stream = this._isProperty ? this.toEventStream(allowSync) : this;
         var flatMapped = stream.flatMap(function (value) {
             return makeObservable(f(value)).takeUntil(stream);
@@ -2874,14 +2869,14 @@
     Observable.prototype.first = function () {
         return withDesc(new Desc(this, 'first', []), this.take(1));
     };
-    Observable.prototype.flatMapEvent = function () {
-        return this.flatMap_(makeSpawner(arguments), {
+    Observable.prototype.flatMapEvent = function (f) {
+        return this.flatMap_(f, {
             mapError: true,
             desc: new Desc(this, 'flatMapEvent', arguments)
         });
     };
-    Observable.prototype.flatMapFirst = function () {
-        return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), {
+    Observable.prototype.flatMapFirst = function (f) {
+        return this.flatMap_(handleEventValueWith(f), {
             firstOnly: true,
             desc: new Desc(this, 'flatMapFirst', arguments)
         });

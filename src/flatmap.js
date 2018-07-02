@@ -1,10 +1,10 @@
 import { Desc } from "./describe";
-import { handleEventValueWith, makeSpawner } from "./flatmap_"
+import { handleEventValueWith } from "./flatmap_"
 import Observable from "./observable";
 
-Observable.prototype.flatMap = function() {
+Observable.prototype.flatMap = function(f) {
   return this.flatMap_(
-    handleEventValueWith(makeSpawner(arguments)), 
+    handleEventValueWith(f),
     { desc: new Desc(this, "flatMap", arguments) }
   );
 };

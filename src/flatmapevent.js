@@ -1,10 +1,9 @@
-import { makeSpawner } from "./flatmap_"
 import { Desc } from "./describe";
 import Observable from "./observable";
 
-Observable.prototype.flatMapEvent = function() {
+Observable.prototype.flatMapEvent = function(f) {
     return this.flatMap_(
-        makeSpawner(arguments), 
+        f,
         {
             mapError: true,
             desc: new Desc(this, "flatMapEvent", arguments)

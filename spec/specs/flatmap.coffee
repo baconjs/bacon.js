@@ -67,18 +67,6 @@ describe "EventStream.flatMap", ->
     expectStreamEvents(
       -> Bacon.once("asdf").flatMap(Bacon.once("bacon"))
       ["bacon"])
-  describe "Respects function construction rules", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMap((x) -> x.bacon)
-      ["sir francis"], semiunstable)
-    expectStreamEvents(
-      -> Bacon.once({ bacon: "sir francis"}).flatMap((x) -> x.bacon)
-      ["sir francis"], semiunstable)
-    expectStreamEvents(
-      ->
-        glorify = (x, y) -> fromArray([x, y])
-        Bacon.once("francis").flatMap(glorify, "sir")
-      ["sir", "francis"], semiunstable)
   it "toString", ->
     expect(Bacon.never().flatMap(->).toString()).to.equal("Bacon.never().flatMap(function)")
 

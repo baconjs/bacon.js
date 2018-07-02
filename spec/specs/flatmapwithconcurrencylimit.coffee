@@ -21,10 +21,6 @@ describe "EventStream.flatMapWithConcurrencyLimit", ->
       -> series(1, [1,2,3]).flatMapWithConcurrencyLimit(2, (value) ->
         series(t(2), [value, value]))
       [1, 2, 1, 2, 3, 3], semiunstable)
-  describe "Respects function construction rules", ->
-    expectStreamEvents(
-      -> Bacon.once({ bacon: Bacon.once("sir francis")}).flatMapWithConcurrencyLimit(1, (x) -> x.bacon)
-      ["sir francis"])
   it "toString", ->
     expect(Bacon.once(1).flatMapWithConcurrencyLimit(2, ->).toString())
       .to.equal("Bacon.once(1).flatMapWithConcurrencyLimit(2,function)")

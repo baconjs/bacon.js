@@ -15,6 +15,7 @@ function newEventStream(...args) {
 }
 
 Observable.prototype.flatMap_ = function(f, params = { }) {
+    f = _.toFunction(f)
     const root = this
     const rootDep = [root];
     const childDeps = [];
@@ -89,14 +90,9 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
     return result;
   };
   
-export const handleEventValueWith = f => event => f(event.value)
-
-export function makeSpawner(args) {
-  if (args.length === 1 && isObservable(args[0])) {
-    return _.always(args[0]);
-  } else {
-    return makeFunctionArgs(args);
-  }
+export const handleEventValueWith = f => {
+  f = _.toFunction(f)
+  return event => f(event.value)
 }
 
 export function makeObservable(x) {
