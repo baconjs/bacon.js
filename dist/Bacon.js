@@ -775,6 +775,48 @@ function wrappedSubscribe(obs, subscribe, sink) {
 function hasWaiters() { return waiterObs.length > 0; }
 var UpdateBarrier = { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
 
+function withStateMachine(initState, f, src) {
+    return src.transform(withStateMachineT(initState, f), new Desc(src, "withStateMachine", [initState, f]));
+}
+function withStateMachineT(initState, f) {
+    var state = initState;
+    return function (event, sink) {
+        var fromF = f(state, event);
+        var newState = fromF[0], outputs = fromF[1];
+        state = newState;
+        var reply = Reply.more;
+        for (var i = 0; i < outputs.length; i++) {
+            var output = outputs[i];
+            reply = sink(output);
+            if (reply === Reply.noMore) {
+                return reply;
+            }
+        }
+        return reply;
+    };
+}
+
+function equals(a, b) { return a === b; }
+function isNone(object) {
+    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
+}
+
+function skipDuplicates(src, isEqual) {
+    if (isEqual === void 0) { isEqual = equals; }
+    var desc = new Desc(src, "skipDuplicates", []);
+    return withDesc(desc, withStateMachine(none(), function (prev, event) {
+        if (!event.hasValue) {
+            return [prev, [event]];
+        }
+        else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), event.value)) {
+            return [new Some(event.value), [event]];
+        }
+        else {
+            return [prev, []];
+        }
+    }, src));
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -819,6 +861,9 @@ var Observable = /** @class */ (function () {
                 return f();
             }
         });
+    };
+    Observable.prototype.skipDuplicates = function (isEqual) {
+        return skipDuplicates(this, isEqual);
     };
     Observable.prototype.name = function (name) {
         this._name = name;
@@ -1499,48 +1544,6 @@ function filterT(f_) {
     };
 }
 
-function withStateMachine(initState, f, src) {
-    return src.transform(withStateMachineT(initState, f), new Desc(src, "withStateMachine", [initState, f]));
-}
-function withStateMachineT(initState, f) {
-    var state = initState;
-    return function (event, sink) {
-        var fromF = f(state, event);
-        var newState = fromF[0], outputs = fromF[1];
-        state = newState;
-        var reply = Reply.more;
-        for (var i = 0; i < outputs.length; i++) {
-            var output = outputs[i];
-            reply = sink(output);
-            if (reply === Reply.noMore) {
-                return reply;
-            }
-        }
-        return reply;
-    };
-}
-
-function equals(a, b) { return a === b; }
-function isNone(object) {
-    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
-}
-
-function skipDuplicates(src, isEqual) {
-    if (isEqual === void 0) { isEqual = equals; }
-    var desc = new Desc(src, "skipDuplicates", []);
-    return withDesc(desc, withStateMachine(none(), function (prev, event) {
-        if (!event.hasValue) {
-            return [prev, [event]];
-        }
-        else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), event.value)) {
-            return [new Some(event.value), [event]];
-        }
-        else {
-            return [prev, []];
-        }
-    }, src));
-}
-
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -1586,9 +1589,6 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.map = function (f) {
         return map(f, this);
-    };
-    EventStream.prototype.skipDuplicates = function (isEqual) {
-        return skipDuplicates(this, isEqual);
     };
     EventStream.prototype.toProperty = function () {
         var initValue_ = [];
@@ -1730,9 +1730,6 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.map = function (f) {
         return map(f, this);
-    };
-    Property.prototype.skipDuplicates = function (isEqual) {
-        return skipDuplicates(this, isEqual);
     };
     // deprecated : use transform() instead
     Property.prototype.withHandler = function (handler) {

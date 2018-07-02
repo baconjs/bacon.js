@@ -11,7 +11,6 @@ import { takeP } from "./take"
 import { filter } from "./filter"
 import map from "./map"
 import { default as withStateMachine, StateF } from "./withstatemachine";
-import { default as skipDuplicates, Equals } from "./skipduplicates";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -61,10 +60,6 @@ export default class Property<V> extends Observable<V> {
 
   map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> {
     return <any>map(f, this)
-  }
-
-  skipDuplicates(isEqual?: Equals<V>): Property<V> {
-    return <any>skipDuplicates(this, isEqual)
   }
 
   // deprecated : use transform() instead

@@ -4,7 +4,7 @@ import { nop } from "./helpers";
 import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
 import { StateF } from "./withstatemachine";
-import { Equals } from "./skipduplicates";
+import { default as skipDuplicates, Equals } from "./skipduplicates";
 
 var idCounter = 0;
 
@@ -65,7 +65,9 @@ export default abstract class Observable<V> {
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
 
-  abstract skipDuplicates(isEqual?: Equals<V>): Observable<V>
+  skipDuplicates(isEqual?: Equals<V>): this {
+    return <any>skipDuplicates(this, isEqual)
+  }
 
   name(name: string) {
     this._name = name;
