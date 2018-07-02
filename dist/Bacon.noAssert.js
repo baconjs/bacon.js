@@ -904,6 +904,14 @@
             }
         });
     }
+    function doLogT(args) {
+        return function (event, sink) {
+            if (typeof console !== 'undefined' && console !== null && typeof console.log === 'function') {
+                console.log.apply(console, args.concat([event.log()]));
+            }
+            return sink(event);
+        };
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -972,6 +980,13 @@
             }
             log(args, this);
             return this;
+        };
+        Observable.prototype.doLog = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return this.transform(doLogT(args), new Desc(this, 'doLog', args));
         };
         Observable.prototype.skipDuplicates = function (isEqual) {
             return skipDuplicates(this, isEqual);
@@ -2787,18 +2802,6 @@
         return withDesc(new Desc(this, 'doError', [f]), this.withHandler(function (event) {
             if (event.isError) {
                 f(event.error);
-            }
-            return this.push(event);
-        }));
-    };
-    Observable.prototype.doLog = function () {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-        }
-        return withDesc(new Desc(this, 'doLog', args), this.withHandler(function (event) {
-            if (typeof console !== 'undefined' && console !== null && typeof console.log === 'function') {
-                var _console;
-                (_console = console).log.apply(_console, args.concat([event.log()]));
             }
             return this.push(event);
         }));

@@ -7,6 +7,7 @@ import { StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
 import log from "./log";
+import doLogT from "./dolog";
 
 var idCounter = 0;
 
@@ -72,6 +73,10 @@ export default abstract class Observable<V> {
   log(...args: any[]): this {
     log(args, this)
     return this
+  }
+
+  doLog(...args: any[]): this {
+    return <any>this.transform(doLogT<V>(args), new Desc(this, "doLog", args))
   }
 
   skipDuplicates(isEqual?: Equals<V>): this {
