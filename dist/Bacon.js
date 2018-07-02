@@ -1505,9 +1505,11 @@ function filterT(f_) {
 }
 
 function withStateMachine(initState, f, src) {
+    return src.transform(withStateMachineT(initState, f), new Desc(src, "withStateMachine", [initState, f]));
+}
+function withStateMachineT(initState, f) {
     var state = initState;
-    var desc = new Desc(src, "withStateMachine", [initState, f]);
-    var transformer = function (event, sink) {
+    return function (event, sink) {
         var fromF = f(state, event);
         var newState = fromF[0], outputs = fromF[1];
         state = newState;
@@ -1521,7 +1523,6 @@ function withStateMachine(initState, f, src) {
         }
         return reply;
     };
-    return src.transform(transformer, desc);
 }
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.

@@ -1547,12 +1547,14 @@
         };
     }
     function withStateMachine(initState, f, src) {
-        var state = initState;
-        var desc = new Desc(src, 'withStateMachine', [
+        return src.transform(withStateMachineT(initState, f), new Desc(src, 'withStateMachine', [
             initState,
             f
-        ]);
-        var transformer = function (event, sink) {
+        ]));
+    }
+    function withStateMachineT(initState, f) {
+        var state = initState;
+        return function (event, sink) {
             var fromF = f(state, event);
             var newState = fromF[0], outputs = fromF[1];
             state = newState;
@@ -1566,7 +1568,6 @@
             }
             return reply;
         };
-        return src.transform(transformer, desc);
     }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {

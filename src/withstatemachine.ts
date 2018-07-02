@@ -1,6 +1,6 @@
 import Observable from "./observable";
 import { Desc } from "./describe";
-import { EventSink } from "./types";
+import { EventSink, Transformer } from "./types";
 import Event from "./event"
 import { Reply } from "./reply";
 
@@ -9,9 +9,15 @@ export interface StateF<In, State, Out> {
 }
 
 export default function withStateMachine<In,State,Out>(initState: State, f: StateF<In, State, Out>, src: Observable<In>): Observable<Out> {
+  return src.transform<Out>(
+    withStateMachineT(initState, f),
+    new Desc(src, "withStateMachine", [initState, f])
+  )
+}
+
+function withStateMachineT<In,State,Out>(initState: State, f: StateF<In, State, Out>): Transformer<In, Out> {
   let state = initState;
-  const desc = new Desc(src, "withStateMachine", [initState, f]);
-  let transformer = (event: Event<In>, sink: EventSink<Out>) => {
+  return (event: Event<In>, sink: EventSink<Out>) => {
     var fromF = f(state, event);
     var [newState, outputs] = fromF;
     state = newState;
@@ -25,5 +31,4 @@ export default function withStateMachine<In,State,Out>(initState: State, f: Stat
     }
     return reply;
   }
-  return src.transform<Out>(transformer, desc)
 }
