@@ -85,3 +85,7 @@ export default class EventStream<V> extends Observable<V> {
     return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe))
   }
 }
+
+export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
+  return new EventStream(description, subscribe)
+}

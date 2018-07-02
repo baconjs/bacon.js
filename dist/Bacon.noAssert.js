@@ -16,9 +16,9 @@
     var isArray = Array.isArray || function (xs) {
         return xs instanceof Array;
     };
-    var isObservable = function (x) {
+    function isObservable(x) {
         return x && x._isObservable;
-    };
+    }
     var Some = function () {
         function Some(value) {
             this._isSome = true;
@@ -1240,9 +1240,6 @@
     function propertyFromStreamSubscribe(desc, subscribe) {
         return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
     }
-    function newEventStream(description, subscribe) {
-        return new EventStream(description, subscribe);
-    }
     function when() {
         var patterns = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -1661,6 +1658,9 @@
         };
         return EventStream;
     }(Observable);
+    function newEventStream(description, subscribe) {
+        return new EventStream(description, subscribe);
+    }
     var PropertyDispatcher = function (_super) {
         __extends(PropertyDispatcher, _super);
         function PropertyDispatcher(property, subscribe, handleEvent) {
@@ -2113,22 +2113,19 @@
         return s;
     }
     Bacon.once = once;
-    function newEventStream$1() {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
+    function flatMap_(f, src, params) {
+        if (params === void 0) {
+            params = {};
         }
-        return new (Function.prototype.bind.apply(EventStream, [null].concat(args)))();
-    }
-    Observable.prototype.flatMap_ = function (f) {
-        var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         f = _.toFunction(f);
-        var root = this;
+        var root = src;
         var rootDep = [root];
         var childDeps = [];
-        var isProperty = this._isProperty;
-        var ctor = isProperty ? propertyFromStreamSubscribe : newEventStream$1;
+        var isProperty = src._isProperty;
+        var ctor = isProperty ? propertyFromStreamSubscribe : newEventStream;
         var initialSpawned = false;
-        var result = ctor(params.desc || new Desc(this, 'flatMap_', arguments), function (sink) {
+        var desc = params.desc || new Desc(src, 'flatMap_', [f]);
+        var result = ctor(desc, function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
             var spawn = function (event) {
@@ -2141,7 +2138,7 @@
                 var child = makeObservable(f(event));
                 childDeps.push(child);
                 return composite.add(function (unsubAll, unsubMe) {
-                    return child.dispatcher.subscribe(function (event) {
+                    return child.subscribeInternal(function (event) {
                         if (event.isEnd) {
                             _.remove(child, childDeps);
                             checkQueue();
@@ -2171,7 +2168,7 @@
                 }
             };
             composite.add(function (__, unsubRoot) {
-                return root.dispatcher.subscribe(function (event) {
+                return root.subscribeInternal(function (event) {
                     if (event.isEnd) {
                         return checkEnd(unsubRoot);
                     } else if (event.isError && !params.mapError) {
@@ -2200,13 +2197,17 @@
             }
         };
         return result;
-    };
-    var handleEventValueWith = function (f) {
-        f = _.toFunction(f);
+    }
+    function handleEventValueWith(f) {
+        if (typeof f == 'function') {
+            return function (event) {
+                return f(event.value);
+            };
+        }
         return function (event) {
-            return f(event.value);
+            return f;
         };
-    };
+    }
     function makeObservable(x) {
         if (isObservable(x)) {
             return x;
@@ -2215,7 +2216,7 @@
         }
     }
     Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
-        return this.flatMap_(handleEventValueWith(f), {
+        return flatMap_(handleEventValueWith(f), this, {
             limit: limit,
             desc: new Desc(this, 'flatMapWithConcurrencyLimit', [
                 limit,
@@ -2473,7 +2474,7 @@
     }(EventStream);
     Bacon.Bus = Bus;
     Observable.prototype.flatMap = function (f) {
-        return this.flatMap_(handleEventValueWith(f), { desc: new Desc(this, 'flatMap', arguments) });
+        return flatMap_(handleEventValueWith(f), this, { desc: new Desc(this, 'flatMap', arguments) });
     };
     var liftCallback = function (desc, wrapped) {
         return withMethodCallSupport(function (f) {
@@ -2870,13 +2871,13 @@
         return withDesc(new Desc(this, 'first', []), this.take(1));
     };
     Observable.prototype.flatMapEvent = function (f) {
-        return this.flatMap_(f, {
+        return flatMap_(f, this, {
             mapError: true,
             desc: new Desc(this, 'flatMapEvent', arguments)
         });
     };
     Observable.prototype.flatMapFirst = function (f) {
-        return this.flatMap_(handleEventValueWith(f), {
+        return flatMap_(handleEventValueWith(f), this, {
             firstOnly: true,
             desc: new Desc(this, 'flatMapFirst', arguments)
         });
@@ -2892,13 +2893,13 @@
         }));
     };
     Observable.prototype.flatMapError = function (fn) {
-        return this.flatMap_(function (x) {
+        return flatMap_(function (x) {
             if (x instanceof Error$1) {
                 return fn(x.error);
             } else {
                 return x;
             }
-        }, {
+        }, this, {
             mapError: true,
             desc: new Desc(this, 'flatMapError', [fn])
         });

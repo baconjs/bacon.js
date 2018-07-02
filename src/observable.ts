@@ -1,7 +1,7 @@
 import UpdateBarrier from "./updatebarrier";
 import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
-import { EventSink, Sink, Transformer, Unsub, VoidSink } from "./types"
+import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
 import { StateF } from "./withstatemachine";
 import { Equals } from "./skipduplicates";
@@ -94,4 +94,8 @@ export default abstract class Observable<V> {
   internalDeps(): any[] {
     return this.initialDesc.deps();
   }
+}
+
+export interface ObservableConstructor {
+  (description: Desc, subscribe: Subscribe<any>): Observable<any>
 }

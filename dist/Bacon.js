@@ -12,9 +12,9 @@ function __extends(d, b) {
 
 function nop() { }
 var isArray = Array.isArray || function (xs) { return xs instanceof Array; };
-var isObservable = function (x) {
+function isObservable(x) {
     return x && x._isObservable;
-};
+}
 
 var Some = /** @class */ (function () {
     function Some(value) {
@@ -1213,9 +1213,6 @@ function propertyFromStreamSubscribe(desc, subscribe) {
     return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
 }
 
-function newEventStream(description, subscribe) {
-    return new EventStream(description, subscribe);
-}
 function when() {
     var patterns = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -1608,6 +1605,9 @@ var EventStream = /** @class */ (function (_super) {
     };
     return EventStream;
 }(Observable));
+function newEventStream(description, subscribe) {
+    return new EventStream(description, subscribe);
+}
 
 var PropertyDispatcher = /** @class */ (function (_super) {
     __extends(PropertyDispatcher, _super);
@@ -2105,116 +2105,112 @@ function once(value) {
 }
 Bacon.once = once;
 
-function newEventStream$1() {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  return new (Function.prototype.bind.apply(EventStream, [null].concat(args)))();
-}
-
-Observable.prototype.flatMap_ = function (f) {
-  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-  f = _.toFunction(f);
-  var root = this;
-  var rootDep = [root];
-  var childDeps = [];
-  var isProperty = this._isProperty;
-  var ctor = isProperty ? propertyFromStreamSubscribe : newEventStream$1;
-  var initialSpawned = false;
-
-  var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function (sink) {
-    var composite = new CompositeUnsubscribe();
-    var queue = [];
-    var spawn = function (event) {
-      if (isProperty && event.isInitial) {
-        if (initialSpawned) {
-          return more;
-        }
-        initialSpawned = true;
-      }
-      var child = makeObservable(f(event));
-      childDeps.push(child);
-      return composite.add(function (unsubAll, unsubMe) {
-        return child.dispatcher.subscribe(function (event) {
-          if (event.isEnd) {
-            _.remove(child, childDeps);
-            checkQueue();
-            checkEnd(unsubMe);
-            return noMore;
-          } else {
-            event = event.toNext();
-            var reply = sink(event);
-            if (reply === noMore) {
-              unsubAll();
+function flatMap_(f, src, params) {
+    if (params === void 0) { params = {}; }
+    f = _.toFunction(f);
+    var root = src;
+    var rootDep = [root];
+    var childDeps = [];
+    var isProperty = src._isProperty;
+    var ctor = (isProperty ? propertyFromStreamSubscribe : newEventStream);
+    var initialSpawned = false;
+    var desc = params.desc || new Desc(src, "flatMap_", [f]);
+    var result = ctor(desc, function (sink) {
+        var composite = new CompositeUnsubscribe();
+        var queue = [];
+        var spawn = function (event) {
+            if (isProperty && event.isInitial) {
+                if (initialSpawned) {
+                    return more;
+                }
+                initialSpawned = true;
             }
-            return reply;
-          }
+            var child = makeObservable(f(event));
+            childDeps.push(child);
+            return composite.add(function (unsubAll, unsubMe) {
+                return child.subscribeInternal(function (event) {
+                    if (event.isEnd) {
+                        _.remove(child, childDeps);
+                        checkQueue();
+                        checkEnd(unsubMe);
+                        return noMore;
+                    }
+                    else {
+                        event = event.toNext(); // To support Property as the spawned stream
+                        var reply = sink(event);
+                        if (reply === noMore) {
+                            unsubAll();
+                        }
+                        return reply;
+                    }
+                });
+            });
+        };
+        var checkQueue = function () {
+            var event = queue.shift();
+            if (event) {
+                return spawn(event);
+            }
+        };
+        var checkEnd = function (unsub) {
+            unsub();
+            if (composite.empty()) {
+                return sink(endEvent());
+            }
+        };
+        composite.add(function (__, unsubRoot) {
+            return root.subscribeInternal(function (event) {
+                if (event.isEnd) {
+                    return checkEnd(unsubRoot);
+                }
+                else if (event.isError && !params.mapError) {
+                    return sink(event);
+                }
+                else if (params.firstOnly && composite.count() > 1) {
+                    return more;
+                }
+                else {
+                    if (composite.unsubscribed) {
+                        return noMore;
+                    }
+                    if (params.limit && composite.count() > params.limit) {
+                        return queue.push(event);
+                    }
+                    else {
+                        return spawn(event);
+                    }
+                }
+            });
         });
-      });
-    };
-    var checkQueue = function () {
-      var event = queue.shift();
-      if (event) {
-        return spawn(event);
-      }
-    };
-    var checkEnd = function (unsub) {
-      unsub();
-      if (composite.empty()) {
-        return sink(endEvent());
-      }
-    };
-    composite.add(function (__, unsubRoot) {
-      return root.dispatcher.subscribe(function (event) {
-        if (event.isEnd) {
-          return checkEnd(unsubRoot);
-        } else if (event.isError && !params.mapError) {
-          return sink(event);
-        } else if (params.firstOnly && composite.count() > 1) {
-          return more;
-        } else {
-          if (composite.unsubscribed) {
-            return noMore;
-          }
-          if (params.limit && composite.count() > params.limit) {
-            return queue.push(event);
-          } else {
-            return spawn(event);
-          }
-        }
-      });
+        return composite.unsubscribe;
     });
-    return composite.unsubscribe;
-  });
-  result.internalDeps = function () {
-    if (childDeps.length) {
-      return rootDep.concat(childDeps);
-    } else {
-      return rootDep;
+    result.internalDeps = function () {
+        if (childDeps.length) {
+            return rootDep.concat(childDeps);
+        }
+        else {
+            return rootDep;
+        }
+    };
+    return result;
+}
+function handleEventValueWith(f) {
+    if (typeof f == "function") {
+        return (function (event) { return f(event.value); });
     }
-  };
-  return result;
-};
-
-var handleEventValueWith = function (f) {
-  f = _.toFunction(f);
-  return function (event) {
-    return f(event.value);
-  };
-};
-
+    return (function (event) { return f; });
+}
 function makeObservable(x) {
-  if (isObservable(x)) {
-    return x;
-  } else {
-    return once(x);
-  }
+    if (isObservable(x)) {
+        return x;
+    }
+    else {
+        return once(x);
+    }
 }
 
 Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
-  return this.flatMap_(handleEventValueWith(f), {
+  return flatMap_(handleEventValueWith(f), this, {
     limit: limit,
     desc: new Desc(this, "flatMapWithConcurrencyLimit", [limit, f])
   });
@@ -2480,7 +2476,7 @@ var Bus = /** @class */ (function (_super) {
 Bacon.Bus = Bus;
 
 Observable.prototype.flatMap = function (f) {
-  return this.flatMap_(handleEventValueWith(f), { desc: new Desc(this, "flatMap", arguments) });
+  return flatMap_(handleEventValueWith(f), this, { desc: new Desc(this, "flatMap", arguments) });
 };
 
 var liftCallback = function (desc, wrapped) {
@@ -2902,14 +2898,14 @@ Observable.prototype.first = function () {
 };
 
 Observable.prototype.flatMapEvent = function (f) {
-    return this.flatMap_(f, {
+    return flatMap_(f, this, {
         mapError: true,
         desc: new Desc(this, "flatMapEvent", arguments)
     });
 };
 
 Observable.prototype.flatMapFirst = function (f) {
-  return this.flatMap_(handleEventValueWith(f), {
+  return flatMap_(handleEventValueWith(f), this, {
     firstOnly: true,
     desc: new Desc(this, "flatMapFirst", arguments)
   });
@@ -2927,13 +2923,13 @@ Observable.prototype.mapError = function () {
 };
 
 Observable.prototype.flatMapError = function (fn) {
-  return this.flatMap_(function (x) {
+  return flatMap_(function (x) {
     if (x instanceof Error$1) {
       return fn(x.error);
     } else {
       return x;
     }
-  }, {
+  }, this, {
     mapError: true,
     desc: new Desc(this, "flatMapError", [fn])
   });

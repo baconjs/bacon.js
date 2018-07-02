@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
-import EventStream from "./eventstream";
+import EventStream, { newEventStream } from "./eventstream";
 import UpdateBarrier from "./updatebarrier";
 import { fromObservable, isTrigger, Source } from "./source";
 import { endEvent, Event, Value } from "./event";
@@ -10,8 +10,8 @@ import { assert } from "./assert";
 import never from "./never";
 import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
-import Observable from "./observable";
-import { Subscribe, Unsub } from "./types";
+import Observable, { ObservableConstructor } from "./observable";
+import { Unsub } from "./types";
 import Property from "./property";
 
 
@@ -34,10 +34,6 @@ type AnyValue = Value<any>
 export type AnyObservable = Observable<any>
 export type AnyObservableOrSource = AnyObservable | AnySource
 
-function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
-  return new EventStream(description, subscribe)
-}
-
 export function when<O>(...patterns: Pattern<O>[]): EventStream<O> {
   return <any>when_(newEventStream, patterns)
 }
@@ -47,10 +43,6 @@ export function whenP<O>(...patterns: Pattern<O>[]): Property<O> {
 }
 
 export default when;
-
-export interface ObservableConstructor {
-  (description: Desc, subscribe: Subscribe<any>): Observable<any>
-}
 
 export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): Observable<O> {
   if (patterns.length === 0) { return never() }
