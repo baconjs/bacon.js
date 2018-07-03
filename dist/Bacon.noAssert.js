@@ -1790,6 +1790,43 @@
         }
     }
     Bacon.concatAll = concatAll;
+    function mergeAll() {
+        var streams = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            streams[_i] = arguments[_i];
+        }
+        streams = argumentsToObservables(streams);
+        if (streams.length) {
+            return new EventStream(new Desc(Bacon, 'mergeAll', streams), function (sink) {
+                var ends = 0;
+                var smartSink = function (obs) {
+                    return function (unsubBoth) {
+                        return obs.subscribeInternal(function (event) {
+                            if (event.isEnd) {
+                                ends++;
+                                if (ends === streams.length) {
+                                    return sink(endEvent());
+                                } else {
+                                    return more;
+                                }
+                            } else {
+                                var reply = sink(event);
+                                if (reply === noMore) {
+                                    unsubBoth();
+                                }
+                                return reply;
+                            }
+                        });
+                    };
+                };
+                var sinks = _.map(smartSink, streams);
+                return new CompositeUnsubscribe(sinks).unsubscribe;
+            });
+        } else {
+            return never();
+        }
+    }
+    Bacon.mergeAll = mergeAll;
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -1845,6 +1882,9 @@
         };
         EventStream.prototype.concat = function (right, options) {
             return concatE(this, right, options);
+        };
+        EventStream.prototype.merge = function (other) {
+            return withDesc(new Desc(this, 'merge', [other]), mergeAll(this, other));
         };
         return EventStream;
     }(Observable);
@@ -3293,43 +3333,6 @@
             }
         }));
     };
-    EventStream.prototype.merge = function (right) {
-        var left = this;
-        return withDesc(new Desc(left, 'merge', [right]), mergeAll(this, right));
-    };
-    function mergeAll() {
-        var streams = argumentsToObservables(arguments);
-        if (streams.length) {
-            return new EventStream(new Desc(Bacon, 'mergeAll', streams), function (sink) {
-                var ends = 0;
-                var smartSink = function (obs) {
-                    return function (unsubBoth) {
-                        return obs.dispatcher.subscribe(function (event) {
-                            if (event.isEnd) {
-                                ends++;
-                                if (ends === streams.length) {
-                                    return sink(endEvent());
-                                } else {
-                                    return more;
-                                }
-                            } else {
-                                var reply = sink(event);
-                                if (reply === noMore) {
-                                    unsubBoth();
-                                }
-                                return reply;
-                            }
-                        });
-                    };
-                };
-                var sinks = _.map(smartSink, streams);
-                return new CompositeUnsubscribe(sinks).unsubscribe;
-            });
-        } else {
-            return never();
-        }
-    }
-    Bacon.mergeAll = mergeAll;
     function repeatedly(delay, values) {
         var index = 0;
         return withDesc(new Desc(Bacon, 'repeatedly', [

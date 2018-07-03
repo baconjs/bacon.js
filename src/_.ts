@@ -30,7 +30,7 @@ var _ = {
   negate(f) { return function(x) { return !f(x); }; },
   empty(xs) { return xs.length === 0; },
   tail(xs) { return xs.slice(1, xs.length); },
-  filter<A>(f: (A) => boolean, xs: A[]) {
+  filter<A>(f: (A) => boolean, xs: A[]): A[] {
     var filtered: A[] = [];
     for (var i = 0, x; i < xs.length; i++) {
       x = xs[i];
@@ -38,7 +38,7 @@ var _ = {
     }
     return filtered;
   },
-  map<A, B>(f: (A) => B, xs: A[]) {
+  map<A, B>(f: (A) => B, xs: A[]): B[] {
     var result: B[] = [];
     for (var i = 0, x; i < xs.length; i++) {
       x = xs[i];

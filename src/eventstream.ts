@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import { Desc } from "./describe";
+import { Desc, withDesc } from "./describe";
 import { nop } from "./helpers";
 import { registerObs } from "./spy";
 import Dispatcher from "./dispatcher";
@@ -12,6 +12,8 @@ import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubsc
 import map from "./map"
 import { default as withStateMachine, StateF } from "./withstatemachine";
 import { concatE } from "./concat";
+import { assertEventStream } from "./assert";
+import { mergeAll } from "./merge";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -79,6 +81,11 @@ export default class EventStream<V> extends Observable<V> {
   }
   concat(right: Observable<V>, options?: Options): EventStream<V> {
     return concatE(this, right, options)
+  }
+
+  merge(other: EventStream<V>): EventStream<V> {
+    assertEventStream(other)
+    return withDesc(new Desc(this, "merge", [other]), mergeAll(this, other));
   }
 }
 
