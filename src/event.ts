@@ -94,6 +94,10 @@ export function toEvent<V>(x: V | Event<V>): Event<V> {
 }
 export default Event
 
+export function isEvent<V>(e): e is Event<V> {
+  return e && e._isEvent
+}
+
 export function isError<V>(e: Event<V>): e is Error<V> {
   return e.isError
 }

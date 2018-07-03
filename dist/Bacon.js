@@ -347,6 +347,9 @@ function toEvent(x) {
         return nextEvent(x);
     }
 }
+function isEvent(e) {
+    return e && e._isEvent;
+}
 function isError(e) {
     return e.isError;
 }
@@ -2460,66 +2463,59 @@ Observable.prototype.flatMapConcat = function () {
   return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))));
 };
 
-function fromBinder(binder) {
-  var eventTransformer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _.id;
-
-  var desc = new Desc(Bacon, "fromBinder", [binder, eventTransformer]);
-  return new EventStream(desc, function (sink) {
-    var unbound = false;
-    var shouldUnbind = false;
-    var unbind = function () {
-      if (!unbound) {
-        if (typeof unbinder !== "undefined" && unbinder !== null) {
-          unbinder();
-          return unbound = true;
-        } else {
-          return shouldUnbind = true;
+function fromBinder(binder, eventTransformer) {
+    if (eventTransformer === void 0) { eventTransformer = _.id; }
+    var desc = new Desc(Bacon, "fromBinder", [binder, eventTransformer]);
+    return new EventStream(desc, function (sink) {
+        var unbound = false;
+        var shouldUnbind = false;
+        var unbind = function () {
+            if (!unbound) {
+                if ((typeof unbinder !== "undefined" && unbinder !== null)) {
+                    unbinder();
+                    return unbound = true;
+                }
+                else {
+                    return shouldUnbind = true;
+                }
+            }
+        };
+        var unbinder = binder(function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            var value_ = eventTransformer.apply(void 0, args);
+            var valueArray = isArray(value_) && isEvent(_.last(value_))
+                ? value_
+                : [value_];
+            var reply = Bacon.more;
+            for (var i = 0; i < valueArray.length; i++) {
+                var event = toEvent(valueArray[i]);
+                reply = sink(event);
+                if (reply === Bacon.noMore || event.isEnd) {
+                    // defer if binder calls handler in sync before returning unbinder
+                    unbind();
+                    return reply;
+                }
+            }
+            return reply;
+        });
+        if (shouldUnbind) {
+            unbind();
         }
-      }
-    };
-    var unbinder = binder(function () {
-      var ref;
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      var value = eventTransformer.apply(this, args);
-      if (!(isArray(value) && ((ref = _.last(value)) != null ? ref._isEvent : undefined))) {
-        value = [value];
-      }
-      var reply = Bacon.more;
-      for (var i = 0, event; i < value.length; i++) {
-        event = value[i];
-        reply = sink(event = toEvent(event));
-        if (reply === Bacon.noMore || event.isEnd) {
-          unbind();
-          return reply;
-        }
-      }
-      return reply;
+        return unbind;
     });
-    if (shouldUnbind) {
-      unbind();
-    }
-    return unbind;
-  });
 }
-
 Bacon.fromBinder = fromBinder;
 
 function later(delay, value) {
-  return withDesc(new Desc(Bacon, "later", [delay, value]), fromBinder(function (sink) {
-    var sender = function () {
-      return sink([value, endEvent()]);
-    };
-    var id = Scheduler.scheduler.setTimeout(sender, delay);
-    return function () {
-      return Scheduler.scheduler.clearTimeout(id);
-    };
-  }));
+    return withDesc(new Desc(Bacon, "later", [delay, value]), fromBinder(function (sink) {
+        var sender = function () { return sink([value, endEvent()]); };
+        var id = Scheduler.scheduler.setTimeout(sender, delay);
+        return function () { return Scheduler.scheduler.clearTimeout(id); };
+    }));
 }
-
 Bacon.later = later;
 
 Observable.prototype.bufferingThrottle = function (minimumInterval) {
