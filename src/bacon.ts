@@ -73,7 +73,6 @@ import "./take";
 import "./takeuntil";
 import "./takewhile";
 import "./throttle";
-import "./toeventstream";
 import "./topromise";
 import "./try";
 import "./update";

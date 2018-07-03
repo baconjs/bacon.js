@@ -4,14 +4,16 @@ import EventStream from "./eventstream";
 import { allowSync } from "./eventstream";
 import { describe } from './describe';
 import UpdateBarrier from './updatebarrier';
-import { endEvent } from './event';
+import { Event, endEvent } from './event';
+import Property from "./property";
+import { EventSink } from "./types";
 
-export default function addPropertyInitValueToStream(property, stream) {
-  const justInitValue = new EventStream(
+export default function addPropertyInitValueToStream<V>(property: Property<V>, stream: EventStream<V>): Property<V> {
+  const justInitValue: EventStream<V> = new EventStream(
     describe(property, "justInitValue"), 
-    function(sink) {
-      let value;
-      const unsub = property.dispatcher.subscribe(function(event) {
+    function(sink: EventSink<V>) {
+      let value: Event<V>;
+      const unsub = property.dispatcher.subscribe(function(event: Event<V>) {
         if (!event.isEnd) {
           value = event;
         }
@@ -25,7 +27,7 @@ export default function addPropertyInitValueToStream(property, stream) {
       });
       return unsub;
     },
-    null,
+    undefined,
     allowSync
   );
   return justInitValue.concat(stream, allowSync).toProperty();

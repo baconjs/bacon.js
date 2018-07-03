@@ -11,6 +11,7 @@ import { none, Option, toOption } from "./optional"
 import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe"
 import map from "./map"
 import { default as withStateMachine, StateF } from "./withstatemachine";
+import { concatE } from "./concat";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -75,6 +76,9 @@ export default class EventStream<V> extends Observable<V> {
     let desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments))
     let streamSubscribe = disp.subscribe
     return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe))
+  }
+  concat(right: Observable<V>, options?: Options): EventStream<V> {
+    return concatE(this, right, options)
   }
 }
 

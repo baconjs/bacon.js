@@ -12,6 +12,7 @@ import doErrorT from "./doerror";
 import doActionT from "./doaction";
 import doEndT from "./doend";
 import { Accumulator, default as scan } from "./scan";
+import EventStream from "./eventstream";
 
 var idCounter = 0;
 
@@ -60,7 +61,9 @@ export default abstract class Observable<V> {
     });
   }
 
-  abstract toProperty(): Property<V> 
+  abstract toProperty(): Property<V>
+
+  abstract toEventStream(): EventStream<V>
 
   abstract transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Observable<V2>
 
@@ -102,6 +105,8 @@ export default abstract class Observable<V> {
   scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return scan(this, seed, f)
   }
+
+  abstract concat(right: Observable<V>): Observable<V>
 
   name(name: string) {
     this._name = name;

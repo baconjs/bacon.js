@@ -64,6 +64,7 @@ describe "Bacon.concatAll", ->
       [1, 2, 3, 4])
   describe "works with zero inputs", ->
     expectStreamEvents((-> Bacon.concatAll([])), [])
+
 describe "EventStream.concat", ->
   describe "provides values from streams in given order and ends when both are exhausted", ->
     expectStreamEvents(

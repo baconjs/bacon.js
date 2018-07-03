@@ -1676,6 +1676,72 @@ function filterT(f_) {
     };
 }
 
+function constant(value) {
+  return new Property(new Desc(Bacon, "constant", [value]), function (sink) {
+    sink(initialEvent(value));
+    sink(endEvent());
+    return nop;
+  });
+}
+
+Bacon.constant = constant;
+
+function argumentsToObservables(args) {
+    args = Array.prototype.slice.call(args);
+    return _.flatMap(singleToObservables, args);
+}
+function singleToObservables(x) {
+    if (isObservable(x)) {
+        return [x];
+    }
+    else if (isArray(x)) {
+        return argumentsToObservables(x);
+    }
+    else {
+        return [constant(x)];
+    }
+}
+function argumentsToObservablesAndFunction(args) {
+    if (_.isFunction(args[0])) {
+        return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];
+    }
+    else {
+        return [argumentsToObservables(Array.prototype.slice.call(args, 0, args.length - 1)), _.last(args)];
+    }
+}
+
+function concatE(left, right, options) {
+    return new EventStream(new Desc(left, "concat", [right]), function (sink) {
+        var unsubRight = nop;
+        var unsubLeft = left.dispatcher.subscribe(function (e) {
+            if (e.isEnd) {
+                unsubRight = right.toEventStream().dispatcher.subscribe(sink);
+                return unsubRight;
+            }
+            else {
+                return sink(e);
+            }
+        });
+        return function () {
+            return unsubLeft(), unsubRight();
+        };
+    }, undefined, options);
+}
+function concatAll() {
+    var streams = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        streams[_i] = arguments[_i];
+    }
+    streams = argumentsToObservables(streams);
+    if (streams.length) {
+        return withDesc(new Desc(Bacon, "concatAll", streams), _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) { return a.concat(b); }));
+    }
+    else {
+        return never();
+    }
+}
+Bacon.concatAll = concatAll;
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -1731,6 +1797,9 @@ var EventStream = /** @class */ (function (_super) {
         var desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
         var streamSubscribe = disp.subscribe;
         return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
+    };
+    EventStream.prototype.concat = function (right, options) {
+        return concatE(this, right, options);
     };
     return EventStream;
 }(Observable));
@@ -1818,6 +1887,26 @@ var PropertyDispatcher = /** @class */ (function (_super) {
     return PropertyDispatcher;
 }(Dispatcher));
 
+function addPropertyInitValueToStream(property, stream) {
+    var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
+        var value;
+        var unsub = property.dispatcher.subscribe(function (event) {
+            if (!event.isEnd) {
+                value = event;
+            }
+            return noMore;
+        });
+        UpdateBarrier.whenDoneWith(justInitValue, function () {
+            if ((typeof value !== "undefined" && value !== null)) {
+                sink(value);
+            }
+            return sink(endEvent());
+        });
+        return unsub;
+    }, undefined, allowSync);
+    return justInitValue.concat(stream, allowSync).toProperty();
+}
+
 var Property = /** @class */ (function (_super) {
     __extends(Property, _super);
     function Property(desc, subscribe, handler) {
@@ -1857,6 +1946,9 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.map = function (f) {
         return map(f, this);
     };
+    Property.prototype.concat = function (right) {
+        return addPropertyInitValueToStream(this, this.changes().concat(right));
+    };
     // deprecated : use transform() instead
     Property.prototype.withHandler = function (handler) {
         return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
@@ -1864,6 +1956,10 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.toProperty = function () {
         assertNoArguments(arguments);
         return this;
+    };
+    Property.prototype.toEventStream = function (options) {
+        var _this = this;
+        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) { return sink(event.toNext()); }); }, undefined, options);
     };
     return Property;
 }(Observable));
@@ -1918,32 +2014,6 @@ function awaiting(other) {
 }
 
 Observable.prototype.awaiting = awaiting;
-
-function constant(value) {
-  return new Property(new Desc(Bacon, "constant", [value]), function (sink) {
-    sink(initialEvent(value));
-    sink(endEvent());
-    return nop;
-  });
-}
-
-Bacon.constant = constant;
-
-function argumentsToObservables(args) {
-  if (isArray(args[0])) {
-    return args[0];
-  } else {
-    return Array.prototype.slice.call(args);
-  }
-}
-
-function argumentsToObservablesAndFunction(args) {
-  if (_.isFunction(args[0])) {
-    return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];
-  } else {
-    return [argumentsToObservables(Array.prototype.slice.call(args, 0, args.length - 1)), _.last(args)];
-  }
-}
 
 function withMethodCallSupport(wrapped) {
   return function (f) {
@@ -2343,59 +2413,6 @@ Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
 Observable.prototype.flatMapConcat = function () {
   var desc = new Desc(this, "flatMapConcat", Array.prototype.slice.call(arguments, 0));
   return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))));
-};
-
-function addPropertyInitValueToStream(property, stream) {
-  var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
-    var value = void 0;
-    var unsub = property.dispatcher.subscribe(function (event) {
-      if (!event.isEnd) {
-        value = event;
-      }
-      return noMore;
-    });
-    UpdateBarrier.whenDoneWith(justInitValue, function () {
-      if (typeof value !== "undefined" && value !== null) {
-        sink(value);
-      }
-      return sink(endEvent());
-    });
-    return unsub;
-  }, null, allowSync);
-  return justInitValue.concat(stream, allowSync).toProperty();
-}
-
-EventStream.prototype.concat = function (right, options) {
-  var left = this;
-  return new EventStream(new Desc(left, "concat", [right]), function (sink) {
-    var unsubRight = nop;
-    var unsubLeft = left.dispatcher.subscribe(function (e) {
-      if (e.isEnd) {
-        unsubRight = right.toEventStream().dispatcher.subscribe(sink);
-        return unsubRight;
-      } else {
-        return sink(e);
-      }
-    });
-    return function () {
-      return unsubLeft(), unsubRight();
-    };
-  }, null, options);
-};
-
-Property.prototype.concat = function (right) {
-  return addPropertyInitValueToStream(this, this.changes().concat(right));
-};
-
-Bacon.concatAll = function () {
-  var streams = argumentsToObservables(arguments);
-  if (streams.length) {
-    return withDesc(new Desc(Bacon, "concatAll", streams), _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
-      return a.concat(b);
-    }));
-  } else {
-    return never();
-  }
 };
 
 function fromBinder(binder) {
@@ -3540,16 +3557,6 @@ Observable.prototype.throttle = function (delay) {
       return values[values.length - 1];
     });
   });
-};
-
-Property.prototype.toEventStream = function (options) {
-  var _this = this;
-
-  return new EventStream(new Desc(this, "toEventStream", []), function (sink) {
-    return _this.dispatcher.subscribe(function (event) {
-      return sink(event.toNext());
-    });
-  }, null, options);
 };
 
 Observable.prototype.firstToPromise = function (PromiseCtr) {

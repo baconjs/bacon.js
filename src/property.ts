@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import EventStream from "./eventstream";
+import EventStream, { Options } from "./eventstream";
 import { nop } from "./helpers";
 import { assertFunction, assertNoArguments } from "./assert";
 import { Event } from "./event";
@@ -10,6 +10,7 @@ import PropertyDispatcher from "./propertydispatcher"
 import { filter } from "./filter"
 import map from "./map"
 import { default as withStateMachine, StateF } from "./withstatemachine";
+import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -26,7 +27,7 @@ export default class Property<V> extends Observable<V> {
     return this.dispatcher.subscribe(sink)
   }
 
-  changes() {
+  changes(): EventStream<V> {
     return new EventStream(
       new Desc(this, "changes", []), 
       (sink) => this.dispatcher.subscribe(function(event: Event<V>) {
@@ -57,6 +58,10 @@ export default class Property<V> extends Observable<V> {
     return <any>map(f, this)
   }
 
+  concat(right: Observable<V>): Property<V> {
+    return addPropertyInitValueToStream<V>(this, this.changes().concat(right))
+  }
+
   // deprecated : use transform() instead
   withHandler(handler: EventSink<V>) {
     return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
@@ -65,5 +70,14 @@ export default class Property<V> extends Observable<V> {
   toProperty(): Property<V> {
     assertNoArguments(arguments);
     return this;
+  }
+
+  toEventStream(options?: Options): EventStream<V> {
+    return new EventStream(
+      new Desc(this, "toEventStream", []),
+      (sink) => this.subscribeInternal(function(event) { return sink(event.toNext()); }),
+      undefined,
+      options
+    );
   }
 }
