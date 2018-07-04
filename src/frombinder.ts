@@ -8,7 +8,7 @@ import { EventSink, Sink, Unsub } from "./types";
 
 export type FlexibleSink<V> = Sink<EventLike<V>>
 
-export type EventLike<V> = V | Event<V> | V[] | Event<V>[]
+export type EventLike<V> = V | Event<V> | Event<V>[]
 
 export interface Binder<V> {
   (sink: FlexibleSink<V>): Unsub
@@ -17,7 +17,6 @@ export interface Binder<V> {
 export interface EventTransformer<V> {
   (...args: any[]): EventLike<V>
 }
-
 
 export default function fromBinder<V>(binder: Binder<V>, eventTransformer: EventTransformer<V> = _.id): EventStream<V> {
   var desc = new Desc(Bacon, "fromBinder", [binder, eventTransformer]);
