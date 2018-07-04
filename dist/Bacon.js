@@ -1680,13 +1680,12 @@ function filterT(f_) {
 }
 
 function constant(value) {
-  return new Property(new Desc(Bacon, "constant", [value]), function (sink) {
-    sink(initialEvent(value));
-    sink(endEvent());
-    return nop;
-  });
+    return new Property(new Desc(Bacon, "constant", [value]), function (sink) {
+        sink(initialEvent(value));
+        sink(endEvent());
+        return nop;
+    });
 }
-
 Bacon.constant = constant;
 
 function argumentsToObservables(args) {
