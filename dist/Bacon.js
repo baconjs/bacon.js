@@ -3198,15 +3198,12 @@ function fromEventTarget(target, eventSource, eventTransformer) {
 Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;
 
 function fromPoll(delay, poll) {
-  var desc = new Desc(Bacon, "fromPoll", [delay, poll]);
-  return withDesc(desc, fromBinder(function (handler) {
-    var id = Scheduler.scheduler.setInterval(handler, delay);
-    return function () {
-      return Scheduler.scheduler.clearInterval(id);
-    };
-  }, poll));
+    var desc = new Desc(Bacon, "fromPoll", [delay, poll]);
+    return withDesc(desc, fromBinder((function (handler) {
+        var id = Scheduler.scheduler.setInterval(handler, delay);
+        return function () { return Scheduler.scheduler.clearInterval(id); };
+    }), poll));
 }
-
 Bacon.fromPoll = fromPoll;
 
 function valueAndEnd(value) {
