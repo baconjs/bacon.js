@@ -950,6 +950,20 @@ function scan(src, seed, f) {
     return resultProperty = new Property(new Desc(src, "scan", [seed, f]), subscribe);
 }
 
+function mapEndT(f) {
+    var theF = _.toFunction(f);
+    return function (event, sink) {
+        if (isEnd(event)) {
+            sink(nextEvent(theF(event)));
+            sink(endEvent());
+            return noMore;
+        }
+        else {
+            return sink(event);
+        }
+    };
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -1003,6 +1017,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.errors = function () {
         return withDesc(new Desc(this, "errors"), this.filter(function (x) { return false; }));
+    };
+    Observable.prototype.mapEnd = function (f) {
+        return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
     };
     Observable.prototype.log = function () {
         var args = [];
@@ -2793,19 +2810,6 @@ function combineTemplate(template) {
 }
 
 Bacon.combineTemplate = combineTemplate;
-
-Observable.prototype.mapEnd = function () {
-  var f = makeFunctionArgs(arguments);
-  return withDesc(new Desc(this, "mapEnd", [f]), this.withHandler(function (event) {
-    if (event.isEnd) {
-      this.push(nextEvent(f(event)));
-      this.push(endEvent());
-      return noMore;
-    } else {
-      return this.push(event);
-    }
-  }));
-};
 
 Observable.prototype.skipErrors = function () {
   return withDesc(new Desc(this, "skipErrors", []), this.withHandler(function (event) {

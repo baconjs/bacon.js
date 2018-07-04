@@ -13,6 +13,7 @@ import doActionT from "./doaction";
 import doEndT from "./doend";
 import { Accumulator, default as scan } from "./scan";
 import EventStream from "./eventstream";
+import mapEndT from "./mapend";
 
 var idCounter = 0;
 
@@ -84,6 +85,10 @@ export default abstract class Observable<V> {
   }
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
+
+  mapEnd(f: (End) => V): this {
+    return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
+  }
 
   log(...args: any[]): this {
     log(args, this)

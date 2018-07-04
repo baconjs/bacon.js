@@ -21,4 +21,4 @@ describe "EventStream.mapEnd", ->
       -> series(1, ["1", error()]).mapEnd()
       ["1", error(), undefined])
   it "toString", ->
-    expect(Bacon.never().mapEnd(true).toString()).to.equal("Bacon.never().mapEnd(function)")
+    expect(Bacon.never().mapEnd(true).toString()).to.equal("Bacon.never().mapEnd(true)")
