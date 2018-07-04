@@ -3079,7 +3079,7 @@
             return stream;
         }
     };
-    Bacon.fromESObservable = function (_observable) {
+    function fromESObservable(_observable) {
         var observable;
         if (_observable[symbol('observable')]) {
             observable = _observable[symbol('observable')]();
@@ -3089,12 +3089,12 @@
         var desc = new Desc(Bacon, 'fromESObservable', [observable]);
         return new EventStream(desc, function (sink) {
             var cancel = observable.subscribe({
-                error: function () {
-                    sink(new Bacon.Error());
+                error: function (x) {
+                    sink(new Bacon.Error(x));
                     sink(new Bacon.End());
                 },
                 next: function (value) {
-                    sink(new Bacon.Next(value, true));
+                    sink(new Bacon.Next(value));
                 },
                 complete: function () {
                     sink(new Bacon.End());
@@ -3108,7 +3108,8 @@
                 return cancel;
             }
         });
-    };
+    }
+    Bacon.fromESObservable = fromESObservable;
     var eventMethods = [
         [
             'addEventListener',
