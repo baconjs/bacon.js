@@ -3307,14 +3307,11 @@ EventStream.prototype.holdWhen = function (valve) {
   });
 };
 
-function interval(delay) {
-  var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-  return withDesc(new Desc(Bacon, "interval", [delay, value]), fromPoll(delay, function () {
-    return nextEvent(value);
-  }));
+function interval(delay, value) {
+    return withDesc(new Desc(Bacon, "interval", [delay, value]), fromPoll(delay, function () {
+        return nextEvent(value);
+    }));
 }
-
 Bacon.interval = interval;
 
 Bacon.$ = {};

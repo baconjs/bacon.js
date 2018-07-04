@@ -3299,8 +3299,7 @@
             return composite.unsubscribe;
         });
     };
-    function interval(delay) {
-        var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    function interval(delay, value) {
         return withDesc(new Desc(Bacon, 'interval', [
             delay,
             value
