@@ -1,5 +1,5 @@
 import UpdateBarrier from "./updatebarrier";
-import { Desc, describe } from "./describe";
+import { Desc, describe, withDesc } from "./describe";
 import { nop } from "./helpers";
 import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
@@ -73,7 +73,15 @@ export default abstract class Observable<V> {
     return <any>take(count, this)
   }
 
-  abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): Observable<V>
+  first(): this {
+    return <any>take(1, this, new Desc(this, "first"))
+  }
+
+  abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): this
+
+  errors(): this {
+    return withDesc(new Desc(this, "errors"), this.filter(x => false))
+  }
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
 

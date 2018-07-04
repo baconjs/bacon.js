@@ -9,7 +9,7 @@ export class Desc {
   method?: string
   args?: any[]
   cached?: Observable[]
-  constructor(context: any, method: string, args: any[]) {
+  constructor(context: any, method: string, args: any[] = []) {
     //assert("context missing", context)
     //assert("method missing", method)
     //assert("args missing", args)

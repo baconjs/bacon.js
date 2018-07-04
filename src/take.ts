@@ -4,8 +4,8 @@ import { EventSink } from "./types"
 import { Desc } from "./describe"
 import Observable from "./observable";
 
-export function take<V>(count: number, src: Observable<V>): Observable<V> {
-  return src.transform(takeT(count), new Desc(src, "take", [count]))
+export function take<V>(count: number, src: Observable<V>, desc?: Desc): Observable<V> {
+  return src.transform(takeT(count), desc || new Desc(src, "take", [count]))
 }
 
 export function takeT<V>(count) { return (e: Event<V>, sink: EventSink<V>) => {

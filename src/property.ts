@@ -38,7 +38,7 @@ export default class Property<V> extends Observable<V> {
   
   transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
     return new Property(
-      new Desc(this, "transform", [transformer]), 
+      desc || new Desc(this, "transform", [transformer]),
       sink => 
         this.subscribeInternal(e =>
             transformer(e, sink)
@@ -50,7 +50,7 @@ export default class Property<V> extends Observable<V> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
-  filter(f: ((V) => boolean) | boolean | Property<boolean>): Property<V> {
+  filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
     return <any>filter(f, this)
   }
 

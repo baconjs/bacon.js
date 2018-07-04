@@ -64,7 +64,7 @@ export default class EventStream<V> extends Observable<V> {
       handler, 
       allowSync);
   }
-  filter(f: ((V) => boolean) | boolean | Property<boolean>): EventStream<V> {
+  filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
     return <any>filter(f, this)
   }
   map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> {

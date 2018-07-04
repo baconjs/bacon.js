@@ -468,6 +468,9 @@
     };
     var Desc = function () {
         function Desc(context, method, args) {
+            if (args === void 0) {
+                args = [];
+            }
             this._isDesc = true;
             this.context = context;
             this.method = method;
@@ -888,8 +891,8 @@
             }
         }, src));
     }
-    function take(count, src) {
-        return src.transform(takeT(count), new Desc(src, 'take', [count]));
+    function take(count, src, desc) {
+        return src.transform(takeT(count), desc || new Desc(src, 'take', [count]));
     }
     function takeT(count) {
         return function (e, sink) {
@@ -1058,6 +1061,14 @@
         };
         Observable.prototype.take = function (count) {
             return take(count, this);
+        };
+        Observable.prototype.first = function () {
+            return take(1, this, new Desc(this, 'first'));
+        };
+        Observable.prototype.errors = function () {
+            return withDesc(new Desc(this, 'errors'), this.filter(function (x) {
+                return false;
+            }));
         };
         Observable.prototype.log = function () {
             var args = [];
@@ -2000,7 +2011,7 @@
         };
         Property.prototype.transform = function (transformer, desc) {
             var _this = this;
-            return new Property(new Desc(this, 'transform', [transformer]), function (sink) {
+            return new Property(desc || new Desc(this, 'transform', [transformer]), function (sink) {
                 return _this.subscribeInternal(function (e) {
                     return transformer(e, sink);
                 });
@@ -2904,12 +2915,6 @@
             }));
         });
     };
-    var alwaysFalse = function () {
-        return false;
-    };
-    Observable.prototype.errors = function () {
-        return withDesc(new Desc(this, 'errors', []), this.filter(alwaysFalse));
-    };
     function symbol(key) {
         if (typeof Symbol !== 'undefined' && Symbol[key]) {
             return Symbol[key];
@@ -2957,9 +2962,6 @@
         return new ESObservable(this);
     };
     Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
-    Observable.prototype.first = function () {
-        return withDesc(new Desc(this, 'first', []), this.take(1));
-    };
     Observable.prototype.flatMapEvent = function (f) {
         return flatMap_(f, this, {
             mapError: true,
