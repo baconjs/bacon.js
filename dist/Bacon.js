@@ -3356,12 +3356,11 @@ Observable.prototype.last = function () {
 };
 
 function repeatedly(delay, values) {
-  var index = 0;
-  return withDesc(new Desc(Bacon, "repeatedly", [delay, values]), fromPoll(delay, function () {
-    return values[index++ % values.length];
-  }));
+    var index = 0;
+    return withDesc(new Desc(Bacon, "repeatedly", [delay, values]), fromPoll(delay, function () {
+        return values[index++ % values.length];
+    }));
 }
-
 Bacon.repeatedly = repeatedly;
 
 function repeat(generator) {
