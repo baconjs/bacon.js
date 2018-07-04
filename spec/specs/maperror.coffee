@@ -19,4 +19,4 @@ describe "EventStream.mapError", ->
         -> take(2, repeat(1, [1, error()]).mapError("ERR"))
         [1, "ERR"])
   it "toString", ->
-    expect(Bacon.never().mapError(true).toString()).to.equal("Bacon.never().mapError(function)")
+    expect(Bacon.never().mapError(true).toString()).to.equal("Bacon.never().mapError(true)")

@@ -1013,6 +1013,16 @@
             }
         };
     }
+    function mapErrorT(f) {
+        var theF = _.toFunction(f);
+        return function (event, sink) {
+            if (isError(event)) {
+                return sink(nextEvent(theF(event.error)));
+            } else {
+                return sink(event);
+            }
+        };
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -1084,6 +1094,9 @@
         };
         Observable.prototype.mapEnd = function (f) {
             return this.transform(mapEndT(f), new Desc(this, 'mapEnd', [f]));
+        };
+        Observable.prototype.mapError = function (f) {
+            return this.transform(mapErrorT(f), new Desc(this, 'mapError', [f]));
         };
         Observable.prototype.log = function () {
             var args = [];
@@ -2126,10 +2139,6 @@
             return wrapped.apply(undefined, [f].concat(args));
         };
     }
-    function makeFunctionArgs(args) {
-        args = Array.prototype.slice.call(args);
-        return makeFunction_.apply(undefined, args);
-    }
     function partiallyApplied(f, applied) {
         return function () {
             for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
@@ -2976,16 +2985,6 @@
             firstOnly: true,
             desc: new Desc(this, 'flatMapFirst', arguments)
         });
-    };
-    Observable.prototype.mapError = function () {
-        var f = makeFunctionArgs(arguments);
-        return withDesc(new Desc(this, 'mapError', [f]), this.withHandler(function (event) {
-            if (event.isError) {
-                return this.push(nextEvent(f(event.error)));
-            } else {
-                return this.push(event);
-            }
-        }));
     };
     Observable.prototype.flatMapError = function (fn) {
         return flatMap_(function (x) {
