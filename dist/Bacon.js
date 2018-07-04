@@ -3207,32 +3207,27 @@ function fromPoll(delay, poll) {
 Bacon.fromPoll = fromPoll;
 
 function valueAndEnd(value) {
-  return [value, endEvent()];
+    return [value, endEvent()];
 }
-
-function fromPromise(promise, abort) {
-  var eventTransformer = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : valueAndEnd;
-
-  return withDesc(new Desc(Bacon, "fromPromise", [promise]), fromBinder(function (handler) {
-    var bound = promise.then(handler, function (e) {
-      return handler(new Error$1(e));
-    });
-    if (bound && typeof bound.done === "function") {
-      bound.done();
-    }
-
-    if (abort) {
-      return function () {
-        if (typeof promise.abort === "function") {
-          return promise.abort();
+function fromPromise(promise, abort, eventTransformer) {
+    if (eventTransformer === void 0) { eventTransformer = valueAndEnd; }
+    return withDesc(new Desc(Bacon, "fromPromise", [promise]), fromBinder(function (handler) {
+        var bound = promise.then(handler, function (e) { return handler(new Error$1(e)); });
+        if (bound && typeof bound.done === "function") {
+            bound.done();
         }
-      };
-    } else {
-      return function () {};
-    }
-  }, eventTransformer));
+        if (abort) {
+            return function () {
+                if (typeof promise.abort === "function") {
+                    return promise.abort();
+                }
+            };
+        }
+        else {
+            return function () { };
+        }
+    }, eventTransformer));
 }
-
 Bacon.fromPromise = fromPromise;
 
 Observable.prototype.groupBy = function (keyF) {

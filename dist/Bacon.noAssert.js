@@ -3193,8 +3193,10 @@
             endEvent()
         ];
     }
-    function fromPromise(promise, abort) {
-        var eventTransformer = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : valueAndEnd;
+    function fromPromise(promise, abort, eventTransformer) {
+        if (eventTransformer === void 0) {
+            eventTransformer = valueAndEnd;
+        }
         return withDesc(new Desc(Bacon, 'fromPromise', [promise]), fromBinder(function (handler) {
             var bound = promise.then(handler, function (e) {
                 return handler(new Error$1(e));
