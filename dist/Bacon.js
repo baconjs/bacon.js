@@ -2063,33 +2063,23 @@ function mapT(f) {
 }
 
 function groupSimultaneous() {
-  for (var _len = arguments.length, streams = Array(_len), _key = 0; _key < _len; _key++) {
-    streams[_key] = arguments[_key];
-  }
-
-  return groupSimultaneous_(streams);
-}
-
-function groupSimultaneous_(streams, options) {
-  if (streams.length === 1 && isArray(streams[0])) {
-    streams = streams[0];
-  }
-  var sources = _.map(function (stream) {
-    return new BufferingSource(stream);
-  }, streams);
-
-  var ctor = function (desc, subscribe) {
-    return new EventStream(desc, subscribe, null, options);
-  };
-  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, function () {
-    for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      xs[_key2] = arguments[_key2];
+    var streams = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        streams[_i] = arguments[_i];
     }
-
-    return xs;
-  }]));
+    return groupSimultaneous_(argumentsToObservables(streams));
 }
-
+function groupSimultaneous_(streams, options) {
+    var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
+    var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
+    return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, (function () {
+            var xs = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                xs[_i] = arguments[_i];
+            }
+            return xs;
+        })]));
+}
 Bacon.groupSimultaneous = groupSimultaneous;
 
 function awaiting(other) {
