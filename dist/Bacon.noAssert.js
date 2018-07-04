@@ -3037,7 +3037,7 @@
         ]), this.scan(seed, f).sampledBy(this.errors().mapEnd().toProperty()));
     };
     Observable.prototype.reduce = Observable.prototype.fold;
-    Bacon.fromArray = function (values) {
+    function fromArray(values) {
         if (!values.length) {
             return withDesc(new Desc(Bacon, 'fromArray', values), never());
         } else {
@@ -3078,7 +3078,8 @@
             });
             return stream;
         }
-    };
+    }
+    Bacon.fromArray = fromArray;
     function fromESObservable(_observable) {
         var observable;
         if (_observable[symbol('observable')]) {

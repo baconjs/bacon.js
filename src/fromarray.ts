@@ -6,14 +6,15 @@ import { toEvent, endEvent } from "./event";
 import { more, noMore } from "./reply";
 import UpdateBarrier from "./updatebarrier";
 import Bacon from "./core";
+import { EventSink } from "./types";
 
-export default Bacon.fromArray = function(values) {
+export default function fromArray<T>(values: T[]) {
   assertArray(values);
   if (!values.length) {
     return withDesc(new Desc(Bacon, "fromArray", values), never());
   } else {
     var i = 0;
-    var stream = new EventStream(new Desc(Bacon, "fromArray", [values]), function(sink) {
+    var stream = new EventStream(new Desc(Bacon, "fromArray", [values]), function(sink: EventSink<T>) {
       var unsubd = false;
       var reply = more;
       var pushing = false;
@@ -52,3 +53,5 @@ export default Bacon.fromArray = function(values) {
     return stream;
   }
 };
+
+Bacon.fromArray = fromArray
