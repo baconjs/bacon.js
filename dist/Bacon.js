@@ -3133,48 +3133,68 @@ function fromESObservable(_observable) {
 
 Bacon.fromESObservable = fromESObservable;
 
-var eventMethods = [["addEventListener", "removeEventListener"], ["addListener", "removeListener"], ["on", "off"], ["bind", "unbind"]];
-
+// Wrap DOM EventTarget, Node EventEmitter, or
+// [un]bind: (Any, (Any) -> None) -> None interfaces
+// common in MVCs as EventStream
+//
+// target - EventTarget or EventEmitter, source of events
+// eventSource - event name to bind or a function that performs custom binding
+// eventTransformer - defaults to returning the first argument to handler
+//
+// Examples
+//
+//   Bacon.fromEventTarget(document.body, "click")
+//   # => EventStream
+//
+//   Bacon.fromEventTarget(document.body, "scroll", {passive: true})
+//   # => EventStream
+//
+//   Bacon.fromEventTarget (new EventEmitter(), "data")
+//   # => EventStream
+//
+// Returns EventStream
+var eventMethods = [
+    ["addEventListener", "removeEventListener"],
+    ["addListener", "removeListener"],
+    ["on", "off"],
+    ["bind", "unbind"]
+];
 var findHandlerMethods = function (target) {
-  var pair;
-  for (var i = 0; i < eventMethods.length; i++) {
-    pair = eventMethods[i];
-    var methodPair = [target[pair[0]], target[pair[1]]];
-    if (methodPair[0] && methodPair[1]) {
-      return methodPair;
+    var pair;
+    for (var i = 0; i < eventMethods.length; i++) {
+        pair = eventMethods[i];
+        var methodPair = [target[pair[0]], target[pair[1]]];
+        if (methodPair[0] && methodPair[1]) {
+            return methodPair;
+        }
     }
-  }
-  for (var j = 0; j < eventMethods.length; j++) {
-    pair = eventMethods[j];
-    var addListener = target[pair[0]];
-    if (addListener) {
-      return [addListener, function () {}];
+    for (var j = 0; j < eventMethods.length; j++) {
+        pair = eventMethods[j];
+        var addListener = target[pair[0]];
+        if (addListener) {
+            return [addListener, function () { }];
+        }
     }
-  }
-  throw new Error("No suitable event methods in " + target);
+    throw new Error("No suitable event methods in " + target);
 };
-
 function fromEventTarget(target, eventSource, eventTransformer) {
-  var _findHandlerMethods = findHandlerMethods(target),
-      sub = _findHandlerMethods[0],
-      unsub = _findHandlerMethods[1];
-
-  var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
-  return withDesc(desc, fromBinder(function (handler) {
-    if (_.isFunction(eventSource)) {
-      eventSource(sub.bind(target), handler);
-      return function () {
-        return eventSource(unsub.bind(target), handler);
-      };
-    } else {
-      sub.call(target, eventSource, handler);
-      return function () {
-        return unsub.call(target, eventSource, handler);
-      };
-    }
-  }, eventTransformer));
+    var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
+    var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
+    return withDesc(desc, fromBinder(function (handler) {
+        if (_.isFunction(eventSource)) {
+            eventSource(sub.bind(target), handler);
+            return function () {
+                return eventSource(unsub.bind(target), handler);
+            };
+        }
+        else {
+            sub.call(target, eventSource, handler);
+            return function () {
+                return unsub.call(target, eventSource, handler);
+            };
+        }
+    }, eventTransformer));
 }
-
 Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;
 
 function fromPoll(delay, poll) {

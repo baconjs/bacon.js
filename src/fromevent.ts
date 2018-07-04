@@ -3,6 +3,7 @@ import { Desc, withDesc } from './describe';
 import fromBinder from './frombinder';
 import Bacon from './core';
 import _ from './_';
+import EventStream from "./eventstream";
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
@@ -31,12 +32,12 @@ var eventMethods = [
   ["bind", "unbind"]
 ];
 
-var findHandlerMethods = function(target) {
+var findHandlerMethods = function(target): [Function, Function] {
   var pair;
   for (var i = 0; i < eventMethods.length; i++) {
     pair = eventMethods[i];
     var methodPair = [target[pair[0]], target[pair[1]]];
-    if (methodPair[0] && methodPair[1]) { return methodPair; }
+    if (methodPair[0] && methodPair[1]) { return <any>methodPair; }
   }
   for (var j = 0; j < eventMethods.length; j++) {
     pair = eventMethods[j];
@@ -46,10 +47,10 @@ var findHandlerMethods = function(target) {
   throw new Exception("No suitable event methods in " + target);
 };
 
-export default function fromEventTarget(target, eventSource, eventTransformer) {
+export default function fromEventTarget<V>(target, eventSource, eventTransformer): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
-  return withDesc(desc, fromBinder(function(handler) {
+  return withDesc(desc, fromBinder<V>(function(handler) {
     if (_.isFunction(eventSource)) {
       eventSource(sub.bind(target), handler);
       return function() {

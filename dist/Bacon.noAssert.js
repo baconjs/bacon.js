@@ -3154,7 +3154,7 @@
         throw new Error('No suitable event methods in ' + target);
     };
     function fromEventTarget(target, eventSource, eventTransformer) {
-        var _findHandlerMethods = findHandlerMethods(target), sub = _findHandlerMethods[0], unsub = _findHandlerMethods[1];
+        var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
         var desc = new Desc(Bacon, 'fromEvent', [
             target,
             eventSource
