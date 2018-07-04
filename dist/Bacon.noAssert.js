@@ -3450,7 +3450,7 @@
                 return value;
             } else if (index === values.length) {
                 return [
-                    value,
+                    toEvent(value),
                     endEvent()
                 ];
             } else {

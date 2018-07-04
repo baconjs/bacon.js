@@ -3455,19 +3455,20 @@ Bacon.retry = function (options) {
 };
 
 function sequentially(delay, values) {
-  var index = 0;
-  return withDesc(new Desc(Bacon, "sequentially", [delay, values]), fromPoll(delay, function () {
-    var value = values[index++];
-    if (index < values.length) {
-      return value;
-    } else if (index === values.length) {
-      return [value, endEvent()];
-    } else {
-      return endEvent();
-    }
-  }));
+    var index = 0;
+    return withDesc(new Desc(Bacon, "sequentially", [delay, values]), fromPoll(delay, function () {
+        var value = values[index++];
+        if (index < values.length) {
+            return value;
+        }
+        else if (index === values.length) {
+            return [toEvent(value), endEvent()];
+        }
+        else {
+            return endEvent();
+        }
+    }));
 }
-
 Bacon.sequentially = sequentially;
 
 Observable.prototype.skip = function (count) {
