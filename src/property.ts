@@ -13,6 +13,7 @@ import { default as withStateMachine, StateF } from "./withstatemachine";
 import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
 import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
+import flatMapFirst from "./flatmapfirst";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -56,14 +57,11 @@ export default class Property<V> extends Observable<V> {
     return <any>filter(f, this)
   }
 
-  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> {
-    return <any>map(f, this)
-  }
+  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map(f, this) }
 
-  flatMap<V2>(f: Spawner<V, V2>): Property<V2> {
-    return <any>flatMap(this, f)
-  }
-  
+  flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
+  flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
+
   concat(right: Observable<V>): Property<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(right))
   }

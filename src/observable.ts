@@ -89,6 +89,7 @@ export default abstract class Observable<V> {
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
 
   abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
 
   mapEnd(f: ((End) => V) | V): this {
     return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))

@@ -7,5 +7,5 @@ export default function flatMap<V, V2>(src: Observable<V>, f: Spawner<V, V2>): O
     handleEventValueWith(f),
     src,
     { desc: new Desc(src, "flatMap", [f]) }
-  );
-};
+  )
+}

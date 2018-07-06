@@ -16,6 +16,7 @@ import { assertEventStream } from "./assert";
 import { mergeAll } from "./merge";
 import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
+import flatMapFirst from "./flatmapfirst";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -69,13 +70,10 @@ export default class EventStream<V> extends Observable<V> {
   filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
     return <any>filter(f, this)
   }
-  map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> {
-    return <any>map(f, this)
-  }
+  map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> { return <any>map(f, this) }
 
-  flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> {
-    return <any>flatMap(this, f)
-  }
+  flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
+  flatMapFirst<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
 
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
     let initValue: Option<V> = initValue_.length 

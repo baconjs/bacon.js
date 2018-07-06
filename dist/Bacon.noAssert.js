@@ -1986,6 +1986,12 @@
     function flatMap(src, f) {
         return flatMap_(handleEventValueWith(f), src, { desc: new Desc(src, 'flatMap', [f]) });
     }
+    function flatMapFirst(src, f) {
+        return flatMap_(handleEventValueWith(f), src, {
+            firstOnly: true,
+            desc: new Desc(src, 'flatMapFirst', [f])
+        });
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -2030,6 +2036,9 @@
         };
         EventStream.prototype.flatMap = function (f) {
             return flatMap(this, f);
+        };
+        EventStream.prototype.flatMapFirst = function (f) {
+            return flatMapFirst(this, f);
         };
         EventStream.prototype.toProperty = function () {
             var initValue_ = [];
@@ -2176,6 +2185,9 @@
         };
         Property.prototype.flatMap = function (f) {
             return flatMap(this, f);
+        };
+        Property.prototype.flatMapFirst = function (f) {
+            return flatMapFirst(this, f);
         };
         Property.prototype.concat = function (right) {
             return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -2983,12 +2995,6 @@
         return flatMap_(f, this, {
             mapError: true,
             desc: new Desc(this, 'flatMapEvent', arguments)
-        });
-    };
-    Observable.prototype.flatMapFirst = function (f) {
-        return flatMap_(handleEventValueWith(f), this, {
-            firstOnly: true,
-            desc: new Desc(this, 'flatMapFirst', arguments)
         });
     };
     Observable.prototype.flatMapError = function (fn) {

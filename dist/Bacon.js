@@ -1945,6 +1945,13 @@ function flatMap(src, f) {
     return flatMap_(handleEventValueWith(f), src, { desc: new Desc(src, "flatMap", [f]) });
 }
 
+function flatMapFirst(src, f) {
+    return flatMap_(handleEventValueWith(f), src, {
+        firstOnly: true,
+        desc: new Desc(src, "flatMapFirst", [f])
+    });
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -1985,12 +1992,9 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.filter = function (f) {
         return filter(f, this);
     };
-    EventStream.prototype.map = function (f) {
-        return map(f, this);
-    };
-    EventStream.prototype.flatMap = function (f) {
-        return flatMap(this, f);
-    };
+    EventStream.prototype.map = function (f) { return map(f, this); };
+    EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
+    EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
     EventStream.prototype.toProperty = function () {
         var initValue_ = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -2153,12 +2157,9 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.filter = function (f) {
         return filter(f, this);
     };
-    Property.prototype.map = function (f) {
-        return map(f, this);
-    };
-    Property.prototype.flatMap = function (f) {
-        return flatMap(this, f);
-    };
+    Property.prototype.map = function (f) { return map(f, this); };
+    Property.prototype.flatMap = function (f) { return flatMap(this, f); };
+    Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
     Property.prototype.concat = function (right) {
         return addPropertyInitValueToStream(this, this.changes().concat(right));
     };
@@ -2992,13 +2993,6 @@ Observable.prototype.flatMapEvent = function (f) {
         mapError: true,
         desc: new Desc(this, "flatMapEvent", arguments)
     });
-};
-
-Observable.prototype.flatMapFirst = function (f) {
-  return flatMap_(handleEventValueWith(f), this, {
-    firstOnly: true,
-    desc: new Desc(this, "flatMapFirst", arguments)
-  });
 };
 
 Observable.prototype.flatMapError = function (fn) {
