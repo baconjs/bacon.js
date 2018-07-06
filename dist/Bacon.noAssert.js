@@ -1869,6 +1869,123 @@
         }
     }
     Bacon.mergeAll = mergeAll;
+    function once(value) {
+        var s = new EventStream(new Desc(Bacon, 'once', [value]), function (sink) {
+            UpdateBarrier.soonButNotYet(s, function () {
+                sink(toEvent(value));
+                sink(endEvent());
+            });
+            return nop;
+        });
+        return s;
+    }
+    Bacon.once = once;
+    function flatMap_(f, src, params) {
+        if (params === void 0) {
+            params = {};
+        }
+        f = _.toFunction(f);
+        var root = src;
+        var rootDep = [root];
+        var childDeps = [];
+        var isProperty = src._isProperty;
+        var ctor = isProperty ? propertyFromStreamSubscribe : newEventStream;
+        var initialSpawned = false;
+        var desc = params.desc || new Desc(src, 'flatMap_', [f]);
+        var result = ctor(desc, function (sink) {
+            var composite = new CompositeUnsubscribe();
+            var queue = [];
+            function spawn(event) {
+                if (isProperty && event.isInitial) {
+                    if (initialSpawned) {
+                        return more;
+                    }
+                    initialSpawned = true;
+                }
+                var child = makeObservable(f(event));
+                childDeps.push(child);
+                return composite.add(function (unsubAll, unsubMe) {
+                    return child.subscribeInternal(function (event) {
+                        if (event.isEnd) {
+                            _.remove(child, childDeps);
+                            checkQueue();
+                            checkEnd(unsubMe);
+                            return noMore;
+                        } else {
+                            event = event.toNext();
+                            var reply = sink(event);
+                            if (reply === noMore) {
+                                unsubAll();
+                            }
+                            return reply;
+                        }
+                    });
+                });
+            }
+            function checkQueue() {
+                var event = queue.shift();
+                if (event) {
+                    spawn(event);
+                }
+            }
+            function checkEnd(unsub) {
+                unsub();
+                if (composite.empty()) {
+                    return sink(endEvent());
+                }
+                return more;
+            }
+            composite.add(function (__, unsubRoot) {
+                return root.subscribeInternal(function (event) {
+                    if (event.isEnd) {
+                        return checkEnd(unsubRoot);
+                    } else if (event.isError && !params.mapError) {
+                        return sink(event);
+                    } else if (params.firstOnly && composite.count() > 1) {
+                        return more;
+                    } else {
+                        if (composite.unsubscribed) {
+                            return noMore;
+                        }
+                        if (params.limit && composite.count() > params.limit) {
+                            return queue.push(event);
+                        } else {
+                            return spawn(event);
+                        }
+                    }
+                });
+            });
+            return composite.unsubscribe;
+        });
+        result.internalDeps = function () {
+            if (childDeps.length) {
+                return rootDep.concat(childDeps);
+            } else {
+                return rootDep;
+            }
+        };
+        return result;
+    }
+    function handleEventValueWith(f) {
+        if (typeof f == 'function') {
+            return function (event) {
+                return f(event.value);
+            };
+        }
+        return function (event) {
+            return f;
+        };
+    }
+    function makeObservable(x) {
+        if (isObservable(x)) {
+            return x;
+        } else {
+            return once(x);
+        }
+    }
+    function flatMap(src, f) {
+        return flatMap_(handleEventValueWith(f), src, { desc: new Desc(src, 'flatMap', [f]) });
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -1910,6 +2027,9 @@
         };
         EventStream.prototype.map = function (f) {
             return map(f, this);
+        };
+        EventStream.prototype.flatMap = function (f) {
+            return flatMap(this, f);
         };
         EventStream.prototype.toProperty = function () {
             var initValue_ = [];
@@ -2053,6 +2173,9 @@
         };
         Property.prototype.map = function (f) {
             return map(f, this);
+        };
+        Property.prototype.flatMap = function (f) {
+            return flatMap(this, f);
         };
         Property.prototype.concat = function (right) {
             return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -2365,120 +2488,6 @@
             return reply;
         }));
     };
-    function once(value) {
-        var s = new EventStream(new Desc(Bacon, 'once', [value]), function (sink) {
-            UpdateBarrier.soonButNotYet(s, function () {
-                sink(toEvent(value));
-                sink(endEvent());
-            });
-            return nop;
-        });
-        return s;
-    }
-    Bacon.once = once;
-    function flatMap_(f, src, params) {
-        if (params === void 0) {
-            params = {};
-        }
-        f = _.toFunction(f);
-        var root = src;
-        var rootDep = [root];
-        var childDeps = [];
-        var isProperty = src._isProperty;
-        var ctor = isProperty ? propertyFromStreamSubscribe : newEventStream;
-        var initialSpawned = false;
-        var desc = params.desc || new Desc(src, 'flatMap_', [f]);
-        var result = ctor(desc, function (sink) {
-            var composite = new CompositeUnsubscribe();
-            var queue = [];
-            function spawn(event) {
-                if (isProperty && event.isInitial) {
-                    if (initialSpawned) {
-                        return more;
-                    }
-                    initialSpawned = true;
-                }
-                var child = makeObservable(f(event));
-                childDeps.push(child);
-                return composite.add(function (unsubAll, unsubMe) {
-                    return child.subscribeInternal(function (event) {
-                        if (event.isEnd) {
-                            _.remove(child, childDeps);
-                            checkQueue();
-                            checkEnd(unsubMe);
-                            return noMore;
-                        } else {
-                            event = event.toNext();
-                            var reply = sink(event);
-                            if (reply === noMore) {
-                                unsubAll();
-                            }
-                            return reply;
-                        }
-                    });
-                });
-            }
-            function checkQueue() {
-                var event = queue.shift();
-                if (event) {
-                    spawn(event);
-                }
-            }
-            function checkEnd(unsub) {
-                unsub();
-                if (composite.empty()) {
-                    return sink(endEvent());
-                }
-                return more;
-            }
-            composite.add(function (__, unsubRoot) {
-                return root.subscribeInternal(function (event) {
-                    if (event.isEnd) {
-                        return checkEnd(unsubRoot);
-                    } else if (event.isError && !params.mapError) {
-                        return sink(event);
-                    } else if (params.firstOnly && composite.count() > 1) {
-                        return more;
-                    } else {
-                        if (composite.unsubscribed) {
-                            return noMore;
-                        }
-                        if (params.limit && composite.count() > params.limit) {
-                            return queue.push(event);
-                        } else {
-                            return spawn(event);
-                        }
-                    }
-                });
-            });
-            return composite.unsubscribe;
-        });
-        result.internalDeps = function () {
-            if (childDeps.length) {
-                return rootDep.concat(childDeps);
-            } else {
-                return rootDep;
-            }
-        };
-        return result;
-    }
-    function handleEventValueWith(f) {
-        if (typeof f == 'function') {
-            return function (event) {
-                return f(event.value);
-            };
-        }
-        return function (event) {
-            return f;
-        };
-    }
-    function makeObservable(x) {
-        if (isObservable(x)) {
-            return x;
-        } else {
-            return once(x);
-        }
-    }
     Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
         return flatMap_(handleEventValueWith(f), this, {
             limit: limit,
@@ -2688,9 +2697,6 @@
         return Bus;
     }(EventStream);
     Bacon.Bus = Bus;
-    Observable.prototype.flatMap = function (f) {
-        return flatMap_(handleEventValueWith(f), this, { desc: new Desc(this, 'flatMap', arguments) });
-    };
     var liftCallback = function (desc, wrapped) {
         return withMethodCallSupport(function (f) {
             var stream = partiallyApplied(wrapped, [function (values, callback) {

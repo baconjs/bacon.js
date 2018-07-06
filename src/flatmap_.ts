@@ -10,6 +10,8 @@ import once from "./once"
 import { newEventStream } from "./eventstream"
 import { EventSink, Unsub } from "./types"
 
+export type Spawner<V, V2> = ((V) => (V2 | Observable<V2>)) | Observable<V2>
+
 export interface FlatMapParams {
   desc? : Desc
   mapError? : boolean
@@ -17,7 +19,7 @@ export interface FlatMapParams {
   limit? : number
 }
 
-export function flatMap_<In, Out>(f: (In) => Observable<Out>, src: Observable<In>, params: FlatMapParams = {}): Observable<Out> {
+export function flatMap_<In, Out>(f: (In) => Out | Observable<Out>, src: Observable<In>, params: FlatMapParams = {}): Observable<Out> {
   f = _.toFunction(f)
   const root = src
   const rootDep = [root as Observable<any>]
@@ -93,7 +95,7 @@ export function flatMap_<In, Out>(f: (In) => Observable<Out>, src: Observable<In
   return result
 }
 
-export function handleEventValueWith<In, Out>(f: ((V) => Out) | Out): Out {
+export function handleEventValueWith<In, Out>(f: ((In) => Out) | Out): ((In) => Out) {
   if (typeof f == "function") {
     return <any>(event => f(event.value))
   }

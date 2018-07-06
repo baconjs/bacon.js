@@ -14,6 +14,8 @@ import { default as withStateMachine, StateF } from "./withstatemachine";
 import { concatE } from "./concat";
 import { assertEventStream } from "./assert";
 import { mergeAll } from "./merge";
+import { Spawner } from "./flatmap_";
+import flatMap from "./flatmap";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -70,6 +72,11 @@ export default class EventStream<V> extends Observable<V> {
   map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> {
     return <any>map(f, this)
   }
+
+  flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> {
+    return <any>flatMap(this, f)
+  }
+
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
     let initValue: Option<V> = initValue_.length 
       ? toOption<V>(initValue_[0]) 
