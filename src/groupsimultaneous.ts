@@ -7,11 +7,14 @@ import _ from "./_"
 import Observable from "./observable";
 import { argumentsToObservables } from "./argumentstoobservables";
 
-export default function groupSimultaneous<V>(...streams: (Observable<V> | Observable<V>[])[]): EventStream<V[]> {
+export default function groupSimultaneous<V>(...streams: (Observable<V> | Observable<V>[])[]): EventStream<V[][]> {
   return groupSimultaneous_(argumentsToObservables(streams))
 }
 
-export function groupSimultaneous_<V>(streams: Observable<V>[], options?: Options): EventStream<V[]> {
+
+// TODO: type is not exactly correct, because different inputs may have different types.
+// Result values are arrays where each element is the list from each input observable. Type this.
+export function groupSimultaneous_<V>(streams: Observable<V>[], options?: Options): EventStream<V[][]> {
   let sources = _.map(stream => new BufferingSource<V>(stream), streams)
 
   let ctor = (desc, subscribe) => new EventStream(desc, subscribe, undefined, options)

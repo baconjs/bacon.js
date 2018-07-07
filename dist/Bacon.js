@@ -2197,6 +2197,8 @@ function groupSimultaneous() {
     }
     return groupSimultaneous_(argumentsToObservables(streams));
 }
+// TODO: type is not exactly correct, because different inputs may have different types.
+// Result values are arrays where each element is the list from each input observable. Type this.
 function groupSimultaneous_(streams, options) {
     var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
     var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
