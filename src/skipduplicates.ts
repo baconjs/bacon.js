@@ -2,7 +2,7 @@ import withStateMachine from "./withstatemachine";
 import { none, Option, Some } from "./optional";
 import { Desc, withDesc } from "./describe";
 import Observable from "./observable";
-import Event from "./event"
+import Event, { hasValue } from "./event"
 
 export interface Equals<A> {
   (left: A, right: A): boolean
@@ -16,7 +16,7 @@ function isNone(object){
 export default function skipDuplicates<A>(src: Observable<A>, isEqual: Equals<A> = equals): Observable<A> {
   let desc = new Desc(src, "skipDuplicates", []);
   return withDesc(desc, withStateMachine<A, Option<A>, A>(none(), function(prev: Option<A>, event: Event<A>): [Option<A>, Event<A>[]] {
-    if (!event.hasValue) {
+    if (!hasValue(event)) {
       return [prev, [event]];
     } else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), <A>event.value)) {
       return [new Some(<any>event.value), [event]];

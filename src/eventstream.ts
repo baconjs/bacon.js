@@ -17,6 +17,7 @@ import { mergeAll } from "./merge";
 import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
 import flatMapFirst from "./flatmapfirst";
+import takeUntil from "./takeuntil";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -75,6 +76,9 @@ export default class EventStream<V> extends Observable<V> {
   flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
   flatMapFirst<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
 
+  takeUntil(stopper: Observable<any>): EventStream<V> {
+    return <any>takeUntil(this, stopper)
+  }
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
     let initValue: Option<V> = initValue_.length 
       ? toOption<V>(initValue_[0]) 

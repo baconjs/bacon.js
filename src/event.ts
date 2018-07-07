@@ -3,7 +3,6 @@ import _ from './_';
 var eventIdCounter = 0;
 
 export abstract class Event<V> {
-  value?: V // TODO remove from base
   id: number = ++eventIdCounter
   isEvent: boolean = true
   _isEvent: boolean = true

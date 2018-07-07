@@ -818,7 +818,7 @@ function skipDuplicates(src, isEqual) {
     if (isEqual === void 0) { isEqual = equals; }
     var desc = new Desc(src, "skipDuplicates", []);
     return withDesc(desc, withStateMachine(none(), function (prev, event) {
-        if (!event.hasValue) {
+        if (!hasValue(event)) {
             return [prev, [event]];
         }
         else if (event.isInitial || isNone(prev) || !isEqual(prev.get(), event.value)) {
@@ -1966,6 +1966,61 @@ function flatMapFirst(src, f) {
     });
 }
 
+function groupSimultaneous() {
+    var streams = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        streams[_i] = arguments[_i];
+    }
+    return groupSimultaneous_(argumentsToObservables(streams));
+}
+// TODO: type is not exactly correct, because different inputs may have different types.
+// Result values are arrays where each element is the list from each input observable. Type this.
+function groupSimultaneous_(streams, options) {
+    var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
+    var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
+    return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, (function () {
+            var xs = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                xs[_i] = arguments[_i];
+            }
+            return xs;
+        })]));
+}
+Bacon.groupSimultaneous = groupSimultaneous;
+
+var endMarker = {};
+function takeUntil(src, stopper) {
+    var endMapped = src.mapEnd(endMarker);
+    var withEndMarker = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync);
+    if (src instanceof Property)
+        withEndMarker = withEndMarker.toProperty();
+    var impl = withEndMarker.transform(function (event, sink) {
+        if (hasValue(event)) {
+            var _a = event.value, data = _a[0], stopper = _a[1];
+            if (stopper.length) {
+                return sink(endEvent());
+            }
+            else {
+                var reply = more;
+                for (var i = 0; i < data.length; i++) {
+                    var value = data[i];
+                    if (value === endMarker) {
+                        return sink(endEvent());
+                    }
+                    else {
+                        reply = sink(nextEvent(value));
+                    }
+                }
+                return reply;
+            }
+        }
+        else {
+            return sink(event);
+        }
+    });
+    return withDesc(new Desc(src, "takeUntil", [stopper]), impl);
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -2009,6 +2064,9 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.map = function (f) { return map(f, this); };
     EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
     EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    EventStream.prototype.takeUntil = function (stopper) {
+        return takeUntil(this, stopper);
+    };
     EventStream.prototype.toProperty = function () {
         var initValue_ = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -2174,6 +2232,9 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.map = function (f) { return map(f, this); };
     Property.prototype.flatMap = function (f) { return flatMap(this, f); };
     Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    Property.prototype.takeUntil = function (stopper) {
+        return takeUntil(this, stopper);
+    };
     Property.prototype.concat = function (right) {
         return addPropertyInitValueToStream(this, this.changes().concat(right));
     };
@@ -2203,28 +2264,6 @@ function mapT(f) {
         return sink(e.fmap(f));
     };
 }
-
-function groupSimultaneous() {
-    var streams = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams[_i] = arguments[_i];
-    }
-    return groupSimultaneous_(argumentsToObservables(streams));
-}
-// TODO: type is not exactly correct, because different inputs may have different types.
-// Result values are arrays where each element is the list from each input observable. Type this.
-function groupSimultaneous_(streams, options) {
-    var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
-    var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
-    return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, (function () {
-            var xs = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                xs[_i] = arguments[_i];
-            }
-            return xs;
-        })]));
-}
-Bacon.groupSimultaneous = groupSimultaneous;
 
 function awaiting(other) {
   var desc = new Desc(this, "awaiting", [other]);
@@ -2835,37 +2874,6 @@ function combineTemplate(template) {
 }
 
 Bacon.combineTemplate = combineTemplate;
-
-Observable.prototype.takeUntil = function (stopper) {
-  var endMarker = {};
-  var withEndMarker = groupSimultaneous_([this.mapEnd(endMarker), stopper.skipErrors()], allowSync);
-  if (this instanceof Property) withEndMarker = withEndMarker.toProperty();
-  var impl = withEndMarker.withHandler(function (event) {
-    if (!event.hasValue) {
-      return this.push(event);
-    } else {
-      var _event$value = event.value,
-          data = _event$value[0],
-          stopper = _event$value[1];
-
-      if (stopper.length) {
-        return this.push(endEvent());
-      } else {
-        var reply = more;
-        for (var i = 0, value; i < data.length; i++) {
-          value = data[i];
-          if (value === endMarker) {
-            reply = this.push(endEvent());
-          } else {
-            reply = this.push(nextEvent(value));
-          }
-        }
-        return reply;
-      }
-    }
-  });
-  return withDesc(new Desc(this, "takeUntil", [stopper]), impl);
-};
 
 Observable.prototype.flatMapLatest = function (f) {
   f = _.toFunction(f);

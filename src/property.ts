@@ -14,6 +14,7 @@ import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
 import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
 import flatMapFirst from "./flatmapfirst";
+import takeUntil from "./takeuntil";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -61,6 +62,10 @@ export default class Property<V> extends Observable<V> {
 
   flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
   flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
+
+  takeUntil(stopper: Observable<any>): Property<V> {
+    return <any>takeUntil(this, stopper)
+  }
 
   concat(right: Observable<V>): Property<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(right))

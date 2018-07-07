@@ -77,6 +77,8 @@ export default abstract class Observable<V> {
     return <any>take(count, this)
   }
 
+  abstract takeUntil(stopper: Observable<any>): Observable<V>
+
   first(): this {
     return <any>take(1, this, new Desc(this, "first"))
   }
