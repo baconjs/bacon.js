@@ -1,8 +1,7 @@
 import './flatmap_'
-import { handleEventValueWith } from "./flatmap_"
+import flatMap_, { handleEventValueWith } from "./flatmap_"
 import Observable from "./observable";
 import { Desc } from "./describe";
-import flatMap_ from "./flatmap_"
 
 Observable.prototype.flatMapWithConcurrencyLimit = function(limit, f) {
   return flatMap_(

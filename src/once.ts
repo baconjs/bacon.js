@@ -1,7 +1,7 @@
 import EventStream from "./eventstream";
 import UpdateBarrier from "./updatebarrier";
 import { Desc } from "./describe";
-import { toEvent, endEvent } from "./event";
+import { endEvent, toEvent } from "./event";
 import Bacon from "./core";
 import { nop } from "./helpers";
 import { EventSink } from "./types";

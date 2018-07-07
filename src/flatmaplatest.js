@@ -3,7 +3,7 @@ import "./takeuntil";
 
 import { makeObservable } from "./flatmap_";
 import Observable from "./observable";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import { allowSync } from "./eventstream";
 import _ from "./_"
 
@@ -14,5 +14,5 @@ Observable.prototype.flatMapLatest = function(f) {
     return makeObservable(f(value)).takeUntil(stream);
   })
   if (this._isProperty) flatMapped = flatMapped.toProperty()
-  return withDesc(new Desc(this, "flatMapLatest", [f]), flatMapped);
+  return flatMapped.withDesc(new Desc(this, "flatMapLatest", [f]));
 };

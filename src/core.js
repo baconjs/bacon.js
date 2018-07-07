@@ -1,6 +1,6 @@
 import _ from './_';
-import { Event, Next, Initial, Error, End } from './event';
-import { noMore, more } from './reply';
+import { End, Error, Event, Initial, Next } from './event';
+import { more, noMore } from './reply';
 import spy from './spy';
 import { Desc } from './describe';
 

@@ -4,7 +4,7 @@ import "./filter";
 import "./flatmap";
 import Exception from "./exception";
 import _ from "./_";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import later from "./later";
 import Bacon from "./core";
 
@@ -24,12 +24,12 @@ Bacon.retry = function(options) {
   var finished = false;
   var error = null;
 
-  return withDesc(new Desc(Bacon, "retry", [options]), Bacon.repeat(function(count) {
+  return Bacon.repeat(function (count) {
     function valueStream() {
-      return source(count).endOnError().withHandler(function(event) {
+      return source(count).endOnError().withHandler(function (event) {
         if (event.isError) {
           error = event;
-          if (!(isRetryable(error.error) && (retries===0 || retriesDone < retries))) {
+          if (!(isRetryable(error.error) && (retries === 0 || retriesDone < retries))) {
             finished = true;
             return this.push(event);
           }
@@ -56,5 +56,5 @@ Bacon.retry = function(options) {
     } else {
       return valueStream();
     }
-  }));
+  }).withDesc(new Desc(Bacon, "retry", [options]));
 };

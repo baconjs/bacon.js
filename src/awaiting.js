@@ -1,7 +1,7 @@
 import "./map";
 import "./skipduplicates";
 
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import Observable from "./observable";
 import { groupSimultaneous_ } from "./groupsimultaneous";
 import { allowSync } from "./eventstream";

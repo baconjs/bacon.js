@@ -30,18 +30,13 @@ export class Desc {
   }
 };
 
-export function describe (context, method, ...args) {
+export function describe (context, method, ...args): Desc {
   const ref = context || method;
   if (ref && ref._isDesc) {
     return context || method;
   } else {
     return new Desc(context, method, args);
   }
-}
-
-// TODO: untyped function, replace with obs.withDesc, remove
-export function withDesc(desc: Desc | undefined, obs) {
-  return obs.withDesc(desc)
 }
 
 export function findDeps (x): Observable[] {

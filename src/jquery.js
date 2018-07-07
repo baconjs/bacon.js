@@ -1,5 +1,5 @@
 import Bacon from "./core";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import fromBinder from "./frombinder";
 import _ from "./_";
 
@@ -11,10 +11,10 @@ Bacon.$.asEventStream = function(eventName, selector, eventTransformer) {
     selector = undefined;
   }
 
-  return withDesc(new Desc(this.selector || this, "asEventStream", [eventName]), fromBinder((handler) => {
+  return fromBinder((handler) => {
     this.on(eventName, selector, handler);
     return (() => this.off(eventName, selector, handler));
-  }, eventTransformer));
+  }, eventTransformer).withDesc(new Desc(this.selector || this, "asEventStream", [eventName]));
 };
 
 if (typeof jQuery !== "undefined" && jQuery) {

@@ -425,10 +425,6 @@ function describe(context, method) {
         return new Desc(context, method, args);
     }
 }
-// TODO: untyped function, replace with obs.withDesc, remove
-function withDesc(desc, obs) {
-    return obs.withDesc(desc);
-}
 function findDeps(x) {
     if (isArray(x)) {
         return _.flatMap(findDeps, x);
@@ -2407,13 +2403,13 @@ Bacon.combineAsArray = function () {
       var stream = isObservable(streams[i]) ? streams[i] : Bacon.constant(streams[i]);
       sources.push(new DefaultSource(stream, true));
     }
-    return withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams), whenP(sources, function () {
+    return whenP(sources, function () {
       for (var _len = arguments.length, xs = Array(_len), _key = 0; _key < _len; _key++) {
         xs[_key] = arguments[_key];
       }
 
       return xs;
-    }));
+    }).withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams));
   } else {
     return constant([]);
   }
@@ -2429,17 +2425,17 @@ Bacon.combineWith = function () {
       f = _argumentsToObservabl[1];
 
   var desc = new Desc(Bacon, "combineWith", [f].concat(streams));
-  return withDesc(desc, Bacon.combineAsArray(streams).map(function (values) {
+  return Bacon.combineAsArray(streams).map(function (values) {
     return f.apply(undefined, values);
-  }));
+  }).withDesc(desc);
 };
 
 Observable.prototype.combine = function (other, f) {
   var combinator = toCombinator(f);
   var desc = new Desc(this, "combine", [other, f]);
-  return withDesc(desc, Bacon.combineAsArray(this, other).map(function (values) {
+  return Bacon.combineAsArray(this, other).map(function (values) {
     return combinator(values[0], values[1]);
-  }));
+  }).withDesc(desc);
 };
 
 Observable.prototype.not = function () {
@@ -2461,11 +2457,11 @@ Property.prototype.or = function (other) {
 };
 
 EventStream.prototype.bufferWithTime = function (delay) {
-  return withDesc(new Desc(this, "bufferWithTime", [delay]), this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
+  return this.bufferWithTimeOrCount(delay, Number.MAX_VALUE).withDesc(new Desc(this, "bufferWithTime", [delay]));
 };
 
 EventStream.prototype.bufferWithCount = function (count) {
-  return withDesc(new Desc(this, "bufferWithCount", [count]), this.bufferWithTimeOrCount(undefined, count));
+  return this.bufferWithTimeOrCount(undefined, count).withDesc(new Desc(this, "bufferWithCount", [count]));
 };
 
 EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
@@ -2477,7 +2473,7 @@ EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
     }
   };
   var desc = new Desc(this, "bufferWithTimeOrCount", [delay, count]);
-  return withDesc(desc, this.buffer(delay, flushOrSchedule, flushOrSchedule));
+  return this.buffer(delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
 };
 
 EventStream.prototype.buffer = function (delay) {
@@ -2525,7 +2521,7 @@ EventStream.prototype.buffer = function (delay) {
       return Scheduler.scheduler.setTimeout(f, delayMs);
     };
   }
-  return withDesc(new Desc(this, "buffer", []), this.withHandler(function (event) {
+  return this.withHandler(function (event) {
     var _this2 = this;
 
     buffer.push = function (event) {
@@ -2544,7 +2540,7 @@ EventStream.prototype.buffer = function (delay) {
       onInput(buffer);
     }
     return reply;
-  }));
+  }).withDesc(new Desc(this, "buffer", []));
 };
 
 Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
@@ -2556,7 +2552,7 @@ Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
 
 Observable.prototype.flatMapConcat = function () {
   var desc = new Desc(this, "flatMapConcat", Array.prototype.slice.call(arguments, 0));
-  return withDesc(desc, this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))));
+  return this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))).withDesc(desc);
 };
 
 function fromBinder(binder, eventTransformer) {
@@ -2620,9 +2616,9 @@ Bacon.later = later;
 
 Observable.prototype.bufferingThrottle = function (minimumInterval) {
   var desc = new Desc(this, "bufferingThrottle", [minimumInterval]);
-  return withDesc(desc, this.flatMapConcat(function (x) {
+  return this.flatMapConcat(function (x) {
     return once(x).concat(later(minimumInterval).errors());
-  }));
+  }).withDesc(desc);
 };
 
 Property.prototype.bufferingThrottle = function () {
@@ -2767,7 +2763,7 @@ var liftCallback = function (desc, wrapped) {
       args[_key - 1] = arguments[_key];
     }
 
-    return withDesc(new Desc(Bacon, desc, [f].concat(args)), Bacon.combineAsArray(args).flatMap(stream).changes());
+    return Bacon.combineAsArray(args).flatMap(stream).changes().withDesc(new Desc(Bacon, desc, [f].concat(args)));
   });
 };
 
@@ -2879,7 +2875,7 @@ function combineTemplate(template) {
 
   var resultProperty = containsObservables(template) ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator)) : Bacon.constant(template);
 
-  return withDesc(new Desc(Bacon, "combineTemplate", [template]), resultProperty);
+  return resultProperty.withDesc(new Desc(Bacon, "combineTemplate", [template]));
 }
 
 Bacon.combineTemplate = combineTemplate;
@@ -2891,15 +2887,15 @@ Observable.prototype.flatMapLatest = function (f) {
     return makeObservable(f(value)).takeUntil(stream);
   });
   if (this._isProperty) flatMapped = flatMapped.toProperty();
-  return withDesc(new Desc(this, "flatMapLatest", [f]), flatMapped);
+  return flatMapped.withDesc(new Desc(this, "flatMapLatest", [f]));
 };
 
 Property.prototype.delayChanges = function (desc, f) {
-  return withDesc(desc, addPropertyInitValueToStream(this, f(this.changes())));
+  return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
 };
 
 EventStream.prototype.delayChanges = function (desc, f) {
-  return withDesc(desc, f(this));
+  return f(this).withDesc(desc);
 };
 
 Observable.prototype.delay = function (delay) {
@@ -2926,20 +2922,20 @@ Observable.prototype.debounceImmediate = function (delay) {
 };
 
 Observable.prototype.decode = function (cases) {
-  return withDesc(new Desc(this, "decode", [cases]), this.combine(combineTemplate(cases), function (key, values) {
+  return this.combine(combineTemplate(cases), function (key, values) {
     return values[key];
-  }));
+  }).withDesc(new Desc(this, "decode", [cases]));
 };
 
 Observable.prototype.diff = function (start, f) {
   f = toCombinator(f);
-  return withDesc(new Desc(this, "diff", [start, f]), this.scan([start], function (prevTuple, next) {
+  return this.scan([start], function (prevTuple, next) {
     return [next, f(prevTuple[0], next)];
   }).filter(function (tuple) {
     return tuple.length === 2;
   }).map(function (tuple) {
     return tuple[1];
-  }));
+  }).withDesc(new Desc(this, "diff", [start, f]));
 };
 
 Observable.prototype.endOnError = function (f) {
@@ -2952,14 +2948,14 @@ Observable.prototype.endOnError = function (f) {
   }
 
   return convertArgsToFunction(this, f, args, function (f) {
-    return withDesc(new Desc(this, "endOnError", []), this.withHandler(function (event) {
+    return this.withHandler(function (event) {
       if (event.isError && f(event.error)) {
         this.push(event);
         return this.push(endEvent());
       } else {
         return this.push(event);
       }
-    }));
+    }).withDesc(new Desc(this, "endOnError", []));
   });
 };
 
@@ -3049,21 +3045,21 @@ var makeCombinator = function (combinator) {
 };
 
 EventStream.prototype.sampledBy = function (sampler, combinator) {
-  return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), this.toProperty().sampledBy(sampler, combinator));
+  return this.toProperty().sampledBy(sampler, combinator).withDesc(new Desc(this, "sampledBy", [sampler, combinator]));
 };
 
 Property.prototype.sampledBy = function (sampler, combinator) {
   combinator = makeCombinator(combinator);
   var result = withLatestFrom(sampler, this, _.flip(combinator));
-  return withDesc(new Desc(this, "sampledBy", [sampler, combinator]), result);
+  return result.withDesc(new Desc(this, "sampledBy", [sampler, combinator]));
 };
 
 Property.prototype.sample = function (interval) {
-  return withDesc(new Desc(this, "sample", [interval]), this.sampledBy(Bacon.interval(interval, {})));
+  return this.sampledBy(Bacon.interval(interval, {})).withDesc(new Desc(this, "sample", [interval]));
 };
 
 Observable.prototype.fold = function (seed, f) {
-  return withDesc(new Desc(this, "fold", [seed, f]), this.scan(seed, f).sampledBy(this.errors().mapEnd().toProperty()));
+  return this.scan(seed, f).sampledBy(this.errors().mapEnd().toProperty()).withDesc(new Desc(this, "fold", [seed, f]));
 };
 
 Observable.prototype.reduce = Observable.prototype.fold;
@@ -3349,12 +3345,12 @@ Bacon.$.asEventStream = function (eventName, selector, eventTransformer) {
     selector = undefined;
   }
 
-  return withDesc(new Desc(this.selector || this, "asEventStream", [eventName]), fromBinder(function (handler) {
+  return fromBinder(function (handler) {
     _this.on(eventName, selector, handler);
     return function () {
       return _this.off(eventName, selector, handler);
     };
-  }, eventTransformer));
+  }, eventTransformer).withDesc(new Desc(this.selector || this, "asEventStream", [eventName]));
 };
 
 if (typeof jQuery !== "undefined" && jQuery) {
@@ -3368,7 +3364,7 @@ if (typeof Zepto !== "undefined" && Zepto) {
 Observable.prototype.last = function () {
   var lastEvent;
 
-  return withDesc(new Desc(this, "last", []), this.withHandler(function (event) {
+  return this.withHandler(function (event) {
     if (event.isEnd) {
       if (lastEvent) {
         this.push(lastEvent);
@@ -3378,7 +3374,7 @@ Observable.prototype.last = function () {
     } else {
       lastEvent = event;
     }
-  }));
+  }).withDesc(new Desc(this, "last", []));
 };
 
 function repeatedly(delay, values) {
@@ -3445,7 +3441,7 @@ Bacon.retry = function (options) {
   var finished = false;
   var error = null;
 
-  return withDesc(new Desc(Bacon, "retry", [options]), Bacon.repeat(function (count) {
+  return Bacon.repeat(function (count) {
     function valueStream() {
       return source(count).endOnError().withHandler(function (event) {
         if (event.isError) {
@@ -3477,7 +3473,7 @@ Bacon.retry = function (options) {
     } else {
       return valueStream();
     }
-  }));
+  }).withDesc(new Desc(Bacon, "retry", [options]));
 };
 
 function sequentially(delay, values) {
@@ -3498,7 +3494,7 @@ function sequentially(delay, values) {
 Bacon.sequentially = sequentially;
 
 Observable.prototype.skip = function (count) {
-  return withDesc(new Desc(this, "skip", [count]), this.withHandler(function (event) {
+  return this.withHandler(function (event) {
     if (!event.hasValue) {
       return this.push(event);
     } else if (count > 0) {
@@ -3507,12 +3503,12 @@ Observable.prototype.skip = function (count) {
     } else {
       return this.push(event);
     }
-  }));
+  }).withDesc(new Desc(this, "skip", [count]));
 };
 
 EventStream.prototype.skipUntil = function (starter) {
   var started = starter.take(1).map(true).toProperty(false);
-  return withDesc(new Desc(this, "skipUntil", [starter]), this.filter(started));
+  return this.filter(started).withDesc(new Desc(this, "skipUntil", [starter]));
 };
 
 EventStream.prototype.skipWhile = function (f) {
@@ -3524,7 +3520,7 @@ EventStream.prototype.skipWhile = function (f) {
   }
 
   return convertArgsToFunction(this, f, args, function (f) {
-    return withDesc(new Desc(this, "skipWhile", [f]), this.withHandler(function (event) {
+    return this.withHandler(function (event) {
       if (ok || !event.hasValue || !f(event.value)) {
         if (event.hasValue) {
           ok = true;
@@ -3533,28 +3529,28 @@ EventStream.prototype.skipWhile = function (f) {
       } else {
         return more;
       }
-    }));
+    }).withDesc(new Desc(this, "skipWhile", [f]));
   });
 };
 
 Property.prototype.startWith = function (seed) {
-  return withDesc(new Desc(this, "startWith", [seed]), this.scan(seed, function (prev, next) {
+  return this.scan(seed, function (prev, next) {
     return next;
-  }));
+  }).withDesc(new Desc(this, "startWith", [seed]));
 };
 
 EventStream.prototype.startWith = function (seed) {
-  return withDesc(new Desc(this, "startWith", [seed]), once(seed).concat(this));
+  return once(seed).concat(this).withDesc(new Desc(this, "startWith", [seed]));
 };
 
 Observable.prototype.slidingWindow = function (n) {
   var minValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
 
-  return withDesc(new Desc(this, "slidingWindow", [n, minValues]), this.scan([], function (window, value) {
+  return this.scan([], function (window, value) {
     return window.concat([value]).slice(-n);
   }).filter(function (values) {
     return values.length >= minValues;
-  }));
+  }).withDesc(new Desc(this, "slidingWindow", [n, minValues]));
 };
 
 Observable.prototype.takeWhile = function (f) {
@@ -3565,14 +3561,14 @@ Observable.prototype.takeWhile = function (f) {
   }
 
   return convertArgsToFunction(this, f, args, function (f) {
-    return withDesc(new Desc(this, "takeWhile", [f]), this.withHandler(function (event) {
+    return this.withHandler(function (event) {
       if (event.filter(f)) {
         return this.push(event);
       } else {
         this.push(endEvent());
         return noMore;
       }
-    }));
+    }).withDesc(new Desc(this, "takeWhile", [f]));
   });
 };
 
@@ -3650,9 +3646,9 @@ function update(initial) {
     patterns[i] = lateBindFirst(patterns[i]);
     i = i - 2;
   }
-  return withDesc(new Desc(Bacon, "update", [initial].concat(patterns)), when.apply(undefined, patterns).scan(initial, function (x, f) {
+  return when.apply(undefined, patterns).scan(initial, function (x, f) {
     return f(x);
-  }));
+  }).withDesc(new Desc(Bacon, "update", [initial].concat(patterns)));
 }
 
 Bacon.update = update;
@@ -3663,13 +3659,13 @@ Bacon.zipAsArray = function () {
   }
 
   var streams = argumentsToObservables(args);
-  return withDesc(new Desc(Bacon, "zipAsArray", streams), Bacon.zipWith(streams, function () {
+  return Bacon.zipWith(streams, function () {
     for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       xs[_key2] = arguments[_key2];
     }
 
     return xs;
-  }));
+  }).withDesc(new Desc(Bacon, "zipAsArray", streams));
 };
 
 Bacon.zipWith = function () {
@@ -3684,11 +3680,11 @@ Bacon.zipWith = function () {
   streams = _.map(function (s) {
     return s.toEventStream();
   }, streams);
-  return withDesc(new Desc(Bacon, "zipWith", [f].concat(streams)), Bacon.when(streams, f));
+  return Bacon.when(streams, f).withDesc(new Desc(Bacon, "zipWith", [f].concat(streams)));
 };
 
 Observable.prototype.zip = function (other, f) {
-  return withDesc(new Desc(this, "zip", [other]), Bacon.zipWith([this, other], f || Array));
+  return Bacon.zipWith([this, other], f || Array).withDesc(new Desc(this, "zip", [other]));
 };
 
 Bacon.EventStream = EventStream;

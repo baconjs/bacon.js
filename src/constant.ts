@@ -1,6 +1,6 @@
 import Property from "./property";
 import { Desc } from "./describe";
-import { initialEvent, endEvent } from "./event";
+import { endEvent, initialEvent } from "./event";
 import Bacon from "./core";
 import { nop } from "./helpers";
 import { EventSink } from "./types";

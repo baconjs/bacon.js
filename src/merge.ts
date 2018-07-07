@@ -4,7 +4,7 @@ import { argumentsToObservables } from "./argumentstoobservables";
 import never from "./never";
 import _ from "./_";
 import { more, noMore } from "./reply";
-import { Event, endEvent } from "./event";
+import { endEvent, Event } from "./event";
 import { Desc } from "./describe";
 import Bacon from "./core";
 import Observable from "./observable";

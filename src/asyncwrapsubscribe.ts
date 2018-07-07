@@ -1,7 +1,8 @@
 import UpdateBarrier from "./updatebarrier";
 import { Event } from "./event";
-import { Sink, Subscribe} from "./types"
+import { Sink, Subscribe } from "./types"
 import Scheduler from "./scheduler"
+
 export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Subscribe<V> {
   //assertFunction(subscribe)
   var subscribing = false

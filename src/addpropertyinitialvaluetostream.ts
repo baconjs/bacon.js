@@ -1,10 +1,9 @@
 import "./concat";
 import { noMore } from './reply';
-import EventStream from "./eventstream";
-import { allowSync } from "./eventstream";
+import EventStream, { allowSync } from "./eventstream";
 import { describe } from './describe';
 import UpdateBarrier from './updatebarrier';
-import { Event, endEvent } from './event';
+import { endEvent, Event } from './event';
 import Property from "./property";
 import { EventSink } from "./types";
 

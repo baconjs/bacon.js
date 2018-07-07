@@ -1,7 +1,7 @@
 import { nop } from "./helpers";
 import { more, noMore } from "./reply";
 import { Option, Some } from "./optional";
-import { Initial, Event, Value } from "./event";
+import { Event, Initial, Value } from "./event";
 import { Sink, Subscribe, Unsub } from "./types"
 
 export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<V>, streamSubscribe: Subscribe<V>) {

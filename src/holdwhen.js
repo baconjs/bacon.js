@@ -1,5 +1,5 @@
 import EventStream from "./eventstream";
-import { nextEvent, endEvent } from "./event";
+import { endEvent, nextEvent } from "./event";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { Desc } from "./describe";
 

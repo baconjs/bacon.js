@@ -2,7 +2,7 @@ import _ from "./_";
 import EventStream from "./eventstream";
 import Observable from "./observable"
 import Bacon from "./core";
-import { nextEvent, endEvent, Error } from "./event";
+import { endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
 import { EventSink } from "./types"
 import { assertObservable } from "./assert";

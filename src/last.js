@@ -1,4 +1,4 @@
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import { noMore } from "./reply";
 import { endEvent } from "./event";
 import Observable from "./observable";
@@ -6,7 +6,7 @@ import Observable from "./observable";
 Observable.prototype.last = function () {
   var lastEvent;
   // It's important not to use fat arrow here!
-  return withDesc(new Desc(this, "last", []), this.withHandler(function (event) {
+  return this.withHandler(function (event) {
     if (event.isEnd) {
       // Push last event or `undefined`
       if (lastEvent) {
@@ -17,5 +17,5 @@ Observable.prototype.last = function () {
     } else {
       lastEvent = event;
     }
-  }));
+  }).withDesc(new Desc(this, "last", []));
 };

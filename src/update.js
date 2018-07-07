@@ -1,4 +1,4 @@
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import { when } from "./when";
 import _ from "./_";
 import "./scan";
@@ -21,7 +21,9 @@ export default function update(initial, ...patterns) {
     patterns[i] = lateBindFirst(patterns[i]);
     i = i - 2;
   }
-  return withDesc(new Desc(Bacon, "update", [initial, ...patterns]), when(...patterns).scan(initial, (function(x,f) { return f(x); })));
+  return when(...patterns).scan(initial, (function (x, f) {
+    return f(x);
+  })).withDesc(new Desc(Bacon, "update", [initial, ...patterns]));
 }
 
 Bacon.update = update;

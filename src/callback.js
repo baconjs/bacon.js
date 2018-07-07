@@ -1,6 +1,6 @@
 import "./combine";
 import "./flatmap";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import { endEvent, Error } from "./event";
 import { makeFunction, partiallyApplied, withMethodCallSupport } from "./functionconstruction";
 import fromBinder from "./frombinder";
@@ -12,7 +12,7 @@ var liftCallback = function(desc, wrapped) {
     var stream = partiallyApplied(wrapped, [function(values, callback) {
       return f(...values.concat([callback]));
     }]);
-    return withDesc(new Desc(Bacon, desc, [f, ...args]), Bacon.combineAsArray(args).flatMap(stream).changes());
+    return Bacon.combineAsArray(args).flatMap(stream).changes().withDesc(new Desc(Bacon, desc, [f, ...args]));
   });
 };
 

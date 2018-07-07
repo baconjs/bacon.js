@@ -3,13 +3,11 @@ import "./sample";
 import Bacon from "./core";
 import Observable from "./observable";
 import _ from "./_";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 
 Bacon.zipAsArray = function(...args) {
   var streams = argumentsToObservables(args);
-  return withDesc(
-    new Desc(Bacon, "zipAsArray", streams),
-    Bacon.zipWith(streams, (...xs) => xs));
+  return Bacon.zipWith(streams, (...xs) => xs).withDesc(new Desc(Bacon, "zipAsArray", streams));
 };
 
 Bacon.zipWith = function(...args) {
@@ -18,13 +16,9 @@ Bacon.zipWith = function(...args) {
   var f = observablesAndFunction[1];
 
   streams = _.map(((s) => s.toEventStream()), streams);
-  return withDesc(
-    new Desc(Bacon, "zipWith", [f].concat(streams)),
-    Bacon.when(streams, f));
+  return Bacon.when(streams, f).withDesc(new Desc(Bacon, "zipWith", [f].concat(streams)));
 };
 
 Observable.prototype.zip = function(other, f) {
-  return withDesc(
-    new Desc(this, "zip", [other]),
-    Bacon.zipWith([this, other], f || Array));
+  return Bacon.zipWith([this, other], f || Array).withDesc(new Desc(this, "zip", [other]));
 };

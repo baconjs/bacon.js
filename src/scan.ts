@@ -1,6 +1,6 @@
 import Observable from "./observable";
 import Property from "./property";
-import { Initial, Event, hasValue } from "./event";
+import { Event, hasValue, Initial } from "./event";
 import { more, noMore } from "./reply";
 import { nop } from "./helpers";
 import { Desc } from "./describe";

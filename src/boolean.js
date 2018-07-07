@@ -2,7 +2,7 @@ import "./combine";
 import "./map";
 import Observable from "./observable";
 import Property from "./property";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 
 Observable.prototype.not = function() {
   return this.map(function(x) {

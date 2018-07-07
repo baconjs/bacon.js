@@ -1,12 +1,12 @@
 import Dispatcher from "./dispatcher";
 import Observable from "./observable";
 import { nop } from "./helpers";
-import { Option, Some, none } from "./optional";
+import { none, Option, Some } from "./optional";
 import UpdateBarrier from "./updatebarrier";
-import { Event, Value, initialEvent, endEvent } from "./event";
+import { endEvent, Event, initialEvent, Value } from "./event";
 import Bacon from "./core";
 import _ from "./_"
-import { EventSink, Subscribe} from "./types"
+import { EventSink, Subscribe } from "./types"
 
 export default class PropertyDispatcher<V, O extends Observable<V>> extends Dispatcher<V, O> {
   current: Option<Value<V>> = none()

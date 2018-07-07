@@ -1,17 +1,17 @@
 import EventStream from "./eventstream";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import { nextEvent } from "./event";
 import { more, noMore } from "./reply";
 import { nop } from "./helpers";
 import _ from "./_";
-import Bacon from "./core";
 import Scheduler from "./scheduler"
+
 EventStream.prototype.bufferWithTime = function(delay) {
-  return withDesc(new Desc(this, "bufferWithTime", [delay]), this.bufferWithTimeOrCount(delay, Number.MAX_VALUE));
+  return this.bufferWithTimeOrCount(delay, Number.MAX_VALUE).withDesc(new Desc(this, "bufferWithTime", [delay]));
 };
 
 EventStream.prototype.bufferWithCount = function(count) {
-  return withDesc(new Desc(this, "bufferWithCount", [count]), this.bufferWithTimeOrCount(undefined, count));
+  return this.bufferWithTimeOrCount(undefined, count).withDesc(new Desc(this, "bufferWithCount", [count]));
 };
 
 EventStream.prototype.bufferWithTimeOrCount = function(delay, count) {
@@ -24,7 +24,7 @@ EventStream.prototype.bufferWithTimeOrCount = function(delay, count) {
     }
   };
   var desc = new Desc(this, "bufferWithTimeOrCount", [delay, count]);
-  return withDesc(desc, this.buffer(delay, flushOrSchedule, flushOrSchedule));
+  return this.buffer(delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
 };
 
 EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
@@ -68,7 +68,7 @@ EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
       return Scheduler.scheduler.setTimeout(f, delayMs);
     };
   }
-  return withDesc(new Desc(this, "buffer", []), this.withHandler(function(event) {
+  return this.withHandler(function (event) {
     buffer.push = (event) => this.push(event);
     if (event.isError) {
       reply = this.push(event);
@@ -84,5 +84,5 @@ EventStream.prototype.buffer = function(delay, onInput = nop, onFlush = nop) {
       onInput(buffer);
     }
     return reply;
-  }));
+  }).withDesc(new Desc(this, "buffer", []));
 };
