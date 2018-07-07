@@ -1028,6 +1028,20 @@
             }
         }, new Desc(src, 'skipErrors', []));
     }
+    function last(src) {
+        var lastEvent;
+        return src.transform(function (event, sink) {
+            if (isEnd(event)) {
+                if (lastEvent) {
+                    sink(lastEvent);
+                }
+                sink(endEvent());
+                return noMore;
+            } else {
+                lastEvent = event;
+            }
+        }).withDesc(new Desc(src, 'last', []));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -1091,6 +1105,9 @@
         };
         Observable.prototype.first = function () {
             return take(1, this, new Desc(this, 'first'));
+        };
+        Observable.prototype.last = function () {
+            return last(this);
         };
         Observable.prototype.errors = function () {
             return this.filter(function (x) {
@@ -3350,20 +3367,6 @@
     if (typeof Zepto !== 'undefined' && Zepto) {
         Zepto.fn.asEventStream = Bacon.$.asEventStream;
     }
-    Observable.prototype.last = function () {
-        var lastEvent;
-        return this.withHandler(function (event) {
-            if (event.isEnd) {
-                if (lastEvent) {
-                    this.push(lastEvent);
-                }
-                this.push(endEvent());
-                return noMore;
-            } else {
-                lastEvent = event;
-            }
-        }).withDesc(new Desc(this, 'last', []));
-    };
     function repeatedly(delay, values) {
         var index = 0;
         return fromPoll(delay, function () {

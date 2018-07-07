@@ -17,6 +17,7 @@ import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
 import { Spawner } from "./flatmap_";
 import skipErrors from "./skiperrors";
+import last from "./last";
 
 var idCounter = 0;
 
@@ -81,6 +82,10 @@ export default abstract class Observable<V> {
 
   first(): this {
     return <any>take(1, this, new Desc(this, "first"))
+  }
+
+  last(): this {
+    return <any>last(this)
   }
 
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): this
