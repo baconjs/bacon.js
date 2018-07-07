@@ -1,4 +1,4 @@
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import { endEvent } from "./event";
 import Bacon from "./core";
 import fromBinder from "./frombinder";
@@ -8,11 +8,15 @@ import EventStream from "./eventstream";
 import { EventSink } from "./types";
 
 export default function later<V>(delay: number, value: V): EventStream<V> {
-  return withDesc(new Desc(Bacon, "later", [delay, value]), fromBinder(function(sink: EventSink<V>) {
-    var sender = function() { return sink([value, endEvent()]) }
+  return fromBinder(function (sink: EventSink<V>) {
+    var sender = function () {
+      return sink([value, endEvent()])
+    }
     var id = Scheduler.scheduler.setTimeout(sender, delay)
-    return function() { return Scheduler.scheduler.clearTimeout(id) }
-  }))
+    return function () {
+      return Scheduler.scheduler.clearTimeout(id)
+    }
+  }).withDesc(new Desc(Bacon, "later", [delay, value]))
 }
 
 Bacon.later = later

@@ -1,7 +1,7 @@
 import Bacon from "./core";
 import { when_ } from "./when";
 import { BufferingSource } from "./source";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import EventStream, { Options } from "./eventstream";
 import _ from "./_"
 import Observable from "./observable";
@@ -18,7 +18,9 @@ export function groupSimultaneous_<V>(streams: Observable<V>[], options?: Option
   let sources = _.map(stream => new BufferingSource<V>(stream), streams)
 
   let ctor = (desc, subscribe) => new EventStream(desc, subscribe, undefined, options)
-  return withDesc(new Desc(Bacon, "groupSimultaneous", streams), when_(ctor, [sources, (function(...xs) { return xs; })]));
+  return <any>when_(ctor, [sources, (function (...xs) {
+    return xs;
+  })]).withDesc(new Desc(Bacon, "groupSimultaneous", streams));
 }
 
 Bacon.groupSimultaneous = groupSimultaneous;

@@ -39,10 +39,9 @@ export function describe (context, method, ...args) {
   }
 }
 
-// TODO: untyped function
+// TODO: untyped function, replace with obs.withDesc, remove
 export function withDesc(desc: Desc | undefined, obs) {
-  if (desc) obs.desc = desc;
-  return obs;
+  return obs.withDesc(desc)
 }
 
 export function findDeps (x): Observable[] {

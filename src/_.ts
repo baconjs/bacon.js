@@ -25,11 +25,11 @@ var _ = {
   flip<A, B, C>(f: (A, B) => C): ((B, A) => C) {
     return (a, b) => f(b, a)
   },
-  head(xs) { return xs[0]; },
+  head<V>(xs: V[]): V { return xs[0]; },
   always(x) { return () => x; },
   negate(f) { return function(x) { return !f(x); }; },
   empty(xs) { return xs.length === 0; },
-  tail(xs) { return xs.slice(1, xs.length); },
+  tail<V>(xs: V[]): V[] { return xs.slice(1, xs.length); },
   filter<A>(f: (A) => boolean, xs: A[]): A[] {
     var filtered: A[] = [];
     for (var i = 0, x; i < xs.length; i++) {
@@ -81,7 +81,7 @@ var _ = {
       return xs.splice(i, 1);
     }
   },
-  fold(xs, seed, f) {
+  fold<V, A>(xs: V[], seed: A, f: (A, V) => A): A {
     for (var i = 0, x; i < xs.length; i++) {
       x = xs[i];
       seed = f(seed, x);

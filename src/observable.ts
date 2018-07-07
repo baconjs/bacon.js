@@ -1,5 +1,5 @@
 import UpdateBarrier from "./updatebarrier";
-import { Desc, describe, withDesc } from "./describe";
+import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
 import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
@@ -86,7 +86,7 @@ export default abstract class Observable<V> {
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): this
 
   errors(): this {
-    return withDesc(new Desc(this, "errors"), this.filter(x => false))
+    return this.filter(x => false).withDesc(new Desc(this, "errors"))
   }
   skipErrors(): this {
     return <any>skipErrors(this)
@@ -162,6 +162,11 @@ export default abstract class Observable<V> {
 
   internalDeps(): any[] {
     return this.initialDesc.deps();
+  }
+
+  withDesc(desc?: Desc): this {
+    if (desc) this.desc = desc;
+    return this;
   }
 }
 

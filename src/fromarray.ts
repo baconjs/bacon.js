@@ -1,8 +1,8 @@
 import EventStream from "./eventstream";
 import { assertArray } from "./assert";
-import { withDesc, Desc } from "./describe";
+import { Desc } from "./describe";
 import never from "./never";
-import { toEvent, endEvent } from "./event";
+import { endEvent, toEvent } from "./event";
 import { more, noMore } from "./reply";
 import UpdateBarrier from "./updatebarrier";
 import Bacon from "./core";
@@ -11,7 +11,7 @@ import { EventSink } from "./types";
 export default function fromArray<T>(values: T[]) {
   assertArray(values);
   if (!values.length) {
-    return withDesc(new Desc(Bacon, "fromArray", values), never());
+    return never().withDesc(new Desc(Bacon, "fromArray", values));
   } else {
     var i = 0;
     var stream = new EventStream(new Desc(Bacon, "fromArray", [values]), function(sink: EventSink<T>) {

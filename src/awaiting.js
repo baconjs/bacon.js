@@ -8,9 +8,11 @@ import { allowSync } from "./eventstream";
 
 export default function awaiting(other) {
   var desc = new Desc(this, "awaiting", [other]);
-  return withDesc(desc, groupSimultaneous_([this, other], allowSync)
+  return groupSimultaneous_([this, other], allowSync)
     .map((values) => values[1].length === 0)
-    .toProperty(false).skipDuplicates());
+    .toProperty(false)
+    .skipDuplicates()
+    .withDesc(desc)
 }
 
 Observable.prototype.awaiting = awaiting;

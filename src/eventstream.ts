@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import { nop } from "./helpers";
 import { registerObs } from "./spy";
 import Dispatcher from "./dispatcher";
@@ -45,15 +45,15 @@ export default class EventStream<V> extends Observable<V> {
   toEventStream() { return this }
 
   transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2> {
-    return withDesc(desc, new EventStream(
+    return new EventStream<V2>(
       new Desc(this, "transform", [transformer]),
-      sink => 
+      sink =>
         this.subscribeInternal(e =>
-            transformer(e, sink)
+          transformer(e, sink)
         ),
       undefined,
-        allowSync
-      ))
+      allowSync
+    ).withDesc(desc)
   }
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
@@ -94,7 +94,7 @@ export default class EventStream<V> extends Observable<V> {
 
   merge(other: EventStream<V>): EventStream<V> {
     assertEventStream(other)
-    return withDesc(new Desc(this, "merge", [other]), mergeAll(this, other));
+    return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
   }
 }
 

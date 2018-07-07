@@ -3,7 +3,7 @@ import EventStream, { Options } from "./eventstream";
 import { nop } from "./helpers";
 import { assertFunction, assertNoArguments } from "./assert";
 import { Event } from "./event";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import { registerObs } from "./spy";
 import { EventSink, Subscribe, Transformer, Unsub } from "./types"
 import PropertyDispatcher from "./propertydispatcher"
@@ -41,14 +41,13 @@ export default class Property<V> extends Observable<V> {
   }
   
   transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
-    return withDesc(desc, new Property(
+    return new Property<V2>(
       new Desc(this, "transform", [transformer]),
-      sink => 
+      sink =>
         this.subscribeInternal(e =>
-            transformer(e, sink)
+          transformer(e, sink)
         )
-      )
-    );
+    ).withDesc(desc);
   }
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
