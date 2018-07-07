@@ -149,10 +149,10 @@ describe "Integration tests", ->
     describe "No glitches in a complex scenario", ->
       expectPropertyEvents(
         ->
-          changes = series(1, [{a:0,b:0},{a:1,b:1}])
+          changes = series(1, [{a:0,b:0},{a:1,b:10}])
 
           a = changes.map((x) -> x.a)
-          b = changes.map((x) -> x.a)
+          b = changes.map((x) -> x.b)
 
           ab = Bacon.combineAsArray a, b
 
@@ -160,7 +160,7 @@ describe "Integration tests", ->
             Bacon.once 'f' + values
 
           Bacon.combineAsArray(f, b).map((x) -> x[0])
-        ["f0,0","f1,1"], semiunstable)
+        ["f0,0","f1,10"], semiunstable)
     it "Works with flatMap source spawning fromArrays", ->
       result = []
       array = [1,2,3]
