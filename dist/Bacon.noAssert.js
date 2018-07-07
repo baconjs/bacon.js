@@ -1023,6 +1023,15 @@
             }
         };
     }
+    function skipErrors(src) {
+        return src.transform(function (event, sink) {
+            if (isError(event)) {
+                return more;
+            } else {
+                return sink(event);
+            }
+        }, new Desc(src, 'skipErrors', []));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -1091,6 +1100,9 @@
             return withDesc(new Desc(this, 'errors'), this.filter(function (x) {
                 return false;
             }));
+        };
+        Observable.prototype.skipErrors = function () {
+            return skipErrors(this);
         };
         Observable.prototype.mapEnd = function (f) {
             return this.transform(mapEndT(f), new Desc(this, 'mapEnd', [f]));
@@ -2828,15 +2840,6 @@
         return withDesc(new Desc(Bacon, 'combineTemplate', [template]), resultProperty);
     }
     Bacon.combineTemplate = combineTemplate;
-    Observable.prototype.skipErrors = function () {
-        return withDesc(new Desc(this, 'skipErrors', []), this.withHandler(function (event) {
-            if (event.isError) {
-                return more;
-            } else {
-                return this.push(event);
-            }
-        }));
-    };
     Observable.prototype.takeUntil = function (stopper) {
         var endMarker = {};
         var withEndMarker = groupSimultaneous_([

@@ -16,6 +16,7 @@ import EventStream from "./eventstream";
 import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
 import { Spawner } from "./flatmap_";
+import skipErrors from "./skiperrors";
 
 var idCounter = 0;
 
@@ -84,6 +85,9 @@ export default abstract class Observable<V> {
 
   errors(): this {
     return withDesc(new Desc(this, "errors"), this.filter(x => false))
+  }
+  skipErrors(): this {
+    return <any>skipErrors(this)
   }
 
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
