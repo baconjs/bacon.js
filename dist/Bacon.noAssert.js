@@ -501,7 +501,8 @@
         }
     }
     function withDesc(desc, obs) {
-        obs.desc = desc;
+        if (desc)
+            obs.desc = desc;
         return obs;
     }
     function findDeps(x) {
@@ -2039,7 +2040,7 @@
         ], allowSync);
         if (src instanceof Property)
             withEndMarker = withEndMarker.toProperty();
-        var impl = withEndMarker.transform(function (event, sink) {
+        return withEndMarker.transform(function (event, sink) {
             if (hasValue(event)) {
                 var _a = event.value, data = _a[0], stopper = _a[1];
                 if (stopper.length) {
@@ -2059,8 +2060,7 @@
             } else {
                 return sink(event);
             }
-        });
-        return withDesc(new Desc(src, 'takeUntil', [stopper]), impl);
+        }, new Desc(src, 'takeUntil', [stopper]));
     }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
@@ -2086,11 +2086,11 @@
         };
         EventStream.prototype.transform = function (transformer, desc) {
             var _this = this;
-            return new EventStream(desc || new Desc(this, 'transform', [transformer]), function (sink) {
+            return withDesc(desc, new EventStream(new Desc(this, 'transform', [transformer]), function (sink) {
                 return _this.subscribeInternal(function (e) {
                     return transformer(e, sink);
                 });
-            }, undefined, allowSync);
+            }, undefined, allowSync));
         };
         EventStream.prototype.withStateMachine = function (initState, f) {
             return withStateMachine(initState, f, this);
@@ -2241,11 +2241,11 @@
         };
         Property.prototype.transform = function (transformer, desc) {
             var _this = this;
-            return new Property(desc || new Desc(this, 'transform', [transformer]), function (sink) {
+            return withDesc(desc, new Property(new Desc(this, 'transform', [transformer]), function (sink) {
                 return _this.subscribeInternal(function (e) {
                     return transformer(e, sink);
                 });
-            });
+            }));
         };
         Property.prototype.withStateMachine = function (initState, f) {
             return withStateMachine(initState, f, this);

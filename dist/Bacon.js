@@ -425,8 +425,10 @@ function describe(context, method) {
         return new Desc(context, method, args);
     }
 }
+// TODO: untyped function
 function withDesc(desc, obs) {
-    obs.desc = desc;
+    if (desc)
+        obs.desc = desc;
     return obs;
 }
 function findDeps(x) {
@@ -1994,7 +1996,7 @@ function takeUntil(src, stopper) {
     var withEndMarker = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync);
     if (src instanceof Property)
         withEndMarker = withEndMarker.toProperty();
-    var impl = withEndMarker.transform(function (event, sink) {
+    return withEndMarker.transform(function (event, sink) {
         if (hasValue(event)) {
             var _a = event.value, data = _a[0], stopper = _a[1];
             if (stopper.length) {
@@ -2017,8 +2019,7 @@ function takeUntil(src, stopper) {
         else {
             return sink(event);
         }
-    });
-    return withDesc(new Desc(src, "takeUntil", [stopper]), impl);
+    }, new Desc(src, "takeUntil", [stopper]));
 }
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
@@ -2045,11 +2046,11 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.toEventStream = function () { return this; };
     EventStream.prototype.transform = function (transformer, desc) {
         var _this = this;
-        return new EventStream(desc || new Desc(this, "transform", [transformer]), function (sink) {
+        return withDesc(desc, new EventStream(new Desc(this, "transform", [transformer]), function (sink) {
             return _this.subscribeInternal(function (e) {
                 return transformer(e, sink);
             });
-        }, undefined, allowSync);
+        }, undefined, allowSync));
     };
     EventStream.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
@@ -2217,11 +2218,11 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.transform = function (transformer, desc) {
         var _this = this;
-        return new Property(desc || new Desc(this, "transform", [transformer]), function (sink) {
+        return withDesc(desc, new Property(new Desc(this, "transform", [transformer]), function (sink) {
             return _this.subscribeInternal(function (e) {
                 return transformer(e, sink);
             });
-        });
+        }));
     };
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);

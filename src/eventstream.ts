@@ -45,15 +45,15 @@ export default class EventStream<V> extends Observable<V> {
   toEventStream() { return this }
 
   transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2> {
-    return new EventStream(
-      desc || new Desc(this, "transform", [transformer]), 
+    return withDesc(desc, new EventStream(
+      new Desc(this, "transform", [transformer]),
       sink => 
         this.subscribeInternal(e =>
             transformer(e, sink)
         ),
       undefined,
         allowSync
-      )
+      ))
   }
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {

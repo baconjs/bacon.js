@@ -3,7 +3,7 @@ import "./mapend";
 import "./skiperrors";
 import { endEvent, Event, hasValue, nextEvent } from "./event";
 import { more } from "./reply";
-import { Desc, withDesc } from "./describe";
+import { Desc } from "./describe";
 import { groupSimultaneous_ } from "./groupsimultaneous";
 import { allowSync } from "./eventstream";
 import Observable from "./observable";
@@ -17,7 +17,7 @@ export default function takeUntil<V>(src: Observable<V>, stopper): Observable<V>
   let endMapped: Observable<OrEndMarker<V>> = (<Observable<OrEndMarker<V>>>src).mapEnd(endMarker);
   let withEndMarker: Observable<OrEndMarker<V>[][]> = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync)
   if (src instanceof Property) withEndMarker = withEndMarker.toProperty()
-  let impl = withEndMarker.transform(function(event: Event<OrEndMarker<V>[][]>, sink: EventSink<V>) {
+  return withEndMarker.transform(function(event: Event<OrEndMarker<V>[][]>, sink: EventSink<V>) {
       if (hasValue(event)) {
         var [data, stopper]: OrEndMarker<V>[][] = event.value;
         if (stopper.length) {
@@ -37,7 +37,6 @@ export default function takeUntil<V>(src: Observable<V>, stopper): Observable<V>
       } else {
         return sink(event);
       }
-    }
+    }, new Desc(src, "takeUntil", [stopper])
   )
-  return withDesc(new Desc(src, "takeUntil", [stopper]), impl);
 }

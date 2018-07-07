@@ -39,8 +39,9 @@ export function describe (context, method, ...args) {
   }
 }
 
-export function withDesc(desc, obs) {
-  obs.desc = desc;
+// TODO: untyped function
+export function withDesc(desc: Desc | undefined, obs) {
+  if (desc) obs.desc = desc;
   return obs;
 }
 
