@@ -1,5 +1,4 @@
 import "./filter";
-import "./flatmapconcat";
 import "./concat";
 import Observable from "./observable";
 import Property from "./property";

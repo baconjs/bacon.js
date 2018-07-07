@@ -30,7 +30,6 @@ import "./flatmapfirst";
 import "./flatmaplatest";
 import "./flatmapwithconcurrencylimit";
 import "./flatmaperror";
-import "./flatmapconcat";
 import "./flatscan";
 import "./fold";
 import "./fromarray";

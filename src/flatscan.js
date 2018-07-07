@@ -1,5 +1,4 @@
 import './flatmap_'
-import './flatmapconcat'
 import './doaction'
 import { makeObservable } from "./flatmap_"
 import Observable from "./observable";

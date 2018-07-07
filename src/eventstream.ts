@@ -18,6 +18,11 @@ import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
 import flatMapFirst from "./flatmapfirst";
 import takeUntil from "./takeuntil";
+import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
+import flatMapConcat from "./flatmapconcat";
+import flatMapError from "./flatmaperror";
+import { EventSpawner, default as flatMapEvent } from "./flatmapevent";
+import flatMapLatest from "./flatmaplatest";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -74,7 +79,12 @@ export default class EventStream<V> extends Observable<V> {
   map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> { return <any>map(f, this) }
 
   flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
   flatMapFirst<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
 
   takeUntil(stopper: Observable<any>): EventStream<V> {
     return <any>takeUntil(this, stopper)

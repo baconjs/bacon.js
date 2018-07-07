@@ -15,6 +15,11 @@ import { Spawner } from "./flatmap_";
 import flatMap from "./flatmap";
 import flatMapFirst from "./flatmapfirst";
 import takeUntil from "./takeuntil";
+import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
+import flatMapConcat from "./flatmapconcat";
+import flatMapError from "./flatmaperror";
+import { default as flatMapEvent, EventSpawner } from "./flatmapevent";
+import flatMapLatest from "./flatmaplatest";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -61,7 +66,12 @@ export default class Property<V> extends Observable<V> {
   map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map(f, this) }
 
   flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
   flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
 
   takeUntil(stopper: Observable<any>): Property<V> {
     return <any>takeUntil(this, stopper)
@@ -89,4 +99,8 @@ export default class Property<V> extends Observable<V> {
       options
     );
   }
+}
+
+export function isProperty<V>(x): x is Property<V> {
+  return !!x._isProperty
 }

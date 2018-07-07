@@ -5,19 +5,20 @@ import { Error } from "./event";
 import { Desc } from "./describe";
 import flatMap_ from "./flatmap_"
 
-Observable.prototype.flatMapError = function(fn) {
+export default function flatMapError<V>(src: Observable<V>, f: (any) => Observable<V>): Observable<V> {
   return flatMap_(
     (x) => {
       if (x instanceof Error) {
-        return fn(x.error);
+        let error: any = x.error;
+        return f(error);
       } else {
         return x;
       }
     },
-    this,
-    { 
+    src,
+    {
       mapError: true,
-      desc: new Desc(this, "flatMapError", [fn])
+      desc: new Desc(src, "flatMapError", [f])
     }
   )
-};
+}

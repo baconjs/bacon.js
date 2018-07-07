@@ -18,6 +18,7 @@ import mapErrorT from "./maperror";
 import { Spawner } from "./flatmap_";
 import skipErrors from "./skiperrors";
 import last from "./last";
+import { EventSpawner } from "./flatmapevent";
 
 var idCounter = 0;
 
@@ -100,7 +101,12 @@ export default abstract class Observable<V> {
   abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
 
   abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapConcat<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Observable<V2>
   abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapLatest<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapError(f: (any) => Observable<V>): Observable<V>
+  abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
 
   mapEnd(f: ((End) => V) | V): this {
     return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))

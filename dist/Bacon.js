@@ -2041,6 +2041,51 @@ function takeUntil(src, stopper) {
     }, new Desc(src, "takeUntil", [stopper]));
 }
 
+function flatMapWithConcurrencyLimit(src, limit, f) {
+    return flatMap_(handleEventValueWith(f), src, {
+        desc: new Desc(src, "flatMapWithConcurrencyLimit", [limit, f]),
+        limit: limit
+    });
+}
+
+function flatMapConcat(src, f) {
+    return flatMap_(handleEventValueWith(f), src, {
+        desc: new Desc(src, "flatMapConcat", [f]),
+        limit: 1
+    });
+}
+
+function flatMapError(src, f) {
+    return flatMap_(function (x) {
+        if (x instanceof Error$1) {
+            var error = x.error;
+            return f(error);
+        }
+        else {
+            return x;
+        }
+    }, src, {
+        mapError: true,
+        desc: new Desc(src, "flatMapError", [f])
+    });
+}
+
+function flatMapEvent(src, f) {
+    return flatMap_(f, src, {
+        mapError: true,
+        desc: new Desc(src, "flatMapEvent", [f])
+    });
+}
+
+function flatMapLatest(src, f_) {
+    var f = _.toFunction(f_);
+    var stream = isProperty(src) ? src.toEventStream(allowSync) : src;
+    var flatMapped = flatMap(stream, function (value) { return makeObservable(f(value)).takeUntil(stream); });
+    if (isProperty(src))
+        flatMapped = flatMapped.toProperty();
+    return flatMapped.withDesc(new Desc(src, "flatMapLatest", [f]));
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -2083,7 +2128,12 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.map = function (f) { return map(f, this); };
     EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
+    EventStream.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
     EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    EventStream.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
+    EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
+    EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
+    EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
     EventStream.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
     };
@@ -2251,7 +2301,12 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.map = function (f) { return map(f, this); };
     Property.prototype.flatMap = function (f) { return flatMap(this, f); };
+    Property.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
     Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    Property.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
+    Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
+    Property.prototype.flatMapError = function (f) { return flatMapError(this, f); };
+    Property.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
     Property.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
     };
@@ -2272,6 +2327,9 @@ var Property = /** @class */ (function (_super) {
     };
     return Property;
 }(Observable));
+function isProperty(x) {
+    return !!x._isProperty;
+}
 
 function map(f, src) {
     if (f instanceof Property) {
@@ -2560,18 +2618,6 @@ EventStream.prototype.buffer = function (delay) {
     }
     return reply;
   }).withDesc(new Desc(this, "buffer", []));
-};
-
-Observable.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
-  return flatMap_(handleEventValueWith(f), this, {
-    limit: limit,
-    desc: new Desc(this, "flatMapWithConcurrencyLimit", [limit, f])
-  });
-};
-
-Observable.prototype.flatMapConcat = function () {
-  var desc = new Desc(this, "flatMapConcat", Array.prototype.slice.call(arguments, 0));
-  return this.flatMapWithConcurrencyLimit.apply(this, [1].concat(Array.prototype.slice.call(arguments))).withDesc(desc);
 };
 
 function fromBinder(binder, eventTransformer) {
@@ -2899,16 +2945,6 @@ function combineTemplate(template) {
 
 Bacon.combineTemplate = combineTemplate;
 
-Observable.prototype.flatMapLatest = function (f) {
-  f = _.toFunction(f);
-  var stream = this._isProperty ? this.toEventStream(allowSync) : this;
-  var flatMapped = stream.flatMap(function (value) {
-    return makeObservable(f(value)).takeUntil(stream);
-  });
-  if (this._isProperty) flatMapped = flatMapped.toProperty();
-  return flatMapped.withDesc(new Desc(this, "flatMapLatest", [f]));
-};
-
 Property.prototype.delayChanges = function (desc, f) {
   return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
 };
@@ -3025,26 +3061,6 @@ Observable.prototype.toESObservable = function () {
 };
 
 Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
-
-Observable.prototype.flatMapEvent = function (f) {
-    return flatMap_(f, this, {
-        mapError: true,
-        desc: new Desc(this, "flatMapEvent", arguments)
-    });
-};
-
-Observable.prototype.flatMapError = function (fn) {
-  return flatMap_(function (x) {
-    if (x instanceof Error$1) {
-      return fn(x.error);
-    } else {
-      return x;
-    }
-  }, this, {
-    mapError: true,
-    desc: new Desc(this, "flatMapError", [fn])
-  });
-};
 
 Observable.prototype.flatScan = function (seed, f) {
   var current = seed;
