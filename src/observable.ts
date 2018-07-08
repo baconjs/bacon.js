@@ -20,6 +20,7 @@ import skipErrors from "./skiperrors";
 import last from "./last";
 import { EventSpawner } from "./flatmapevent";
 import endAsValue from "./endasvalue"
+import endOnError from "./endonerror";
 
 var idCounter = 0;
 
@@ -121,6 +122,10 @@ export default abstract class Observable<V> {
 
   mapError(f: ((any) => V) | V): this {
     return <any>this.transform(mapErrorT(f), new Desc(this, "mapError", [f]))
+  }
+
+  endOnError(predicate: (any) => boolean = x => true): this {
+    return <any>endOnError(this, predicate)
   }
 
   log(...args: any[]): this {

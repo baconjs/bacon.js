@@ -1052,6 +1052,21 @@
             }
         });
     }
+    function endOnError(src, predicate) {
+        if (predicate === void 0) {
+            predicate = function (x) {
+                return true;
+            };
+        }
+        return src.transform(function (event, sink) {
+            if (isError(event) && predicate(event.error)) {
+                sink(event);
+                return sink(endEvent());
+            } else {
+                return sink(event);
+            }
+        }, new Desc(src, 'endOnError', []));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -1135,6 +1150,14 @@
         };
         Observable.prototype.mapError = function (f) {
             return this.transform(mapErrorT(f), new Desc(this, 'mapError', [f]));
+        };
+        Observable.prototype.endOnError = function (predicate) {
+            if (predicate === void 0) {
+                predicate = function (x) {
+                    return true;
+                };
+            }
+            return endOnError(this, predicate);
         };
         Observable.prototype.log = function () {
             var args = [];
@@ -3076,24 +3099,6 @@
             start,
             f
         ]));
-    };
-    Observable.prototype.endOnError = function (f) {
-        if (!(typeof f !== 'undefined' && f !== null)) {
-            f = true;
-        }
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
-        }
-        return convertArgsToFunction(this, f, args, function (f) {
-            return this.withHandler(function (event) {
-                if (event.isError && f(event.error)) {
-                    this.push(event);
-                    return this.push(endEvent());
-                } else {
-                    return this.push(event);
-                }
-            }).withDesc(new Desc(this, 'endOnError', []));
-        });
     };
     function symbol(key) {
         if (typeof Symbol !== 'undefined' && Symbol[key]) {
