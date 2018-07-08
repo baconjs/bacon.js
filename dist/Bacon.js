@@ -91,9 +91,6 @@ var _ = {
         }
         return -1;
     },
-    flip: function (f) {
-        return function (a, b) { return f(b, a); };
-    },
     head: function (xs) { return xs[0]; },
     always: function (x) { return function () { return x; }; },
     negate: function (f) { return function (x) { return !f(x); }; },
@@ -238,6 +235,11 @@ var _ = {
         }
     }
 };
+// TODO: move the rest of the functions as separate exports
+function flip(f) {
+    return function (a, b) { return f(b, a); };
+}
+
 var recursionDepth = 0;
 
 var eventIdCounter = 0;
@@ -993,10 +995,22 @@ function last(src) {
             sink(endEvent());
             return noMore;
         }
-        else {
+        else if (hasValue(event)) {
             lastEvent = event;
         }
+        else {
+            sink(event);
+        }
     }).withDesc(new Desc(src, "last", []));
+}
+
+function endAsValue(src) {
+    return src.transform(function (event, sink) {
+        if (isEnd(event)) {
+            sink(nextEvent({}));
+            sink(endEvent());
+        }
+    });
 }
 
 var idCounter = 0;
@@ -1052,6 +1066,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.last = function () {
         return last(this);
+    };
+    Observable.prototype.endAsValue = function () {
+        return endAsValue(this);
     };
     Observable.prototype.errors = function () {
         return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
@@ -1698,11 +1715,11 @@ function cannotSync(source) {
 Bacon.when = when;
 
 function withLatestFromE(sampler, samplee, f) {
-    var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), _.flip(f)]);
+    var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), flip(f)]);
     return result.withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]));
 }
 function withLatestFromP(sampler, samplee, f) {
-    var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), _.flip(f)]);
+    var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), flip(f)]);
     return result.withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]));
 }
 function withLatestFrom(sampler, samplee, f) {
@@ -2086,6 +2103,152 @@ function flatMapLatest(src, f_) {
     return flatMapped.withDesc(new Desc(src, "flatMapLatest", [f]));
 }
 
+function withMethodCallSupport(wrapped) {
+  return function (f) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    if (typeof f === "object" && args.length) {
+      var context = f;
+      var methodName = args[0];
+      f = function () {
+        return context[methodName].apply(context, arguments);
+      };
+      args = args.slice(1);
+    }
+    return wrapped.apply(undefined, [f].concat(args));
+  };
+}
+
+
+
+function partiallyApplied(f, applied) {
+  return function () {
+    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    return f.apply(undefined, applied.concat(args));
+  };
+}
+
+function toSimpleExtractor(args) {
+  return function (key) {
+    return function (value) {
+      if (!(typeof value !== "undefined" && value !== null)) {
+        return;
+      } else {
+        var fieldValue = value[key];
+        if (_.isFunction(fieldValue)) {
+          return fieldValue.apply(value, args);
+        } else {
+          return fieldValue;
+        }
+      }
+    };
+  };
+}
+
+function toFieldExtractor(f, args) {
+  var parts = f.slice(1).split(".");
+  var partFuncs = _.map(toSimpleExtractor(args), parts);
+  return function (value) {
+    for (var i = 0, f; i < partFuncs.length; i++) {
+      f = partFuncs[i];
+      value = f(value);
+    }
+    return value;
+  };
+}
+
+function isFieldKey(f) {
+  return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
+}
+
+var makeFunction_ = withMethodCallSupport(function (f) {
+  for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+    args[_key3 - 1] = arguments[_key3];
+  }
+
+  if (_.isFunction(f)) {
+    if (args.length) {
+      return partiallyApplied(f, args);
+    } else {
+      return f;
+    }
+  } else if (isFieldKey(f)) {
+    return toFieldExtractor(f, args);
+  } else {
+    return _.always(f);
+  }
+});
+
+function makeFunction(f, args) {
+  return makeFunction_.apply(undefined, [f].concat(args));
+}
+
+function convertArgsToFunction(obs, f, args, method) {
+  if (f && f._isProperty) {
+    var sampled = f.sampledBy(obs, function (p, s) {
+      return [p, s];
+    });
+    return method.call(sampled, function (_ref) {
+      var p = _ref[0];
+      return p;
+    }).map(function (_ref2) {
+      var s = _ref2[1];
+      return s;
+    });
+  } else {
+    f = makeFunction(f, args);
+    return method.call(obs, f);
+  }
+}
+
+function toCombinator(f) {
+  if (_.isFunction(f)) {
+    return f;
+  } else if (isFieldKey(f)) {
+    var key = toFieldKey(f);
+    return function (left, right) {
+      return left[key](right);
+    };
+  } else {
+    throw new Error("not a function or a field key: " + f);
+  }
+}
+
+function toFieldKey(f) {
+  return f.slice(1);
+}
+
+var makeCombinator = function (combinator) {
+    if ((typeof combinator !== "undefined" && combinator !== null)) {
+        return toCombinator(combinator);
+    }
+    else {
+        return Bacon._.id;
+    }
+};
+function sampledByP(samplee, sampler, f) {
+    var combinator = makeCombinator(f);
+    var result = withLatestFrom(sampler, samplee, flip(combinator));
+    return result.withDesc(new Desc(samplee, "sampledBy", [sampler, combinator]));
+}
+function sampledByE(samplee, sampler, f) {
+    return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
+}
+function sampleP(samplee, interval) {
+    return sampledByP(samplee, Bacon.interval(interval, {}), function (a, b) { return a; }).withDesc(new Desc(samplee, "sample", [interval]));
+}
+
+function fold(src, seed, f) {
+    return src.scan(seed, f)
+        .last()
+        .withDesc(new Desc(src, "fold", [seed, f]));
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -2134,6 +2297,13 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
     EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
     EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    EventStream.prototype.sampledBy = function (sampler, f) {
+        if (f === void 0) { f = function (a, b) { return a; }; }
+        return sampledByE(this, sampler, f);
+    };
+    EventStream.prototype.fold = function (seed, f) {
+        return fold(this, seed, f);
+    };
     EventStream.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
     };
@@ -2307,6 +2477,16 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
     Property.prototype.flatMapError = function (f) { return flatMapError(this, f); };
     Property.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    Property.prototype.sampledBy = function (sampler, f) {
+        if (f === void 0) { f = function (a, b) { return a; }; }
+        return sampledByP(this, sampler, f);
+    };
+    Property.prototype.sample = function (interval) {
+        return sampleP(this, interval);
+    };
+    Property.prototype.fold = function (seed, f) {
+        return fold(this, seed, f);
+    };
     Property.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
     };
@@ -2351,126 +2531,6 @@ function awaiting(other) {
 }
 
 Observable.prototype.awaiting = awaiting;
-
-function withMethodCallSupport(wrapped) {
-  return function (f) {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    if (typeof f === "object" && args.length) {
-      var context = f;
-      var methodName = args[0];
-      f = function () {
-        return context[methodName].apply(context, arguments);
-      };
-      args = args.slice(1);
-    }
-    return wrapped.apply(undefined, [f].concat(args));
-  };
-}
-
-
-
-function partiallyApplied(f, applied) {
-  return function () {
-    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-
-    return f.apply(undefined, applied.concat(args));
-  };
-}
-
-function toSimpleExtractor(args) {
-  return function (key) {
-    return function (value) {
-      if (!(typeof value !== "undefined" && value !== null)) {
-        return;
-      } else {
-        var fieldValue = value[key];
-        if (_.isFunction(fieldValue)) {
-          return fieldValue.apply(value, args);
-        } else {
-          return fieldValue;
-        }
-      }
-    };
-  };
-}
-
-function toFieldExtractor(f, args) {
-  var parts = f.slice(1).split(".");
-  var partFuncs = _.map(toSimpleExtractor(args), parts);
-  return function (value) {
-    for (var i = 0, f; i < partFuncs.length; i++) {
-      f = partFuncs[i];
-      value = f(value);
-    }
-    return value;
-  };
-}
-
-function isFieldKey(f) {
-  return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
-}
-
-var makeFunction_ = withMethodCallSupport(function (f) {
-  for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-    args[_key3 - 1] = arguments[_key3];
-  }
-
-  if (_.isFunction(f)) {
-    if (args.length) {
-      return partiallyApplied(f, args);
-    } else {
-      return f;
-    }
-  } else if (isFieldKey(f)) {
-    return toFieldExtractor(f, args);
-  } else {
-    return _.always(f);
-  }
-});
-
-function makeFunction(f, args) {
-  return makeFunction_.apply(undefined, [f].concat(args));
-}
-
-function convertArgsToFunction(obs, f, args, method) {
-  if (f && f._isProperty) {
-    var sampled = f.sampledBy(obs, function (p, s) {
-      return [p, s];
-    });
-    return method.call(sampled, function (_ref) {
-      var p = _ref[0];
-      return p;
-    }).map(function (_ref2) {
-      var s = _ref2[1];
-      return s;
-    });
-  } else {
-    f = makeFunction(f, args);
-    return method.call(obs, f);
-  }
-}
-
-function toCombinator(f) {
-  if (_.isFunction(f)) {
-    return f;
-  } else if (isFieldKey(f)) {
-    var key = toFieldKey(f);
-    return function (left, right) {
-      return left[key](right);
-    };
-  } else {
-    throw new Error("not a function or a field key: " + f);
-  }
-}
-
-function toFieldKey(f) {
-  return f.slice(1);
-}
 
 Bacon.combineAsArray = function () {
   var streams = argumentsToObservables(arguments);
@@ -3070,34 +3130,6 @@ Observable.prototype.flatScan = function (seed, f) {
     });
   }).toProperty(seed);
 };
-
-var makeCombinator = function (combinator) {
-  if (typeof combinator !== "undefined" && combinator !== null) {
-    return toCombinator(combinator);
-  } else {
-    return Bacon._.id;
-  }
-};
-
-EventStream.prototype.sampledBy = function (sampler, combinator) {
-  return this.toProperty().sampledBy(sampler, combinator).withDesc(new Desc(this, "sampledBy", [sampler, combinator]));
-};
-
-Property.prototype.sampledBy = function (sampler, combinator) {
-  combinator = makeCombinator(combinator);
-  var result = withLatestFrom(sampler, this, _.flip(combinator));
-  return result.withDesc(new Desc(this, "sampledBy", [sampler, combinator]));
-};
-
-Property.prototype.sample = function (interval) {
-  return this.sampledBy(Bacon.interval(interval, {})).withDesc(new Desc(this, "sample", [interval]));
-};
-
-Observable.prototype.fold = function (seed, f) {
-  return this.scan(seed, f).sampledBy(this.errors().mapEnd().toProperty()).withDesc(new Desc(this, "fold", [seed, f]));
-};
-
-Observable.prototype.reduce = Observable.prototype.fold;
 
 function fromArray(values) {
     assertArray(values);

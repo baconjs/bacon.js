@@ -23,6 +23,9 @@ import flatMapConcat from "./flatmapconcat";
 import flatMapError from "./flatmaperror";
 import { EventSpawner, default as flatMapEvent } from "./flatmapevent";
 import flatMapLatest from "./flatmaplatest";
+import { sampledByE } from "./sample";
+import fold from "./fold";
+import { Accumulator } from "./scan";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -85,6 +88,12 @@ export default class EventStream<V> extends Observable<V> {
   flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
   flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
   flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+
+  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByE(this, sampler, f)}
+
+  fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
+    return fold(this, seed, f)
+  }
 
   takeUntil(stopper: Observable<any>): EventStream<V> {
     return <any>takeUntil(this, stopper)

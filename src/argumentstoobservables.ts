@@ -14,7 +14,7 @@ function singleToObservables<T>(x: (Observable<T> | Observable<T>[] | T)): Obser
   } else if (isArray(x)) {
     return argumentsToObservables(<any>x)
   } else {
-    return [constant(x)]
+    return <any>[constant(x)]
   }
 }
 

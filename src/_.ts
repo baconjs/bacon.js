@@ -22,9 +22,6 @@ var _ = {
     }
     return -1;
   },
-  flip<A, B, C>(f: (A, B) => C): ((B, A) => C) {
-    return (a, b) => f(b, a)
-  },
   head<V>(xs: V[]): V { return xs[0]; },
   always(x) { return () => x; },
   negate(f) { return function(x) { return !f(x); }; },
@@ -155,6 +152,15 @@ var _ = {
     }
   }
 };
+
+// TODO: move the rest of the functions as separate exports
+export function flip<A, B, C>(f: (A, B) => C): ((B, A) => C) {
+  return (a, b) => f(b, a)
+}
+
+export function id<A>(x): A {
+  return x;
+}
 
 var recursionDepth = 0;
 export default _;

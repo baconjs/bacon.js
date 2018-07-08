@@ -19,6 +19,7 @@ import { Spawner } from "./flatmap_";
 import skipErrors from "./skiperrors";
 import last from "./last";
 import { EventSpawner } from "./flatmapevent";
+import endAsValue from "./endasvalue"
 
 var idCounter = 0;
 
@@ -89,6 +90,10 @@ export default abstract class Observable<V> {
     return <any>last(this)
   }
 
+  endAsValue(): Observable<{}> {
+    return endAsValue(this)
+  }
+
   abstract filter(f: ((V) => boolean) | boolean | Property<boolean>): this
 
   errors(): this {
@@ -108,7 +113,9 @@ export default abstract class Observable<V> {
   abstract flatMapError(f: (any) => Observable<V>): Observable<V>
   abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
 
-  mapEnd(f: ((End) => V) | V): this {
+  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R): Observable<R>
+
+  mapEnd(f: (() => V) | V): this {
     return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
   }
 
@@ -144,6 +151,8 @@ export default abstract class Observable<V> {
   scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return scan(this, seed, f)
   }
+
+  abstract fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>
 
   abstract concat(right: Observable<V>): Observable<V>
 
