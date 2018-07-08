@@ -1,15 +1,18 @@
 import fromBinder from "./frombinder";
 import { more, noMore } from "./reply";
-import { endEvent } from "./event";
+import { Event, endEvent } from "./event";
 import Bacon from "./core";
+import EventStream from "./eventstream";
+import { EventSink } from "./types";
+import Observable from "./observable";
 
-export default function repeat(generator) {
+export default function repeat<V>(generator: (number) => Observable<V>): EventStream<V> {
   var index = 0;
-  return fromBinder(function(sink) {
+  return fromBinder<V>(function(sink: EventSink<V>) {
     var flag = false;
     var reply = more;
     var unsub = function() {};
-    function handleEvent(event) {
+    function handleEvent(event: Event<V>) {
       if (event.isEnd) {
         if (!flag) {
           return flag = true;
@@ -21,7 +24,7 @@ export default function repeat(generator) {
       }
     }
     function subscribeNext() {
-      var next;
+      var next: Observable<V>;
       flag = true;
       while (flag && reply !== noMore) {
         next = generator(index++);
