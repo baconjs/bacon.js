@@ -2299,6 +2299,18 @@
             f
         ]));
     }
+    function skip(src, count) {
+        return src.transform(function (event, sink) {
+            if (!event.hasValue) {
+                return sink(event);
+            } else if (count > 0) {
+                count--;
+                return more;
+            } else {
+                return sink(event);
+            }
+        }, new Desc(src, 'skip', [count]));
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -2375,6 +2387,9 @@
         };
         EventStream.prototype.takeUntil = function (stopper) {
             return takeUntil(this, stopper);
+        };
+        EventStream.prototype.skip = function (count) {
+            return skip(this, count);
         };
         EventStream.prototype.toProperty = function () {
             var initValue_ = [];
@@ -2556,6 +2571,9 @@
         };
         Property.prototype.takeUntil = function (stopper) {
             return takeUntil(this, stopper);
+        };
+        Property.prototype.skip = function (count) {
+            return skip(this, count);
         };
         Property.prototype.concat = function (right) {
             return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -3569,18 +3587,6 @@
         ]));
     }
     Bacon.sequentially = sequentially;
-    Observable.prototype.skip = function (count) {
-        return this.withHandler(function (event) {
-            if (!event.hasValue) {
-                return this.push(event);
-            } else if (count > 0) {
-                count--;
-                return more;
-            } else {
-                return this.push(event);
-            }
-        }).withDesc(new Desc(this, 'skip', [count]));
-    };
     EventStream.prototype.skipUntil = function (starter) {
         var started = starter.take(1).map(true).toProperty(false);
         return this.filter(started).withDesc(new Desc(this, 'skipUntil', [starter]));

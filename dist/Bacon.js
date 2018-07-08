@@ -2266,6 +2266,21 @@ function fold(src, seed, f) {
         .withDesc(new Desc(src, "fold", [seed, f]));
 }
 
+function skip(src, count) {
+    return src.transform(function (event, sink) {
+        if (!event.hasValue) {
+            return sink(event);
+        }
+        else if (count > 0) {
+            count--;
+            return more;
+        }
+        else {
+            return sink(event);
+        }
+    }, new Desc(src, "skip", [count]));
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -2323,6 +2338,9 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
+    };
+    EventStream.prototype.skip = function (count) {
+        return skip(this, count);
     };
     EventStream.prototype.toProperty = function () {
         var initValue_ = [];
@@ -2506,6 +2524,9 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
+    };
+    Property.prototype.skip = function (count) {
+        return skip(this, count);
     };
     Property.prototype.concat = function (right) {
         return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -3547,19 +3568,6 @@ function sequentially(delay, values) {
     }).withDesc(new Desc(Bacon, "sequentially", [delay, values]));
 }
 Bacon.sequentially = sequentially;
-
-Observable.prototype.skip = function (count) {
-  return this.withHandler(function (event) {
-    if (!event.hasValue) {
-      return this.push(event);
-    } else if (count > 0) {
-      count--;
-      return more;
-    } else {
-      return this.push(event);
-    }
-  }).withDesc(new Desc(this, "skip", [count]));
-};
 
 EventStream.prototype.skipUntil = function (starter) {
   var started = starter.take(1).map(true).toProperty(false);

@@ -23,6 +23,7 @@ import flatMapLatest from "./flatmaplatest";
 import { sampledByP, sampleP } from "./sample";
 import fold from "./fold";
 import { Accumulator } from "./scan";
+import skip from "./skip";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -88,6 +89,10 @@ export default class Property<V> extends Observable<V> {
 
   takeUntil(stopper: Observable<any>): Property<V> {
     return <any>takeUntil(this, stopper)
+  }
+
+  skip(count: number): Property<V> {
+    return <any>skip(this, count)
   }
 
   concat(right: Observable<V>): Property<V> {

@@ -149,6 +149,8 @@ export default abstract class Observable<V> {
     return <any>this.transform(doErrorT(f), new Desc(this, "doError", [f]))
   }
 
+  abstract skip(count: number): Observable<V>
+
   skipDuplicates(isEqual?: Equals<V>): this {
     return <any>skipDuplicates(this, isEqual)
   }

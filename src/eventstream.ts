@@ -26,6 +26,7 @@ import flatMapLatest from "./flatmaplatest";
 import { sampledByE } from "./sample";
 import fold from "./fold";
 import { Accumulator } from "./scan";
+import skip from "./skip";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -98,6 +99,11 @@ export default class EventStream<V> extends Observable<V> {
   takeUntil(stopper: Observable<any>): EventStream<V> {
     return <any>takeUntil(this, stopper)
   }
+
+  skip(count: number): EventStream<V> {
+    return <any>skip(this, count)
+  }
+
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
     let initValue: Option<V> = initValue_.length 
       ? toOption<V>(initValue_[0]) 
