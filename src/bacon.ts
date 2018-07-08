@@ -52,6 +52,7 @@ import "./merge";
 import "./never";
 import "./observable";
 import "./once";
+import "./onvalues";
 import "./property";
 import "./repeatedly";
 import "./repeat";

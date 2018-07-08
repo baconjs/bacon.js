@@ -2322,6 +2322,76 @@
             return next;
         }).withDesc(new Desc(src, 'startWith', [seed]));
     }
+    function combineAsArray() {
+        var streams = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            streams[_i] = arguments[_i];
+        }
+        streams = argumentsToObservables(streams);
+        if (streams.length) {
+            var sources = [];
+            for (var i = 0; i < streams.length; i++) {
+                var stream = isObservable(streams[i]) ? streams[i] : constant(streams[i]);
+                sources.push(wrap(stream));
+            }
+            return whenP([
+                sources,
+                function () {
+                    var xs = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        xs[_i] = arguments[_i];
+                    }
+                    return xs;
+                }
+            ]).withDesc(new Bacon.Desc(Bacon, 'combineAsArray', streams));
+        } else {
+            return constant([]);
+        }
+    }
+    Bacon.combineAsArray = combineAsArray;
+    Bacon.combineWith = function () {
+        var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
+        var desc = new Desc(Bacon, 'combineWith', [f].concat(streams));
+        return Bacon.combineAsArray(streams).map(function (values) {
+            return f.apply(void 0, values);
+        }).withDesc(desc);
+    };
+    function combine(left, right, f) {
+        return whenP([
+            [
+                wrap(left),
+                wrap(right)
+            ],
+            f
+        ]).withDesc(new Desc(left, 'combine', [
+            right,
+            f
+        ]));
+    }
+    function wrap(obs) {
+        return new DefaultSource(obs, true);
+    }
+    function not(src) {
+        return src.map(function (x) {
+            return !x;
+        }).withDesc(new Desc(src, 'not', []));
+    }
+    function and(left, right) {
+        return left.combine(toProperty(right), function (x, y) {
+            return x && y;
+        }).withDesc(new Desc(left, 'and', [right]));
+    }
+    function or(left, right) {
+        return left.combine(toProperty(right), function (x, y) {
+            return x || y;
+        }).withDesc(new Desc(left, 'or', [right]));
+    }
+    function toProperty(x) {
+        if (isProperty(x)) {
+            return x;
+        }
+        return constant(x);
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -2421,6 +2491,12 @@
         };
         EventStream.prototype.merge = function (other) {
             return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
+        };
+        EventStream.prototype.combine = function (right, f) {
+            return combine(this, right, f);
+        };
+        EventStream.prototype.not = function () {
+            return not(this);
         };
         return EventStream;
     }(Observable);
@@ -2595,11 +2671,23 @@
         Property.prototype.concat = function (right) {
             return addPropertyInitValueToStream(this, this.changes().concat(right));
         };
+        Property.prototype.combine = function (right, f) {
+            return combine(this, right, f);
+        };
         Property.prototype.withHandler = function (handler) {
             return new Property(new Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler);
         };
         Property.prototype.toProperty = function () {
             return this;
+        };
+        Property.prototype.or = function (other) {
+            return or(this, other);
+        };
+        Property.prototype.and = function (other) {
+            return and(this, other);
+        };
+        Property.prototype.not = function () {
+            return not(this);
         };
         Property.prototype.toEventStream = function (options) {
             var _this = this;
@@ -2635,59 +2723,6 @@
             return values[1].length === 0;
         }).toProperty(false).skipDuplicates().withDesc(new Desc(src, 'awaiting', [other]));
     }
-    Bacon.combineAsArray = function () {
-        var streams = argumentsToObservables(arguments);
-        if (streams.length) {
-            var sources = [];
-            for (var i = 0; i < streams.length; i++) {
-                var stream = isObservable(streams[i]) ? streams[i] : Bacon.constant(streams[i]);
-                sources.push(new DefaultSource(stream, true));
-            }
-            return whenP(sources, function () {
-                for (var _len = arguments.length, xs = Array(_len), _key = 0; _key < _len; _key++) {
-                    xs[_key] = arguments[_key];
-                }
-                return xs;
-            }).withDesc(new Bacon.Desc(Bacon, 'combineAsArray', streams));
-        } else {
-            return constant([]);
-        }
-    };
-    Bacon.onValues = function () {
-        return Bacon.combineAsArray(Array.prototype.slice.call(arguments, 0, arguments.length - 1)).onValues(arguments[arguments.length - 1]);
-    };
-    Bacon.combineWith = function () {
-        var _argumentsToObservabl = argumentsToObservablesAndFunction(arguments), streams = _argumentsToObservabl[0], f = _argumentsToObservabl[1];
-        var desc = new Desc(Bacon, 'combineWith', [f].concat(streams));
-        return Bacon.combineAsArray(streams).map(function (values) {
-            return f.apply(undefined, values);
-        }).withDesc(desc);
-    };
-    Observable.prototype.combine = function (other, f) {
-        var combinator = toCombinator(f);
-        var desc = new Desc(this, 'combine', [
-            other,
-            f
-        ]);
-        return Bacon.combineAsArray(this, other).map(function (values) {
-            return combinator(values[0], values[1]);
-        }).withDesc(desc);
-    };
-    Observable.prototype.not = function () {
-        return this.map(function (x) {
-            return !x;
-        }).withDesc(new Desc(this, 'not', []));
-    };
-    Property.prototype.and = function (other) {
-        return this.combine(other, function (x, y) {
-            return x && y;
-        }).withDesc(new Desc(this, 'and', [other]));
-    };
-    Property.prototype.or = function (other) {
-        return this.combine(other, function (x, y) {
-            return x || y;
-        }).withDesc(new Desc(this, 'or', [other]));
-    };
     EventStream.prototype.bufferWithTime = function (delay) {
         return this.bufferWithTimeOrCount(delay, Number.MAX_VALUE).withDesc(new Desc(this, 'bufferWithTime', [delay]));
     };
@@ -3480,6 +3515,10 @@
     if (typeof Zepto !== 'undefined' && Zepto) {
         Zepto.fn.asEventStream = Bacon.$.asEventStream;
     }
+    function onValues() {
+        return Bacon.combineAsArray(Array.prototype.slice.call(arguments, 0, arguments.length - 1)).onValues(arguments[arguments.length - 1]);
+    }
+    Bacon.onValues = onValues;
     function repeatedly(delay, values) {
         var index = 0;
         return fromPoll(delay, function () {

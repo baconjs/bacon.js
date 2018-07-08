@@ -166,9 +166,15 @@ export default abstract class Observable<V> {
 
   abstract startWith(seed: V): Observable<V>
 
+  // TODO: now there are identical duplicate implementations in both subclasses, because implementing here
+  // causes it to fail. Some circular-dep thingin going on with rollup.
+  abstract combine<V2, R>(right: Observable<V2>, f: (V, V2) => R): Property<R>
+
   awaiting(other: Observable<any>): Property<boolean> {
     return awaiting(this, other)
   }
+
+  abstract not(): Observable<boolean>
 
   name(name: string) {
     this._name = name;
