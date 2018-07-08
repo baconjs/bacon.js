@@ -21,6 +21,7 @@ import last from "./last";
 import { EventSpawner } from "./flatmapevent";
 import endAsValue from "./endasvalue"
 import endOnError from "./endonerror";
+import awaiting from "./awaiting";
 
 var idCounter = 0;
 
@@ -164,6 +165,10 @@ export default abstract class Observable<V> {
   abstract concat(right: Observable<V>): Observable<V>
 
   abstract startWith(seed: V): Observable<V>
+
+  awaiting(other: Observable<any>): Property<boolean> {
+    return awaiting(this, other)
+  }
 
   name(name: string) {
     this._name = name;

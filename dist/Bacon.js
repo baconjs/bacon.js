@@ -1129,6 +1129,9 @@ var Observable = /** @class */ (function () {
     Observable.prototype.scan = function (seed, f) {
         return scan(this, seed, f);
     };
+    Observable.prototype.awaiting = function (other) {
+        return awaiting(this, other);
+    };
     Observable.prototype.name = function (name) {
         this._name = name;
         return this;
@@ -2574,14 +2577,13 @@ function mapT(f) {
     };
 }
 
-function awaiting(other) {
-  var desc = new Desc(this, "awaiting", [other]);
-  return groupSimultaneous_([this, other], allowSync).map(function (values) {
-    return values[1].length === 0;
-  }).toProperty(false).skipDuplicates().withDesc(desc);
+function awaiting(src, other) {
+    return groupSimultaneous_([src, other], allowSync)
+        .map(function (values) { return values[1].length === 0; })
+        .toProperty(false)
+        .skipDuplicates()
+        .withDesc(new Desc(src, "awaiting", [other]));
 }
-
-Observable.prototype.awaiting = awaiting;
 
 Bacon.combineAsArray = function () {
   var streams = argumentsToObservables(arguments);
