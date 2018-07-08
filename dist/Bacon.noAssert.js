@@ -3496,7 +3496,11 @@
         });
     }
     Bacon.repeat = repeat;
-    Bacon.retry = function (options) {
+    function silence(duration) {
+        return later(duration, '').filter(false);
+    }
+    Bacon.silence = silence;
+    function retry(options) {
         if (!_.isFunction(options.source)) {
             throw new Error('\'source\' option has to be a function');
         }
@@ -3510,40 +3514,41 @@
             return true;
         };
         var finished = false;
-        var error = null;
+        var errorEvent = null;
         return Bacon.repeat(function (count) {
             function valueStream() {
-                return source(count).endOnError().withHandler(function (event) {
-                    if (event.isError) {
-                        error = event;
-                        if (!(isRetryable(error.error) && (retries === 0 || retriesDone < retries))) {
+                return source(count).endOnError().transform(function (event, sink) {
+                    if (isError(event)) {
+                        errorEvent = event;
+                        if (!(isRetryable(errorEvent.error) && (retries === 0 || retriesDone < retries))) {
                             finished = true;
-                            return this.push(event);
+                            return sink(event);
                         }
                     } else {
-                        if (event.hasValue) {
-                            error = null;
+                        if (hasValue(event)) {
+                            errorEvent = null;
                             finished = true;
                         }
-                        return this.push(event);
+                        return sink(event);
                     }
                 });
             }
             if (finished) {
                 return null;
-            } else if (error) {
+            } else if (errorEvent) {
                 var context = {
-                    error: error.error,
+                    error: errorEvent.error,
                     retriesDone: retriesDone
                 };
-                var pause = later(delay(context)).filter(false);
+                var pause = silence(delay(context));
                 retriesDone++;
                 return pause.concat(Bacon.once().flatMap(valueStream));
             } else {
                 return valueStream();
             }
         }).withDesc(new Desc(Bacon, 'retry', [options]));
-    };
+    }
+    Bacon.retry = retry;
     function sequentially(delay, values) {
         var index = 0;
         return fromPoll(delay, function () {
