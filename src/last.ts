@@ -1,10 +1,10 @@
 import { Desc } from "./describe";
 import { noMore } from "./reply";
-import { Event, endEvent, isEnd } from "./event";
+import { endEvent, hasValue, isEnd, Value } from "./event";
 import Observable from "./observable";
 
 export default function last<V>(src: Observable<V>): Observable<V> {
-  var lastEvent: Event<V>;
+  var lastEvent: Value<V>;
   return src.transform<V>(function (event, sink) {
     if (isEnd(event)) {
       if (lastEvent) {
@@ -12,8 +12,10 @@ export default function last<V>(src: Observable<V>): Observable<V> {
       }
       sink(endEvent());
       return noMore;
-    } else {
+    } else if (hasValue(event)) {
       lastEvent = event;
+    } else {
+      sink(event)
     }
   }).withDesc(new Desc(src, "last", []));
 }
