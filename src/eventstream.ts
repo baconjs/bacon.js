@@ -21,12 +21,13 @@ import takeUntil from "./takeuntil";
 import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
 import flatMapConcat from "./flatmapconcat";
 import flatMapError from "./flatmaperror";
-import { EventSpawner, default as flatMapEvent } from "./flatmapevent";
+import { default as flatMapEvent, EventSpawner } from "./flatmapevent";
 import flatMapLatest from "./flatmaplatest";
 import { sampledByE } from "./sample";
 import fold from "./fold";
 import { Accumulator } from "./scan";
 import skip from "./skip";
+import { startWithE } from "./startwith";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -102,6 +103,10 @@ export default class EventStream<V> extends Observable<V> {
 
   skip(count: number): EventStream<V> {
     return <any>skip(this, count)
+  }
+
+  startWith(seed: V): EventStream<V> {
+    return startWithE(this,seed)
   }
 
   toProperty(...initValue_: (V | Option<V>)[]): Property<V> {

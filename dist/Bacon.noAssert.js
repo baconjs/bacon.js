@@ -2311,6 +2311,14 @@
             }
         }, new Desc(src, 'skip', [count]));
     }
+    function startWithE(src, seed) {
+        return once(seed).concat(src).withDesc(new Desc(src, 'startWith', [seed]));
+    }
+    function startWithP(src, seed) {
+        return src.scan(seed, function (prev, next) {
+            return next;
+        }).withDesc(new Desc(src, 'startWith', [seed]));
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -2390,6 +2398,9 @@
         };
         EventStream.prototype.skip = function (count) {
             return skip(this, count);
+        };
+        EventStream.prototype.startWith = function (seed) {
+            return startWithE(this, seed);
         };
         EventStream.prototype.toProperty = function () {
             var initValue_ = [];
@@ -2574,6 +2585,9 @@
         };
         Property.prototype.skip = function (count) {
             return skip(this, count);
+        };
+        Property.prototype.startWith = function (seed) {
+            return startWithP(this, seed);
         };
         Property.prototype.concat = function (right) {
             return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -3608,14 +3622,6 @@
                 }
             }).withDesc(new Desc(this, 'skipWhile', [f]));
         });
-    };
-    Property.prototype.startWith = function (seed) {
-        return this.scan(seed, function (prev, next) {
-            return next;
-        }).withDesc(new Desc(this, 'startWith', [seed]));
-    };
-    EventStream.prototype.startWith = function (seed) {
-        return once(seed).concat(this).withDesc(new Desc(this, 'startWith', [seed]));
     };
     Observable.prototype.slidingWindow = function (n) {
         var minValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;

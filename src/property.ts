@@ -24,6 +24,7 @@ import { sampledByP, sampleP } from "./sample";
 import fold from "./fold";
 import { Accumulator } from "./scan";
 import skip from "./skip";
+import { startWithP } from "./startwith";
 
 export default class Property<V> extends Observable<V> {
   dispatcher: PropertyDispatcher<V, Property<V>>
@@ -93,6 +94,10 @@ export default class Property<V> extends Observable<V> {
 
   skip(count: number): Property<V> {
     return <any>skip(this, count)
+  }
+
+  startWith(seed: V): Property<V> {
+    return startWithP(this, seed)
   }
 
   concat(right: Observable<V>): Property<V> {

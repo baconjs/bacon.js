@@ -163,6 +163,8 @@ export default abstract class Observable<V> {
 
   abstract concat(right: Observable<V>): Observable<V>
 
+  abstract startWith(seed: V): Observable<V>
+
   name(name: string) {
     this._name = name;
     return this;

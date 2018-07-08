@@ -2281,6 +2281,13 @@ function skip(src, count) {
     }, new Desc(src, "skip", [count]));
 }
 
+function startWithE(src, seed) {
+    return once(seed).concat(src).withDesc(new Desc(src, "startWith", [seed]));
+}
+function startWithP(src, seed) {
+    return src.scan(seed, function (prev, next) { return next; }).withDesc(new Desc(src, "startWith", [seed]));
+}
+
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
@@ -2341,6 +2348,9 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.skip = function (count) {
         return skip(this, count);
+    };
+    EventStream.prototype.startWith = function (seed) {
+        return startWithE(this, seed);
     };
     EventStream.prototype.toProperty = function () {
         var initValue_ = [];
@@ -2527,6 +2537,9 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.skip = function (count) {
         return skip(this, count);
+    };
+    Property.prototype.startWith = function (seed) {
+        return startWithP(this, seed);
     };
     Property.prototype.concat = function (right) {
         return addPropertyInitValueToStream(this, this.changes().concat(right));
@@ -3594,16 +3607,6 @@ EventStream.prototype.skipWhile = function (f) {
       }
     }).withDesc(new Desc(this, "skipWhile", [f]));
   });
-};
-
-Property.prototype.startWith = function (seed) {
-  return this.scan(seed, function (prev, next) {
-    return next;
-  }).withDesc(new Desc(this, "startWith", [seed]));
-};
-
-EventStream.prototype.startWith = function (seed) {
-  return once(seed).concat(this).withDesc(new Desc(this, "startWith", [seed]));
 };
 
 Observable.prototype.slidingWindow = function (n) {
