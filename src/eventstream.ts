@@ -30,6 +30,7 @@ import skip from "./skip";
 import { startWithE } from "./startwith";
 import { combine } from "./combine";
 import { not } from "./boolean";
+import { bufferWithCount, bufferWithTime, bufferWithTimeOrCount } from "./buffer";
 
 // allowSync option is used for overriding the "force async" behaviour or EventStreams.
 // ideally, this should not exist, but right now the implementation of some operations
@@ -138,7 +139,18 @@ export default class EventStream<V> extends Observable<V> {
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>f(this).withDesc(desc)
   }
+  
+  bufferWithTime(delay: number): EventStream<V> {
+    return bufferWithTime(this, delay)
+  }
 
+  bufferWithCount(count: number): EventStream<V> {
+    return bufferWithCount(this, count)
+  }
+
+  bufferWithTimeOrCount(delay?: number, count?: number): EventStream<V> {
+    return bufferWithTimeOrCount(this, delay, count)
+  }
 }
 
 export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {

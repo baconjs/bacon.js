@@ -2392,6 +2392,98 @@
         }
         return constant(x);
     }
+    function bufferWithTime(src, delay) {
+        return bufferWithTimeOrCount(src, delay, Number.MAX_VALUE).withDesc(new Desc(src, 'bufferWithTime', [delay]));
+    }
+    function bufferWithCount(src, count) {
+        return bufferWithTimeOrCount(src, undefined, count).withDesc(new Desc(src, 'bufferWithCount', [count]));
+    }
+    function bufferWithTimeOrCount(src, delay, count) {
+        function flushOrSchedule(buffer) {
+            if (buffer.values.length === count) {
+                return buffer.flush();
+            } else if (delay !== undefined) {
+                return buffer.schedule();
+            }
+        }
+        var desc = new Desc(src, 'bufferWithTimeOrCount', [
+            delay,
+            count
+        ]);
+        return buffer(src, delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
+    }
+    var Buffer = function () {
+        function Buffer(onFlush, onInput, delay) {
+            this.push = function (e) {
+            };
+            this.scheduled = null;
+            this.end = undefined;
+            this.values = [];
+            this.onFlush = onFlush;
+            this.onInput = onInput;
+            this.delay = delay;
+        }
+        Buffer.prototype.flush = function () {
+            if (this.scheduled) {
+                Scheduler.scheduler.clearTimeout(this.scheduled);
+                this.scheduled = null;
+            }
+            if (this.values.length > 0) {
+                var valuesToPush = this.values;
+                this.values = [];
+                var reply = this.push(nextEvent(valuesToPush));
+                if (this.end != null) {
+                    return this.push(this.end);
+                } else if (reply !== noMore) {
+                    return this.onFlush(this);
+                }
+            } else {
+                if (this.end != null) {
+                    return this.push(this.end);
+                }
+            }
+        };
+        Buffer.prototype.schedule = function () {
+            var _this = this;
+            if (!this.scheduled) {
+                return this.scheduled = this.delay(function () {
+                    return _this.flush();
+                });
+            }
+        };
+        return Buffer;
+    }();
+    function buffer(src, delay, onInput, onFlush) {
+        if (onInput === void 0) {
+            onInput = nop;
+        }
+        if (onFlush === void 0) {
+            onFlush = nop;
+        }
+        var reply = more;
+        if (!_.isFunction(delay)) {
+            var delayMs = delay;
+            delay = function (f) {
+                return Scheduler.scheduler.setTimeout(f, delayMs);
+            };
+        }
+        var buffer = new Buffer(onFlush, onInput, delay);
+        return src.transform(function (event, sink) {
+            buffer.push = sink;
+            if (hasValue(event)) {
+                buffer.values.push(event.value);
+                onInput(buffer);
+            } else if (event.isError) {
+                reply = sink(event);
+            } else if (event.isEnd) {
+                buffer.end = event;
+                if (!buffer.scheduled) {
+                    buffer.flush();
+                }
+            }
+            return reply;
+        }).withDesc(new Desc(src, 'buffer', []));
+    }
     var allowSync = { forceAsync: false };
     var EventStream = function (_super) {
         __extends(EventStream, _super);
@@ -2500,6 +2592,15 @@
         };
         EventStream.prototype.delayChanges = function (desc, f) {
             return f(this).withDesc(desc);
+        };
+        EventStream.prototype.bufferWithTime = function (delay) {
+            return bufferWithTime(this, delay);
+        };
+        EventStream.prototype.bufferWithCount = function (count) {
+            return bufferWithCount(this, count);
+        };
+        EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
+            return bufferWithTimeOrCount(this, delay, count);
         };
         return EventStream;
     }(Observable);
@@ -2729,88 +2830,6 @@
             return values[1].length === 0;
         }).toProperty(false).skipDuplicates().withDesc(new Desc(src, 'awaiting', [other]));
     }
-    EventStream.prototype.bufferWithTime = function (delay) {
-        return this.bufferWithTimeOrCount(delay, Number.MAX_VALUE).withDesc(new Desc(this, 'bufferWithTime', [delay]));
-    };
-    EventStream.prototype.bufferWithCount = function (count) {
-        return this.bufferWithTimeOrCount(undefined, count).withDesc(new Desc(this, 'bufferWithCount', [count]));
-    };
-    EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
-        var flushOrSchedule = function (buffer) {
-            if (buffer.values.length === count) {
-                return buffer.flush();
-            } else if (delay !== undefined) {
-                return buffer.schedule();
-            }
-        };
-        var desc = new Desc(this, 'bufferWithTimeOrCount', [
-            delay,
-            count
-        ]);
-        return this.buffer(delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
-    };
-    EventStream.prototype.buffer = function (delay) {
-        var onInput = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : nop;
-        var onFlush = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : nop;
-        var buffer = {
-            scheduled: null,
-            end: undefined,
-            values: [],
-            flush: function () {
-                if (this.scheduled) {
-                    Scheduler.scheduler.clearTimeout(this.scheduled);
-                    this.scheduled = null;
-                }
-                if (this.values.length > 0) {
-                    var valuesToPush = this.values;
-                    this.values = [];
-                    var reply = this.push(nextEvent(valuesToPush));
-                    if (this.end != null) {
-                        return this.push(this.end);
-                    } else if (reply !== noMore) {
-                        return onFlush(this);
-                    }
-                } else {
-                    if (this.end != null) {
-                        return this.push(this.end);
-                    }
-                }
-            },
-            schedule: function () {
-                var _this = this;
-                if (!this.scheduled) {
-                    return this.scheduled = delay(function () {
-                        return _this.flush();
-                    });
-                }
-            }
-        };
-        var reply = more;
-        if (!_.isFunction(delay)) {
-            var delayMs = delay;
-            delay = function (f) {
-                return Scheduler.scheduler.setTimeout(f, delayMs);
-            };
-        }
-        return this.withHandler(function (event) {
-            var _this2 = this;
-            buffer.push = function (event) {
-                return _this2.push(event);
-            };
-            if (event.isError) {
-                reply = this.push(event);
-            } else if (event.isEnd) {
-                buffer.end = event;
-                if (!buffer.scheduled) {
-                    buffer.flush();
-                }
-            } else {
-                buffer.values.push(event.value);
-                onInput(buffer);
-            }
-            return reply;
-        }).withDesc(new Desc(this, 'buffer', []));
-    };
     function fromBinder(binder, eventTransformer) {
         if (eventTransformer === void 0) {
             eventTransformer = _.id;
