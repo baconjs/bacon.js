@@ -1,7 +1,7 @@
 import UpdateBarrier from "./updatebarrier";
 import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
-import { EventSink, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
+import { EventSink, EventStreamDelay, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
 import Property from "./property"
 import { StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
@@ -175,6 +175,8 @@ export default abstract class Observable<V> {
   }
 
   abstract not(): Observable<boolean>
+
+  abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
 
   name(name: string) {
     this._name = name;

@@ -2498,6 +2498,9 @@
         EventStream.prototype.not = function () {
             return not(this);
         };
+        EventStream.prototype.delayChanges = function (desc, f) {
+            return f(this).withDesc(desc);
+        };
         return EventStream;
     }(Observable);
     function newEventStream(description, subscribe) {
@@ -2688,6 +2691,9 @@
         };
         Property.prototype.not = function () {
             return not(this);
+        };
+        Property.prototype.delayChanges = function (desc, f) {
+            return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
         };
         Property.prototype.toEventStream = function (options) {
             var _this = this;
@@ -3120,12 +3126,6 @@
         return resultProperty.withDesc(new Desc(Bacon, 'combineTemplate', [template]));
     }
     Bacon.combineTemplate = combineTemplate;
-    Property.prototype.delayChanges = function (desc, f) {
-        return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
-    };
-    EventStream.prototype.delayChanges = function (desc, f) {
-        return f(this).withDesc(desc);
-    };
     Observable.prototype.delay = function (delay) {
         return this.delayChanges(new Desc(this, 'delay', [delay]), function (changes) {
             return changes.flatMap(function (value) {

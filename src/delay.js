@@ -1,5 +1,4 @@
 import "./flatmap";
-import "./delaychanges";
 import later from "./later";
 import Observable from "./observable";
 import { Desc } from "./describe";

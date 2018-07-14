@@ -4,7 +4,7 @@ import { nop } from "./helpers";
 import { registerObs } from "./spy";
 import Dispatcher from "./dispatcher";
 import asyncWrapSubscribe from "./asyncwrapsubscribe"
-import { EventSink, Subscribe, Transformer, Unsub } from "./types"
+import { EventSink, EventStreamDelay, Subscribe, Transformer, Unsub } from "./types"
 import { filter } from "./filter"
 import Property from "./property"
 import { none, Option, toOption } from "./optional"
@@ -134,6 +134,11 @@ export default class EventStream<V> extends Observable<V> {
   }
 
   not(): EventStream<boolean> {return <any>not(this) }
+
+  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
+    return <any>f(this).withDesc(desc)
+  }
+
 }
 
 export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {

@@ -13,7 +13,6 @@ import "./concat";
 import "./debounce";
 import "./decode";
 import "./delay";
-import "./delaychanges";
 import "./diff";
 import "./doaction";
 import "./doend";

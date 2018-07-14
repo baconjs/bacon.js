@@ -1,5 +1,4 @@
 import "./buffer";
-import "./delaychanges";
 import "./map";
 import Observable from "./observable";
 import { Desc } from "./describe";

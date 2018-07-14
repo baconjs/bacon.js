@@ -5,7 +5,7 @@ import { assertFunction, assertNoArguments } from "./assert";
 import { Event } from "./event";
 import { Desc } from "./describe";
 import { registerObs } from "./spy";
-import { EventSink, Subscribe, Transformer, Unsub } from "./types"
+import { EventSink, EventStreamDelay, Subscribe, Transformer, Unsub } from "./types"
 import PropertyDispatcher from "./propertydispatcher"
 import { filter } from "./filter"
 import map from "./map"
@@ -123,6 +123,11 @@ export default class Property<V> extends Observable<V> {
   or(other: Property<any>): Property<boolean> {return or(this, other)}
   and(other: Property<any>): Property<boolean> {return and(this, other)}
   not(): Property<boolean> {return <any>not(this) }
+
+
+  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
+    return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
+  }
 
   toEventStream(options?: Options): EventStream<V> {
     return new EventStream(
