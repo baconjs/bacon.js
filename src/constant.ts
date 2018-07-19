@@ -1,4 +1,4 @@
-import Property from "./property";
+import { Property } from "./observable";;
 import { Desc } from "./describe";
 import { endEvent, initialEvent } from "./event";
 import Bacon from "./core";

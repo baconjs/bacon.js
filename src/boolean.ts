@@ -1,7 +1,7 @@
 import "./combine";
 import "./map";
 import Observable from "./observable";
-import Property, { isProperty } from "./property";
+import {Property, isProperty } from "./observable";
 import { Desc } from "./describe";
 import constant from "./constant";
 

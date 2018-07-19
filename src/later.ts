@@ -4,7 +4,7 @@ import Bacon from "./core";
 import fromBinder from "./frombinder";
 import "./scheduler"
 import Scheduler from "./scheduler";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { EventSink } from "./types";
 
 export default function later<V>(delay: number, value: V): EventStream<V> {

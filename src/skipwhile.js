@@ -1,6 +1,6 @@
 import { assertObservableIsProperty } from "./assert";
 import { Desc } from "./describe";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { convertArgsToFunction } from "./functionconstruction";
 import { more } from "./reply";
 

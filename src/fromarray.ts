@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { assertArray } from "./assert";
 import { Desc } from "./describe";
 import never from "./never";

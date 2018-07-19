@@ -17,7 +17,7 @@ expect = require("chai").expect
 } = require("../SpecHelper")
 
 describe "EventStream constructor", ->
-  it "Requires Desc argument", ->
+  it "Provides a way to create a new EventStream", ->
     values = []
     subscribe = (sink) ->
       sink(new Bacon.Next("hello"))

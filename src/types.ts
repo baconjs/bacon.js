@@ -1,5 +1,5 @@
 import { Event } from "./event"
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 
 export type Sink<V> = (V) => any
 export type EventSink<V> = Sink<Event<V>>

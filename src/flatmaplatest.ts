@@ -4,9 +4,8 @@ import "./takeuntil";
 import { makeObservable, Spawner } from "./flatmap_";
 import Observable from "./observable";
 import { Desc } from "./describe";
-import { allowSync } from "./eventstream";
+import { allowSync, isProperty } from "./observable";
 import _ from "./_"
-import { isProperty } from "./property";
 
 export default function flatMapLatest<V, V2>(src: Observable<V>, f_: Spawner<V, V2>): Observable<V2> {
   let f = _.toFunction(f_)

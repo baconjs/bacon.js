@@ -2,7 +2,7 @@ import Bacon from "./core";
 import fromPoll from "./frompoll";
 import { nextEvent } from "./event";
 import { Desc } from "./describe";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 
 export function interval<V>(delay, value: V): EventStream<V> {
   return fromPoll<V>(delay, function () {

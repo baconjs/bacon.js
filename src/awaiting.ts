@@ -3,9 +3,9 @@ import "./skipduplicates";
 
 import { Desc } from "./describe";
 import { groupSimultaneous_ } from "./groupsimultaneous";
-import { allowSync } from "./eventstream";
+import { allowSync } from "./observable";
 import Observable from "./observable";
-import Property from "./property";
+import { Property } from "./observable";;
 
 export default function awaiting(src: Observable<any>, other: Observable<any>): Property<boolean> {
   return groupSimultaneous_([src, other], allowSync)

@@ -7,7 +7,7 @@ import { isObservable } from "./helpers";
 import { DefaultSource, Source } from "./source";
 import Observable from "./observable";
 import Bacon from "./core";
-import Property from "./property";
+import { Property } from "./observable";;
 
 export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[]) {
   streams = argumentsToObservables(streams)

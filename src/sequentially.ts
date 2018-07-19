@@ -2,7 +2,7 @@ import fromPoll from "./frompoll";
 import { Desc } from "./describe";
 import Bacon from "./core";
 import { endEvent, Event, toEvent } from "./event";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { EventLike } from "./frombinder";
 
 export default function sequentially<V>(delay: number, values: (V | Event<V>)[]): EventStream<V> {

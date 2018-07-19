@@ -3,7 +3,7 @@ import { Event, isEvent, toEvent } from './event';
 import { isArray } from './helpers';
 import Bacon from './core';
 import { Desc } from "./describe";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { EventSink, Sink, Unsub } from "./types";
 
 export type FlexibleSink<V> = Sink<EventLike<V>>

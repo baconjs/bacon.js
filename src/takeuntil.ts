@@ -1,12 +1,10 @@
-import Property from "./property";
+import Observable, { allowSync, Property } from "./observable";
 import "./mapend";
 import "./skiperrors";
 import { endEvent, Event, hasValue, nextEvent } from "./event";
 import { more } from "./reply";
 import { Desc } from "./describe";
 import { groupSimultaneous_ } from "./groupsimultaneous";
-import { allowSync } from "./eventstream";
-import Observable from "./observable";
 import { EventSink } from "./types";
 
 const endMarker = {};

@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import UpdateBarrier from "./updatebarrier";
 import { Desc } from "./describe";
 import { endEvent, toEvent } from "./event";

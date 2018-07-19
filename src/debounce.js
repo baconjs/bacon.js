@@ -1,6 +1,5 @@
 import { Desc } from "./describe";
 import "./flatmaplatest";
-import "./delay";
 import "./filter";
 import "./concat";
 import Observable from "./observable"

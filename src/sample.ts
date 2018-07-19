@@ -1,5 +1,5 @@
-import EventStream from "./eventstream";
-import Property from "./property";
+import { EventStream } from "./observable";
+import { Property } from "./observable";;
 import { toCombinator } from "./functionconstruction";
 import { Desc } from "./describe";
 import Bacon from "./core";

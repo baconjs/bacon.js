@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { endEvent } from "./event";
 import { describe } from "./describe";
 import { nop } from "./helpers";

@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { Desc } from "./describe";
 import Bacon from "./core";
 import { symbol } from "./symbol";

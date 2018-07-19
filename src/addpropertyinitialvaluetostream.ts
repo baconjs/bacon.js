@@ -1,10 +1,10 @@
 import "./concat";
 import { noMore } from './reply';
-import EventStream, { allowSync } from "./eventstream";
+import {EventStream, allowSync } from "./observable";
 import { describe } from './describe';
 import UpdateBarrier from './updatebarrier';
 import { endEvent, Event } from './event';
-import Property from "./property";
+import { Property } from "./observable";;
 import { EventSink } from "./types";
 
 export default function addPropertyInitValueToStream<V>(property: Property<V>, stream: EventStream<V>): Property<V> {

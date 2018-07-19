@@ -2,7 +2,7 @@ import fromBinder, { EventTransformer } from "./frombinder";
 import { Desc } from "./describe";
 import { endEvent, Error } from "./event";
 import Bacon from "./core";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 
 function valueAndEnd(value) {
   return [value, endEvent()];

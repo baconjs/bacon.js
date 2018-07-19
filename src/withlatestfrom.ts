@@ -1,6 +1,6 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import Observable from "./observable";
-import Property from "./property";
+import { Property } from "./observable";;
 import { DefaultSource } from "./source";
 import { Desc } from "./describe";
 import { when, whenP } from "./when";

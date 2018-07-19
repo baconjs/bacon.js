@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { Desc } from "./describe";
 import { End, Event, hasValue, nextEvent } from "./event";
 import { more, noMore } from "./reply";

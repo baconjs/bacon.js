@@ -1,7 +1,7 @@
 import "./filter";
 import "./concat";
 import Observable from "./observable";
-import Property from "./property";
+import { Property } from "./observable";;
 import later from "./later";
 import once from "./once";
 import { Desc } from "./describe";

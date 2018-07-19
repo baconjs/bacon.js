@@ -3,7 +3,7 @@ import { Desc } from './describe';
 import fromBinder from './frombinder';
 import Bacon from './core';
 import _ from './_';
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces

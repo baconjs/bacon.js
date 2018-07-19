@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
-import EventStream, { newEventStream } from "./eventstream";
+import { EventStream, newEventStream } from "./observable";
 import UpdateBarrier from "./updatebarrier";
 import { fromObservable, isTrigger, Source } from "./source";
 import { endEvent, Event, Value } from "./event";
@@ -12,7 +12,7 @@ import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
 import Observable, { ObservableConstructor } from "./observable";
 import { Unsub } from "./types";
-import Property from "./property";
+import { Property } from "./observable";;
 
 
 export type ObservableOrSource<V> = Observable<V> | Source<any, V>

@@ -7,7 +7,7 @@ import _ from "./_";
 import { Desc } from "./describe";
 import Bacon from "./core";
 import Observable from "./observable";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { Error, Event, hasValue, isError } from "./event";
 import { EventSink } from "./types";
 import silence from "./silence";

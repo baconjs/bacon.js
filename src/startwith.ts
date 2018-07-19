@@ -1,6 +1,6 @@
 import once from "./once";
-import Property from "./property";
-import EventStream from "./eventstream";
+import { Property } from "./observable";;
+import { EventStream } from "./observable";
 import { Desc } from "./describe";
 
 export function startWithE<V>(src: EventStream<V>, seed: V): EventStream<V> {

@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import Observable from "./observable"
-import Property from "./property"
+import { Property } from "./observable";
 import { Event } from "./event"
 import { EventSink } from "./types"
 import withLatestFrom from "./withlatestfrom"

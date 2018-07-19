@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import { more } from "./reply";
-import Property from "./property"
+import { Property } from "./observable";
 import Observable from "./observable"
 import { Event } from "./event"
 import { EventSink } from "./types"

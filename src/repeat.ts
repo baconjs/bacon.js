@@ -2,7 +2,7 @@ import fromBinder from "./frombinder";
 import { more, noMore } from "./reply";
 import { Event, endEvent } from "./event";
 import Bacon from "./core";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { EventSink } from "./types";
 import Observable from "./observable";
 

@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { argumentsToObservables } from "./argumentstoobservables";
 import never from "./never";

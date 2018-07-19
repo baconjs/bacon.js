@@ -1,4 +1,4 @@
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import { endEvent, nextEvent } from "./event";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { Desc } from "./describe";

@@ -7,7 +7,7 @@ import Observable, { ObservableConstructor } from "./observable"
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
 import { more, noMore, Reply } from "./reply"
 import once from "./once"
-import { newEventStream } from "./eventstream"
+import { newEventStream } from "./observable"
 import { EventSink, Unsub } from "./types"
 
 export type Spawner<V, V2> = ((V) => (V2 | Observable<V2>)) | Observable<V2>

@@ -1,5 +1,5 @@
 import _ from "./_";
-import EventStream from "./eventstream";
+import { EventStream } from "./observable";
 import Observable from "./observable"
 import Bacon from "./core";
 import { endEvent, Error, nextEvent } from "./event";

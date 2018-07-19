@@ -1,5 +1,4 @@
-import "./property";
-import EventStream, { Options } from "./eventstream";
+import { EventStream, EventStreamOptions } from "./observable";
 import { Desc } from "./describe";
 import { nop } from "./helpers";
 import Observable from "./observable";
@@ -9,7 +8,7 @@ import _ from "./_";
 import never from "./never";
 import { argumentsToObservables } from "./argumentstoobservables";
 
-export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?: Options): EventStream<V> {
+export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?: EventStreamOptions): EventStream<V> {
   return new EventStream(new Desc(left, "concat", [right]), function(sink: EventSink<V>) {
     var unsubRight = nop;
     var unsubLeft = left.dispatcher.subscribe(function(e) {
