@@ -48,6 +48,8 @@ import { none, Option, toOption } from "./optional";
 import { mergeAll } from "./merge";
 import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe";
 import delay from "./delay";
+import { debounce, debounceImmediate } from "./debounce";
+import throttle from "./throttle";
 
 var idCounter = 0;
 
@@ -215,6 +217,18 @@ export default abstract class Observable<V> {
 
   delay(delayMs: number): this {
     return <any>delay(this, delayMs)
+  }
+
+  debounce(delayMs: number): this {
+    return <any>debounce(this, delayMs)
+  }
+
+  debounceImmediate(delayMs: number): this {
+    return <any>debounceImmediate(this, delayMs)
+  }
+
+  throttle(delayMs: number): this {
+    return <any>throttle(this, delayMs)
   }
 
   name(name: string) {

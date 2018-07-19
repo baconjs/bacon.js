@@ -2494,6 +2494,27 @@ function delay(src, delay) {
     });
 }
 
+function debounce(src, delay) {
+    return src.delayChanges(new Desc(src, "debounce", [delay]), function (changes) {
+        return changes.flatMapLatest(function (value) {
+            return later(delay, value);
+        });
+    });
+}
+function debounceImmediate(src, delay) {
+    return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
+        return changes.flatMapFirst(function (value) {
+            return once(value).concat(later(delay, value).errors());
+        });
+    });
+}
+
+function throttle(src, delay) {
+    return src.delayChanges(new Desc(src, "throttle", [delay]), function (changes) {
+        return changes.bufferWithTime(delay).map(function (values) { return values[values.length - 1]; });
+    });
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2617,6 +2638,15 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.delay = function (delayMs) {
         return delay(this, delayMs);
+    };
+    Observable.prototype.debounce = function (delayMs) {
+        return debounce(this, delayMs);
+    };
+    Observable.prototype.debounceImmediate = function (delayMs) {
+        return debounceImmediate(this, delayMs);
+    };
+    Observable.prototype.throttle = function (delayMs) {
+        return throttle(this, delayMs);
     };
     Observable.prototype.name = function (name) {
         this._name = name;
@@ -3085,21 +3115,6 @@ function combineTemplate(template) {
 }
 
 Bacon.combineTemplate = combineTemplate;
-
-Observable.prototype.debounce = function (delay) {
-  return this.delayChanges(new Desc(this, "debounce", [delay]), function (changes) {
-    return changes.flatMapLatest(function (value) {
-      return later(delay, value);
-    });
-  });
-};
-Observable.prototype.debounceImmediate = function (delay) {
-  return this.delayChanges(new Desc(this, "debounceImmediate", [delay]), function (changes) {
-    return changes.flatMapFirst(function (value) {
-      return once(value).concat(later(delay).errors());
-    });
-  });
-};
 
 Observable.prototype.decode = function (cases) {
   return this.combine(combineTemplate(cases), function (key, values) {
@@ -3655,14 +3670,6 @@ Observable.prototype.takeWhile = function (f) {
         return noMore;
       }
     }).withDesc(new Desc(this, "takeWhile", [f]));
-  });
-};
-
-Observable.prototype.throttle = function (delay) {
-  return this.delayChanges(new Desc(this, "throttle", [delay]), function (changes) {
-    return changes.bufferWithTime(delay).map(function (values) {
-      return values[values.length - 1];
-    });
   });
 };
 
