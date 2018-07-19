@@ -2513,6 +2513,14 @@
             });
         });
     }
+    function bufferingThrottle(src, minimumInterval) {
+        var desc = new Desc(src, 'bufferingThrottle', [minimumInterval]);
+        return src.delayChanges(desc, function (changes) {
+            return changes.flatMapConcat(function (x) {
+                return once(x).concat(later(minimumInterval, x).errors());
+            });
+        });
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2656,14 +2664,17 @@
         Observable.prototype.delay = function (delayMs) {
             return delay(this, delayMs);
         };
-        Observable.prototype.debounce = function (delayMs) {
-            return debounce(this, delayMs);
+        Observable.prototype.debounce = function (minimumInterval) {
+            return debounce(this, minimumInterval);
         };
-        Observable.prototype.debounceImmediate = function (delayMs) {
-            return debounceImmediate(this, delayMs);
+        Observable.prototype.debounceImmediate = function (minimumInterval) {
+            return debounceImmediate(this, minimumInterval);
         };
-        Observable.prototype.throttle = function (delayMs) {
-            return throttle(this, delayMs);
+        Observable.prototype.throttle = function (minimumInterval) {
+            return throttle(this, minimumInterval);
+        };
+        Observable.prototype.bufferingThrottle = function (minimumInterval) {
+            return bufferingThrottle(this, minimumInterval);
         };
         Observable.prototype.name = function (name) {
             this._name = name;
@@ -2919,15 +2930,6 @@
     function newEventStream(description, subscribe) {
         return new EventStream(description, subscribe);
     }
-    Observable.prototype.bufferingThrottle = function (minimumInterval) {
-        var desc = new Desc(this, 'bufferingThrottle', [minimumInterval]);
-        return this.flatMapConcat(function (x) {
-            return once(x).concat(later(minimumInterval).errors());
-        }).withDesc(desc);
-    };
-    Property.prototype.bufferingThrottle = function () {
-        return Observable.prototype.bufferingThrottle.apply(this, arguments).toProperty();
-    };
     var Bus = function (_super) {
         __extends(Bus, _super);
         function Bus() {

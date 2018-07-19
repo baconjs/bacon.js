@@ -50,6 +50,7 @@ import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubsc
 import delay from "./delay";
 import { debounce, debounceImmediate } from "./debounce";
 import throttle from "./throttle";
+import bufferingThrottle from "./bufferingthrottle";
 
 var idCounter = 0;
 
@@ -219,16 +220,20 @@ export default abstract class Observable<V> {
     return <any>delay(this, delayMs)
   }
 
-  debounce(delayMs: number): this {
-    return <any>debounce(this, delayMs)
+  debounce(minimumInterval: number): this {
+    return <any>debounce(this, minimumInterval)
   }
 
-  debounceImmediate(delayMs: number): this {
-    return <any>debounceImmediate(this, delayMs)
+  debounceImmediate(minimumInterval: number): this {
+    return <any>debounceImmediate(this, minimumInterval)
   }
 
-  throttle(delayMs: number): this {
-    return <any>throttle(this, delayMs)
+  throttle(minimumInterval: number): this {
+    return <any>throttle(this, minimumInterval)
+  }
+
+  bufferingThrottle(minimumInterval: number): this {
+    return <any>bufferingThrottle(this, minimumInterval)
   }
 
   name(name: string) {
