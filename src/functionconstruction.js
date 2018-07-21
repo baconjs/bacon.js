@@ -1,5 +1,4 @@
 import _ from './_';
-import Exception from "./exception";
 
 export function withMethodCallSupport(wrapped) {
   return function(f, ...args) {
@@ -13,11 +12,6 @@ export function withMethodCallSupport(wrapped) {
     }
     return wrapped(f, ...args);
   };
-}
-
-export function makeFunctionArgs(args) {
-  args = Array.prototype.slice.call(args);
-  return makeFunction_(...args);
 }
 
 export function partiallyApplied(f, applied) {
@@ -69,32 +63,4 @@ const makeFunction_ = withMethodCallSupport(function(f, ...args) {
 
 export function makeFunction(f, args) {
   return makeFunction_(f, ...args);
-}
-
-export function convertArgsToFunction(obs, f, args, method) {
-  if (f && f._isProperty) {
-    var sampled = f.sampledBy(obs, function(p,s) { return [p,s]; });
-    return method.call(sampled, function([p]) { return p; })
-      .map(function([, s]) { return s; });
-  } else {
-    f = makeFunction(f, args);
-    return method.call(obs, f);
-  }
-}
-
-export function toCombinator(f) {
-  if (_.isFunction(f)) {
-    return f;
-  } else if (isFieldKey(f) ) {
-    var key = toFieldKey(f);
-    return (function(left, right) {
-      return left[key](right);
-    });
-  } else {
-    throw new Exception("not a function or a field key: " + f);
-  }
-}
-
-export function toFieldKey(f) {
-  return f.slice(1);
 }

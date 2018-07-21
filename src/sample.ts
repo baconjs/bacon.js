@@ -1,15 +1,14 @@
-import { EventStream } from "./observable";
-import { Property } from "./observable";;
-import { toCombinator } from "./functionconstruction";
+import Observable, { EventStream, Property } from "./observable";
 import { Desc } from "./describe";
 import Bacon from "./core";
 import { withLatestFrom } from "./withlatestfrom"
 import { flip } from "./_"
-import Observable from "./observable";
+
+  ;
 
 const makeCombinator = (combinator) => {
   if ((typeof combinator !== "undefined" && combinator !== null)) {
-    return toCombinator(combinator);
+    return combinator;
   } else {
     return Bacon._.id
   }

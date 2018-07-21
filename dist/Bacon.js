@@ -1702,113 +1702,9 @@ function flatMapConcat(src, f) {
     });
 }
 
-function withMethodCallSupport(wrapped) {
-  return function (f) {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    if (typeof f === "object" && args.length) {
-      var context = f;
-      var methodName = args[0];
-      f = function () {
-        return context[methodName].apply(context, arguments);
-      };
-      args = args.slice(1);
-    }
-    return wrapped.apply(undefined, [f].concat(args));
-  };
-}
-
-
-
-function partiallyApplied(f, applied) {
-  return function () {
-    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-
-    return f.apply(undefined, applied.concat(args));
-  };
-}
-
-function toSimpleExtractor(args) {
-  return function (key) {
-    return function (value) {
-      if (!(typeof value !== "undefined" && value !== null)) {
-        return;
-      } else {
-        var fieldValue = value[key];
-        if (_.isFunction(fieldValue)) {
-          return fieldValue.apply(value, args);
-        } else {
-          return fieldValue;
-        }
-      }
-    };
-  };
-}
-
-function toFieldExtractor(f, args) {
-  var parts = f.slice(1).split(".");
-  var partFuncs = _.map(toSimpleExtractor(args), parts);
-  return function (value) {
-    for (var i = 0, f; i < partFuncs.length; i++) {
-      f = partFuncs[i];
-      value = f(value);
-    }
-    return value;
-  };
-}
-
-function isFieldKey(f) {
-  return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
-}
-
-var makeFunction_ = withMethodCallSupport(function (f) {
-  for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-    args[_key3 - 1] = arguments[_key3];
-  }
-
-  if (_.isFunction(f)) {
-    if (args.length) {
-      return partiallyApplied(f, args);
-    } else {
-      return f;
-    }
-  } else if (isFieldKey(f)) {
-    return toFieldExtractor(f, args);
-  } else {
-    return _.always(f);
-  }
-});
-
-function makeFunction(f, args) {
-  return makeFunction_.apply(undefined, [f].concat(args));
-}
-
-
-
-function toCombinator(f) {
-  if (_.isFunction(f)) {
-    return f;
-  } else if (isFieldKey(f)) {
-    var key = toFieldKey(f);
-    return function (left, right) {
-      return left[key](right);
-    };
-  } else {
-    throw new Error("not a function or a field key: " + f);
-  }
-}
-
-function toFieldKey(f) {
-  return f.slice(1);
-}
-
 var makeCombinator = function (combinator) {
     if ((typeof combinator !== "undefined" && combinator !== null)) {
-        return toCombinator(combinator);
+        return combinator;
     }
     else {
         return Bacon._.id;
@@ -3204,6 +3100,89 @@ var Bus = /** @class */ (function (_super) {
     return Bus;
 }(EventStream));
 Bacon.Bus = Bus;
+
+function withMethodCallSupport(wrapped) {
+  return function (f) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    if (typeof f === "object" && args.length) {
+      var context = f;
+      var methodName = args[0];
+      f = function () {
+        return context[methodName].apply(context, arguments);
+      };
+      args = args.slice(1);
+    }
+    return wrapped.apply(undefined, [f].concat(args));
+  };
+}
+
+function partiallyApplied(f, applied) {
+  return function () {
+    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    return f.apply(undefined, applied.concat(args));
+  };
+}
+
+function toSimpleExtractor(args) {
+  return function (key) {
+    return function (value) {
+      if (!(typeof value !== "undefined" && value !== null)) {
+        return;
+      } else {
+        var fieldValue = value[key];
+        if (_.isFunction(fieldValue)) {
+          return fieldValue.apply(value, args);
+        } else {
+          return fieldValue;
+        }
+      }
+    };
+  };
+}
+
+function toFieldExtractor(f, args) {
+  var parts = f.slice(1).split(".");
+  var partFuncs = _.map(toSimpleExtractor(args), parts);
+  return function (value) {
+    for (var i = 0, f; i < partFuncs.length; i++) {
+      f = partFuncs[i];
+      value = f(value);
+    }
+    return value;
+  };
+}
+
+function isFieldKey(f) {
+  return typeof f === "string" && f.length > 1 && f.charAt(0) === ".";
+}
+
+var makeFunction_ = withMethodCallSupport(function (f) {
+  for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+    args[_key3 - 1] = arguments[_key3];
+  }
+
+  if (_.isFunction(f)) {
+    if (args.length) {
+      return partiallyApplied(f, args);
+    } else {
+      return f;
+    }
+  } else if (isFieldKey(f)) {
+    return toFieldExtractor(f, args);
+  } else {
+    return _.always(f);
+  }
+});
+
+function makeFunction(f, args) {
+  return makeFunction_.apply(undefined, [f].concat(args));
+}
 
 var liftCallback = function (desc, wrapped) {
   return withMethodCallSupport(function (f) {
