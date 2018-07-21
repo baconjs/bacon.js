@@ -39,8 +39,6 @@ import UpdateBarrier from "./updatebarrier"
 import "./esobservable";
 
 const Bacon = {
-  toString() { return "Bacon"; },
-  version: '<version>',
   _,
   $: B$,
   Bus: Bus,
@@ -85,8 +83,10 @@ const Bacon = {
   setScheduler: (newScheduler) => Scheduler.scheduler = newScheduler,
   silence,
   spy,
+  toString() { return "Bacon"; },
   try: tryF,
   update,
+  version: '<version>',
   when,
   zipAsArray,
   zipWith

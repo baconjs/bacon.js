@@ -3666,8 +3666,6 @@ Observable.prototype.toESObservable = function () {
 Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
 
 var Bacon = {
-    toString: function () { return "Bacon"; },
-    version: '<version>',
     _: _,
     $: B$,
     Bus: Bus,
@@ -3712,8 +3710,10 @@ var Bacon = {
     setScheduler: function (newScheduler) { return Scheduler.scheduler = newScheduler; },
     silence: silence,
     spy: spy,
+    toString: function () { return "Bacon"; },
     "try": tryF,
     update: update,
+    version: '<version>',
     when: when,
     zipAsArray: zipAsArray,
     zipWith: zipWith
