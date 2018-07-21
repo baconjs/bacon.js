@@ -59,6 +59,7 @@ import skipWhile from "./skipwhile";
 import _ from "./_";
 import { groupBy, GroupLimiter, GroupKey } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
+import { diff, Differ } from "./diff";
 
 var idCounter = 0;
 
@@ -96,6 +97,9 @@ export abstract class Observable<V> {
   abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
   deps(): any[] {
     return this.desc.deps()
+  }
+  diff<V2>(start: V, f: Differ<V, V2>): Property<V2> {
+    return diff(this, start, f)
   }
   doAction(f: (V) => any): this {
     return <any>this.transform(doActionT(f), new Desc(this, "doAction", [f]))

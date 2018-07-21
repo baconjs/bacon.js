@@ -2601,6 +2601,10 @@ function slidingWindow(src, maxValues, minValues) {
     })).withDesc(new Desc(src, "slidingWindow", [maxValues, minValues]));
 }
 
+function diff(src, start, f) {
+    return transformP(scan(src, [start], function (prevTuple, next) { return [next, f(prevTuple[0], next)]; }), composeT(filterT(function (tuple) { return tuple.length === 2; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2629,6 +2633,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.deps = function () {
         return this.desc.deps();
+    };
+    Observable.prototype.diff = function (start, f) {
+        return diff(this, start, f);
     };
     Observable.prototype.doAction = function (f) {
         return this.transform(doActionT(f), new Desc(this, "doAction", [f]));
@@ -3197,17 +3204,6 @@ Observable.prototype.decode = function (cases) {
   return this.combine(combineTemplate(cases), function (key, values) {
     return values[key];
   }).withDesc(new Desc(this, "decode", [cases]));
-};
-
-Observable.prototype.diff = function (start, f) {
-  f = toCombinator(f);
-  return this.scan([start], function (prevTuple, next) {
-    return [next, f(prevTuple[0], next)];
-  }).filter(function (tuple) {
-    return tuple.length === 2;
-  }).map(function (tuple) {
-    return tuple[1];
-  }).withDesc(new Desc(this, "diff", [start, f]));
 };
 
 function symbol(key) {

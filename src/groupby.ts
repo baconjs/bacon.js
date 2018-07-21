@@ -21,12 +21,12 @@ interface StreamMap<V> {
 export function groupBy<V>(src: Observable<V>, keyF: (T) => GroupKey, limitF: GroupLimiter<V> = _.id): Observable<Observable<V>> {
   var streams: StreamMap<V> = {};
   return src.transform(composeT(
-    filterT(function(x: V) { return !streams[keyF(x)]; }),
+    filterT((x: V) => !streams[keyF(x)]),
     mapT(function(firstValue: V) {
       var key: GroupKey = keyF(firstValue)
-      var similarValues: Observable<V> = src.filter(function(x) { return keyF(x) === key })
+      var similarValues: Observable<V> = src.filter(x => keyF(x) === key )
       var data: EventStream<V> = once(firstValue).concat(similarValues)
-      var limited = limitF(data, firstValue).transform(function(event: Event<V>, sink: EventSink<V>) {
+      var limited = limitF(data, firstValue).transform((event: Event<V>, sink: EventSink<V>) => {
         sink(event)
         if (event.isEnd) {
           delete streams[key];
