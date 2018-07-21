@@ -2568,9 +2568,9 @@
             limitF = _.id;
         }
         var streams = {};
-        return src.filter(function (x) {
+        return src.transform(composeT(filterT(function (x) {
             return !streams[keyF(x)];
-        }).map(function (firstValue) {
+        }), mapT(function (firstValue) {
             var key = keyF(firstValue);
             var similarValues = src.filter(function (x) {
                 return keyF(x) === key;
@@ -2584,7 +2584,7 @@
             });
             streams[key] = limited;
             return limited;
-        });
+        })));
     }
     var idCounter = 0;
     var Observable = function () {

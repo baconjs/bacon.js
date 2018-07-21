@@ -2576,9 +2576,7 @@ function skipWhileT(f) {
 function groupBy(src, keyF, limitF) {
     if (limitF === void 0) { limitF = _.id; }
     var streams = {};
-    return src
-        .filter(function (x) { return !streams[keyF(x)]; })
-        .map(function (firstValue) {
+    return src.transform(composeT(filterT(function (x) { return !streams[keyF(x)]; }), mapT(function (firstValue) {
         var key = keyF(firstValue);
         var similarValues = src.filter(function (x) { return keyF(x) === key; });
         var data = once(firstValue).concat(similarValues);
@@ -2590,7 +2588,7 @@ function groupBy(src, keyF, limitF) {
         });
         streams[key] = limited;
         return limited;
-    });
+    })));
 }
 
 var idCounter = 0;
