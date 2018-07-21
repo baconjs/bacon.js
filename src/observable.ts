@@ -63,6 +63,7 @@ import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
+import decode from "./decode";
 
 var idCounter = 0;
 
@@ -93,6 +94,9 @@ export abstract class Observable<V> {
   }
   debounceImmediate(minimumInterval: number): this {
     return <any>debounceImmediate(this, minimumInterval)
+  }
+  decode(cases): Property<any> {
+    return decode(this, cases)
   }
   delay(delayMs: number): this {
     return <any>delay(this, delayMs)
