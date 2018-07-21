@@ -3785,9 +3785,6 @@ function update(initial) {
 }
 Bacon.update = update;
 function lateBindFirst(f) {
-    if (!(f instanceof Function)) {
-        f = _.always(f);
-    }
     return function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
