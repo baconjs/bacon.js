@@ -3338,7 +3338,7 @@
         }
         var funcs = [];
         var streams = [];
-        var resultProperty = containsObservables(template) ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator)) : Bacon.constant(template);
+        var resultProperty = containsObservables(template) ? (compileTemplate(template), combineAsArray(streams).map(combinator)) : constant(template);
         return resultProperty.withDesc(new Desc(Bacon, 'combineTemplate', [template]));
     }
     Bacon.combineTemplate = combineTemplate;

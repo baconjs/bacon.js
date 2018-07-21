@@ -1,10 +1,12 @@
-import "./combine";
+import { combineAsArray } from "./combine";
 import { Desc } from "./describe";
 import { isArray, isObservable } from "./helpers";
 import _ from "./_";
 import Bacon from "./core";
+import Observable, { Property } from "./observable";
+import constant from "./constant";
 
-export default function combineTemplate(template) {
+export default function combineTemplate(template): Property<any> {
   function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
   function setValue(ctxStack, key, value) {
     current(ctxStack)[key] = value;
@@ -73,12 +75,12 @@ export default function combineTemplate(template) {
 
   function compileTemplate(template) { _.each(template, compile); }
 
-  const funcs = [];
-  const streams = [];
+  const funcs: Function[] = [];
+  const streams: Observable<any>[] = [];
 
   const resultProperty = containsObservables(template) 
-    ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator))
-    : Bacon.constant(template)
+    ? (compileTemplate(template), combineAsArray(streams).map(combinator))
+    : constant(template)
 
   return resultProperty.withDesc(new Desc(Bacon, "combineTemplate", [template]));
 }

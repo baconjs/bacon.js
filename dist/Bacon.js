@@ -3183,87 +3183,77 @@ Bacon.fromCallback = fromCallback;
 Bacon.fromNodeCallback = fromNodeCallback;
 
 function combineTemplate(template) {
-  function current(ctxStack) {
-    return ctxStack[ctxStack.length - 1];
-  }
-  function setValue(ctxStack, key, value) {
-    current(ctxStack)[key] = value;
-    return value;
-  }
-  function applyStreamValue(key, index) {
-    return function (ctxStack, values) {
-      setValue(ctxStack, key, values[index]);
-    };
-  }
-  function constantValue(key, value) {
-    return function (ctxStack) {
-      setValue(ctxStack, key, value);
-    };
-  }
-
-  function mkContext(template) {
-    return isArray(template) ? [] : {};
-  }
-
-  function pushContext(key, value) {
-    return function (ctxStack) {
-      var newContext = mkContext(value);
-      setValue(ctxStack, key, newContext);
-      ctxStack.push(newContext);
-    };
-  }
-
-  function containsObservables(value) {
-    if (isObservable(value)) {
-      return true;
-    } else if (value && (value.constructor == Object || value.constructor == Array)) {
-      for (var key in value) {
-        if (Object.prototype.hasOwnProperty.call(value, key)) {
-          var child = value[key];
-          if (containsObservables(child)) return true;
+    function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
+    function setValue(ctxStack, key, value) {
+        current(ctxStack)[key] = value;
+        return value;
+    }
+    function applyStreamValue(key, index) {
+        return function (ctxStack, values) {
+            setValue(ctxStack, key, values[index]);
+        };
+    }
+    function constantValue(key, value) {
+        return function (ctxStack) {
+            setValue(ctxStack, key, value);
+        };
+    }
+    function mkContext(template) {
+        return isArray(template) ? [] : {};
+    }
+    function pushContext(key, value) {
+        return function (ctxStack) {
+            var newContext = mkContext(value);
+            setValue(ctxStack, key, newContext);
+            ctxStack.push(newContext);
+        };
+    }
+    function containsObservables(value) {
+        if (isObservable(value)) {
+            return true;
         }
-      }
+        else if (value && (value.constructor == Object || value.constructor == Array)) {
+            for (var key in value) {
+                if (Object.prototype.hasOwnProperty.call(value, key)) {
+                    var child = value[key];
+                    if (containsObservables(child))
+                        return true;
+                }
+            }
+        }
     }
-  }
-
-  function compile(key, value) {
-    if (isObservable(value)) {
-      streams.push(value);
-      funcs.push(applyStreamValue(key, streams.length - 1));
-    } else if (containsObservables(value)) {
-      var popContext = function (ctxStack) {
-        ctxStack.pop();
-      };
-      funcs.push(pushContext(key, value));
-      compileTemplate(value);
-      funcs.push(popContext);
-    } else {
-      funcs.push(constantValue(key, value));
+    function compile(key, value) {
+        if (isObservable(value)) {
+            streams.push(value);
+            funcs.push(applyStreamValue(key, streams.length - 1));
+        }
+        else if (containsObservables(value)) {
+            var popContext = function (ctxStack) { ctxStack.pop(); };
+            funcs.push(pushContext(key, value));
+            compileTemplate(value);
+            funcs.push(popContext);
+        }
+        else {
+            funcs.push(constantValue(key, value));
+        }
     }
-  }
-
-  function combinator(values) {
-    var rootContext = mkContext(template);
-    var ctxStack = [rootContext];
-    for (var i = 0, f; i < funcs.length; i++) {
-      f = funcs[i];
-      f(ctxStack, values);
+    function combinator(values) {
+        var rootContext = mkContext(template);
+        var ctxStack = [rootContext];
+        for (var i = 0, f; i < funcs.length; i++) {
+            f = funcs[i];
+            f(ctxStack, values);
+        }
+        return rootContext;
     }
-    return rootContext;
-  }
-
-  function compileTemplate(template) {
-    _.each(template, compile);
-  }
-
-  var funcs = [];
-  var streams = [];
-
-  var resultProperty = containsObservables(template) ? (compileTemplate(template), Bacon.combineAsArray(streams).map(combinator)) : Bacon.constant(template);
-
-  return resultProperty.withDesc(new Desc(Bacon, "combineTemplate", [template]));
+    function compileTemplate(template) { _.each(template, compile); }
+    var funcs = [];
+    var streams = [];
+    var resultProperty = containsObservables(template)
+        ? (compileTemplate(template), combineAsArray(streams).map(combinator))
+        : constant(template);
+    return resultProperty.withDesc(new Desc(Bacon, "combineTemplate", [template]));
 }
-
 Bacon.combineTemplate = combineTemplate;
 
 Observable.prototype.decode = function (cases) {
