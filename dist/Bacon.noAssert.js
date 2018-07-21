@@ -2586,6 +2586,19 @@
             return limited;
         })));
     }
+    function slidingWindow(src, maxValues, minValues) {
+        if (minValues === void 0) {
+            minValues = 0;
+        }
+        return src.scan([], function (window, value) {
+            return window.concat([value]).slice(-maxValues);
+        }).filter(function (values) {
+            return values.length >= minValues;
+        }).withDesc(new Desc(src, 'slidingWindow', [
+            maxValues,
+            minValues
+        ]));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2747,6 +2760,12 @@
         };
         Observable.prototype.skipWhile = function (f) {
             return skipWhile(this, f);
+        };
+        Observable.prototype.slidingWindow = function (maxValues, minValues) {
+            if (minValues === void 0) {
+                minValues = 0;
+            }
+            return slidingWindow(this, maxValues, minValues);
         };
         Observable.prototype.subscribe = function (sink) {
             var _this = this;
@@ -3708,17 +3727,6 @@
         ]));
     }
     Bacon.sequentially = sequentially;
-    Observable.prototype.slidingWindow = function (n) {
-        var minValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-        return this.scan([], function (window, value) {
-            return window.concat([value]).slice(-n);
-        }).filter(function (values) {
-            return values.length >= minValues;
-        }).withDesc(new Desc(this, 'slidingWindow', [
-            n,
-            minValues
-        ]));
-    };
     Observable.prototype.firstToPromise = function (PromiseCtr) {
         var _this = this;
         if (typeof PromiseCtr !== 'function') {

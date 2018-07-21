@@ -58,10 +58,11 @@ import { PredicateOrProperty } from "./predicate";
 import skipWhile from "./skipwhile";
 import _ from "./_";
 import { groupBy, GroupLimiter, GroupKey } from "./groupby";
+import { slidingWindow } from "./slidingwindow";
 
 var idCounter = 0;
 
-export default abstract class Observable<V> {
+export abstract class Observable<V> {
   desc: Desc
   id: number = ++idCounter
   initialDesc: Desc
@@ -199,6 +200,9 @@ export default abstract class Observable<V> {
   }
   skipWhile<V>(f: PredicateOrProperty<V>): this {
     return <any>skipWhile(this, f)
+  }
+  slidingWindow(maxValues: number, minValues: number = 0): Property<V[]> {
+    return slidingWindow(this, maxValues, minValues)
   }
   abstract startWith(seed: V): Observable<V>
   subscribe(sink: EventSink<V> = nop): Unsub {
@@ -402,3 +406,5 @@ export class EventStream<V> extends Observable<V> {
 export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
   return new EventStream(description, subscribe)
 }
+
+export default Observable
