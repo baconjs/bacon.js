@@ -10,11 +10,11 @@ export function skipWhile<V>(src: Observable<V>, f: PredicateOrProperty<V>) {
 }
 
 export function skipWhileT<V>(f: Predicate<V>) {
-  var ok = false;
+  var started = false;
   return function(event: Event<V>, sink: EventSink<V>) {
-    if (ok || !hasValue(event) || !f(event.value)) {
+    if (started || !hasValue(event) || !f(event.value)) {
       if (event.hasValue) {
-        ok = true;
+        started = true;
       }
       return sink(event);
     } else {
