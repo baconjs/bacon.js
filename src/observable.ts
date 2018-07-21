@@ -53,6 +53,7 @@ import throttle from "./throttle";
 import bufferingThrottle from "./bufferingthrottle";
 import { Transformer, transformE, transformP } from "./transform";
 import { takeWhile } from "./takewhile";
+import skipUntil from "./skipuntil";
 
 var idCounter = 0;
 
@@ -117,6 +118,10 @@ export default abstract class Observable<V> {
     return <any>takeUntil(this, stopper)
   }
 
+  skipUntil(starter: Observable<any>): this {
+    return <any>skipUntil(this, starter)
+  }
+
   takeWhile<V>(f: ((V) => boolean) | Property<boolean>): this {
     return <any>takeWhile(this, f)
   }
@@ -145,7 +150,7 @@ export default abstract class Observable<V> {
     return <any>skipErrors(this)
   }
 
-  abstract map<V2>(f: ((V) => V2) | Property<V2>): Observable<V2>
+  abstract map<V2>(f: ((V) => V2) | Property<V2> | V2): Observable<V2>
 
   abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
   abstract flatMapConcat<V2>(f: Spawner<V, V2>): Observable<V2>
@@ -312,7 +317,7 @@ export class Property<V> extends Observable<V> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
-  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map(this, f) }
+  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map<V, V2>(this, f) }
 
   flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
   flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
@@ -410,7 +415,7 @@ export class EventStream<V> extends Observable<V> {
       handler,
       allowSync);
   }
-  map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> { return <any>map(this, f) }
+  map<V2>(f: ((V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
 
   flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
   flatMapConcat<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }

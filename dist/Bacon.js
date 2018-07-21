@@ -1570,11 +1570,12 @@ function map(src, f) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (a, b) { return b; });
     }
-    return src.transform(mapT(_.toFunction(f)), new Desc(src, "map", [f]));
+    return src.transform(mapT(f), new Desc(src, "map", [f]));
 }
 function mapT(f) {
+    var theF = _.toFunction(f);
     return function (e, sink) {
-        return sink(e.fmap(f));
+        return sink(e.fmap(theF));
     };
 }
 
@@ -2572,6 +2573,14 @@ function takeWhileT(f) {
     };
 }
 
+function skipUntil(src, starter) {
+    var started = starter
+        .transform(composeT(takeT(1), mapT(true)))
+        .toProperty()
+        .startWith(false);
+    return src.filter(started).withDesc(new Desc(src, "skipUntil", [starter]));
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2622,6 +2631,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
+    };
+    Observable.prototype.skipUntil = function (starter) {
+        return skipUntil(this, starter);
     };
     Observable.prototype.takeWhile = function (f) {
         return takeWhile(this, f);
@@ -3658,11 +3670,6 @@ function sequentially(delay, values) {
     }).withDesc(new Desc(Bacon, "sequentially", [delay, values]));
 }
 Bacon.sequentially = sequentially;
-
-EventStream.prototype.skipUntil = function (starter) {
-  var started = starter.take(1).map(true).toProperty(false);
-  return this.filter(started).withDesc(new Desc(this, "skipUntil", [starter]));
-};
 
 EventStream.prototype.skipWhile = function (f) {
   assertObservableIsProperty(f);

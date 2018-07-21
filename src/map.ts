@@ -10,12 +10,13 @@ export function map<V, V2>(src: Observable<V>, f: ((V) => V2) | Property<V2> | V
   if (f instanceof Property) {
     return withLatestFrom(src, f, (a, b) => b)
   }
-  return src.transform(mapT(_.toFunction(f)), new Desc(src, "map", [f]))
+  return src.transform(mapT(f), new Desc(src, "map", [f]))
 }
 
-export function mapT<V, V2>(f: ((V) => V2)) {
+export function mapT<V, V2>(f: ((V) => V2) | V2) {
+  let theF = _.toFunction(f)
   return (e: Event<V>, sink: EventSink<V2>) => {
-    return sink(e.fmap(f))
+    return sink(e.fmap(theF))
   }
 }
 

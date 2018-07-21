@@ -8,7 +8,7 @@ export function take<V>(count: number, src: Observable<V>, desc?: Desc): Observa
   return src.transform(takeT(count), desc || new Desc(src, "take", [count]))
 }
 
-export function takeT<V>(count) { return (e: Event<V>, sink: EventSink<V>) => {
+export function takeT<V>(count: number) { return (e: Event<V>, sink: EventSink<V>) => {
     if (!e.hasValue) {
       return sink(e);
     } else {
