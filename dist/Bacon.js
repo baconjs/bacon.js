@@ -1066,9 +1066,9 @@ function once(value) {
 }
 Bacon.once = once;
 
-function flatMap_(f, src, params) {
+function flatMap_(f_, src, params) {
     if (params === void 0) { params = {}; }
-    f = _.toFunction(f);
+    var f = _.toFunction(f_);
     var root = src;
     var rootDep = [root];
     var childDeps = [];
@@ -3700,15 +3700,15 @@ Observable.prototype.toPromise = function (PromiseCtr) {
 };
 
 function tryF(f) {
-  return function (value) {
-    try {
-      return once(f(value));
-    } catch (e) {
-      return new Error$1(e);
-    }
-  };
+    return function (value) {
+        try {
+            return once(f(value));
+        }
+        catch (e) {
+            return once(new Error$1(e));
+        }
+    };
 }
-
 Bacon["try"] = tryF;
 
 function update(initial) {

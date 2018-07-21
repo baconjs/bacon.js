@@ -2,13 +2,13 @@ import { EventStream } from "./observable";
 import { assertArray } from "./assert";
 import { Desc } from "./describe";
 import never from "./never";
-import { endEvent, toEvent } from "./event";
+import { Event, endEvent, toEvent } from "./event";
 import { more, noMore } from "./reply";
 import UpdateBarrier from "./updatebarrier";
 import Bacon from "./core";
 import { EventSink } from "./types";
 
-export default function fromArray<T>(values: T[]) {
+export default function fromArray<T>(values: (T | Event<T>)[]) {
   assertArray(values);
   if (!values.length) {
     return never().withDesc(new Desc(Bacon, "fromArray", values));

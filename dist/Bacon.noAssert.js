@@ -1105,11 +1105,11 @@
         return s;
     }
     Bacon.once = once;
-    function flatMap_(f, src, params) {
+    function flatMap_(f_, src, params) {
         if (params === void 0) {
             params = {};
         }
-        f = _.toFunction(f);
+        var f = _.toFunction(f_);
         var root = src;
         var rootDep = [root];
         var childDeps = [];
@@ -3765,7 +3765,7 @@
             try {
                 return once(f(value));
             } catch (e) {
-                return new Error$1(e);
+                return once(new Error$1(e));
             }
         };
     }

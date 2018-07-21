@@ -108,3 +108,5 @@ export function hasValue<V>(e: Event<V>): e is Value<V> {
 export function isEnd<V>(e: Event<V>): e is End<V> {
   return e.isEnd
 }
+
+export type EventOrValue<V> = Event<V> | V

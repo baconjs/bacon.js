@@ -1,6 +1,6 @@
 import CompositeUnsubscribe from "./compositeunsubscribe"
 import { Desc } from "./describe"
-import { endEvent, Event } from "./event"
+import { endEvent, Event, EventOrValue } from "./event"
 import { isObservable } from "./helpers"
 import _ from "./_"
 import Observable, { ObservableConstructor } from "./observable"
@@ -10,7 +10,9 @@ import once from "./once"
 import { newEventStream } from "./observable"
 import { EventSink, Unsub } from "./types"
 
-export type Spawner<V, V2> = ((V) => (V2 | Observable<V2>)) | Observable<V2>
+export type SpawnerOrObservable<V, V2> = ((V) => (Observable<V2> | EventOrValue<V2>)) | Observable<V2>
+
+export type Spawner<V, V2> = (V) => (Observable<V2> | EventOrValue<V2>)
 
 export interface FlatMapParams {
   desc? : Desc
@@ -19,8 +21,8 @@ export interface FlatMapParams {
   limit? : number
 }
 
-export function flatMap_<In, Out>(f: (In) => Out | Observable<Out>, src: Observable<In>, params: FlatMapParams = {}): Observable<Out> {
-  f = _.toFunction(f)
+export function flatMap_<In, Out>(f_: SpawnerOrObservable<In, Out>, src: Observable<In>, params: FlatMapParams = {}): Observable<Out> {
+  let f: Spawner<In, Out> = _.toFunction(f_)
   const root = src
   const rootDep = [root as Observable<any>]
   const childDeps: Observable<Out>[] = []
@@ -95,14 +97,14 @@ export function flatMap_<In, Out>(f: (In) => Out | Observable<Out>, src: Observa
   return result
 }
 
-export function handleEventValueWith<In, Out>(f: ((In) => Out) | Out): ((In) => Out) {
+export function handleEventValueWith<In, Out>(f: SpawnerOrObservable<In, Out>): ((In) => Observable<Out>) {
   if (typeof f == "function") {
     return <any>(event => f(event.value))
   }
-  return <any>(event => <Out>f)
+  return <any>(event => <Observable<Out>>f)
 }
 
-export function makeObservable<V>(x: V | Observable<V>): Observable<V> {
+export function makeObservable<V>(x: V | Observable<V> | Event<V>): Observable<V> {
   if (isObservable(x)) {
     return <any>x
   } else {

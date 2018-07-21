@@ -13,7 +13,7 @@ import doEndT from "./doend";
 import { Accumulator, default as scan } from "./scan";
 import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
-import { Spawner } from "./flatmap_";
+import { SpawnerOrObservable } from "./flatmap_";
 import skipErrors from "./skiperrors";
 import last from "./last";
 import { default as flatMapEvent, EventSpawner } from "./flatmapevent";
@@ -130,13 +130,13 @@ export abstract class Observable<V> {
   first(): this {
     return <any>take(1, this, new Desc(this, "first"))
   }
-  abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapConcat<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMap<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
+  abstract flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
   abstract flatMapError(f: (any) => Observable<V>): Observable<V>
   abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
-  abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapLatest<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
+  abstract flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
+  abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Observable<V2>
   flatScan<V2>(seed: V2, f: (V2, V) => Observable<V2>): Property<V2> {
     return <any>flatScan(this, seed, f)
   }
@@ -285,13 +285,13 @@ export class Property<V> extends Observable<V> {
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
-  flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
+  flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
   flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
   flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
-  flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
   map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map<V, V2>(this, f) }
   not(): Property<boolean> {return <any>not(this) }
   or(other: Property<any>): Property<boolean> {return or(this, other)}
@@ -364,11 +364,11 @@ export class EventStream<V> extends Observable<V> {
 
   map<V2>(f: ((V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
 
-  flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
-  flatMapFirst<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
+  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
   flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
   flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
 
