@@ -2712,6 +2712,31 @@
             return values[key];
         }).withDesc(new Desc(src, 'decode', [cases]));
     }
+    function firstToPromise(src, PromiseCtr) {
+        if (typeof PromiseCtr !== 'function') {
+            if (typeof Promise === 'function') {
+                PromiseCtr = function (f) {
+                    return new Promise(f);
+                };
+            } else {
+                throw new Error('There isn\'t default Promise, use shim or parameter');
+            }
+        }
+        return new PromiseCtr(function (resolve, reject) {
+            return src.subscribe(function (event) {
+                if (event.hasValue) {
+                    resolve(event.value);
+                }
+                if (event.isError) {
+                    reject(event.error);
+                }
+                return noMore;
+            });
+        });
+    }
+    function toPromise(src, PromiseCtr) {
+        return src.last().firstToPromise(PromiseCtr);
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2784,6 +2809,9 @@
         };
         Observable.prototype.first = function () {
             return take(1, this, new Desc(this, 'first'));
+        };
+        Observable.prototype.firstToPromise = function (PromiseCtr) {
+            return firstToPromise(this, PromiseCtr);
         };
         Observable.prototype.flatScan = function (seed, f) {
             return flatScan(this, seed, f);
@@ -2912,6 +2940,9 @@
         };
         Observable.prototype.throttle = function (minimumInterval) {
             return throttle(this, minimumInterval);
+        };
+        Observable.prototype.toPromise = function (PromiseCtr) {
+            return toPromise(this, PromiseCtr);
         };
         Observable.prototype.toString = function () {
             if (this._name) {
@@ -3732,30 +3763,6 @@
         ]));
     }
     Bacon.sequentially = sequentially;
-    Observable.prototype.firstToPromise = function (PromiseCtr) {
-        var _this = this;
-        if (typeof PromiseCtr !== 'function') {
-            if (typeof Promise === 'function') {
-                PromiseCtr = Promise;
-            } else {
-                throw new Error('There isn\'t default Promise, use shim or parameter');
-            }
-        }
-        return new PromiseCtr(function (resolve, reject) {
-            return _this.subscribe(function (event) {
-                if (event.hasValue) {
-                    resolve(event.value);
-                }
-                if (event.isError) {
-                    reject(event.error);
-                }
-                return noMore;
-            });
-        });
-    };
-    Observable.prototype.toPromise = function (PromiseCtr) {
-        return this.last().firstToPromise(PromiseCtr);
-    };
     function tryF(f) {
         return function (value) {
             try {

@@ -64,6 +64,8 @@ import { flatScan } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
 import decode from "./decode";
+import { Promise } from "es6-promise";
+import { firstToPromise, toPromise } from "./topromise";
 
 var idCounter = 0;
 
@@ -134,6 +136,9 @@ export abstract class Observable<V> {
   }
   first(): this {
     return <any>take(1, this, new Desc(this, "first"))
+  }
+  firstToPromise(PromiseCtr): Promise<V> {
+    return firstToPromise(this, PromiseCtr)
   }
   abstract flatMap<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
   abstract flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Observable<V2>
@@ -240,6 +245,9 @@ export abstract class Observable<V> {
     return <any>throttle(this, minimumInterval)
   }
   abstract toEventStream(): EventStream<V>
+  toPromise(PromiseCtr): Promise<V> {
+    return toPromise(this, PromiseCtr)
+  }
   abstract toProperty(): Property<V>
   toString(): string {
     if (this._name) {

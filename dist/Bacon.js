@@ -2679,6 +2679,34 @@ function decode(src, cases) {
         .withDesc(new Desc(src, "decode", [cases]));
 }
 
+function firstToPromise(src, PromiseCtr) {
+    // Can't do in the global scope, as shim can be applied after Bacon is loaded.
+    if (typeof PromiseCtr !== "function") {
+        if (typeof Promise === "function") {
+            PromiseCtr = function (f) { return new Promise(f); };
+        }
+        else {
+            throw new Error("There isn't default Promise, use shim or parameter");
+        }
+    }
+    return new PromiseCtr(function (resolve, reject) {
+        return src.subscribe(function (event) {
+            if (event.hasValue) {
+                resolve(event.value);
+            }
+            if (event.isError) {
+                reject(event.error);
+            }
+            // One event is enough
+            return noMore;
+        });
+    });
+}
+
+function toPromise(src, PromiseCtr) {
+    return src.last().firstToPromise(PromiseCtr);
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2745,6 +2773,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.first = function () {
         return take(1, this, new Desc(this, "first"));
+    };
+    Observable.prototype.firstToPromise = function (PromiseCtr) {
+        return firstToPromise(this, PromiseCtr);
     };
     Observable.prototype.flatScan = function (seed, f) {
         return flatScan(this, seed, f);
@@ -2854,6 +2885,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.throttle = function (minimumInterval) {
         return throttle(this, minimumInterval);
+    };
+    Observable.prototype.toPromise = function (PromiseCtr) {
+        return toPromise(this, PromiseCtr);
     };
     Observable.prototype.toString = function () {
         if (this._name) {
@@ -3646,35 +3680,6 @@ function sequentially(delay, values) {
     }).withDesc(new Desc(Bacon, "sequentially", [delay, values]));
 }
 Bacon.sequentially = sequentially;
-
-Observable.prototype.firstToPromise = function (PromiseCtr) {
-  var _this = this;
-
-  if (typeof PromiseCtr !== "function") {
-    if (typeof Promise === "function") {
-      PromiseCtr = Promise;
-    } else {
-      throw new Error("There isn't default Promise, use shim or parameter");
-    }
-  }
-
-  return new PromiseCtr(function (resolve, reject) {
-    return _this.subscribe(function (event) {
-      if (event.hasValue) {
-        resolve(event.value);
-      }
-      if (event.isError) {
-        reject(event.error);
-      }
-
-      return noMore;
-    });
-  });
-};
-
-Observable.prototype.toPromise = function (PromiseCtr) {
-  return this.last().firstToPromise(PromiseCtr);
-};
 
 function tryF(f) {
     return function (value) {
