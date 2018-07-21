@@ -54,6 +54,8 @@ import bufferingThrottle from "./bufferingthrottle";
 import { Transformer, transformE, transformP } from "./transform";
 import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
+import { PredicateOrProperty } from "./predicate";
+import skipWhile from "./skipwhile";
 
 var idCounter = 0;
 
@@ -190,6 +192,9 @@ export default abstract class Observable<V> {
   skipUntil(starter: Observable<any>): this {
     return <any>skipUntil(this, starter)
   }
+  skipWhile<V>(f: PredicateOrProperty<V>): this {
+    return <any>skipWhile(this, f)
+  }
   abstract startWith(seed: V): Observable<V>
   subscribe(sink: EventSink<V> = nop): Unsub {
     return UpdateBarrier.wrappedSubscribe(this, sink => this.subscribeInternal(sink), sink)
@@ -202,7 +207,7 @@ export default abstract class Observable<V> {
   takeUntil(stopper: Observable<any>): this {
     return <any>takeUntil(this, stopper)
   }
-  takeWhile<V>(f: ((V) => boolean) | Property<boolean>): this {
+  takeWhile<V>(f: PredicateOrProperty<V>): this {
     return <any>takeWhile(this, f)
   }
   throttle(minimumInterval: number): this {

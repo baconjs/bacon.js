@@ -11,7 +11,7 @@ const endMarker = {};
 
 type OrEndMarker<V> = V | {}
 
-export default function takeUntil<V>(src: Observable<V>, stopper): Observable<V> {
+export default function takeUntil<V>(src: Observable<V>, stopper: Observable<any>): Observable<V> {
   let endMapped: Observable<OrEndMarker<V>> = (<Observable<OrEndMarker<V>>>src).mapEnd(endMarker);
   let withEndMarker: Observable<OrEndMarker<V>[][]> = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync)
   if (src instanceof Property) withEndMarker = withEndMarker.toProperty()

@@ -28,10 +28,4 @@ describe "EventStream.skipWhile", ->
         -> fromArray([1, 2, 3, 2]).skipWhile(lessThan(3))
         [3, 2])
   it "toString", ->
-    expect(Bacon.never().skipWhile(1).toString()).to.equal("Bacon.never().skipWhile(function)")
-
-describe "Observable.skipWhile(EventStream)", ->
-  it "should throw an error", ->
-    expect(
-      -> Bacon.never().skipWhile(Bacon.never())
-    ).to.throw(Error, "Observable is not a Property : Bacon.never()")
+    expect(Bacon.never().skipWhile(true).toString()).to.equal("Bacon.never().skipWhile(true)")

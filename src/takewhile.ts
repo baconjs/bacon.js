@@ -1,23 +1,17 @@
-import Observable, { Property } from "./observable";
+import Observable from "./observable";
 import "./sample";
 import "./filter";
 import { endEvent } from "./event";
 import { noMore } from "./reply";
 import { Desc } from "./describe";
-import withLatestFrom from "./withlatestfrom";
-import { composeT, Transformer } from "./transform";
-import { mapT } from "./map";
+import { Transformer } from "./transform";
+import { Predicate, PredicateOrProperty, withPredicate } from "./predicate";
 
-export function takeWhile<V>(src: Observable<V>, f: ((V) => boolean) | Property<boolean>): Observable<V> {
-  if (f instanceof Property) {
-    return withLatestFrom(src, f, (p, v) => [p, v])
-      .transform(composeT(takeWhileT(([v, p]) => p), mapT(([v, p]) => v)))
-  }
-
-  return src.transform(takeWhileT(f), new Desc(src, "takeWhile", [f]))
+export function takeWhile<V>(src: Observable<V>, f: PredicateOrProperty<V>): Observable<V> {
+  return withPredicate(src, f, takeWhileT, new Desc(src, "takeWhile", [f]))
 }
 
-function takeWhileT<V>(f: ((V) => boolean)): Transformer<V, V> {
+function takeWhileT<V>(f: Predicate<V>): Transformer<V, V> {
   return (event, sink) => {
     if (event.filter(f)) {
       return sink(event);

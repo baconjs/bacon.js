@@ -554,11 +554,7 @@ function assert(message, condition) {
         throw new Error(message);
     }
 }
-function assertObservableIsProperty(x) {
-    if ((x != null ? x._isObservable : void 0) && !(x != null ? x._isProperty : void 0)) {
-        throw new Error("Observable is not a Property : " + x);
-    }
-}
+
 function assertEventStream(event) {
     if (!(event != null ? event._isEventStream : void 0)) {
         throw new Error("not an EventStream : " + event);
@@ -1792,23 +1788,7 @@ function makeFunction(f, args) {
   return makeFunction_.apply(undefined, [f].concat(args));
 }
 
-function convertArgsToFunction(obs, f, args, method) {
-  if (f && f._isProperty) {
-    var sampled = f.sampledBy(obs, function (p, s) {
-      return [p, s];
-    });
-    return method.call(sampled, function (_ref) {
-      var p = _ref[0];
-      return p;
-    }).map(function (_ref2) {
-      var s = _ref2[1];
-      return s;
-    });
-  } else {
-    f = makeFunction(f, args);
-    return method.call(obs, f);
-  }
-}
+
 
 function toCombinator(f) {
   if (_.isFunction(f)) {
@@ -1872,11 +1852,21 @@ function composeT(t1, t2) {
     };
 }
 
-function filter(src, f) {
-    var desc = new Desc(src, "filter", [f]);
+function toPredicate(f) {
+    if (typeof f == "boolean") {
+        return _.always(f);
+    }
+    else if (typeof f != "function") {
+        throw new Error("Not a function: " + f);
+    }
+    else {
+        return f;
+    }
+}
+function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .transform(composeT(filterT(function (_a) {
+            .transform(composeT(predicateTransformer(function (_a) {
             var v = _a[0], p = _a[1];
             return p;
         }), mapT(function (_a) {
@@ -1884,19 +1874,13 @@ function filter(src, f) {
             return v;
         })), desc);
     }
-    return src.transform(filterT(f), desc);
+    return src.transform(predicateTransformer(toPredicate(f)), desc);
 }
-function filterT(f_) {
-    var f;
-    if (typeof f_ == "boolean") {
-        f = _.always(f_);
-    }
-    else if (typeof f_ != "function") {
-        throw new Error("Not a function: " + f_);
-    }
-    else {
-        f = f_;
-    }
+
+function filter(src, f) {
+    return withPredicate(src, f, filterT, new Desc(src, "filter", [f]));
+}
+function filterT(f) {
     return function (e, sink) {
         if (e.filter(f)) {
             return sink(e);
@@ -2549,17 +2533,7 @@ function bufferingThrottle(src, minimumInterval) {
 }
 
 function takeWhile(src, f) {
-    if (f instanceof Property) {
-        return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .transform(composeT(takeWhileT(function (_a) {
-            var v = _a[0], p = _a[1];
-            return p;
-        }), mapT(function (_a) {
-            var v = _a[0], p = _a[1];
-            return v;
-        })));
-    }
-    return src.transform(takeWhileT(f), new Desc(src, "takeWhile", [f]));
+    return withPredicate(src, f, takeWhileT, new Desc(src, "takeWhile", [f]));
 }
 function takeWhileT(f) {
     return function (event, sink) {
@@ -2579,6 +2553,24 @@ function skipUntil(src, starter) {
         .toProperty()
         .startWith(false);
     return src.filter(started).withDesc(new Desc(src, "skipUntil", [starter]));
+}
+
+function skipWhile(src, f) {
+    return withPredicate(src, f, skipWhileT, new Desc(src, "skipWhile", [f]));
+}
+function skipWhileT(f) {
+    var ok = false;
+    return function (event, sink) {
+        if (ok || !hasValue(event) || !f(event.value)) {
+            if (event.hasValue) {
+                ok = true;
+            }
+            return sink(event);
+        }
+        else {
+            return more;
+        }
+    };
 }
 
 var idCounter = 0;
@@ -2716,6 +2708,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.skipUntil = function (starter) {
         return skipUntil(this, starter);
+    };
+    Observable.prototype.skipWhile = function (f) {
+        return skipWhile(this, f);
     };
     Observable.prototype.subscribe = function (sink) {
         var _this = this;
@@ -3670,28 +3665,6 @@ function sequentially(delay, values) {
     }).withDesc(new Desc(Bacon, "sequentially", [delay, values]));
 }
 Bacon.sequentially = sequentially;
-
-EventStream.prototype.skipWhile = function (f) {
-  assertObservableIsProperty(f);
-  var ok = false;
-
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-
-  return convertArgsToFunction(this, f, args, function (f) {
-    return this.withHandler(function (event) {
-      if (ok || !event.hasValue || !f(event.value)) {
-        if (event.hasValue) {
-          ok = true;
-        }
-        return this.push(event);
-      } else {
-        return more;
-      }
-    }).withDesc(new Desc(this, "skipWhile", [f]));
-  });
-};
 
 Observable.prototype.slidingWindow = function (n) {
   var minValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
