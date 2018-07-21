@@ -1,7 +1,7 @@
 sinon = require 'sinon'
 Bacon = require '../dist/Bacon'
 expect = require('chai').expect
-$.fn.asEventStream = Bacon.$.asEventStream
+Bacon.$.init($)
 
 elemName = (event) ->
   event.target.localName

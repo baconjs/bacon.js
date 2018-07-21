@@ -3584,26 +3584,25 @@
         ]));
     }
     Bacon.interval = interval;
-    Bacon.$ = {};
-    Bacon.$.asEventStream = function (eventName, selector, eventTransformer) {
-        var _this = this;
-        if (_.isFunction(selector)) {
-            eventTransformer = selector;
-            selector = undefined;
+    var B$ = {
+        asEventStream: function (eventName, selector, eventTransformer) {
+            var _this = this;
+            if (_.isFunction(selector)) {
+                eventTransformer = selector;
+                selector = undefined;
+            }
+            return fromBinder(function (handler) {
+                _this.on(eventName, selector, handler);
+                return function () {
+                    return _this.off(eventName, selector, handler);
+                };
+            }, eventTransformer).withDesc(new Desc(this.selector || this, 'asEventStream', [eventName]));
+        },
+        init: function ($) {
+            $.fn.asEventStream = B$.asEventStream;
         }
-        return fromBinder(function (handler) {
-            _this.on(eventName, selector, handler);
-            return function () {
-                return _this.off(eventName, selector, handler);
-            };
-        }, eventTransformer).withDesc(new Desc(this.selector || this, 'asEventStream', [eventName]));
     };
-    if (typeof jQuery !== 'undefined' && jQuery) {
-        jQuery.fn.asEventStream = Bacon.$.asEventStream;
-    }
-    if (typeof Zepto !== 'undefined' && Zepto) {
-        Zepto.fn.asEventStream = Bacon.$.asEventStream;
-    }
+    Bacon.$ = B$;
     function onValues() {
         return Bacon.combineAsArray(Array.prototype.slice.call(arguments, 0, arguments.length - 1)).onValues(arguments[arguments.length - 1]);
     }
