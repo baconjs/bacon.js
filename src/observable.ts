@@ -61,6 +61,7 @@ import { groupBy, GroupLimiter, GroupKey } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
+import { holdWhen } from "./holdwhen";
 
 var idCounter = 0;
 
@@ -148,6 +149,9 @@ export abstract class Observable<V> {
   }
   groupBy(keyF: (T) => GroupKey, limitF: GroupLimiter<V> = _.id): Observable<Observable<V>> {
     return groupBy(this, keyF, limitF)
+  }
+  holdWhen(valve: Property<boolean>): EventStream<V> {
+    return holdWhen(this, valve)
   }
   inspect() { return this.toString() }
   internalDeps(): any[] {

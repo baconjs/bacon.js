@@ -2625,6 +2625,63 @@
             f
         ]));
     }
+    function holdWhen(src, valve) {
+        var onHold = false;
+        var bufferedValues = [];
+        var srcIsEnded = false;
+        return new EventStream(new Desc(src, 'holdWhen', [valve]), function (sink) {
+            var composite = new CompositeUnsubscribe();
+            var subscribed = false;
+            var endIfBothEnded = function (unsub) {
+                if (unsub) {
+                    unsub();
+                }
+                if (composite.empty() && subscribed) {
+                    return sink(endEvent());
+                }
+            };
+            composite.add(function (unsubAll, unsubMe) {
+                return valve.subscribeInternal(function (event) {
+                    if (hasValue(event)) {
+                        onHold = event.value;
+                        if (!onHold) {
+                            var toSend = bufferedValues;
+                            bufferedValues = [];
+                            var result = more;
+                            for (var i = 0; i < toSend.length; i++) {
+                                result = sink(nextEvent(toSend[i]));
+                            }
+                            if (srcIsEnded) {
+                                sink(endEvent());
+                                unsubMe();
+                                result = noMore;
+                            }
+                            return result;
+                        }
+                    } else if (event.isEnd) {
+                        return endIfBothEnded(unsubMe);
+                    } else {
+                        return sink(event);
+                    }
+                });
+            });
+            composite.add(function (unsubAll, unsubMe) {
+                return src.subscribeInternal(function (event) {
+                    if (onHold && hasValue(event)) {
+                        return bufferedValues.push(event.value);
+                    } else if (event.isEnd && bufferedValues.length) {
+                        srcIsEnded = true;
+                        return endIfBothEnded(unsubMe);
+                    } else {
+                        return sink(event);
+                    }
+                });
+            });
+            subscribed = true;
+            endIfBothEnded();
+            return composite.unsubscribe;
+        });
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2712,6 +2769,9 @@
                 limitF = _.id;
             }
             return groupBy(this, keyF, limitF);
+        };
+        Observable.prototype.holdWhen = function (valve) {
+            return holdWhen(this, valve);
         };
         Observable.prototype.inspect = function () {
             return this.toString();
@@ -3520,66 +3580,6 @@
         }, eventTransformer).withDesc(new Desc(Bacon, 'fromPromise', [promise]));
     }
     Bacon.fromPromise = fromPromise;
-    EventStream.prototype.holdWhen = function (valve) {
-        var onHold = false;
-        var bufferedValues = [];
-        var src = this;
-        var srcIsEnded = false;
-        return new EventStream(new Desc(this, 'holdWhen', [valve]), function (sink) {
-            var composite = new CompositeUnsubscribe();
-            var subscribed = false;
-            var endIfBothEnded = function (unsub) {
-                if (typeof unsub === 'function') {
-                    unsub();
-                }
-                if (composite.empty() && subscribed) {
-                    return sink(endEvent());
-                }
-            };
-            composite.add(function (unsubAll, unsubMe) {
-                return valve.subscribeInternal(function (event) {
-                    if (event.hasValue) {
-                        onHold = event.value;
-                        if (!onHold) {
-                            var toSend = bufferedValues;
-                            bufferedValues = [];
-                            return function () {
-                                var result = [];
-                                for (var i = 0, value; i < toSend.length; i++) {
-                                    value = toSend[i];
-                                    result.push(sink(nextEvent(value)));
-                                }
-                                if (srcIsEnded) {
-                                    result.push(sink(endEvent()));
-                                    unsubMe();
-                                }
-                                return result;
-                            }();
-                        }
-                    } else if (event.isEnd) {
-                        return endIfBothEnded(unsubMe);
-                    } else {
-                        return sink(event);
-                    }
-                });
-            });
-            composite.add(function (unsubAll, unsubMe) {
-                return src.subscribeInternal(function (event) {
-                    if (onHold && event.hasValue) {
-                        return bufferedValues.push(event.value);
-                    } else if (event.isEnd && bufferedValues.length) {
-                        srcIsEnded = true;
-                        return endIfBothEnded(unsubMe);
-                    } else {
-                        return sink(event);
-                    }
-                });
-            });
-            subscribed = true;
-            endIfBothEnded();
-            return composite.unsubscribe;
-        });
-    };
     function interval(delay, value) {
         return fromPoll(delay, function () {
             return nextEvent(value);
