@@ -12,6 +12,7 @@ Also, will be great to get a fully and correctly type version of Bacon out!
 - added Bacon.silence(duration)
 - Replaced `withHandler` with `transform`
 - Observable argument support removed from `fromCallback` and `fromNodeCallback`
+
 ### Not so nice things
 
 - I've had to resort to some `<any>` typings in, for example `EventStream.map` to
@@ -25,6 +26,7 @@ If TypeScript had higher-kinded types, this might be avoidable.
 - The `npm run dist` thingie that uses Rollup currently hides typescript type errors.
 As an interim solution there's `npm run watch-ts`
 - Partial builds not working. Work not started. See below.
+- jQuery "this" binding test failing.
 
 ### Design decisions
 
