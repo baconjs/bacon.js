@@ -22,6 +22,31 @@ describe "Bacon.update", ->
           [incr], (i,c) -> i+c)
       [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3], semiunstable)
 
+  describe "supports the new typed syntax, case 1", ->
+    expectPropertyEvents(
+      ->
+        a = Bacon.later(1, "x")
+        b = Bacon.later(2, "y")
+
+        Bacon.update(0,
+          [a, (acc, x) => acc + x],
+          [b, (acc, x) => acc + x]
+        )
+      [0, "0x", "0xy"], semiunstable)
+
+  describe "supports the new typed syntax, case 2", ->
+    expectPropertyEvents(
+      ->
+        [r,i,_] = ['r','i',0]
+        incr  = series(1, [1, _, 1, _, 2, _, 1, _, _, _, 2, _, 1]).filter((x) -> x != _)
+        reset = series(1, [_, r, _, _, _, r, _, r, _, r, _, _, _]).filter((x) -> x == r)
+        Bacon.update(
+          0,
+          [[reset], 0],
+          [[incr], (i,c) -> i+c]
+        )
+      [0, 1, 0, 1, 3, 0, 1, 0, 0, 2, 3], semiunstable)
+
   describe "Correctly handles multiple arguments in parameter list, and synchronous sources", ->
     expectPropertyEvents(
       ->

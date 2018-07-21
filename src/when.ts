@@ -12,7 +12,10 @@ import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
 import Observable, { ObservableConstructor } from "./observable";
 import { Unsub } from "./types";
-import { Property } from "./observable";;
+import { Property } from "./observable";
+import { isObservable } from "./helpers";
+
+;
 
 
 export type ObservableOrSource<V> = Observable<V> | Source<any, V>
@@ -46,7 +49,7 @@ export default when;
 
 export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): Observable<O> {
   if (patterns.length === 0) { return never() }
-  var [sources, ixPats] = processRawPatterns(extractTypedPatterns(patterns))
+  var [sources, ixPats] = processRawPatterns(extractRawPatterns(patterns))
 
   if (!sources.length) {
     return never()
@@ -213,14 +216,14 @@ function extractLegacyPatterns(sourceArgs: any[]): RawPattern[] {
 }
 
 function isTypedOrRawPattern(pattern: Pattern<any>) {
-  return (pattern instanceof Array) && (typeof pattern[pattern.length - 1] == "function")
+  return (pattern instanceof Array) && (!isObservable(pattern[pattern.length - 1]))
 }
 
 function isRawPattern(pattern: Pattern<any>): pattern is RawPattern {
   return pattern[0] instanceof Array
 }
 
-function extractTypedPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
+export function extractRawPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
   let rawPatterns: RawPattern[] = []
   for (let i = 0; i < patterns.length; i++) {
     let pattern = patterns[i]
@@ -229,10 +232,10 @@ function extractTypedPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
       return extractLegacyPatterns(patterns)
     }
     if (isRawPattern(pattern)) {
-      rawPatterns.push(pattern)
+      rawPatterns.push([pattern[0], _.toFunction(pattern[1])])
     } else { // typed pattern, then
       let sources: AnySource[] = <any>pattern.slice(0, pattern.length - 1)
-      let f: AnyFunction = <any>pattern[pattern.length - 1]
+      let f: AnyFunction = <any>_.toFunction(pattern[pattern.length - 1])
       rawPatterns.push([sources, f])
     }
   }

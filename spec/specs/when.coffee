@@ -15,7 +15,7 @@ expect = require("chai").expect
 } = require("../SpecHelper")
 
 describe "Bacon.when", ->
-  describe "handles the new typed format", ->
+  describe "supports the new typed syntax", ->
     expectStreamEvents(
       ->
         a = series(1, [1,2])

@@ -1360,7 +1360,7 @@
         if (patterns.length === 0) {
             return never();
         }
-        var _a = processRawPatterns(extractTypedPatterns(patterns)), sources = _a[0], ixPats = _a[1];
+        var _a = processRawPatterns(extractRawPatterns(patterns)), sources = _a[0], ixPats = _a[1];
         if (!sources.length) {
             return never();
         }
@@ -1532,12 +1532,12 @@
         return rawPatterns;
     }
     function isTypedOrRawPattern(pattern) {
-        return pattern instanceof Array && typeof pattern[pattern.length - 1] == 'function';
+        return pattern instanceof Array && !isObservable(pattern[pattern.length - 1]);
     }
     function isRawPattern(pattern) {
         return pattern[0] instanceof Array;
     }
-    function extractTypedPatterns(patterns) {
+    function extractRawPatterns(patterns) {
         var rawPatterns = [];
         for (var i = 0; i < patterns.length; i++) {
             var pattern = patterns[i];
@@ -1545,10 +1545,13 @@
                 return extractLegacyPatterns(patterns);
             }
             if (isRawPattern(pattern)) {
-                rawPatterns.push(pattern);
+                rawPatterns.push([
+                    pattern[0],
+                    _.toFunction(pattern[1])
+                ]);
             } else {
                 var sources = pattern.slice(0, pattern.length - 1);
-                var f = pattern[pattern.length - 1];
+                var f = _.toFunction(pattern[pattern.length - 1]);
                 rawPatterns.push([
                     sources,
                     f
@@ -3809,32 +3812,34 @@
     }
     Bacon['try'] = tryF;
     function update(initial) {
-        function lateBindFirst(f) {
-            return function () {
-                for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                    args[_key2] = arguments[_key2];
-                }
-                return function (i) {
-                    return f.apply(undefined, [i].concat(args));
-                };
-            };
+        var patterns = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            patterns[_i - 1] = arguments[_i];
         }
-        for (var _len = arguments.length, patterns = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            patterns[_key - 1] = arguments[_key];
+        var rawPatterns = extractRawPatterns(patterns);
+        for (var i = 0; i < rawPatterns.length; i++) {
+            var pattern = rawPatterns[i];
+            pattern[1] = lateBindFirst(pattern[1]);
         }
-        var i = patterns.length - 1;
-        while (i > 0) {
-            if (!(patterns[i] instanceof Function)) {
-                patterns[i] = _.always(patterns[i]);
-            }
-            patterns[i] = lateBindFirst(patterns[i]);
-            i = i - 2;
-        }
-        return when.apply(undefined, patterns).scan(initial, function (x, f) {
+        return when.apply(void 0, rawPatterns).scan(initial, function (x, f) {
             return f(x);
         }).withDesc(new Desc(Bacon, 'update', [initial].concat(patterns)));
     }
     Bacon.update = update;
+    function lateBindFirst(f) {
+        if (!(f instanceof Function)) {
+            f = _.always(f);
+        }
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return function (i) {
+                return f.apply(void 0, [i].concat(args));
+            };
+        };
+    }
     Bacon.EventStream = EventStream;
     Bacon.UpdateBarrier = UpdateBarrier;
     Bacon.Observable = Observable;
