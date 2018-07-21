@@ -2605,6 +2605,13 @@ function diff(src, start, f) {
     return transformP(scan(src, [start], function (prevTuple, next) { return [next, f(prevTuple[0], next)]; }), composeT(filterT(function (tuple) { return tuple.length === 2; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
 }
 
+function flatScan(src, seed, f) {
+    var current = seed;
+    return src.flatMapConcat(function (next) {
+        return makeObservable(f(current, next)).doAction(function (updated) { return current = updated; });
+    }).toProperty().startWith(seed).withDesc(new Desc(src, "flatScan", [seed, f]));
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2668,6 +2675,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.first = function () {
         return take(1, this, new Desc(this, "first"));
+    };
+    Observable.prototype.flatScan = function (seed, f) {
+        return flatScan(this, seed, f);
     };
     Observable.prototype.fold = function (seed, f) {
         return fold(this, seed, f);
@@ -3253,15 +3263,6 @@ Observable.prototype.toESObservable = function () {
 };
 
 Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
-
-Observable.prototype.flatScan = function (seed, f) {
-  var current = seed;
-  return this.flatMapConcat(function (next) {
-    return makeObservable(f(current, next)).doAction(function (updated) {
-      return current = updated;
-    });
-  }).toProperty(seed);
-};
 
 function fromArray(values) {
     assertArray(values);

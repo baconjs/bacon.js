@@ -2614,6 +2614,17 @@
             f
         ]));
     }
+    function flatScan(src, seed, f) {
+        var current = seed;
+        return src.flatMapConcat(function (next) {
+            return makeObservable(f(current, next)).doAction(function (updated) {
+                return current = updated;
+            });
+        }).toProperty().startWith(seed).withDesc(new Desc(src, 'flatScan', [
+            seed,
+            f
+        ]));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2683,6 +2694,9 @@
         };
         Observable.prototype.first = function () {
             return take(1, this, new Desc(this, 'first'));
+        };
+        Observable.prototype.flatScan = function (seed, f) {
+            return flatScan(this, seed, f);
         };
         Observable.prototype.fold = function (seed, f) {
             return fold(this, seed, f);
@@ -3325,14 +3339,6 @@
         return new ESObservable(this);
     };
     Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
-    Observable.prototype.flatScan = function (seed, f) {
-        var current = seed;
-        return this.flatMapConcat(function (next) {
-            return makeObservable(f(current, next)).doAction(function (updated) {
-                return current = updated;
-            });
-        }).toProperty(seed);
-    };
     function fromArray(values) {
         if (!values.length) {
             return never().withDesc(new Desc(Bacon, 'fromArray', values));

@@ -60,6 +60,7 @@ import _ from "./_";
 import { groupBy, GroupLimiter, GroupKey } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
+import { flatScan } from "./flatscan";
 
 var idCounter = 0;
 
@@ -135,6 +136,9 @@ export abstract class Observable<V> {
   abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
   abstract flatMapLatest<V2>(f: Spawner<V, V2>): Observable<V2>
   abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Observable<V2>
+  flatScan<V2>(seed: V2, f: (V2, V) => Observable<V2>): Property<V2> {
+    return <any>flatScan(this, seed, f)
+  }
   fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return fold(this, seed, f)
   }
