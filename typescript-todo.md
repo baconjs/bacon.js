@@ -10,6 +10,7 @@ Also, will be great to get a fully and correctly type version of Bacon out!
 - Tests are now always run against ../dist/Bacon.js which is a good thing. Makes sure the actual bundle is working.
 - observable.last() only stores value events, passes through errors (I think this was a bug)
 - added Bacon.silence(duration)
+- Replaced `withHandler` with `transform`
 
 ### Not so nice things
 
