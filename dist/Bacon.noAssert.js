@@ -1611,7 +1611,7 @@
             throw new Error('Unknown observable: ' + sampler);
         }
     }
-    function map(f, src) {
+    function map(src, f) {
         if (f instanceof Property) {
             return withLatestFrom(src, f, function (a, b) {
                 return b;
@@ -1917,7 +1917,7 @@
             return t1(event, sink2);
         };
     }
-    function filter(f, src) {
+    function filter(src, f) {
         var desc = new Desc(src, 'filter', [f]);
         if (f instanceof Property) {
             return withLatestFrom(src, f, function (p, v) {
@@ -2650,7 +2650,7 @@
             return endAsValue(this);
         };
         Observable.prototype.filter = function (f) {
-            return filter(f, this);
+            return filter(this, f);
         };
         Observable.prototype.errors = function () {
             return this.filter(function (x) {
@@ -2801,7 +2801,7 @@
             return withStateMachine(initState, f, this);
         };
         Property.prototype.map = function (f) {
-            return map(f, this);
+            return map(this, f);
         };
         Property.prototype.flatMap = function (f) {
             return flatMap(this, f);
@@ -2904,7 +2904,7 @@
             return new EventStream(new Desc(this, 'withHandler', [handler]), this.dispatcher.subscribe, handler, allowSync);
         };
         EventStream.prototype.map = function (f) {
-            return map(f, this);
+            return map(this, f);
         };
         EventStream.prototype.flatMap = function (f) {
             return flatMap(this, f);

@@ -134,7 +134,7 @@ export default abstract class Observable<V> {
   }
 
   filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
-    return <any>filter(f, this)
+    return <any>filter(this, f)
   }
 
   errors(): this {
@@ -312,7 +312,7 @@ export class Property<V> extends Observable<V> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
-  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map(f, this) }
+  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map(this, f) }
 
   flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
   flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
@@ -410,7 +410,7 @@ export class EventStream<V> extends Observable<V> {
       handler,
       allowSync);
   }
-  map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> { return <any>map(f, this) }
+  map<V2>(f: ((V) => V2) | Property<V2>): EventStream<V2> { return <any>map(this, f) }
 
   flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
   flatMapConcat<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }

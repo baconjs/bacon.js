@@ -9,7 +9,7 @@ import _ from "./_"
 import { composeT } from "./transform";
 import { mapT } from "./map";
 
-export function filter<V>(f: ((V) => boolean) | boolean | Property<boolean>, src: Observable<V>): Observable<V> {
+export function filter<V>(src: Observable<V>, f: ((V) => boolean) | boolean | Property<boolean>): Observable<V> {
   let desc = new Desc(src, "filter", [f]);
   if (f instanceof Property) {
     return withLatestFrom(src, f, (p, v) => [p, v])

@@ -1566,7 +1566,7 @@ function withLatestFrom(sampler, samplee, f) {
     }
 }
 
-function map(f, src) {
+function map(src, f) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (a, b) { return b; });
     }
@@ -1871,7 +1871,7 @@ function composeT(t1, t2) {
     };
 }
 
-function filter(f, src) {
+function filter(src, f) {
     var desc = new Desc(src, "filter", [f]);
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
@@ -2636,7 +2636,7 @@ var Observable = /** @class */ (function () {
         return endAsValue(this);
     };
     Observable.prototype.filter = function (f) {
-        return filter(f, this);
+        return filter(this, f);
     };
     Observable.prototype.errors = function () {
         return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
@@ -2773,7 +2773,7 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
     };
-    Property.prototype.map = function (f) { return map(f, this); };
+    Property.prototype.map = function (f) { return map(this, f); };
     Property.prototype.flatMap = function (f) { return flatMap(this, f); };
     Property.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
     Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
@@ -2849,7 +2849,7 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.withHandler = function (handler) {
         return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
     };
-    EventStream.prototype.map = function (f) { return map(f, this); };
+    EventStream.prototype.map = function (f) { return map(this, f); };
     EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
     EventStream.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
     EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
