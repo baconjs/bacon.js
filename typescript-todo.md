@@ -11,7 +11,7 @@ Also, will be great to get a fully and correctly type version of Bacon out!
 - observable.last() only stores value events, passes through errors (I think this was a bug)
 - added Bacon.silence(duration)
 - Replaced `withHandler` with `transform`
-
+- Observable argument support removed from `fromCallback` and `fromNodeCallback`
 ### Not so nice things
 
 - I've had to resort to some `<any>` typings in, for example `EventStream.map` to

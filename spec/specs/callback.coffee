@@ -7,20 +7,6 @@ expect = require("chai").expect
   error
 } = require("../SpecHelper")
 
-testLiftedCallback = (src, liftedCallback) ->
-  input = [
-    Bacon.constant('a')
-    'x'
-    Bacon.constant('b').toProperty()
-    'y'
-  ]
-  output = ['a', 'x', 'b', 'y']
-  expectStreamEvents(
-    -> liftedCallback(src, input...)
-    [output]
-  )
-
-
 describe "Bacon.fromCallback", ->
   describe "makes an EventStream from function that takes a callback", ->
     expectStreamEvents(
@@ -34,11 +20,6 @@ describe "Bacon.fromCallback", ->
         src = (param, callback) -> callback(param)
         stream = Bacon.fromCallback(src, "lol")
       ["lol"])
-  describe "supports partial application with Observable arguments", ->
-    testLiftedCallback(
-      (values..., callback) -> callback(values)
-      Bacon.fromCallback
-    )
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->
@@ -70,11 +51,6 @@ describe "Bacon.fromNodeCallback", ->
         src = (param, callback) -> callback(null, param)
         stream = Bacon.fromNodeCallback(src, "lol")
       ["lol"])
-  describe "supports partial application with Observable arguments", ->
-    testLiftedCallback(
-      (values..., callback) -> callback(null, values)
-      Bacon.fromNodeCallback
-    )
   describe "supports object, methodName, partial application", ->
     expectStreamEvents(
       ->

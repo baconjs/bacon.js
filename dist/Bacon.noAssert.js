@@ -3184,61 +3184,38 @@
     Bacon.Bus = Bus;
     function withMethodCallSupport(wrapped) {
         return function (f) {
-            for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                args[_key - 1] = arguments[_key];
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
             }
             if (typeof f === 'object' && args.length) {
                 var context = f;
                 var methodName = args[0];
                 f = function () {
-                    return context[methodName].apply(context, arguments);
+                    var args = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        args[_i] = arguments[_i];
+                    }
+                    return context[methodName].apply(context, args);
                 };
                 args = args.slice(1);
             }
-            return wrapped.apply(undefined, [f].concat(args));
+            return wrapped.apply(void 0, [f].concat(args));
         };
     }
     function partiallyApplied(f, applied) {
         return function () {
-            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                args[_key2] = arguments[_key2];
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
             }
-            return f.apply(undefined, applied.concat(args));
+            return f.apply(void 0, applied.concat(args));
         };
-    }
-    function toSimpleExtractor(args) {
-        return function (key) {
-            return function (value) {
-                if (!(typeof value !== 'undefined' && value !== null)) {
-                    return;
-                } else {
-                    var fieldValue = value[key];
-                    if (_.isFunction(fieldValue)) {
-                        return fieldValue.apply(value, args);
-                    } else {
-                        return fieldValue;
-                    }
-                }
-            };
-        };
-    }
-    function toFieldExtractor(f, args) {
-        var parts = f.slice(1).split('.');
-        var partFuncs = _.map(toSimpleExtractor(args), parts);
-        return function (value) {
-            for (var i = 0, f; i < partFuncs.length; i++) {
-                f = partFuncs[i];
-                value = f(value);
-            }
-            return value;
-        };
-    }
-    function isFieldKey(f) {
-        return typeof f === 'string' && f.length > 1 && f.charAt(0) === '.';
     }
     var makeFunction_ = withMethodCallSupport(function (f) {
-        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            args[_key3 - 1] = arguments[_key3];
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
         }
         if (_.isFunction(f)) {
             if (args.length) {
@@ -3246,29 +3223,17 @@
             } else {
                 return f;
             }
-        } else if (isFieldKey(f)) {
-            return toFieldExtractor(f, args);
         } else {
             return _.always(f);
         }
     });
     function makeFunction(f, args) {
-        return makeFunction_.apply(undefined, [f].concat(args));
+        return makeFunction_.apply(void 0, [f].concat(args));
     }
-    var liftCallback = function (desc, wrapped) {
-        return withMethodCallSupport(function (f) {
-            var stream = partiallyApplied(wrapped, [function (values, callback) {
-                    return f.apply(undefined, values.concat([callback]));
-                }]);
-            for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                args[_key - 1] = arguments[_key];
-            }
-            return Bacon.combineAsArray(args).flatMap(stream).changes().withDesc(new Desc(Bacon, desc, [f].concat(args)));
-        });
-    };
-    Bacon.fromCallback = liftCallback('fromCallback', function (f) {
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            args[_key2 - 1] = arguments[_key2];
+    function fromCallback(f) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
         }
         return fromBinder(function (handler) {
             makeFunction(f, args)(handler);
@@ -3278,11 +3243,12 @@
                 value,
                 endEvent()
             ];
-        });
-    });
-    Bacon.fromNodeCallback = liftCallback('fromNodeCallback', function (f) {
-        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            args[_key3 - 1] = arguments[_key3];
+        }).withDesc(new Desc(Bacon, 'fromCallback', [f].concat(args)));
+    }
+    function fromNodeCallback(f) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
         }
         return fromBinder(function (handler) {
             makeFunction(f, args)(handler);
@@ -3298,8 +3264,10 @@
                 value,
                 endEvent()
             ];
-        });
-    });
+        }).withDesc(new Desc(Bacon, 'fromNodeCallback', [f].concat(args)));
+    }
+    Bacon.fromCallback = fromCallback;
+    Bacon.fromNodeCallback = fromNodeCallback;
     function combineTemplate(template) {
         function current(ctxStack) {
             return ctxStack[ctxStack.length - 1];
