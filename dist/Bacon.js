@@ -371,24 +371,23 @@ var more = Reply.more;
 var noMore = Reply.noMore;
 
 var spies = [];
+var running = false;
 function registerObs(obs) {
-  if (spies.length) {
-    if (!registerObs.running) {
-      try {
-        registerObs.running = true;
-        spies.forEach(function (spy) {
-          spy(obs);
-        });
-      } finally {
-        delete registerObs.running;
-      }
+    if (spies.length) {
+        if (!running) {
+            try {
+                running = true;
+                spies.forEach(function (spy) {
+                    spy(obs);
+                });
+            }
+            finally {
+                running = false;
+            }
+        }
     }
-  }
 }
-
-var spy = (function (spy) {
-  return spies.push(spy);
-});
+var spy = (function (spy) { return spies.push(spy); });
 
 var Desc = /** @class */ (function () {
     function Desc(context, method, args) {

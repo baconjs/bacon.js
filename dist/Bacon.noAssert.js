@@ -449,16 +449,17 @@
     var more = Reply.more;
     var noMore = Reply.noMore;
     var spies = [];
+    var running = false;
     function registerObs(obs) {
         if (spies.length) {
-            if (!registerObs.running) {
+            if (!running) {
                 try {
-                    registerObs.running = true;
+                    running = true;
                     spies.forEach(function (spy) {
                         spy(obs);
                     });
                 } finally {
-                    delete registerObs.running;
+                    running = false;
                 }
             }
         }
