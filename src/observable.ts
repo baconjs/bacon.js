@@ -56,6 +56,8 @@ import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
 import { PredicateOrProperty } from "./predicate";
 import skipWhile from "./skipwhile";
+import _ from "./_";
+import { groupBy, GroupLimiter, GroupKey } from "./groupby";
 
 var idCounter = 0;
 
@@ -134,6 +136,9 @@ export default abstract class Observable<V> {
   forEach(f: Sink<V> = nop) : Unsub {
     // TODO: inefficient alias. Also, similar assign alias missing.
     return this.onValue(f)
+  }
+  groupBy(keyF: (T) => GroupKey, limitF: GroupLimiter<V> = _.id): Observable<Observable<V>> {
+    return groupBy(this, keyF, limitF)
   }
   inspect() { return this.toString() }
   internalDeps(): any[] {
@@ -299,14 +304,9 @@ export class Property<V> extends Observable<V> {
   transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
     return transformP(this, transformer, desc)
   }
-  // deprecated : use transform() instead
-  withHandler(handler: EventSink<V>) {
-    return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
-  }
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
-
 }
 
 export function isProperty<V>(x): x is Property<V> {
@@ -346,14 +346,6 @@ export class EventStream<V> extends Observable<V> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 
-  // deprecated : use transform() instead
-  withHandler(handler: EventSink<V>) {
-    return new EventStream(
-      new Desc(this, "withHandler", [handler]),
-      this.dispatcher.subscribe,
-      handler,
-      allowSync);
-  }
   map<V2>(f: ((V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
 
   flatMap<V2>(f: Spawner<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }

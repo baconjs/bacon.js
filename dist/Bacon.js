@@ -2559,11 +2559,11 @@ function skipWhile(src, f) {
     return withPredicate(src, f, skipWhileT, new Desc(src, "skipWhile", [f]));
 }
 function skipWhileT(f) {
-    var ok = false;
+    var started = false;
     return function (event, sink) {
-        if (ok || !hasValue(event) || !f(event.value)) {
+        if (started || !hasValue(event) || !f(event.value)) {
             if (event.hasValue) {
-                ok = true;
+                started = true;
             }
             return sink(event);
         }
@@ -2571,6 +2571,26 @@ function skipWhileT(f) {
             return more;
         }
     };
+}
+
+function groupBy(src, keyF, limitF) {
+    if (limitF === void 0) { limitF = _.id; }
+    var streams = {};
+    return src
+        .filter(function (x) { return !streams[keyF(x)]; })
+        .map(function (firstValue) {
+        var key = keyF(firstValue);
+        var similarValues = src.filter(function (x) { return keyF(x) === key; });
+        var data = once(firstValue).concat(similarValues);
+        var limited = limitF(data, firstValue).transform(function (event, sink) {
+            sink(event);
+            if (event.isEnd) {
+                delete streams[key];
+            }
+        });
+        streams[key] = limited;
+        return limited;
+    });
 }
 
 var idCounter = 0;
@@ -2641,6 +2661,10 @@ var Observable = /** @class */ (function () {
         if (f === void 0) { f = nop; }
         // TODO: inefficient alias. Also, similar assign alias missing.
         return this.onValue(f);
+    };
+    Observable.prototype.groupBy = function (keyF, limitF) {
+        if (limitF === void 0) { limitF = _.id; }
+        return groupBy(this, keyF, limitF);
     };
     Observable.prototype.inspect = function () { return this.toString(); };
     Observable.prototype.internalDeps = function () {
@@ -2812,10 +2836,6 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.transform = function (transformer, desc) {
         return transformP(this, transformer, desc);
     };
-    // deprecated : use transform() instead
-    Property.prototype.withHandler = function (handler) {
-        return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
-    };
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
     };
@@ -2851,10 +2871,6 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
-    };
-    // deprecated : use transform() instead
-    EventStream.prototype.withHandler = function (handler) {
-        return new EventStream(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler, allowSync);
     };
     EventStream.prototype.map = function (f) { return map(this, f); };
     EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
@@ -3418,30 +3434,6 @@ function fromPromise(promise, abort, eventTransformer) {
     }, eventTransformer).withDesc(new Desc(Bacon, "fromPromise", [promise]));
 }
 Bacon.fromPromise = fromPromise;
-
-Observable.prototype.groupBy = function (keyF) {
-  var limitF = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _.id;
-
-  var streams = {};
-  var src = this;
-  return src.filter(function (x) {
-    return !streams[keyF(x)];
-  }).map(function (x) {
-    var key = keyF(x);
-    var similar = src.filter(function (x) {
-      return keyF(x) === key;
-    });
-    var data = once(x).concat(similar);
-    var limited = limitF(data, x).withHandler(function (event) {
-      this.push(event);
-      if (event.isEnd) {
-        return delete streams[key];
-      }
-    });
-    streams[key] = limited;
-    return limited;
-  });
-};
 
 EventStream.prototype.holdWhen = function (valve) {
   var onHold = false;

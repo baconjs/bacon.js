@@ -80,17 +80,7 @@ module.exports.unstable = { unstable: true, semiunstable: true }
 module.exports.semiunstable = { semiunstable: true }
 
 take = (count, obs) ->
-  obs.withHandler (event) ->
-    unless event.hasValue
-      @push event
-    else
-      count--
-      if count > 0
-        @push event
-      else
-        @push event if count == 0
-        @push new Bacon.End()
-        Bacon.noMore
+  obs.take(count)
 
 module.exports.atGivenTimes = atGivenTimes = (timesAndValues) ->
   startTime = sc.now()
@@ -125,10 +115,9 @@ module.exports.expectStreamTimings = expectStreamTimings = (src, expectedEventsA
     relativeTime = () ->
       Math.floor(now() - t0)
     withRelativeTime = (x) -> [relativeTime(), x]
-    src().withHandler (e) ->
+    src().transform (e, sink) ->
       e = e.fmap(withRelativeTime)
-      e.value?() # force eval
-      @push e
+      sink e
   expectStreamEvents(srcWithRelativeTime, expectedEventsAndTimings, options)
 
 module.exports.expectStreamEvents = expectStreamEvents = (src, expectedEvents, {unstable, semiunstable} = {}) ->

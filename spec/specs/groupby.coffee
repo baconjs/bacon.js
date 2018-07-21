@@ -18,12 +18,12 @@ describe "EventStream.groupBy", ->
     obs.flatMap(Bacon._.id)
 
   takeWhileInclusive = (obs, f) ->
-    obs.withHandler (event) ->
+    obs.transform (event, sink) ->
       if event.filter(f)
-        @push event
+        sink event
       else
-        @push event
-        @push new Bacon.End()
+        sink event
+        sink new Bacon.End()
         Bacon.noMore
 
   describe "without limiting function", ->
