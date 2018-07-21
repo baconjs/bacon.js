@@ -3552,9 +3552,12 @@ var B$ = {
 Bacon.$ = B$;
 
 function onValues() {
-  return Bacon.combineAsArray(Array.prototype.slice.call(arguments, 0, arguments.length - 1)).onValues(arguments[arguments.length - 1]);
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    return combineAsArray(args.slice(0, args.length - 1)).onValues(args[arguments.length - 1]);
 }
-
 Bacon.onValues = onValues;
 
 function repeatedly(delay, values) {
