@@ -3,7 +3,6 @@ import { Desc } from "./describe";
 import { nop } from "./helpers";
 import Observable from "./observable";
 import { EventSink } from "./types";
-import Bacon from "./core"
 import _ from "./_";
 import never from "./never";
 import { argumentsToObservables } from "./argumentstoobservables";
@@ -29,10 +28,8 @@ export function concatAll<V>(...streams_: (Observable<V> | Observable<V>[])[]): 
   let streams = argumentsToObservables(streams_)
   if (streams.length) {
     return _.fold(_.tail(streams), _.head(streams).toEventStream(), (a, b) => a.concat(b))
-      .withDesc(new Desc(Bacon, "concatAll", streams))
+      .withDesc(new Desc("Bacon", "concatAll", streams))
   } else {
     return never();
   }
 }
-
-Bacon.concatAll = concatAll

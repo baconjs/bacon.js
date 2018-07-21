@@ -5,16 +5,15 @@ import never from "./never";
 import { Event, endEvent, toEvent } from "./event";
 import { more, noMore } from "./reply";
 import UpdateBarrier from "./updatebarrier";
-import Bacon from "./core";
 import { EventSink } from "./types";
 
 export default function fromArray<T>(values: (T | Event<T>)[]) {
   assertArray(values);
   if (!values.length) {
-    return never().withDesc(new Desc(Bacon, "fromArray", values));
+    return never().withDesc(new Desc("Bacon", "fromArray", values));
   } else {
     var i = 0;
-    var stream = new EventStream(new Desc(Bacon, "fromArray", [values]), function(sink: EventSink<T>) {
+    var stream = new EventStream(new Desc("Bacon", "fromArray", [values]), function(sink: EventSink<T>) {
       var unsubd = false;
       var reply = more;
       var pushing = false;
@@ -52,6 +51,4 @@ export default function fromArray<T>(values: (T | Event<T>)[]) {
     });
     return stream;
   }
-};
-
-Bacon.fromArray = fromArray
+}

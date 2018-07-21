@@ -1,7 +1,6 @@
 import { Desc } from "./describe";
 import { extractRawPatterns, when } from "./when";
 import "./scan";
-import Bacon from "./core";
 import Observable, { Property } from "./observable";
 
 export type UpdatePattern1<I1,O> = [Observable<I1>, (O, I1) => O]
@@ -28,10 +27,8 @@ export default function update<Out>(initial, ...patterns: UpdatePattern<Out>[]):
 
   return when(...rawPatterns).scan(initial, (function (x, f: Function) {
     return f(x)
-  })).withDesc(new Desc(Bacon, "update", [initial, ...patterns]))
+  })).withDesc(new Desc("Bacon", "update", [initial, ...patterns]))
 }
-
-Bacon.update = update;
 
 function lateBindFirst(f) {
   return function(...args) {

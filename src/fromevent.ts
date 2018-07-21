@@ -1,7 +1,6 @@
 import Exception from './exception';
 import { Desc } from './describe';
 import fromBinder from './frombinder';
-import Bacon from './core';
 import _ from './_';
 import { EventStream } from "./observable";
 
@@ -49,7 +48,7 @@ var findHandlerMethods = function(target): [Function, Function] {
 
 export default function fromEventTarget<V>(target, eventSource, eventTransformer): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
-  var desc = new Desc(Bacon, "fromEvent", [target, eventSource]);
+  var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
   return fromBinder<V>(function (handler) {
     if (_.isFunction(eventSource)) {
       eventSource(sub.bind(target), handler);
@@ -64,5 +63,3 @@ export default function fromEventTarget<V>(target, eventSource, eventTransformer
     }
   }, eventTransformer).withDesc(desc);
 }
-
-Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;

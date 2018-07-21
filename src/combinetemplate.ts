@@ -2,7 +2,6 @@ import { combineAsArray } from "./combine";
 import { Desc } from "./describe";
 import { isArray, isObservable } from "./helpers";
 import _ from "./_";
-import Bacon from "./core";
 import Observable, { Property } from "./observable";
 import constant from "./constant";
 
@@ -82,7 +81,5 @@ export default function combineTemplate(template): Property<any> {
     ? (compileTemplate(template), combineAsArray(streams).map(combinator))
     : constant(template)
 
-  return resultProperty.withDesc(new Desc(Bacon, "combineTemplate", [template]));
+  return resultProperty.withDesc(new Desc("Bacon", "combineTemplate", [template]));
 }
-
-Bacon.combineTemplate = combineTemplate;

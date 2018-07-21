@@ -8,7 +8,6 @@ import { more, noMore, Reply } from "./reply";
 import _ from "./_";
 import { assert } from "./assert";
 import never from "./never";
-import Bacon from "./core";
 import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
 import Observable, { ObservableConstructor } from "./observable";
 import { Unsub } from "./types";
@@ -57,7 +56,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
 
   var needsBarrier: boolean = (_.any(sources, s => s.flatten)) && containsDuplicateDeps(_.map((s => s.obs), sources))
 
-  var desc = new Desc(Bacon, "when", Array.prototype.slice.call(patterns))
+  var desc = new Desc("Bacon", "when", Array.prototype.slice.call(patterns))
 
   var resultStream = ctor(desc, function(sink) {
     var triggers: Trigger[] = [];
@@ -269,5 +268,3 @@ function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservabl
 function cannotSync(source: AnySource) {
   return !source.sync || source.ended;
 }
-
-Bacon.when = when;

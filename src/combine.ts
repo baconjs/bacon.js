@@ -6,7 +6,6 @@ import { Desc } from "./describe";
 import { isObservable } from "./helpers";
 import { DefaultSource, Source } from "./source";
 import Observable from "./observable";
-import Bacon from "./core";
 import { Property } from "./observable";;
 
 export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[]) {
@@ -19,19 +18,17 @@ export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[
         : constant(streams[i]))
       sources.push(wrap(stream));
     }
-    return whenP([sources, (...xs) => xs]).withDesc(new Bacon.Desc(Bacon, "combineAsArray", streams));
+    return whenP([sources, (...xs) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
   } else {
     return constant([]);
   }
 }
 
-Bacon.combineAsArray = combineAsArray
-
 // TODO: untyped
-Bacon.combineWith = function() {
+export function combineWith() {
   var [streams, f] = argumentsToObservablesAndFunction(arguments);
-  var desc = new Desc(Bacon, "combineWith", [f, ...streams]);
-  return Bacon.combineAsArray(streams).map(function (values) {
+  var desc = new Desc("Bacon", "combineWith", [f, ...streams]);
+  return combineAsArray(streams).map(function (values) {
     return f(...values);
   }).withDesc(desc);
 };

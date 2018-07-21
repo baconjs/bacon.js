@@ -1,11 +1,8 @@
-import "./combine";
-import "./flatmap";
 import { Desc } from "./describe";
 import { endEvent, Error } from "./event";
 import { makeFunction } from "./functionconstruction";
 import fromBinder from "./frombinder";
 import { nop } from "./helpers";
-import Bacon from "./core";
 import { EventStream } from "./observable";
 
 export function fromCallback<V>(f, ...args): EventStream<V> {
@@ -17,7 +14,7 @@ export function fromCallback<V>(f, ...args): EventStream<V> {
     function(value) {
       return [value, endEvent()];
     }
-  ).withDesc(new Desc(Bacon, "fromCallback", [f, ...args]))
+  ).withDesc(new Desc("Bacon", "fromCallback", [f, ...args]))
 }
 
 export function fromNodeCallback<V>(f, ...args): EventStream<V> {
@@ -32,8 +29,5 @@ export function fromNodeCallback<V>(f, ...args): EventStream<V> {
       }
       return [value, endEvent()];
     }
-  ).withDesc(new Desc(Bacon, "fromNodeCallback", [f, ...args]))
+  ).withDesc(new Desc("Bacon", "fromNodeCallback", [f, ...args]))
 }
-
-Bacon.fromCallback = fromCallback
-Bacon.fromNodeCallback = fromNodeCallback

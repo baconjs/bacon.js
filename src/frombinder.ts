@@ -1,10 +1,10 @@
 import _ from './_';
 import { Event, isEvent, toEvent } from './event';
 import { isArray } from './helpers';
-import Bacon from './core';
 import { Desc } from "./describe";
 import { EventStream } from "./observable";
 import { EventSink, Sink, Unsub } from "./types";
+import { more, noMore } from "./reply";
 
 export type FlexibleSink<V> = Sink<EventLike<V>>
 
@@ -19,7 +19,7 @@ export interface EventTransformer<V> {
 }
 
 export default function fromBinder<V>(binder: Binder<V>, eventTransformer: EventTransformer<V> = _.id): EventStream<V> {
-  var desc = new Desc(Bacon, "fromBinder", [binder, eventTransformer]);
+  var desc = new Desc("Bacon", "fromBinder", [binder, eventTransformer]);
   return new EventStream(desc, function(sink: EventSink<V>) {
     var unbound = false;
     var shouldUnbind = false;
@@ -38,11 +38,11 @@ export default function fromBinder<V>(binder: Binder<V>, eventTransformer: Event
       let valueArray: (V | Event<V>)[] = isArray(value_) && isEvent(_.last(value_))
         ? <any>value_
         : <any>[value_]
-      var reply = Bacon.more;
+      var reply = more;
       for (var i = 0; i < valueArray.length; i++) {
         let event = toEvent(valueArray[i])
         reply = sink(event)
-        if (reply === Bacon.noMore || event.isEnd) {
+        if (reply === noMore || event.isEnd) {
           // defer if binder calls handler in sync before returning unbinder
           unbind()
           return reply
@@ -56,5 +56,3 @@ export default function fromBinder<V>(binder: Binder<V>, eventTransformer: Event
     return unbind;
   })
 }
-
-Bacon.fromBinder = fromBinder;

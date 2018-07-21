@@ -1,8 +1,8 @@
 import { EventStream } from "./observable";
 import { Desc } from "./describe";
-import Bacon from "./core";
 import { symbol } from "./symbol";
 import { EventSink } from "./types";
+import { End, Error, Next } from "./event";
 
 export default function fromESObservable<V>(_observable): EventStream<V> {
   var observable;
@@ -12,16 +12,16 @@ export default function fromESObservable<V>(_observable): EventStream<V> {
     observable = _observable;
   }
 
-  var desc = new Desc(Bacon, "fromESObservable", [observable]);
+  var desc = new Desc("Bacon", "fromESObservable", [observable]);
   return new EventStream(desc, function(sink: EventSink<V>) {
     var cancel = observable.subscribe({
       error: function(x) {
-        sink(new Bacon.Error(x));
-        sink(new Bacon.End());
+        sink(new Error(x));
+        sink(new End());
       },
-      next: function(value) { sink(new Bacon.Next(value)); },
+      next: function(value) { sink(new Next(value)); },
       complete: function() {
-        sink(new Bacon.End());
+        sink(new End());
       }
     });
 
@@ -33,5 +33,3 @@ export default function fromESObservable<V>(_observable): EventStream<V> {
     }
   });
 };
-
-Bacon.fromESObservable = fromESObservable

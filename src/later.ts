@@ -1,6 +1,5 @@
 import { Desc } from "./describe";
 import { endEvent } from "./event";
-import Bacon from "./core";
 import fromBinder from "./frombinder";
 import "./scheduler"
 import Scheduler from "./scheduler";
@@ -16,7 +15,5 @@ export default function later<V>(delay: number, value: V): EventStream<V> {
     return function () {
       return Scheduler.scheduler.clearTimeout(id)
     }
-  }).withDesc(new Desc(Bacon, "later", [delay, value]))
+  }).withDesc(new Desc("Bacon", "later", [delay, value]))
 }
-
-Bacon.later = later

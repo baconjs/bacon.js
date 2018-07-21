@@ -1,16 +1,14 @@
 import Observable, { EventStream, Property } from "./observable";
 import { Desc } from "./describe";
-import Bacon from "./core";
 import { withLatestFrom } from "./withlatestfrom"
-import { flip } from "./_"
-
-  ;
+import _, { flip } from "./_"
+import { interval } from "./interval";
 
 const makeCombinator = (combinator) => {
   if ((typeof combinator !== "undefined" && combinator !== null)) {
     return combinator;
   } else {
-    return Bacon._.id
+    return _.id
   }
 }
 
@@ -24,10 +22,10 @@ export function sampledByE<V, V2, R>(samplee: EventStream<V>, sampler: Observabl
   return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
 }
 
-export function sampleP<V>(samplee: Property<V>, interval: number): EventStream<V> {
+export function sampleP<V>(samplee: Property<V>, samplingInterval: number): EventStream<V> {
   return <any>sampledByP(
     samplee,
-    Bacon.interval(interval, {}),
+    interval(samplingInterval, {}),
     (a, b) => a
-  ).withDesc(new Desc(samplee, "sample", [interval]));
+  ).withDesc(new Desc(samplee, "sample", [samplingInterval]));
 }

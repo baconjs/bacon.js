@@ -1,9 +1,8 @@
-import Bacon from "./core";
 import { Desc } from "./describe";
 import fromBinder from "./frombinder";
 import _ from "./_";
 
-const B$ = {
+export const B$ = {
   asEventStream(eventName, selector, eventTransformer) {
     if (_.isFunction(selector)) {
       eventTransformer = selector;
@@ -19,5 +18,3 @@ const B$ = {
     $.fn.asEventStream = B$.asEventStream;
   }
 }
-
-Bacon.$ = B$

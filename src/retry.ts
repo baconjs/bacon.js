@@ -5,12 +5,13 @@ import "./flatmap";
 import Exception from "./exception";
 import _ from "./_";
 import { Desc } from "./describe";
-import Bacon from "./core";
 import Observable from "./observable";
 import { EventStream } from "./observable";
 import { Error, Event, hasValue, isError } from "./event";
 import { EventSink } from "./types";
 import silence from "./silence";
+import repeat from "./repeat";
+import once from "./once";
 
 interface RetryContext {
   error: any
@@ -40,7 +41,7 @@ export default function retry<V>(options: RetryOptions<V>): EventStream<V> {
   var finished = false;
   var errorEvent: Error<V> | null = null;
 
-  return Bacon.repeat(function(count: number) {
+  return repeat<V>(function(count: number) {
     function valueStream(): Observable<V> {
       return source(count).endOnError().transform(function (event: Event<V>, sink: EventSink<V>) {
         if (isError(event)) {
@@ -68,11 +69,9 @@ export default function retry<V>(options: RetryOptions<V>): EventStream<V> {
       };
       var pause: EventStream<V> = silence(delay(context));
       retriesDone++
-      return pause.concat(Bacon.once().flatMap(valueStream));
+      return pause.concat(once(<any>null).flatMap(valueStream));
     } else {
       return valueStream();
     }
-  }).withDesc(new Desc(Bacon, "retry", [options]));
-};
-
-Bacon.retry = retry
+  }).withDesc(new Desc("Bacon", "retry", [options]));
+}

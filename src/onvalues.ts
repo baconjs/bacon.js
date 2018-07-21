@@ -1,4 +1,3 @@
-import Bacon from "./core"
 import { combineAsArray } from "./combine"
 
 export function onValues<V>(...args) {
@@ -6,5 +5,3 @@ export function onValues<V>(...args) {
     args.slice(0, args.length - 1)
   ).onValues(args[arguments.length - 1])
 }
-
-Bacon.onValues = onValues

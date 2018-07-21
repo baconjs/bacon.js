@@ -599,30 +599,6 @@
         };
         return CompositeUnsubscribe;
     }();
-    var Bacon = {
-        toString: function () {
-            return 'Bacon';
-        },
-        _: _,
-        Event: Event,
-        Next: Next,
-        Initial: Initial,
-        Error: Error$1,
-        End: End,
-        noMore: noMore,
-        more: more,
-        Desc: Desc,
-        spy: spy,
-        setScheduler: function (newScheduler) {
-            return Scheduler.scheduler = newScheduler;
-        },
-        getScheduler: function () {
-            return Scheduler.scheduler;
-        },
-        CompositeUnsubscribe: CompositeUnsubscribe,
-        version: '<version>'
-    };
-    Bacon.Bacon = Bacon;
     var rootEvent = undefined;
     var waiterObs = [];
     var waiters = {};
@@ -1095,7 +1071,7 @@
         return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
     }
     function once(value) {
-        var s = new EventStream(new Desc(Bacon, 'once', [value]), function (sink) {
+        var s = new EventStream(new Desc('Bacon', 'once', [value]), function (sink) {
             UpdateBarrier.soonButNotYet(s, function () {
                 sink(toEvent(value));
                 sink(endEvent());
@@ -1104,7 +1080,6 @@
         });
         return s;
     }
-    Bacon.once = once;
     function flatMap_(f_, src, params) {
         if (params === void 0) {
             params = {};
@@ -1336,12 +1311,11 @@
         }
     }
     function never() {
-        return new EventStream(describe(Bacon, 'never'), function (sink) {
+        return new EventStream(describe('Bacon', 'never'), function (sink) {
             sink(endEvent());
             return nop;
         });
     }
-    Bacon.never = never;
     function when() {
         var patterns = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -1369,7 +1343,7 @@
         }) && containsDuplicateDeps(_.map(function (s) {
             return s.obs;
         }, sources));
-        var desc = new Desc(Bacon, 'when', Array.prototype.slice.call(patterns));
+        var desc = new Desc('Bacon', 'when', Array.prototype.slice.call(patterns));
         var resultStream = ctor(desc, function (sink) {
             var triggers = [];
             var ends = false;
@@ -1583,7 +1557,6 @@
     function cannotSync(source) {
         return !source.sync || source.ended;
     }
-    Bacon.when = when;
     function withLatestFromE(sampler, samplee, f) {
         var result = when([
             new DefaultSource(samplee.toProperty(), false),
@@ -1630,13 +1603,12 @@
         };
     }
     function constant(value) {
-        return new Property(new Desc(Bacon, 'constant', [value]), function (sink) {
+        return new Property(new Desc('Bacon', 'constant', [value]), function (sink) {
             sink(initialEvent(value));
             sink(endEvent());
             return nop;
         });
     }
-    Bacon.constant = constant;
     function argumentsToObservables(args) {
         args = Array.prototype.slice.call(args);
         return _.flatMap(singleToObservables, args);
@@ -1686,9 +1658,8 @@
                 }
                 return xs;
             }
-        ]).withDesc(new Desc(Bacon, 'groupSimultaneous', streams));
+        ]).withDesc(new Desc('Bacon', 'groupSimultaneous', streams));
     }
-    Bacon.groupSimultaneous = groupSimultaneous;
     function awaiting(src, other) {
         return groupSimultaneous_([
             src,
@@ -1718,19 +1689,18 @@
                     }
                     return xs;
                 }
-            ]).withDesc(new Bacon.Desc(Bacon, 'combineAsArray', streams));
+            ]).withDesc(new Desc('Bacon', 'combineAsArray', streams));
         } else {
             return constant([]);
         }
     }
-    Bacon.combineAsArray = combineAsArray;
-    Bacon.combineWith = function () {
+    function combineWith() {
         var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
-        var desc = new Desc(Bacon, 'combineWith', [f].concat(streams));
-        return Bacon.combineAsArray(streams).map(function (values) {
+        var desc = new Desc('Bacon', 'combineWith', [f].concat(streams));
+        return combineAsArray(streams).map(function (values) {
             return f.apply(void 0, values);
         }).withDesc(desc);
-    };
+    }
     function combine(left, right, f) {
         return whenP([
             [
@@ -1764,11 +1734,76 @@
             limit: 1
         });
     }
+    function fromBinder(binder, eventTransformer) {
+        if (eventTransformer === void 0) {
+            eventTransformer = _.id;
+        }
+        var desc = new Desc('Bacon', 'fromBinder', [
+            binder,
+            eventTransformer
+        ]);
+        return new EventStream(desc, function (sink) {
+            var unbound = false;
+            var shouldUnbind = false;
+            var unbind = function () {
+                if (!unbound) {
+                    if (typeof unbinder !== 'undefined' && unbinder !== null) {
+                        unbinder();
+                        return unbound = true;
+                    } else {
+                        return shouldUnbind = true;
+                    }
+                }
+            };
+            var unbinder = binder(function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var value_ = eventTransformer.apply(void 0, args);
+                var valueArray = isArray(value_) && isEvent(_.last(value_)) ? value_ : [value_];
+                var reply = more;
+                for (var i = 0; i < valueArray.length; i++) {
+                    var event = toEvent(valueArray[i]);
+                    reply = sink(event);
+                    if (reply === noMore || event.isEnd) {
+                        unbind();
+                        return reply;
+                    }
+                }
+                return reply;
+            });
+            if (shouldUnbind) {
+                unbind();
+            }
+            return unbind;
+        });
+    }
+    function fromPoll(delay, poll) {
+        var desc = new Desc('Bacon', 'fromPoll', [
+            delay,
+            poll
+        ]);
+        return fromBinder(function (handler) {
+            var id = Scheduler.scheduler.setInterval(handler, delay);
+            return function () {
+                return Scheduler.scheduler.clearInterval(id);
+            };
+        }, poll).withDesc(desc);
+    }
+    function interval(delay, value) {
+        return fromPoll(delay, function () {
+            return nextEvent(value);
+        }).withDesc(new Desc('Bacon', 'interval', [
+            delay,
+            value
+        ]));
+    }
     var makeCombinator = function (combinator) {
         if (typeof combinator !== 'undefined' && combinator !== null) {
             return combinator;
         } else {
-            return Bacon._.id;
+            return _.id;
         }
     };
     function sampledByP(samplee, sampler, f) {
@@ -1785,10 +1820,10 @@
             f
         ]));
     }
-    function sampleP(samplee, interval) {
-        return sampledByP(samplee, Bacon.interval(interval, {}), function (a, b) {
+    function sampleP(samplee, samplingInterval) {
+        return sampledByP(samplee, interval(samplingInterval, {}), function (a, b) {
             return a;
-        }).withDesc(new Desc(samplee, 'sample', [interval]));
+        }).withDesc(new Desc(samplee, 'sample', [samplingInterval]));
     }
     function transformP(src, transformer, desc) {
         return new Property(new Desc(src, 'transform', [transformer]), function (sink) {
@@ -1904,12 +1939,11 @@
         if (streams.length) {
             return _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
                 return a.concat(b);
-            }).withDesc(new Desc(Bacon, 'concatAll', streams));
+            }).withDesc(new Desc('Bacon', 'concatAll', streams));
         } else {
             return never();
         }
     }
-    Bacon.concatAll = concatAll;
     function addPropertyInitValueToStream(property, stream) {
         var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
             var value;
@@ -2134,7 +2168,7 @@
             return _super.prototype.push.call(this, event);
         };
         PropertyDispatcher.prototype.maybeSubSource = function (sink, reply) {
-            if (reply === Bacon.noMore) {
+            if (reply === noMore) {
                 return nop;
             } else if (this.propertyEnded) {
                 sink(endEvent());
@@ -2145,7 +2179,7 @@
         };
         PropertyDispatcher.prototype.subscribe = function (sink) {
             var _this = this;
-            var reply = Bacon.more;
+            var reply = more;
             if (this.current.isDefined && (this.hasSubscribers() || this.propertyEnded)) {
                 var dispatchingId = UpdateBarrier.currentEventId();
                 var valId = this.currentValueRootId;
@@ -2316,7 +2350,7 @@
         }
         streams = argumentsToObservables(streams);
         if (streams.length) {
-            return new EventStream(new Desc(Bacon, 'mergeAll', streams), function (sink) {
+            return new EventStream(new Desc('Bacon', 'mergeAll', streams), function (sink) {
                 var ends = 0;
                 var smartSink = function (obs) {
                     return function (unsubBoth) {
@@ -2345,53 +2379,6 @@
             return never();
         }
     }
-    Bacon.mergeAll = mergeAll;
-    function fromBinder(binder, eventTransformer) {
-        if (eventTransformer === void 0) {
-            eventTransformer = _.id;
-        }
-        var desc = new Desc(Bacon, 'fromBinder', [
-            binder,
-            eventTransformer
-        ]);
-        return new EventStream(desc, function (sink) {
-            var unbound = false;
-            var shouldUnbind = false;
-            var unbind = function () {
-                if (!unbound) {
-                    if (typeof unbinder !== 'undefined' && unbinder !== null) {
-                        unbinder();
-                        return unbound = true;
-                    } else {
-                        return shouldUnbind = true;
-                    }
-                }
-            };
-            var unbinder = binder(function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                var value_ = eventTransformer.apply(void 0, args);
-                var valueArray = isArray(value_) && isEvent(_.last(value_)) ? value_ : [value_];
-                var reply = Bacon.more;
-                for (var i = 0; i < valueArray.length; i++) {
-                    var event = toEvent(valueArray[i]);
-                    reply = sink(event);
-                    if (reply === Bacon.noMore || event.isEnd) {
-                        unbind();
-                        return reply;
-                    }
-                }
-                return reply;
-            });
-            if (shouldUnbind) {
-                unbind();
-            }
-            return unbind;
-        });
-    }
-    Bacon.fromBinder = fromBinder;
     function later(delay, value) {
         return fromBinder(function (sink) {
             var sender = function () {
@@ -2404,12 +2391,11 @@
             return function () {
                 return Scheduler.scheduler.clearTimeout(id);
             };
-        }).withDesc(new Desc(Bacon, 'later', [
+        }).withDesc(new Desc('Bacon', 'later', [
             delay,
             value
         ]));
     }
-    Bacon.later = later;
     function delay(src, delay) {
         return src.delayChanges(new Desc(src, 'delay', [delay]), function (changes) {
             return changes.flatMap(function (value) {
@@ -2606,15 +2592,17 @@
         var streams = _.map(function (s) {
             return s.toEventStream();
         }, argumentsToObservables(args));
-        return Bacon.when(streams, function () {
-            var xs = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                xs[_i] = arguments[_i];
+        return when([
+            streams,
+            function () {
+                var xs = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    xs[_i] = arguments[_i];
+                }
+                return xs;
             }
-            return xs;
-        }).withDesc(new Desc(Bacon, 'zipAsArray', args));
+        ]).withDesc(new Desc('Bacon', 'zipAsArray', args));
     }
-    Bacon.zipAsArray = zipAsArray;
     function zipWith() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -2624,11 +2612,13 @@
         streams = _.map(function (s) {
             return s.toEventStream();
         }, streams);
-        return Bacon.when(streams, f).withDesc(new Desc(Bacon, 'zipWith', [f].concat(streams)));
+        return when([
+            streams,
+            f
+        ]).withDesc(new Desc('Bacon', 'zipWith', [f].concat(streams)));
     }
-    Bacon.zipWith = zipWith;
     function zip(left, right, f) {
-        return Bacon.zipWith([
+        return zipWith([
             left,
             right
         ], f || Array).withDesc(new Desc(left, 'zip', [right]));
@@ -2704,9 +2694,8 @@
         var funcs = [];
         var streams = [];
         var resultProperty = containsObservables(template) ? (compileTemplate(template), combineAsArray(streams).map(combinator)) : constant(template);
-        return resultProperty.withDesc(new Desc(Bacon, 'combineTemplate', [template]));
+        return resultProperty.withDesc(new Desc('Bacon', 'combineTemplate', [template]));
     }
-    Bacon.combineTemplate = combineTemplate;
     function decode(src, cases) {
         return src.combine(combineTemplate(cases), function (key, values) {
             return values[key];
@@ -3175,7 +3164,7 @@
     var Bus = function (_super) {
         __extends(Bus, _super);
         function Bus() {
-            var _this = _super.call(this, new Desc(Bacon, 'Bus', []), function (sink) {
+            var _this = _super.call(this, new Desc('Bacon', 'Bus', []), function (sink) {
                 return _this.subscribeAll(sink);
             }) || this;
             _this.pushing = false;
@@ -3187,7 +3176,7 @@
             _this.guardedSink = _.bind(_this.guardedSink, _this);
             _this.subscriptions = [];
             _this.ended = false;
-            EventStream.call(_this, new Desc(Bacon, 'Bus', []), _this.subscribeAll);
+            EventStream.call(_this, new Desc('Bacon', 'Bus', []), _this.subscribeAll);
             return _this;
         }
         Bus.prototype.unsubAll = function () {
@@ -3217,7 +3206,7 @@
             return function (event) {
                 if (event.isEnd) {
                     _this.unsubscribeInput(input);
-                    return Bacon.noMore;
+                    return noMore;
                 } else if (_this.sink) {
                     return _this.sink(event);
                 }
@@ -3294,7 +3283,95 @@
         };
         return Bus;
     }(EventStream);
-    Bacon.Bus = Bus;
+    function silence(duration) {
+        return later(duration, '').filter(false).withDesc(new Desc('Bacon', 'silence', [duration]));
+    }
+    function repeat(generator) {
+        var index = 0;
+        return fromBinder(function (sink) {
+            var flag = false;
+            var reply = more;
+            var unsub = function () {
+            };
+            function handleEvent(event) {
+                if (event.isEnd) {
+                    if (!flag) {
+                        return flag = true;
+                    } else {
+                        return subscribeNext();
+                    }
+                } else {
+                    return reply = sink(event);
+                }
+            }
+            function subscribeNext() {
+                var next;
+                flag = true;
+                while (flag && reply !== noMore) {
+                    next = generator(index++);
+                    flag = false;
+                    if (next) {
+                        unsub = next.subscribeInternal(handleEvent);
+                    } else {
+                        sink(endEvent());
+                    }
+                }
+                return flag = true;
+            }
+            subscribeNext();
+            return function () {
+                return unsub();
+            };
+        }).withDesc(new Desc('Bacon', 'repeat', [generator]));
+    }
+    function retry(options) {
+        if (!_.isFunction(options.source)) {
+            throw new Error('\'source\' option has to be a function');
+        }
+        var source = options.source;
+        var retries = options.retries || 0;
+        var retriesDone = 0;
+        var delay = options.delay || function () {
+            return 0;
+        };
+        var isRetryable = options.isRetryable || function () {
+            return true;
+        };
+        var finished = false;
+        var errorEvent = null;
+        return repeat(function (count) {
+            function valueStream() {
+                return source(count).endOnError().transform(function (event, sink) {
+                    if (isError(event)) {
+                        errorEvent = event;
+                        if (!(isRetryable(errorEvent.error) && (retries === 0 || retriesDone < retries))) {
+                            finished = true;
+                            return sink(event);
+                        }
+                    } else {
+                        if (hasValue(event)) {
+                            errorEvent = null;
+                            finished = true;
+                        }
+                        return sink(event);
+                    }
+                });
+            }
+            if (finished) {
+                return null;
+            } else if (errorEvent) {
+                var context = {
+                    error: errorEvent.error,
+                    retriesDone: retriesDone
+                };
+                var pause = silence(delay(context));
+                retriesDone++;
+                return pause.concat(once(null).flatMap(valueStream));
+            } else {
+                return valueStream();
+            }
+        }).withDesc(new Desc('Bacon', 'retry', [options]));
+    }
     function withMethodCallSupport(wrapped) {
         return function (f) {
             var args = [];
@@ -3356,7 +3433,7 @@
                 value,
                 endEvent()
             ];
-        }).withDesc(new Desc(Bacon, 'fromCallback', [f].concat(args)));
+        }).withDesc(new Desc('Bacon', 'fromCallback', [f].concat(args)));
     }
     function fromNodeCallback(f) {
         var args = [];
@@ -3377,63 +3454,14 @@
                 value,
                 endEvent()
             ];
-        }).withDesc(new Desc(Bacon, 'fromNodeCallback', [f].concat(args)));
+        }).withDesc(new Desc('Bacon', 'fromNodeCallback', [f].concat(args)));
     }
-    Bacon.fromCallback = fromCallback;
-    Bacon.fromNodeCallback = fromNodeCallback;
-    function symbol(key) {
-        if (typeof Symbol !== 'undefined' && Symbol[key]) {
-            return Symbol[key];
-        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
-            return Symbol[key] = Symbol['for'](key);
-        } else {
-            return '@@' + key;
-        }
-    }
-    function ESObservable(observable) {
-        this.observable = observable;
-    }
-    ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
-        var observer = typeof observerOrOnNext === 'function' ? {
-            next: observerOrOnNext,
-            error: onError,
-            complete: onComplete
-        } : observerOrOnNext;
-        var subscription = {
-            closed: false,
-            unsubscribe: function () {
-                subscription.closed = true;
-                cancel();
-            }
-        };
-        var cancel = this.observable.subscribe(function (event) {
-            if (event.isError) {
-                if (observer.error)
-                    observer.error(event.error);
-                subscription.unsubscribe();
-            } else if (event.isEnd) {
-                subscription.closed = true;
-                if (observer.complete)
-                    observer.complete();
-            } else if (observer.next) {
-                observer.next(event.value);
-            }
-        });
-        return subscription;
-    };
-    ESObservable.prototype[symbol('observable')] = function () {
-        return this;
-    };
-    Observable.prototype.toESObservable = function () {
-        return new ESObservable(this);
-    };
-    Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
     function fromArray(values) {
         if (!values.length) {
-            return never().withDesc(new Desc(Bacon, 'fromArray', values));
+            return never().withDesc(new Desc('Bacon', 'fromArray', values));
         } else {
             var i = 0;
-            var stream = new EventStream(new Desc(Bacon, 'fromArray', [values]), function (sink) {
+            var stream = new EventStream(new Desc('Bacon', 'fromArray', [values]), function (sink) {
                 var unsubd = false;
                 var reply = more;
                 var pushing = false;
@@ -3470,7 +3498,15 @@
             return stream;
         }
     }
-    Bacon.fromArray = fromArray;
+    function symbol(key) {
+        if (typeof Symbol !== 'undefined' && Symbol[key]) {
+            return Symbol[key];
+        } else if (typeof Symbol !== 'undefined' && typeof Symbol['for'] === 'function') {
+            return Symbol[key] = Symbol['for'](key);
+        } else {
+            return '@@' + key;
+        }
+    }
     function fromESObservable(_observable) {
         var observable;
         if (_observable[symbol('observable')]) {
@@ -3478,18 +3514,18 @@
         } else {
             observable = _observable;
         }
-        var desc = new Desc(Bacon, 'fromESObservable', [observable]);
+        var desc = new Desc('Bacon', 'fromESObservable', [observable]);
         return new EventStream(desc, function (sink) {
             var cancel = observable.subscribe({
                 error: function (x) {
-                    sink(new Bacon.Error(x));
-                    sink(new Bacon.End());
+                    sink(new Error$1(x));
+                    sink(new End());
                 },
                 next: function (value) {
-                    sink(new Bacon.Next(value));
+                    sink(new Next(value));
                 },
                 complete: function () {
-                    sink(new Bacon.End());
+                    sink(new End());
                 }
             });
             if (cancel.unsubscribe) {
@@ -3501,7 +3537,6 @@
             }
         });
     }
-    Bacon.fromESObservable = fromESObservable;
     var eventMethods = [
         [
             'addEventListener',
@@ -3547,7 +3582,7 @@
     };
     function fromEventTarget(target, eventSource, eventTransformer) {
         var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
-        var desc = new Desc(Bacon, 'fromEvent', [
+        var desc = new Desc('Bacon', 'fromEvent', [
             target,
             eventSource
         ]);
@@ -3565,20 +3600,6 @@
             }
         }, eventTransformer).withDesc(desc);
     }
-    Bacon.fromEvent = Bacon.fromEventTarget = fromEventTarget;
-    function fromPoll(delay, poll) {
-        var desc = new Desc(Bacon, 'fromPoll', [
-            delay,
-            poll
-        ]);
-        return fromBinder(function (handler) {
-            var id = Scheduler.scheduler.setInterval(handler, delay);
-            return function () {
-                return Scheduler.scheduler.clearInterval(id);
-            };
-        }, poll).withDesc(desc);
-    }
-    Bacon.fromPoll = fromPoll;
     function valueAndEnd(value) {
         return [
             value,
@@ -3606,18 +3627,8 @@
                 return function () {
                 };
             }
-        }, eventTransformer).withDesc(new Desc(Bacon, 'fromPromise', [promise]));
+        }, eventTransformer).withDesc(new Desc('Bacon', 'fromPromise', [promise]));
     }
-    Bacon.fromPromise = fromPromise;
-    function interval(delay, value) {
-        return fromPoll(delay, function () {
-            return nextEvent(value);
-        }).withDesc(new Desc(Bacon, 'interval', [
-            delay,
-            value
-        ]));
-    }
-    Bacon.interval = interval;
     var B$ = {
         asEventStream: function (eventName, selector, eventTransformer) {
             var _this = this;
@@ -3636,7 +3647,6 @@
             $.fn.asEventStream = B$.asEventStream;
         }
     };
-    Bacon.$ = B$;
     function onValues() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -3644,109 +3654,15 @@
         }
         return combineAsArray(args.slice(0, args.length - 1)).onValues(args[arguments.length - 1]);
     }
-    Bacon.onValues = onValues;
     function repeatedly(delay, values) {
         var index = 0;
         return fromPoll(delay, function () {
             return values[index++ % values.length];
-        }).withDesc(new Desc(Bacon, 'repeatedly', [
+        }).withDesc(new Desc('Bacon', 'repeatedly', [
             delay,
             values
         ]));
     }
-    Bacon.repeatedly = repeatedly;
-    function repeat(generator) {
-        var index = 0;
-        return fromBinder(function (sink) {
-            var flag = false;
-            var reply = more;
-            var unsub = function () {
-            };
-            function handleEvent(event) {
-                if (event.isEnd) {
-                    if (!flag) {
-                        return flag = true;
-                    } else {
-                        return subscribeNext();
-                    }
-                } else {
-                    return reply = sink(event);
-                }
-            }
-            function subscribeNext() {
-                var next;
-                flag = true;
-                while (flag && reply !== noMore) {
-                    next = generator(index++);
-                    flag = false;
-                    if (next) {
-                        unsub = next.subscribeInternal(handleEvent);
-                    } else {
-                        sink(endEvent());
-                    }
-                }
-                return flag = true;
-            }
-            subscribeNext();
-            return function () {
-                return unsub();
-            };
-        });
-    }
-    Bacon.repeat = repeat;
-    function silence(duration) {
-        return later(duration, '').filter(false);
-    }
-    Bacon.silence = silence;
-    function retry(options) {
-        if (!_.isFunction(options.source)) {
-            throw new Error('\'source\' option has to be a function');
-        }
-        var source = options.source;
-        var retries = options.retries || 0;
-        var retriesDone = 0;
-        var delay = options.delay || function () {
-            return 0;
-        };
-        var isRetryable = options.isRetryable || function () {
-            return true;
-        };
-        var finished = false;
-        var errorEvent = null;
-        return Bacon.repeat(function (count) {
-            function valueStream() {
-                return source(count).endOnError().transform(function (event, sink) {
-                    if (isError(event)) {
-                        errorEvent = event;
-                        if (!(isRetryable(errorEvent.error) && (retries === 0 || retriesDone < retries))) {
-                            finished = true;
-                            return sink(event);
-                        }
-                    } else {
-                        if (hasValue(event)) {
-                            errorEvent = null;
-                            finished = true;
-                        }
-                        return sink(event);
-                    }
-                });
-            }
-            if (finished) {
-                return null;
-            } else if (errorEvent) {
-                var context = {
-                    error: errorEvent.error,
-                    retriesDone: retriesDone
-                };
-                var pause = silence(delay(context));
-                retriesDone++;
-                return pause.concat(Bacon.once().flatMap(valueStream));
-            } else {
-                return valueStream();
-            }
-        }).withDesc(new Desc(Bacon, 'retry', [options]));
-    }
-    Bacon.retry = retry;
     function sequentially(delay, values) {
         var index = 0;
         return fromPoll(delay, function () {
@@ -3761,12 +3677,11 @@
             } else {
                 return endEvent();
             }
-        }).withDesc(new Desc(Bacon, 'sequentially', [
+        }).withDesc(new Desc('Bacon', 'sequentially', [
             delay,
             values
         ]));
     }
-    Bacon.sequentially = sequentially;
     function tryF(f) {
         return function (value) {
             try {
@@ -3776,7 +3691,6 @@
             }
         };
     }
-    Bacon['try'] = tryF;
     function update(initial) {
         var patterns = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -3789,9 +3703,8 @@
         }
         return when.apply(void 0, rawPatterns).scan(initial, function (x, f) {
             return f(x);
-        }).withDesc(new Desc(Bacon, 'update', [initial].concat(patterns)));
+        }).withDesc(new Desc('Bacon', 'update', [initial].concat(patterns)));
     }
-    Bacon.update = update;
     function lateBindFirst(f) {
         return function () {
             var args = [];
@@ -3803,9 +3716,103 @@
             };
         };
     }
-    Bacon.EventStream = EventStream;
-    Bacon.UpdateBarrier = UpdateBarrier;
-    Bacon.Observable = Observable;
-    Bacon.Property = Property;
+    function ESObservable(observable) {
+        this.observable = observable;
+    }
+    ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
+        var observer = typeof observerOrOnNext === 'function' ? {
+            next: observerOrOnNext,
+            error: onError,
+            complete: onComplete
+        } : observerOrOnNext;
+        var subscription = {
+            closed: false,
+            unsubscribe: function () {
+                subscription.closed = true;
+                cancel();
+            }
+        };
+        var cancel = this.observable.subscribe(function (event) {
+            if (event.isError) {
+                if (observer.error)
+                    observer.error(event.error);
+                subscription.unsubscribe();
+            } else if (event.isEnd) {
+                subscription.closed = true;
+                if (observer.complete)
+                    observer.complete();
+            } else if (observer.next) {
+                observer.next(event.value);
+            }
+        });
+        return subscription;
+    };
+    ESObservable.prototype[symbol('observable')] = function () {
+        return this;
+    };
+    Observable.prototype.toESObservable = function () {
+        return new ESObservable(this);
+    };
+    Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
+    var Bacon = {
+        toString: function () {
+            return 'Bacon';
+        },
+        version: '<version>',
+        _: _,
+        $: B$,
+        Bus: Bus,
+        CompositeUnsubscribe: CompositeUnsubscribe,
+        Desc: Desc,
+        End: End,
+        Error: Error$1,
+        Event: Event,
+        EventStream: EventStream,
+        Initial: Initial,
+        Next: Next,
+        Observable: Observable,
+        UpdateBarrier: UpdateBarrier,
+        combineAsArray: combineAsArray,
+        combineTemplate: combineTemplate,
+        combineWith: combineWith,
+        concatAll: concatAll,
+        constant: constant,
+        fromArray: fromArray,
+        fromBinder: fromBinder,
+        fromCallback: fromCallback,
+        fromESObservable: fromESObservable,
+        fromEvent: fromEventTarget,
+        fromEventTarget: fromEventTarget,
+        fromNodeCallback: fromNodeCallback,
+        fromPoll: fromPoll,
+        fromPromise: fromPromise,
+        getScheduler: function () {
+            return Scheduler.scheduler;
+        },
+        groupSimultaneous: groupSimultaneous,
+        interval: interval,
+        later: later,
+        mergeAll: mergeAll,
+        more: more,
+        never: never,
+        noMore: noMore,
+        onValues: onValues,
+        once: once,
+        repeat: repeat,
+        repeatedly: repeatedly,
+        retry: retry,
+        sequentially: sequentially,
+        setScheduler: function (newScheduler) {
+            return Scheduler.scheduler = newScheduler;
+        },
+        silence: silence,
+        spy: spy,
+        'try': tryF,
+        update: update,
+        when: when,
+        zipAsArray: zipAsArray,
+        zipWith: zipWith
+    };
+    Bacon.Bacon = Bacon;
     return Bacon;
 }));

@@ -1,9 +1,9 @@
 import { EventStream } from "./observable";
 import later from "./later";
-import Bacon from "./core"
+import { Desc } from "./describe";
 
 export default function silence<V>(duration: number): EventStream<V> {
-  return <any>later(duration, "").filter(false);
+  return <any>later(duration, "")
+    .filter(false)
+    .withDesc(new Desc("Bacon", "silence", [duration]));
 }
-
-Bacon.silence = silence

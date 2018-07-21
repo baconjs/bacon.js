@@ -6,14 +6,13 @@ import _ from "./_";
 import { more, noMore } from "./reply";
 import { endEvent, Event } from "./event";
 import { Desc } from "./describe";
-import Bacon from "./core";
 import Observable from "./observable";
 import { Unsub } from "./types";
 
 export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): EventStream<V> {
   streams = argumentsToObservables(streams);
   if (streams.length) {
-    return new EventStream(new Desc(Bacon, "mergeAll", streams), function(sink) {
+    return new EventStream(new Desc("Bacon", "mergeAll", streams), function(sink) {
       var ends = 0
       var smartSink = function(obs: Observable<V>) {
         return function(unsubBoth: Unsub) {
@@ -40,5 +39,3 @@ export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): Ev
     return never()
   }
 }
-
-Bacon.mergeAll = mergeAll;

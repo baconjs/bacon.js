@@ -1,6 +1,5 @@
 import fromPoll from "./frompoll";
 import { Desc } from "./describe";
-import Bacon from "./core";
 import { endEvent, Event, toEvent } from "./event";
 import { EventStream } from "./observable";
 import { EventLike } from "./frombinder";
@@ -16,7 +15,5 @@ export default function sequentially<V>(delay: number, values: (V | Event<V>)[])
     } else {
       return endEvent();
     }
-  }).withDesc(new Desc(Bacon, "sequentially", [delay, values]));
+  }).withDesc(new Desc("Bacon", "sequentially", [delay, values]));
 }
-
-Bacon.sequentially = sequentially;

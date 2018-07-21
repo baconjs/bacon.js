@@ -1,6 +1,5 @@
 import once from "./once";
 import { Error } from "./event";
-import Bacon from "./core";
 import { EventStream } from "./observable";
 
 export default function tryF<In, Out>(f: (In) => Out): (In) => EventStream<Out> {
@@ -12,5 +11,3 @@ export default function tryF<In, Out>(f: (In) => Out): (In) => EventStream<Out> 
     }
   };
 }
-
-Bacon.try = tryF;

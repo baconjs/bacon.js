@@ -1,7 +1,6 @@
 import fromBinder, { EventTransformer } from "./frombinder";
 import { Desc } from "./describe";
 import { endEvent, Error } from "./event";
-import Bacon from "./core";
 import { EventStream } from "./observable";
 
 function valueAndEnd(value) {
@@ -25,7 +24,5 @@ export default function fromPromise<V>(promise: Promise<V>, abort, eventTransfor
       return function () {
       };
     }
-  }, eventTransformer).withDesc(new Desc(Bacon, "fromPromise", [promise]));
+  }, eventTransformer).withDesc(new Desc("Bacon", "fromPromise", [promise]));
 }
-
-Bacon.fromPromise = fromPromise;

@@ -1,11 +1,11 @@
 import _ from "./_";
 import { EventStream } from "./observable";
 import Observable from "./observable"
-import Bacon from "./core";
 import { endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
 import { EventSink } from "./types"
 import { assertObservable } from "./assert";
+import { noMore } from "./reply";
 
 interface Subscription<V> {
   input: Observable<V>
@@ -19,13 +19,13 @@ export default class Bus<V> extends EventStream<V> {
   subscriptions: Subscription<V>[] = []
 
   constructor() {
-    super(new Desc(Bacon, "Bus", []), (sink: EventSink<V>) => this.subscribeAll(sink))
+    super(new Desc("Bacon", "Bus", []), (sink: EventSink<V>) => this.subscribeAll(sink))
     this.unsubAll = _.bind(this.unsubAll, this);
     this.subscribeAll = _.bind(this.subscribeAll, this);
     this.guardedSink = _.bind(this.guardedSink, this);
     this.subscriptions = [] // new array for each Bus instance
     this.ended = false;
-    EventStream.call(this, new Desc(Bacon, "Bus", []), this.subscribeAll);
+    EventStream.call(this, new Desc("Bacon", "Bus", []), this.subscribeAll);
   }
 
   unsubAll() {
@@ -54,7 +54,7 @@ export default class Bus<V> extends EventStream<V> {
     return (event) => {
       if (event.isEnd) {
         this.unsubscribeInput(input);
-        return Bacon.noMore;
+        return noMore;
       } else if (this.sink) {
         return this.sink(event);
       }
@@ -127,4 +127,3 @@ export default class Bus<V> extends EventStream<V> {
     if (typeof this.sink === "function") { return this.sink(new Error(error)); }
   }
 }
-Bacon.Bus = Bus;

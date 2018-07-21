@@ -4,9 +4,9 @@ import { nop } from "./helpers";
 import { none, Option, Some } from "./optional";
 import UpdateBarrier from "./updatebarrier";
 import { endEvent, Event, initialEvent, Value } from "./event";
-import Bacon from "./core";
 import _ from "./_"
 import { EventSink, Subscribe } from "./types"
+import { more, noMore } from "./reply";
 
 export default class PropertyDispatcher<V, O extends Observable<V>> extends Dispatcher<V, O> {
   current: Option<Value<V>> = none()
@@ -34,7 +34,7 @@ export default class PropertyDispatcher<V, O extends Observable<V>> extends Disp
   }
 
   maybeSubSource(sink: EventSink<V>, reply: any) {
-    if (reply === Bacon.noMore) {
+    if (reply === noMore) {
       return nop;
     } else if (this.propertyEnded) {
       sink(endEvent());
@@ -49,7 +49,7 @@ export default class PropertyDispatcher<V, O extends Observable<V>> extends Disp
     // won't add more than one subscription to the underlying observable.
     // without bouncing, the init value would be missing from all new subscribers
     // after the first one
-    var reply = Bacon.more;
+    var reply = more;
 
     if (this.current.isDefined && (this.hasSubscribers() || this.propertyEnded)) {
       // should bounce init value
