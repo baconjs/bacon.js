@@ -2589,97 +2589,26 @@ var Observable = /** @class */ (function () {
         this.desc = desc;
         this.initialDesc = desc;
     }
-    Observable.prototype.subscribe = function (sink) {
-        var _this = this;
-        if (sink === void 0) { sink = nop; }
-        return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
+    Observable.prototype.awaiting = function (other) {
+        return awaiting(this, other);
     };
-    Observable.prototype.onValue = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.hasValue) {
-                return f(event.value);
-            }
-        });
+    Observable.prototype.bufferingThrottle = function (minimumInterval) {
+        return bufferingThrottle(this, minimumInterval);
     };
-    Observable.prototype.forEach = function (f) {
-        if (f === void 0) { f = nop; }
-        // TODO: inefficient alias. Also, similar assign alias missing.
-        return this.onValue(f);
+    Observable.prototype.combine = function (right, f) {
+        return combine(this, right, f);
     };
-    Observable.prototype.onValues = function (f) {
-        return this.onValue(function (args) { return f.apply(void 0, args); });
+    Observable.prototype.debounce = function (minimumInterval) {
+        return debounce(this, minimumInterval);
     };
-    Observable.prototype.onError = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.isError) {
-                return f(event.error);
-            }
-        });
+    Observable.prototype.debounceImmediate = function (minimumInterval) {
+        return debounceImmediate(this, minimumInterval);
     };
-    Observable.prototype.onEnd = function (f) {
-        if (f === void 0) { f = nop; }
-        return this.subscribe(function (event) {
-            if (event.isEnd) {
-                return f();
-            }
-        });
+    Observable.prototype.delay = function (delayMs) {
+        return delay(this, delayMs);
     };
-    Observable.prototype.take = function (count) {
-        return take(count, this);
-    };
-    Observable.prototype.takeUntil = function (stopper) {
-        return takeUntil(this, stopper);
-    };
-    Observable.prototype.skipUntil = function (starter) {
-        return skipUntil(this, starter);
-    };
-    Observable.prototype.takeWhile = function (f) {
-        return takeWhile(this, f);
-    };
-    Observable.prototype.first = function () {
-        return take(1, this, new Desc(this, "first"));
-    };
-    Observable.prototype.last = function () {
-        return last(this);
-    };
-    Observable.prototype.endAsValue = function () {
-        return endAsValue(this);
-    };
-    Observable.prototype.filter = function (f) {
-        return filter(this, f);
-    };
-    Observable.prototype.errors = function () {
-        return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
-    };
-    Observable.prototype.skipErrors = function () {
-        return skipErrors(this);
-    };
-    Observable.prototype.mapEnd = function (f) {
-        return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
-    };
-    Observable.prototype.mapError = function (f) {
-        return this.transform(mapErrorT(f), new Desc(this, "mapError", [f]));
-    };
-    Observable.prototype.endOnError = function (predicate) {
-        if (predicate === void 0) { predicate = function (x) { return true; }; }
-        return endOnError(this, predicate);
-    };
-    Observable.prototype.log = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        log(args, this);
-        return this;
-    };
-    Observable.prototype.doLog = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        return this.transform(doLogT(args), new Desc(this, "doLog", args));
+    Observable.prototype.deps = function () {
+        return this.desc.deps();
     };
     Observable.prototype.doAction = function (f) {
         return this.transform(doActionT(f), new Desc(this, "doAction", [f]));
@@ -2690,50 +2619,120 @@ var Observable = /** @class */ (function () {
     Observable.prototype.doError = function (f) {
         return this.transform(doErrorT(f), new Desc(this, "doError", [f]));
     };
+    Observable.prototype.doLog = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        return this.transform(doLogT(args), new Desc(this, "doLog", args));
+    };
+    Observable.prototype.endAsValue = function () {
+        return endAsValue(this);
+    };
+    Observable.prototype.endOnError = function (predicate) {
+        if (predicate === void 0) { predicate = function (x) { return true; }; }
+        return endOnError(this, predicate);
+    };
+    Observable.prototype.errors = function () {
+        return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
+    };
+    Observable.prototype.filter = function (f) {
+        return filter(this, f);
+    };
+    Observable.prototype.first = function () {
+        return take(1, this, new Desc(this, "first"));
+    };
+    Observable.prototype.fold = function (seed, f) {
+        return fold(this, seed, f);
+    };
+    Observable.prototype.forEach = function (f) {
+        if (f === void 0) { f = nop; }
+        // TODO: inefficient alias. Also, similar assign alias missing.
+        return this.onValue(f);
+    };
+    Observable.prototype.inspect = function () { return this.toString(); };
+    Observable.prototype.internalDeps = function () {
+        return this.initialDesc.deps();
+    };
+    Observable.prototype.last = function () {
+        return last(this);
+    };
+    Observable.prototype.log = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        log(args, this);
+        return this;
+    };
+    Observable.prototype.mapEnd = function (f) {
+        return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
+    };
+    Observable.prototype.mapError = function (f) {
+        return this.transform(mapErrorT(f), new Desc(this, "mapError", [f]));
+    };
+    Observable.prototype.name = function (name) {
+        this._name = name;
+        return this;
+    };
+    Observable.prototype.onEnd = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.isEnd) {
+                return f();
+            }
+        });
+    };
+    Observable.prototype.onError = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.isError) {
+                return f(event.error);
+            }
+        });
+    };
+    Observable.prototype.onValue = function (f) {
+        if (f === void 0) { f = nop; }
+        return this.subscribe(function (event) {
+            if (event.hasValue) {
+                return f(event.value);
+            }
+        });
+    };
+    Observable.prototype.onValues = function (f) {
+        return this.onValue(function (args) { return f.apply(void 0, args); });
+    };
+    Observable.prototype.scan = function (seed, f) {
+        return scan(this, seed, f);
+    };
     Observable.prototype.skip = function (count) {
         return skip(this, count);
     };
     Observable.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
     };
-    Observable.prototype.scan = function (seed, f) {
-        return scan(this, seed, f);
+    Observable.prototype.skipErrors = function () {
+        return skipErrors(this);
     };
-    Observable.prototype.fold = function (seed, f) {
-        return fold(this, seed, f);
+    Observable.prototype.skipUntil = function (starter) {
+        return skipUntil(this, starter);
     };
-    Observable.prototype.combine = function (right, f) {
-        return combine(this, right, f);
+    Observable.prototype.subscribe = function (sink) {
+        var _this = this;
+        if (sink === void 0) { sink = nop; }
+        return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
     };
-    Observable.prototype.awaiting = function (other) {
-        return awaiting(this, other);
+    Observable.prototype.take = function (count) {
+        return take(count, this);
     };
-    Observable.prototype.delay = function (delayMs) {
-        return delay(this, delayMs);
+    Observable.prototype.takeUntil = function (stopper) {
+        return takeUntil(this, stopper);
     };
-    Observable.prototype.debounce = function (minimumInterval) {
-        return debounce(this, minimumInterval);
-    };
-    Observable.prototype.debounceImmediate = function (minimumInterval) {
-        return debounceImmediate(this, minimumInterval);
+    Observable.prototype.takeWhile = function (f) {
+        return takeWhile(this, f);
     };
     Observable.prototype.throttle = function (minimumInterval) {
         return throttle(this, minimumInterval);
-    };
-    Observable.prototype.bufferingThrottle = function (minimumInterval) {
-        return bufferingThrottle(this, minimumInterval);
-    };
-    Observable.prototype.name = function (name) {
-        this._name = name;
-        return this;
-    };
-    Observable.prototype.withDescription = function (context, method) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        this.desc = describe.apply(void 0, [context, method].concat(args));
-        return this;
     };
     Observable.prototype.toString = function () {
         if (this._name) {
@@ -2743,16 +2742,17 @@ var Observable = /** @class */ (function () {
             return this.desc.toString();
         }
     };
-    Observable.prototype.inspect = function () { return this.toString(); };
-    Observable.prototype.deps = function () {
-        return this.desc.deps();
-    };
-    Observable.prototype.internalDeps = function () {
-        return this.initialDesc.deps();
-    };
     Observable.prototype.withDesc = function (desc) {
         if (desc)
             this.desc = desc;
+        return this;
+    };
+    Observable.prototype.withDescription = function (context, method) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        this.desc = describe.apply(void 0, [context, method].concat(args));
         return this;
     };
     return Observable;
@@ -2767,10 +2767,7 @@ var Property = /** @class */ (function (_super) {
         registerObs(_this);
         return _this;
     }
-    Property.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nop; }
-        return this.dispatcher.subscribe(sink);
-    };
+    Property.prototype.and = function (other) { return and(this, other); };
     Property.prototype.changes = function () {
         var _this = this;
         return new EventStream(new Desc(this, "changes", []), function (sink) { return _this.dispatcher.subscribe(function (event) {
@@ -2779,50 +2776,53 @@ var Property = /** @class */ (function (_super) {
             }
         }); });
     };
-    Property.prototype.transform = function (transformer, desc) {
-        return transformP(this, transformer, desc);
+    Property.prototype.concat = function (right) {
+        return addPropertyInitValueToStream(this, this.changes().concat(right));
     };
-    Property.prototype.withStateMachine = function (initState, f) {
-        return withStateMachine(initState, f, this);
+    Property.prototype.delayChanges = function (desc, f) {
+        return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
     };
-    Property.prototype.map = function (f) { return map(this, f); };
     Property.prototype.flatMap = function (f) { return flatMap(this, f); };
     Property.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
+    Property.prototype.flatMapError = function (f) { return flatMapError(this, f); };
+    Property.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
     Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
     Property.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
     Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
-    Property.prototype.flatMapError = function (f) { return flatMapError(this, f); };
-    Property.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    Property.prototype.map = function (f) { return map(this, f); };
+    Property.prototype.not = function () { return not(this); };
+    Property.prototype.or = function (other) { return or(this, other); };
+    Property.prototype.sample = function (interval) {
+        return sampleP(this, interval);
+    };
     Property.prototype.sampledBy = function (sampler, f) {
         if (f === void 0) { f = function (a, b) { return a; }; }
         return sampledByP(this, sampler, f);
     };
-    Property.prototype.sample = function (interval) {
-        return sampleP(this, interval);
-    };
     Property.prototype.startWith = function (seed) {
         return startWithP(this, seed);
     };
-    Property.prototype.concat = function (right) {
-        return addPropertyInitValueToStream(this, this.changes().concat(right));
+    Property.prototype.subscribeInternal = function (sink) {
+        if (sink === void 0) { sink = nop; }
+        return this.dispatcher.subscribe(sink);
     };
-    // deprecated : use transform() instead
-    Property.prototype.withHandler = function (handler) {
-        return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+    Property.prototype.toEventStream = function (options) {
+        var _this = this;
+        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) { return sink(event.toNext()); }); }, undefined, options);
     };
     Property.prototype.toProperty = function () {
         assertNoArguments(arguments);
         return this;
     };
-    Property.prototype.or = function (other) { return or(this, other); };
-    Property.prototype.and = function (other) { return and(this, other); };
-    Property.prototype.not = function () { return not(this); };
-    Property.prototype.delayChanges = function (desc, f) {
-        return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
+    Property.prototype.transform = function (transformer, desc) {
+        return transformP(this, transformer, desc);
     };
-    Property.prototype.toEventStream = function (options) {
-        var _this = this;
-        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) { return sink(event.toNext()); }); }, undefined, options);
+    // deprecated : use transform() instead
+    Property.prototype.withHandler = function (handler) {
+        return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+    };
+    Property.prototype.withStateMachine = function (initState, f) {
+        return withStateMachine(initState, f, this);
     };
     return Property;
 }(Observable));

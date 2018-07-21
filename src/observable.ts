@@ -69,47 +69,132 @@ export default abstract class Observable<V> {
     this.initialDesc = desc
   }
 
-  subscribe(sink: EventSink<V> = nop): Unsub {
-    return UpdateBarrier.wrappedSubscribe(this, sink => this.subscribeInternal(sink), sink)
+  awaiting(other: Observable<any>): Property<boolean> {
+    return awaiting(this, other)
   }
-
-  abstract subscribeInternal(sink: EventSink<V>): Unsub
-
-  onValue(f: Sink<V> = nop) : Unsub {
-    return this.subscribe(function(event) {
-      if (event.hasValue) { return f(event.value) }
-    });
+  bufferingThrottle(minimumInterval: number): this {
+    return <any>bufferingThrottle(this, minimumInterval)
   }
-
+  combine<V2, R>(right: Observable<V2>, f: (V, V2) => R): Property<R> {
+    return combine(this, right, f)
+  }
+  abstract concat(right: Observable<V>): Observable<V>
+  debounce(minimumInterval: number): this {
+    return <any>debounce(this, minimumInterval)
+  }
+  debounceImmediate(minimumInterval: number): this {
+    return <any>debounceImmediate(this, minimumInterval)
+  }
+  delay(delayMs: number): this {
+    return <any>delay(this, delayMs)
+  }
+  abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
+  deps(): any[] {
+    return this.desc.deps()
+  }
+  doAction(f: (V) => any): this {
+    return <any>this.transform(doActionT(f), new Desc(this, "doAction", [f]))
+  }
+  doEnd(f: Function): this {
+    return <any>this.transform(doEndT(f), new Desc(this, "doEnd", [f]))
+  }
+  doError(f: Function): this {
+    return <any>this.transform(doErrorT(f), new Desc(this, "doError", [f]))
+  }
+  doLog(...args: any[]): this {
+    return <any>this.transform(doLogT<V>(args), new Desc(this, "doLog", args))
+  }
+  endAsValue(): Observable<{}> {
+    return endAsValue(this)
+  }
+  endOnError(predicate: (any) => boolean = x => true): this {
+    return <any>endOnError(this, predicate)
+  }
+  errors(): this {
+    return this.filter(x => false).withDesc(new Desc(this, "errors"))
+  }
+  filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
+    return <any>filter(this, f)
+  }
+  first(): this {
+    return <any>take(1, this, new Desc(this, "first"))
+  }
+  abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapConcat<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapError(f: (any) => Observable<V>): Observable<V>
+  abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
+  abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapLatest<V2>(f: Spawner<V, V2>): Observable<V2>
+  abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Observable<V2>
+  fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
+    return fold(this, seed, f)
+  }
   forEach(f: Sink<V> = nop) : Unsub {
     // TODO: inefficient alias. Also, similar assign alias missing.
     return this.onValue(f)
   }
-
-  onValues(f): Unsub {
-    return this.onValue(function(args) { return f(...args) });
+  inspect() { return this.toString() }
+  internalDeps(): any[] {
+    return this.initialDesc.deps();
   }
-
-  onError(f: Sink<any> = nop): Unsub {
-    return this.subscribe(function(event) {
-      if (event.isError) { return f(event.error) }
-    })
+  last(): this {
+    return <any>last(this)
   }
-
+  log(...args: any[]): this {
+    log(args, this)
+    return this
+  }
+  abstract map<V2>(f: ((V) => V2) | Property<V2> | V2): Observable<V2>
+  mapEnd(f: (() => V) | V): this {
+    return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
+  }
+  mapError(f: ((any) => V) | V): this {
+    return <any>this.transform(mapErrorT(f), new Desc(this, "mapError", [f]))
+  }
+  name(name: string) {
+    this._name = name;
+    return this;
+  }
+  abstract not(): Observable<boolean>
   onEnd(f: VoidSink = nop): Unsub {
     return this.subscribe(function(event) {
       if (event.isEnd) { return f(); }
     });
   }
-
-  abstract toProperty(): Property<V>
-
-  abstract toEventStream(): EventStream<V>
-
-  abstract transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Observable<V2>
-
-  abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
-
+  onError(f: Sink<any> = nop): Unsub {
+    return this.subscribe(function(event) {
+      if (event.isError) { return f(event.error) }
+    })
+  }
+  onValue(f: Sink<V> = nop) : Unsub {
+    return this.subscribe(function(event) {
+      if (event.hasValue) { return f(event.value) }
+    });
+  }
+  onValues(f): Unsub {
+    return this.onValue(function(args) { return f(...args) });
+  }
+  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R): Observable<R>
+  scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
+    return scan(this, seed, f)
+  }
+  skip(count: number): this {
+    return <any>skip(this, count)
+  }
+  skipDuplicates(isEqual?: Equals<V>): this {
+    return <any>skipDuplicates(this, isEqual)
+  }
+  skipErrors(): this {
+    return <any>skipErrors(this)
+  }
+  skipUntil(starter: Observable<any>): this {
+    return <any>skipUntil(this, starter)
+  }
+  abstract startWith(seed: V): Observable<V>
+  subscribe(sink: EventSink<V> = nop): Unsub {
+    return UpdateBarrier.wrappedSubscribe(this, sink => this.subscribeInternal(sink), sink)
+  }
+  abstract subscribeInternal(sink: EventSink<V>): Unsub
   take(count: number): this {
     return <any>take(count, this)
   }
@@ -117,146 +202,14 @@ export default abstract class Observable<V> {
   takeUntil(stopper: Observable<any>): this {
     return <any>takeUntil(this, stopper)
   }
-
-  skipUntil(starter: Observable<any>): this {
-    return <any>skipUntil(this, starter)
-  }
-
   takeWhile<V>(f: ((V) => boolean) | Property<boolean>): this {
     return <any>takeWhile(this, f)
   }
-
-  first(): this {
-    return <any>take(1, this, new Desc(this, "first"))
-  }
-
-  last(): this {
-    return <any>last(this)
-  }
-
-  endAsValue(): Observable<{}> {
-    return endAsValue(this)
-  }
-
-  filter(f: ((V) => boolean) | boolean | Property<boolean>): this {
-    return <any>filter(this, f)
-  }
-
-  errors(): this {
-    return this.filter(x => false).withDesc(new Desc(this, "errors"))
-  }
-
-  skipErrors(): this {
-    return <any>skipErrors(this)
-  }
-
-  abstract map<V2>(f: ((V) => V2) | Property<V2> | V2): Observable<V2>
-
-  abstract flatMap<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapConcat<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapFirst<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapLatest<V2>(f: Spawner<V, V2>): Observable<V2>
-  abstract flatMapError(f: (any) => Observable<V>): Observable<V>
-  abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
-
-  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R): Observable<R>
-
-  mapEnd(f: (() => V) | V): this {
-    return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
-  }
-
-  mapError(f: ((any) => V) | V): this {
-    return <any>this.transform(mapErrorT(f), new Desc(this, "mapError", [f]))
-  }
-
-  endOnError(predicate: (any) => boolean = x => true): this {
-    return <any>endOnError(this, predicate)
-  }
-
-  log(...args: any[]): this {
-    log(args, this)
-    return this
-  }
-
-  doLog(...args: any[]): this {
-    return <any>this.transform(doLogT<V>(args), new Desc(this, "doLog", args))
-  }
-
-  doAction(f: (V) => any): this {
-    return <any>this.transform(doActionT(f), new Desc(this, "doAction", [f]))
-  }
-
-  doEnd(f: Function): this {
-    return <any>this.transform(doEndT(f), new Desc(this, "doEnd", [f]))
-  }
-
-  doError(f: Function): this {
-    return <any>this.transform(doErrorT(f), new Desc(this, "doError", [f]))
-  }
-
-  skip(count: number): this {
-    return <any>skip(this, count)
-  }
-
-  skipDuplicates(isEqual?: Equals<V>): this {
-    return <any>skipDuplicates(this, isEqual)
-  }
-
-  scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
-    return scan(this, seed, f)
-  }
-
-  fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
-    return fold(this, seed, f)
-  }
-
-  abstract concat(right: Observable<V>): Observable<V>
-
-  abstract startWith(seed: V): Observable<V>
-
-  combine<V2, R>(right: Observable<V2>, f: (V, V2) => R): Property<R> {
-    return combine(this, right, f)
-  }
-
-  awaiting(other: Observable<any>): Property<boolean> {
-    return awaiting(this, other)
-  }
-
-  abstract not(): Observable<boolean>
-
-  abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
-
-  delay(delayMs: number): this {
-    return <any>delay(this, delayMs)
-  }
-
-  debounce(minimumInterval: number): this {
-    return <any>debounce(this, minimumInterval)
-  }
-
-  debounceImmediate(minimumInterval: number): this {
-    return <any>debounceImmediate(this, minimumInterval)
-  }
-
   throttle(minimumInterval: number): this {
     return <any>throttle(this, minimumInterval)
   }
-
-  bufferingThrottle(minimumInterval: number): this {
-    return <any>bufferingThrottle(this, minimumInterval)
-  }
-
-  name(name: string) {
-    this._name = name;
-    return this;
-  }
-
-  withDescription(context, method, ...args) {
-    this.desc = describe(context, method, ...args);
-    return this;
-  }
-
+  abstract toEventStream(): EventStream<V>
+  abstract toProperty(): Property<V>
   toString(): string {
     if (this._name) {
       return this._name;
@@ -264,21 +217,16 @@ export default abstract class Observable<V> {
       return this.desc.toString();
     }
   }
-
-  inspect() { return this.toString() }
-
-  deps(): any[] {
-    return this.desc.deps()
-  }
-
-  internalDeps(): any[] {
-    return this.initialDesc.deps();
-  }
-
+  abstract transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Observable<V2>
   withDesc(desc?: Desc): this {
     if (desc) this.desc = desc;
     return this;
   }
+  withDescription(context, method, ...args) {
+    this.desc = describe(context, method, ...args);
+    return this;
+  }
+  abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
 }
 
 export interface ObservableConstructor {
@@ -296,10 +244,7 @@ export class Property<V> extends Observable<V> {
     registerObs(this);
   }
 
-  subscribeInternal(sink: EventSink<V> = nop): Unsub {
-    return this.dispatcher.subscribe(sink)
-  }
-
+  and(other: Property<any>): Property<boolean> {return and(this, other)}
   changes(): EventStream<V> {
     return new EventStream(
       new Desc(this, "changes", []),
@@ -308,58 +253,32 @@ export class Property<V> extends Observable<V> {
       })
     )
   }
-
-  transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
-    return transformP(this, transformer, desc)
-  }
-
-  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
-    return <any>withStateMachine<V, State, Out>(initState, f, this)
-  }
-
-  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map<V, V2>(this, f) }
-
-  flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
-  flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
-  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
-  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
-
-  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByP(this, sampler, f)}
-
-  sample(interval: number): EventStream<V> {
-    return sampleP(this, interval)
-  }
-
-  startWith(seed: V): Property<V> {
-    return startWithP(this, seed)
-  }
-
   concat(right: Observable<V>): Property<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(right))
   }
-
-  // deprecated : use transform() instead
-  withHandler(handler: EventSink<V>) {
-    return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
-  }
-
-  toProperty(): Property<V> {
-    assertNoArguments(arguments);
-    return this;
-  }
-
-  or(other: Property<any>): Property<boolean> {return or(this, other)}
-  and(other: Property<any>): Property<boolean> {return and(this, other)}
-  not(): Property<boolean> {return <any>not(this) }
-
-
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
-
+  flatMap<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
+  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+  flatMapFirst<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: Spawner<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: Spawner<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map<V, V2>(this, f) }
+  not(): Property<boolean> {return <any>not(this) }
+  or(other: Property<any>): Property<boolean> {return or(this, other)}
+  sample(interval: number): EventStream<V> {
+    return sampleP(this, interval)
+  }
+  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByP(this, sampler, f)}
+  startWith(seed: V): Property<V> {
+    return startWithP(this, seed)
+  }
+  subscribeInternal(sink: EventSink<V> = nop): Unsub {
+    return this.dispatcher.subscribe(sink)
+  }
   toEventStream(options?: EventStreamOptions): EventStream<V> {
     return new EventStream(
       new Desc(this, "toEventStream", []),
@@ -368,6 +287,21 @@ export class Property<V> extends Observable<V> {
       options
     );
   }
+  toProperty(): Property<V> {
+    assertNoArguments(arguments);
+    return this;
+  }
+  transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
+    return transformP(this, transformer, desc)
+  }
+  // deprecated : use transform() instead
+  withHandler(handler: EventSink<V>) {
+    return new Property(new Desc(this, "withHandler", [handler]), this.dispatcher.subscribe, handler);
+  }
+  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
+    return <any>withStateMachine<V, State, Out>(initState, f, this)
+  }
+
 }
 
 export function isProperty<V>(x): x is Property<V> {
