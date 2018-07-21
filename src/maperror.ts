@@ -1,6 +1,7 @@
 import { Event, isError, nextEvent } from "./event";
-import { EventSink, Transformer } from "./types";
+import { EventSink } from "./types";
 import _ from "./_";
+import { Transformer } from "./transform";
 
 export default function mapErrorT<V>(f: ((any) => V) | V): Transformer<V, V> {
   let theF = _.toFunction(f)

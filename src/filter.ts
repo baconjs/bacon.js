@@ -6,17 +6,19 @@ import { Event } from "./event"
 import { EventSink } from "./types"
 import withLatestFrom from "./withlatestfrom"
 import _ from "./_"
+import { composeT } from "./transform";
+import { mapT } from "./map";
 
 export function filter<V>(f: ((V) => boolean) | boolean | Property<boolean>, src: Observable<V>): Observable<V> {
+  let desc = new Desc(src, "filter", [f]);
   if (f instanceof Property) {
     return withLatestFrom(src, f, (p, v) => [p, v])
-      .filter(([v, p]) => p)
-      .map(([v, p]) => v)
+      .transform(composeT(filterT(([v, p]) => p), mapT(([v, p]) => v)), desc)
   }
-  return src.transform(filterT(f), new Desc(src, "filter", [f]))
+  return src.transform(filterT(f), desc)
 }
 
-function filterT<V>(f_: ((V) => boolean) | boolean) {
+export function filterT<V>(f_: ((V) => boolean) | boolean) {
   let f: (V) => boolean 
   if (typeof f_ == "boolean") {
     f = _.always(f_)

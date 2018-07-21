@@ -29,7 +29,8 @@ describe "EventStream.takeWhile", ->
       -> fromArray([1, 2, 3]).takeWhile(lessThan(3))
       [1, 2])
   it "toString", ->
-    expect(Bacon.never().takeWhile(true).toString()).to.equal("Bacon.never().takeWhile(function)")
+    expect(Bacon.never().takeWhile(-> true).toString()).to.equal("Bacon.never().takeWhile(function)")
+
 
 describe "Property.takeWhile", ->
   describe "takes while predicate is true", ->
@@ -51,9 +52,3 @@ describe "Property.takeWhile", ->
         repeat(1, [1, error("wat"), 2, 3])
           .toProperty().takeWhile(lessThan(3))
       [1, error("wat"), 2])
-
-describe "Observable.takeWhile(EventStream)", ->
-  it "should throw an error", ->
-    expect(
-      -> Bacon.never().takeWhile(Bacon.never())
-    ).to.throw(Error, "Observable is not a Property : Bacon.never()")

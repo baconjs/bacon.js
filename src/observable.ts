@@ -1,7 +1,7 @@
 import UpdateBarrier from "./updatebarrier";
 import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
-import { EventSink, EventStreamDelay, Sink, Subscribe, Transformer, Unsub, VoidSink } from "./types"
+import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink } from "./types"
 import { default as withStateMachine, StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
@@ -51,6 +51,8 @@ import delay from "./delay";
 import { debounce, debounceImmediate } from "./debounce";
 import throttle from "./throttle";
 import bufferingThrottle from "./bufferingthrottle";
+import { Transformer, transformE, transformP } from "./transform";
+import { takeWhile } from "./takewhile";
 
 var idCounter = 0;
 
@@ -113,6 +115,10 @@ export default abstract class Observable<V> {
 
   takeUntil(stopper: Observable<any>): this {
     return <any>takeUntil(this, stopper)
+  }
+
+  takeWhile<V>(f: ((V) => boolean) | Property<boolean>): this {
+    return <any>takeWhile(this, f)
   }
 
   first(): this {
@@ -299,13 +305,7 @@ export class Property<V> extends Observable<V> {
   }
 
   transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
-    return new Property<V2>(
-      new Desc(this, "transform", [transformer]),
-      sink =>
-        this.subscribeInternal(e =>
-          transformer(e, sink)
-        )
-    ).withDesc(desc);
+    return transformP(this, transformer, desc)
   }
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
@@ -395,15 +395,7 @@ export class EventStream<V> extends Observable<V> {
   toEventStream() { return this }
 
   transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2> {
-    return new EventStream<V2>(
-      new Desc(this, "transform", [transformer]),
-      sink =>
-        this.subscribeInternal(e =>
-          transformer(e, sink)
-        ),
-      undefined,
-      allowSync
-    ).withDesc(desc)
+    return transformE(this, transformer, desc)
   }
 
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {

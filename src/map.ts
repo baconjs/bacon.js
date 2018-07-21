@@ -13,7 +13,7 @@ export function map<V, V2>(f: ((V) => V2) | Property<V2> | V2, src: Observable<V
   return src.transform(mapT(_.toFunction(f)), new Desc(src, "map", [f]))
 }
 
-function mapT<V, V2>(f: ((V) => V2)) {
+export function mapT<V, V2>(f: ((V) => V2)) {
   return (e: Event<V>, sink: EventSink<V2>) => {
     return sink(e.fmap(f))
   }

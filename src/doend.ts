@@ -1,4 +1,4 @@
-import { Transformer } from "./types";
+import { Transformer } from "./transform";
 import { isEnd } from "./event";
 
 export default function doEndT<V>(f: Function): Transformer<V, V> {

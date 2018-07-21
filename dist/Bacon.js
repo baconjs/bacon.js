@@ -1846,19 +1846,44 @@ function sampleP(samplee, interval) {
     return sampledByP(samplee, Bacon.interval(interval, {}), function (a, b) { return a; }).withDesc(new Desc(samplee, "sample", [interval]));
 }
 
+function transformP(src, transformer, desc) {
+    return new Property(new Desc(src, "transform", [transformer]), function (sink) {
+        return src.subscribeInternal(function (e) {
+            return transformer(e, sink);
+        });
+    }).withDesc(desc);
+}
+function transformE(src, transformer, desc) {
+    return new EventStream(new Desc(src, "transform", [transformer]), function (sink) {
+        return src.subscribeInternal(function (e) {
+            return transformer(e, sink);
+        });
+    }, undefined, allowSync).withDesc(desc);
+}
+function composeT(t1, t2) {
+    var finalSink; // mutation used to avoid closure creation while dispatching events
+    var sink2 = function (event) {
+        return t2(event, finalSink);
+    };
+    return function (event, sink) {
+        finalSink = sink;
+        return t1(event, sink2);
+    };
+}
+
 function filter(f, src) {
+    var desc = new Desc(src, "filter", [f]);
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .filter(function (_a) {
+            .transform(composeT(filterT(function (_a) {
             var v = _a[0], p = _a[1];
             return p;
-        })
-            .map(function (_a) {
+        }), mapT(function (_a) {
             var v = _a[0], p = _a[1];
             return v;
-        });
+        })), desc);
     }
-    return src.transform(filterT(f), new Desc(src, "filter", [f]));
+    return src.transform(filterT(f), desc);
 }
 function filterT(f_) {
     var f;
@@ -2522,6 +2547,31 @@ function bufferingThrottle(src, minimumInterval) {
     }); });
 }
 
+function takeWhile(src, f) {
+    if (f instanceof Property) {
+        return withLatestFrom(src, f, function (p, v) { return [p, v]; })
+            .transform(composeT(takeWhileT(function (_a) {
+            var v = _a[0], p = _a[1];
+            return p;
+        }), mapT(function (_a) {
+            var v = _a[0], p = _a[1];
+            return v;
+        })));
+    }
+    return src.transform(takeWhileT(f), new Desc(src, "takeWhile", [f]));
+}
+function takeWhileT(f) {
+    return function (event, sink) {
+        if (event.filter(f)) {
+            return sink(event);
+        }
+        else {
+            sink(endEvent());
+            return noMore;
+        }
+    };
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2572,6 +2622,9 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
+    };
+    Observable.prototype.takeWhile = function (f) {
+        return takeWhile(this, f);
     };
     Observable.prototype.first = function () {
         return take(1, this, new Desc(this, "first"));
@@ -2715,12 +2768,7 @@ var Property = /** @class */ (function (_super) {
         }); });
     };
     Property.prototype.transform = function (transformer, desc) {
-        var _this = this;
-        return new Property(new Desc(this, "transform", [transformer]), function (sink) {
-            return _this.subscribeInternal(function (e) {
-                return transformer(e, sink);
-            });
-        }).withDesc(desc);
+        return transformP(this, transformer, desc);
     };
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
@@ -2792,12 +2840,7 @@ var EventStream = /** @class */ (function (_super) {
     };
     EventStream.prototype.toEventStream = function () { return this; };
     EventStream.prototype.transform = function (transformer, desc) {
-        var _this = this;
-        return new EventStream(new Desc(this, "transform", [transformer]), function (sink) {
-            return _this.subscribeInternal(function (e) {
-                return transformer(e, sink);
-            });
-        }, undefined, allowSync).withDesc(desc);
+        return transformE(this, transformer, desc);
     };
     EventStream.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
@@ -3651,25 +3694,6 @@ Observable.prototype.slidingWindow = function (n) {
   }).filter(function (values) {
     return values.length >= minValues;
   }).withDesc(new Desc(this, "slidingWindow", [n, minValues]));
-};
-
-Observable.prototype.takeWhile = function (f) {
-  assertObservableIsProperty(f);
-
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-
-  return convertArgsToFunction(this, f, args, function (f) {
-    return this.withHandler(function (event) {
-      if (event.filter(f)) {
-        return this.push(event);
-      } else {
-        this.push(endEvent());
-        return noMore;
-      }
-    }).withDesc(new Desc(this, "takeWhile", [f]));
-  });
 };
 
 Observable.prototype.firstToPromise = function (PromiseCtr) {

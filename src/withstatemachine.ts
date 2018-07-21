@@ -1,8 +1,9 @@
 import Observable from "./observable";
 import { Desc } from "./describe";
-import { EventSink, Transformer } from "./types";
+import { EventSink } from "./types";
 import Event from "./event"
 import { Reply } from "./reply";
+import { Transformer } from "./transform";
 
 export interface StateF<In, State, Out> {
   (state: State, event: Event<In>): [State, Event<Out>[]]

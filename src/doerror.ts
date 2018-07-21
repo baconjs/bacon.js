@@ -1,4 +1,4 @@
-import { Transformer } from "./types";
+import { Transformer } from "./transform";
 import { isError } from "./event";
 
 export default function doErrorT<V>(f: Function): Transformer<V, V> {

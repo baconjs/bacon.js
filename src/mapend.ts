@@ -1,7 +1,8 @@
 import { endEvent, Event, isEnd, nextEvent } from "./event";
 import { noMore } from "./reply";
-import { EventSink, Transformer } from "./types";
+import { EventSink } from "./types";
 import _ from "./_";
+import { Transformer } from "./transform";
 
 export default function mapEndT<V>(f: ((End) => V) | V): Transformer<V, V> {
   let theF = _.toFunction(f)

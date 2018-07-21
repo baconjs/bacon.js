@@ -1,4 +1,4 @@
-import { Transformer } from "./types";
+import { Transformer } from "./transform";
 import { hasValue } from "./event";
 
 export default function doActionT<V>(f: (V) => any): Transformer<V, V> {
