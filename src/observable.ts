@@ -62,6 +62,7 @@ import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
 import { holdWhen } from "./holdwhen";
+import { zip } from "./zip";
 
 var idCounter = 0;
 
@@ -253,6 +254,9 @@ export abstract class Observable<V> {
     return this;
   }
   abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
+  zip<V2, Out>(other: Observable<V2>, f: (V, V2) => Out): EventStream<Out> {
+    return zip(this, other, f)
+  }
 }
 
 export interface ObservableConstructor {
@@ -270,57 +274,106 @@ export class Property<V> extends Observable<V> {
     registerObs(this);
   }
 
-  and(other: Property<any>): Property<boolean> {return and(this, other)}
+  and(other: Property<any>): Property<boolean> {
+    return and(this, other)
+  }
+
   changes(): EventStream<V> {
     return new EventStream(
       new Desc(this, "changes", []),
-      (sink) => this.dispatcher.subscribe(function(event: Event<V>) {
-        if (!event.isInitial) { return sink(event); }
+      (sink) => this.dispatcher.subscribe(function (event: Event<V>) {
+        if (!event.isInitial) {
+          return sink(event);
+        }
       })
     )
   }
+
   concat(right: Observable<V>): Property<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(right))
   }
+
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
-  flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapConcat(this, f) }
-  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
-  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
-  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Property<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
-  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> { return <any>map<V, V2>(this, f) }
-  not(): Property<boolean> {return <any>not(this) }
-  or(other: Property<any>): Property<boolean> {return or(this, other)}
+
+  flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
+    return <any>flatMap(this, f)
+  }
+
+  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
+    return <any>flatMapConcat(this, f)
+  }
+
+  flatMapError(f: (any) => Observable<V>): EventStream<V> {
+    return <any>flatMapError(this, f)
+  }
+
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> {
+    return <any>flatMapEvent(this, f)
+  }
+
+  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
+    return <any>flatMapFirst(this, f)
+  }
+
+  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
+    return <any>flatMapLatest(this, f)
+  }
+
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Property<V2> {
+    return <any>flatMapWithConcurrencyLimit(this, limit, f)
+  }
+
+  map<V2>(f: ((V) => V2) | Property<V2>): Property<V2> {
+    return <any>map<V, V2>(this, f)
+  }
+
+  not(): Property<boolean> {
+    return <any>not(this)
+  }
+
+  or(other: Property<any>): Property<boolean> {
+    return or(this, other)
+  }
+
   sample(interval: number): EventStream<V> {
     return sampleP(this, interval)
   }
-  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByP(this, sampler, f)}
+
+  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {
+    return sampledByP(this, sampler, f)
+  }
+
   startWith(seed: V): Property<V> {
     return startWithP(this, seed)
   }
+
   subscribeInternal(sink: EventSink<V> = nop): Unsub {
     return this.dispatcher.subscribe(sink)
   }
+
   toEventStream(options?: EventStreamOptions): EventStream<V> {
     return new EventStream(
       new Desc(this, "toEventStream", []),
-      (sink) => this.subscribeInternal(function(event) { return sink(event.toNext()); }),
+      (sink) => this.subscribeInternal(function (event) {
+        return sink(event.toNext());
+      }),
       undefined,
       options
     );
   }
+
   toProperty(): Property<V> {
     assertNoArguments(arguments);
     return this;
   }
-  transform<V2>(transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
+
+  transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Property<V2> {
     return transformP(this, transformer, desc)
   }
-  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
+
+  withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 }

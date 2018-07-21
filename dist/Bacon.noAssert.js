@@ -2683,6 +2683,41 @@
             return composite.unsubscribe;
         });
     }
+    function zipAsArray() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var streams = _.map(function (s) {
+            return s.toEventStream();
+        }, argumentsToObservables(args));
+        return Bacon.when(streams, function () {
+            var xs = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                xs[_i] = arguments[_i];
+            }
+            return xs;
+        }).withDesc(new Desc(Bacon, 'zipAsArray', args));
+    }
+    Bacon.zipAsArray = zipAsArray;
+    function zipWith() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var _a = argumentsToObservablesAndFunction(args), streams = _a[0], f = _a[1];
+        streams = _.map(function (s) {
+            return s.toEventStream();
+        }, streams);
+        return Bacon.when(streams, f).withDesc(new Desc(Bacon, 'zipWith', [f].concat(streams)));
+    }
+    Bacon.zipWith = zipWith;
+    function zip(left, right, f) {
+        return Bacon.zipWith([
+            left,
+            right
+        ], f || Array).withDesc(new Desc(left, 'zip', [right]));
+    }
     var idCounter = 0;
     var Observable = function () {
         function Observable(desc) {
@@ -2903,6 +2938,9 @@
                 method
             ].concat(args));
             return this;
+        };
+        Observable.prototype.zip = function (other, f) {
+            return zip(this, other, f);
         };
         return Observable;
     }();
@@ -3797,36 +3835,6 @@
         }).withDesc(new Desc(Bacon, 'update', [initial].concat(patterns)));
     }
     Bacon.update = update;
-    Bacon.zipAsArray = function () {
-        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-        }
-        var streams = argumentsToObservables(args);
-        return Bacon.zipWith(streams, function () {
-            for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                xs[_key2] = arguments[_key2];
-            }
-            return xs;
-        }).withDesc(new Desc(Bacon, 'zipAsArray', streams));
-    };
-    Bacon.zipWith = function () {
-        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-            args[_key3] = arguments[_key3];
-        }
-        var observablesAndFunction = argumentsToObservablesAndFunction(args);
-        var streams = observablesAndFunction[0];
-        var f = observablesAndFunction[1];
-        streams = _.map(function (s) {
-            return s.toEventStream();
-        }, streams);
-        return Bacon.when(streams, f).withDesc(new Desc(Bacon, 'zipWith', [f].concat(streams)));
-    };
-    Observable.prototype.zip = function (other, f) {
-        return Bacon.zipWith([
-            this,
-            other
-        ], f || Array).withDesc(new Desc(this, 'zip', [other]));
-    };
     Bacon.EventStream = EventStream;
     Bacon.UpdateBarrier = UpdateBarrier;
     Bacon.Observable = Observable;

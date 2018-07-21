@@ -2673,6 +2673,37 @@ function holdWhen(src, valve) {
     });
 }
 
+function zipAsArray() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    var streams = _.map((function (s) { return s.toEventStream(); }), argumentsToObservables(args));
+    return Bacon.when(streams, function () {
+        var xs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            xs[_i] = arguments[_i];
+        }
+        return xs;
+    }).withDesc(new Desc(Bacon, "zipAsArray", args));
+}
+Bacon.zipAsArray = zipAsArray;
+// TODO: quite untyped
+function zipWith() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    var _a = argumentsToObservablesAndFunction(args), streams = _a[0], f = _a[1];
+    streams = _.map((function (s) { return s.toEventStream(); }), streams);
+    return Bacon.when(streams, f).withDesc(new Desc(Bacon, "zipWith", [f].concat(streams)));
+}
+
+Bacon.zipWith = zipWith;
+function zip(left, right, f) {
+    return Bacon.zipWith([left, right], f || Array).withDesc(new Desc(left, "zip", [right]));
+}
+
 var idCounter = 0;
 var Observable = /** @class */ (function () {
     function Observable(desc) {
@@ -2867,6 +2898,9 @@ var Observable = /** @class */ (function () {
         this.desc = describe.apply(void 0, [context, method].concat(args));
         return this;
     };
+    Observable.prototype.zip = function (other, f) {
+        return zip(this, other, f);
+    };
     return Observable;
 }());
 var Property = /** @class */ (function (_super) {
@@ -2879,7 +2913,9 @@ var Property = /** @class */ (function (_super) {
         registerObs(_this);
         return _this;
     }
-    Property.prototype.and = function (other) { return and(this, other); };
+    Property.prototype.and = function (other) {
+        return and(this, other);
+    };
     Property.prototype.changes = function () {
         var _this = this;
         return new EventStream(new Desc(this, "changes", []), function (sink) { return _this.dispatcher.subscribe(function (event) {
@@ -2894,16 +2930,36 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.delayChanges = function (desc, f) {
         return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
     };
-    Property.prototype.flatMap = function (f) { return flatMap(this, f); };
-    Property.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
-    Property.prototype.flatMapError = function (f) { return flatMapError(this, f); };
-    Property.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
-    Property.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
-    Property.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
-    Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
-    Property.prototype.map = function (f) { return map(this, f); };
-    Property.prototype.not = function () { return not(this); };
-    Property.prototype.or = function (other) { return or(this, other); };
+    Property.prototype.flatMap = function (f) {
+        return flatMap(this, f);
+    };
+    Property.prototype.flatMapConcat = function (f) {
+        return flatMapConcat(this, f);
+    };
+    Property.prototype.flatMapError = function (f) {
+        return flatMapError(this, f);
+    };
+    Property.prototype.flatMapEvent = function (f) {
+        return flatMapEvent(this, f);
+    };
+    Property.prototype.flatMapFirst = function (f) {
+        return flatMapFirst(this, f);
+    };
+    Property.prototype.flatMapLatest = function (f) {
+        return flatMapLatest(this, f);
+    };
+    Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
+        return flatMapWithConcurrencyLimit(this, limit, f);
+    };
+    Property.prototype.map = function (f) {
+        return map(this, f);
+    };
+    Property.prototype.not = function () {
+        return not(this);
+    };
+    Property.prototype.or = function (other) {
+        return or(this, other);
+    };
     Property.prototype.sample = function (interval) {
         return sampleP(this, interval);
     };
@@ -2920,7 +2976,9 @@ var Property = /** @class */ (function (_super) {
     };
     Property.prototype.toEventStream = function (options) {
         var _this = this;
-        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) { return sink(event.toNext()); }); }, undefined, options);
+        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) {
+            return sink(event.toNext());
+        }); }, undefined, options);
     };
     Property.prototype.toProperty = function () {
         assertNoArguments(arguments);
@@ -3742,40 +3800,6 @@ function update(initial) {
 }
 
 Bacon.update = update;
-
-Bacon.zipAsArray = function () {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-
-  var streams = argumentsToObservables(args);
-  return Bacon.zipWith(streams, function () {
-    for (var _len2 = arguments.length, xs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      xs[_key2] = arguments[_key2];
-    }
-
-    return xs;
-  }).withDesc(new Desc(Bacon, "zipAsArray", streams));
-};
-
-Bacon.zipWith = function () {
-  for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-    args[_key3] = arguments[_key3];
-  }
-
-  var observablesAndFunction = argumentsToObservablesAndFunction(args);
-  var streams = observablesAndFunction[0];
-  var f = observablesAndFunction[1];
-
-  streams = _.map(function (s) {
-    return s.toEventStream();
-  }, streams);
-  return Bacon.when(streams, f).withDesc(new Desc(Bacon, "zipWith", [f].concat(streams)));
-};
-
-Observable.prototype.zip = function (other, f) {
-  return Bacon.zipWith([this, other], f || Array).withDesc(new Desc(this, "zip", [other]));
-};
 
 Bacon.EventStream = EventStream;
 Bacon.UpdateBarrier = UpdateBarrier;
