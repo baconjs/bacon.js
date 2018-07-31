@@ -7,6 +7,7 @@ import { Desc } from "./describe";
 import { allowSync, isProperty } from "./observable";
 import _ from "./_"
 
+/** @hidden */
 export default function flatMapLatest<V, V2>(src: Observable<V>, f_: SpawnerOrObservable<V, V2>): Observable<V2> {
   let f = _.toFunction(f_)
   var stream = isProperty(src) ? src.toEventStream(allowSync) : src;

@@ -1,10 +1,10 @@
 import "./map";
 import constant from "./constant";
 import { whenP } from "./when";
-import { argumentsToObservables, argumentsToObservablesAndFunction } from "./argumentstoobservables";
+import { argumentsToObservables, argumentsToObservablesAndFunction } from "./internal/argumentstoobservables";
 import { Desc } from "./describe";
 import { isObservable } from "./helpers";
-import { DefaultSource, Source } from "./source";
+import { DefaultSource, Source } from "./internal/source";
 import Observable from "./observable";
 import { Property } from "./observable";;
 
@@ -33,6 +33,7 @@ export function combineWith() {
   }).withDesc(desc);
 };
 
+/** @hidden */
 export function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (V, V2) => R): Property<R> {
   return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 };

@@ -4,6 +4,7 @@ import { EventSink } from "./types";
 import _ from "./_";
 import { Transformer } from "./transform";
 
+/** @hidden */
 export default function mapEndT<V>(f: ((End) => V) | V): Transformer<V, V> {
   let theF = _.toFunction(f)
   return function(event: Event<V>, sink: EventSink<V>) {

@@ -2,6 +2,7 @@ import once from "./once";
 import { Error } from "./event";
 import { EventStream } from "./observable";
 
+/** @hidden */
 export default function tryF<In, Out>(f: (In) => Out): (In) => EventStream<Out> {
   return function(value) {
     try {

@@ -2,7 +2,7 @@ import { Desc } from "./describe";
 import fromBinder from "./frombinder";
 import _ from "./_";
 
-export const B$ = {
+export const $ = {
   asEventStream(eventName, selector, eventTransformer) {
     if (_.isFunction(selector)) {
       eventTransformer = selector;
@@ -15,6 +15,6 @@ export const B$ = {
     }, eventTransformer).withDesc(new Desc((<any>this).selector || this, "asEventStream", [eventName]));
   },
   init($) {
-    $.fn.asEventStream = B$.asEventStream;
+    $.fn.asEventStream = $.asEventStream;
   }
 }

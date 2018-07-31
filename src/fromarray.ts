@@ -1,10 +1,10 @@
 import { EventStream } from "./observable";
-import { assertArray } from "./assert";
+import { assertArray } from "./internal/assert";
 import { Desc } from "./describe";
 import never from "./never";
 import { Event, endEvent, toEvent } from "./event";
 import { more, noMore } from "./reply";
-import UpdateBarrier from "./updatebarrier";
+import UpdateBarrier from "./internal/updatebarrier";
 import { EventSink } from "./types";
 
 export default function fromArray<T>(values: (T | Event<T>)[]) {

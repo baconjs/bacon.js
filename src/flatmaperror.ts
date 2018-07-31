@@ -5,6 +5,7 @@ import { Error } from "./event";
 import { Desc } from "./describe";
 import flatMap_ from "./flatmap_"
 
+/** @hidden */
 export default function flatMapError<V>(src: Observable<V>, f: (any) => Observable<V>): Observable<V> {
   return flatMap_(
     (x) => {

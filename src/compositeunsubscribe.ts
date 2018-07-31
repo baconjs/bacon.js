@@ -6,6 +6,7 @@ interface Subscription {
   (unsubAll: Unsub, unsubMe: Unsub): Unsub
 }
 
+/** @hidden */
 export default class CompositeUnsubscribe {
   unsubscribed: boolean = false
   subscriptions: Unsub[]

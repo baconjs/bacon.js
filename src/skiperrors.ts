@@ -4,6 +4,7 @@ import Observable from "./observable";
 import Event, { isError } from "./event"
 import { EventSink } from "./types";
 
+/** @hidden */
 export default function skipErrors<V>(src: Observable<V>): Observable<V> {
   return src.transform(function(event: Event<V>, sink: EventSink<V>) {
     if (isError(event)) {

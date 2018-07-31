@@ -4,13 +4,14 @@ import { Event, hasValue, Initial } from "./event";
 import { more, noMore } from "./reply";
 import { nop } from "./helpers";
 import { Desc } from "./describe";
-import UpdateBarrier from "./updatebarrier";
+import UpdateBarrier from "./internal/updatebarrier";
 import { EventSink, Subscribe } from "./types";
 
 export interface Accumulator<In, Out> {
   (acc: Out, next: In): Out
 }
 
+/** @hidden */
 export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumulator<In, Out>): Property<Out> {
   let resultProperty;
   let acc = seed

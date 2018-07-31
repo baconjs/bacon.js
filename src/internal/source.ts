@@ -1,10 +1,10 @@
-import Observable from "./observable";
-import { EventSink, Unsub } from "./types";
+import Observable from "../observable";
+import { EventSink, Unsub } from "../types";
 
 interface Event<V> {
   value: V
 }
-
+/** @hidden */
 export abstract class Source<In, Out> {
   _isSource = true
   obs: Observable<In>
@@ -35,6 +35,7 @@ export abstract class Source<In, Out> {
   abstract push(event: Event<In>)
 }
 
+/** @hidden */
 export class DefaultSource<V> extends Source<V, V> {
   value: Event<V> | undefined
 
@@ -51,6 +52,7 @@ export class DefaultSource<V> extends Source<V, V> {
   }
 }
 
+/** @hidden */
 export class ConsumingSource<V> extends Source<V, V> {
   flatten = false
   queue: Event<V>[] = []
@@ -72,6 +74,7 @@ export class ConsumingSource<V> extends Source<V, V> {
   }
 }
 
+/** @hidden */
 export class BufferingSource<V> extends Source<V, V[]> {
   queue: V[] = []
 
@@ -95,6 +98,7 @@ export class BufferingSource<V> extends Source<V, V[]> {
 }
 
 
+/** @hidden */
 export function isTrigger(s): boolean {
   if (s == null) return false
   if (s._isSource) {
@@ -104,6 +108,7 @@ export function isTrigger(s): boolean {
   }
 }
 
+/** @hidden */
 export function fromObservable<V>(s: Source<V, V> | Observable<V>): Source<V, V> {
   if (s != null && (<any>s)._isSource) {
     return <Source<V, V>>s;

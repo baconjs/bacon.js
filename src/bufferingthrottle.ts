@@ -5,6 +5,7 @@ import later from "./later";
 import once from "./once";
 import { Desc } from "./describe";
 
+/** @hidden */
 export default function bufferingThrottle<V>(src: Observable<V>, minimumInterval: number): Observable<V> {
   var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
   return src.delayChanges(desc, changes => changes.flatMapConcat((x) => {

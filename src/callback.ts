@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import { endEvent, Error } from "./event";
-import { makeFunction } from "./functionconstruction";
+import { makeFunction } from "./internal/functionconstruction";
 import fromBinder from "./frombinder";
 import { nop } from "./helpers";
 import { EventStream } from "./observable";

@@ -1,5 +1,5 @@
 import { EventStream } from "./observable";
-import UpdateBarrier from "./updatebarrier";
+import UpdateBarrier from "./internal/updatebarrier";
 import { Desc } from "./describe";
 import { endEvent, Event, toEvent } from "./event";
 import { nop } from "./helpers";

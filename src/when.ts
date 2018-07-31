@@ -1,21 +1,18 @@
 import { Desc } from "./describe";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { EventStream, newEventStream } from "./observable";
-import UpdateBarrier from "./updatebarrier";
-import { fromObservable, isTrigger, Source } from "./source";
+import UpdateBarrier from "./internal/updatebarrier";
+import { fromObservable, isTrigger, Source } from "./internal/source";
 import { endEvent, Event, Value } from "./event";
 import { more, noMore, Reply } from "./reply";
 import _ from "./_";
-import { assert } from "./assert";
+import { assert } from "./internal/assert";
 import never from "./never";
-import propertyFromStreamSubscribe from "./propertyfromstreamsubscribe"
+import propertyFromStreamSubscribe from "./internal/propertyfromstreamsubscribe"
 import Observable, { ObservableConstructor } from "./observable";
 import { Unsub } from "./types";
 import { Property } from "./observable";
 import { isObservable } from "./helpers";
-
-;
-
 
 export type ObservableOrSource<V> = Observable<V> | Source<any, V>
 
@@ -25,27 +22,34 @@ export type Pattern3<I1,I2,I3,O> = [ObservableOrSource<I1>, ObservableOrSource<I
 export type Pattern4<I1,I2,I3,I4,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, (I1, I2, I3, I4) => O]
 export type Pattern5<I1,I2,I3,I4,I5,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, (I1, I2, I3, I4, I5) => O]
 export type Pattern6<I1,I2,I3,I4,I5,I6,O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, ObservableOrSource<I6>, (I1, I2, I3, I4, I5, I6) => O]
+/** @hidden */
 export type RawPattern = [AnyObservableOrSource[], AnyFunction]
 export type Pattern<O> = Pattern1<any, O> | Pattern2<any, any, O> | Pattern3<any, any, any, O> |
                          Pattern4<any, any, any, any, O> | Pattern5<any, any, any, any, any, O> | Pattern6<any, any, any, any, any, any, O> |
                          RawPattern
 
+/** @hidden */
 export type AnySource = Source<any, any>
+/** @hidden */
 export type AnyFunction = Function
 type AnyValue = Value<any>
+/** @hidden */
 export type AnyObservable = Observable<any>
+/** @hidden */
 export type AnyObservableOrSource = AnyObservable | AnySource
 
 export function when<O>(...patterns: Pattern<O>[]): EventStream<O> {
   return <any>when_(newEventStream, patterns)
 }
 
+/** @hidden */
 export function whenP<O>(...patterns: Pattern<O>[]): Property<O> {
   return <any>when_(propertyFromStreamSubscribe, patterns)
 }
 
 export default when;
 
+/** @hidden */
 export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): Observable<O> {
   if (patterns.length === 0) { return never() }
   var [sources, ixPats] = processRawPatterns(extractRawPatterns(patterns))
@@ -222,6 +226,7 @@ function isRawPattern(pattern: Pattern<any>): pattern is RawPattern {
   return pattern[0] instanceof Array
 }
 
+/** @hidden */
 export function extractRawPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
   let rawPatterns: RawPattern[] = []
   for (let i = 0; i < patterns.length; i++) {

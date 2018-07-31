@@ -24,6 +24,7 @@ import { EventStream } from "./observable";
 //   # => EventStream
 //
 // Returns EventStream
+/** @hidden */
 var eventMethods = [
   ["addEventListener","removeEventListener"],
   ["addListener", "removeListener"],

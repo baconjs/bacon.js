@@ -7,6 +7,7 @@ export interface Spy {
   (obs: Observable<any>): any
 }
 
+/** @hidden */
 export function registerObs(obs: Observable<any>) {
   if (spies.length) {
     if (!running) {
@@ -22,6 +23,7 @@ export function registerObs(obs: Observable<any>) {
   }
 }
 
+/** @hidden */
 export const spy = (spy: Spy) => spies.push(spy)
 
 export default spy

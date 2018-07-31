@@ -154,13 +154,16 @@ var _ = {
 };
 
 // TODO: move the rest of the functions as separate exports
+/** @hidden */
 export function flip<A, B, C>(f: (A, B) => C): ((B, A) => C) {
   return (a, b) => f(b, a)
 }
 
+/** @hidden */
 export function id<A>(x): A {
   return x;
 }
 
 var recursionDepth = 0;
+
 export default _;

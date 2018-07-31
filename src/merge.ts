@@ -1,6 +1,6 @@
 import { EventStream } from "./observable";
 import CompositeUnsubscribe from "./compositeunsubscribe";
-import { argumentsToObservables } from "./argumentstoobservables";
+import { argumentsToObservables } from "./internal/argumentstoobservables";
 import never from "./never";
 import _ from "./_";
 import { more, noMore } from "./reply";

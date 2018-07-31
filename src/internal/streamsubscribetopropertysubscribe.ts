@@ -1,9 +1,10 @@
-import { nop } from "./helpers";
-import { more, noMore } from "./reply";
-import { Option, Some } from "./optional";
-import { Event, Initial, Value } from "./event";
-import { Sink, Subscribe, Unsub } from "./types"
+import { nop } from "../helpers";
+import { more, noMore } from "../reply";
+import { Option, Some } from "../optional";
+import { Event, Initial, Value } from "../event";
+import { Sink, Subscribe, Unsub } from "../types"
 
+/** @hidden */
 export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<V>, streamSubscribe: Subscribe<V>) {
   //assertFunction(streamSubscribe)
   return function(sink: Sink<V>) {

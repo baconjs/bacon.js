@@ -1,4 +1,4 @@
-import UpdateBarrier from "./updatebarrier";
+import UpdateBarrier from "./internal/updatebarrier";
 import { Desc, describe } from "./describe";
 import { nop } from "./helpers";
 import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink } from "./types"
@@ -21,7 +21,7 @@ import endAsValue from "./endasvalue"
 import endOnError from "./endonerror";
 import awaiting from "./awaiting";
 import { combine } from "./combine";
-import { assertEventStream, assertFunction, assertNoArguments } from "./assert";
+import { assertEventStream, assertFunction, assertNoArguments } from "./internal/assert";
 import skip from "./skip";
 import map from "./map";
 import flatMapConcat from "./flatmapconcat";
@@ -29,7 +29,7 @@ import { sampledByE, sampledByP, sampleP } from "./sample";
 import { filter } from "./filter";
 import { and, not, or } from "./boolean";
 import flatMapFirst from "./flatmapfirst";
-import addPropertyInitValueToStream from "./addpropertyinitialvaluetostream";
+import addPropertyInitValueToStream from "./internal/addpropertyinitialvaluetostream";
 import fold from "./fold";
 import { startWithE, startWithP } from "./startwith";
 import takeUntil from "./takeuntil";
@@ -37,16 +37,16 @@ import flatMap from "./flatmap";
 import flatMapError from "./flatmaperror";
 import { registerObs } from "./spy";
 import flatMapLatest from "./flatmaplatest";
-import PropertyDispatcher from "./propertydispatcher";
+import PropertyDispatcher from "./internal/propertydispatcher";
 import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
 import { Event } from "./event";
-import Dispatcher from "./dispatcher";
+import Dispatcher from "./internal/dispatcher";
 import { concatE } from "./concat";
 import { bufferWithCount, bufferWithTime, bufferWithTimeOrCount } from "./buffer";
-import asyncWrapSubscribe from "./asyncwrapsubscribe";
+import asyncWrapSubscribe from "./internal/asyncwrapsubscribe";
 import { none, Option, toOption } from "./optional";
 import { mergeAll } from "./merge";
-import streamSubscribeToPropertySubscribe from "./streamsubscribetopropertysubscribe";
+import streamSubscribeToPropertySubscribe from "./internal/streamsubscribetopropertysubscribe";
 import delay from "./delay";
 import { debounce, debounceImmediate } from "./debounce";
 import throttle from "./throttle";
@@ -57,7 +57,7 @@ import skipUntil from "./skipuntil";
 import { PredicateOrProperty } from "./predicate";
 import skipWhile from "./skipwhile";
 import _ from "./_";
-import { groupBy, GroupLimiter, GroupKey } from "./groupby";
+import { groupBy, GroupLimiter } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
@@ -68,6 +68,10 @@ import { firstToPromise, toPromise } from "./topromise";
 
 var idCounter = 0;
 
+/**
+Observable is the base class for [EventsStream](EventStream.html) and Property
+ @typeparam V Type of the elements/values in the stream/property
+ */
 export abstract class Observable<V> {
   desc: Desc
   id: number = ++idCounter
@@ -102,6 +106,8 @@ export abstract class Observable<V> {
   delay(delayMs: number): this {
     return <any>delay(this, delayMs)
   }
+
+  /** @hidden */
   abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
   deps(): any[] {
     return this.desc.deps()
@@ -156,7 +162,7 @@ export abstract class Observable<V> {
     // TODO: inefficient alias. Also, similar assign alias missing.
     return this.onValue(f)
   }
-  groupBy(keyF: (T) => GroupKey, limitF: GroupLimiter<V> = _.id): Observable<Observable<V>> {
+  groupBy(keyF: (T) => string, limitF: GroupLimiter<V> = _.id): Observable<Observable<V>> {
     return groupBy(this, keyF, limitF)
   }
   holdWhen(valve: Property<boolean>): EventStream<V> {
@@ -270,6 +276,7 @@ export abstract class Observable<V> {
   }
 }
 
+/** @hidden */
 export interface ObservableConstructor {
   (description: Desc, subscribe: Subscribe<any>): Observable<any>
 }
@@ -304,6 +311,7 @@ export class Property<V> extends Observable<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(right))
   }
 
+  /** @hidden */
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
@@ -389,6 +397,7 @@ export class Property<V> extends Observable<V> {
   }
 }
 
+/** @hidden */
 export function isProperty<V>(x): x is Property<V> {
   return !!x._isProperty
 }
@@ -397,7 +406,9 @@ export function isProperty<V>(x): x is Property<V> {
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
 // to the outside world, though.
+/** @hidden */
 export const allowSync = { forceAsync: false }
+/** @hidden */
 export interface EventStreamOptions { forceAsync: boolean }
 
 export class EventStream<V> extends Observable<V> {
@@ -462,6 +473,7 @@ export class EventStream<V> extends Observable<V> {
 
   not(): EventStream<boolean> {return <any>not(this) }
 
+  /** @hidden */
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>f(this).withDesc(desc)
   }
@@ -479,6 +491,7 @@ export class EventStream<V> extends Observable<V> {
   }
 }
 
+/** @hidden */
 export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
   return new EventStream(description, subscribe)
 }

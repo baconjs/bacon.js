@@ -2,8 +2,10 @@ import Exception from "./exception";
 import Observable from "./observable";
 import { noMore } from "./reply";
 import "./last";
+
 declare var Promise: any
 
+/** @hidden */
 export function firstToPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
   // Can't do in the global scope, as shim can be applied after Bacon is loaded.
   if (typeof PromiseCtr !== "function") {
@@ -23,6 +25,7 @@ export function firstToPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
     }));
 };
 
+/** @hidden */
 export function toPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
   return src.last().firstToPromise(PromiseCtr);
 };

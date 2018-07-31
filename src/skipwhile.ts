@@ -5,10 +5,12 @@ import { Event, hasValue } from "./event"
 import { EventSink } from "./types";
 import { Predicate, PredicateOrProperty, withPredicate } from "./predicate";
 
+/** @hidden */
 export function skipWhile<V>(src: Observable<V>, f: PredicateOrProperty<V>) {
   return withPredicate(src, f, skipWhileT, new Desc(src, "skipWhile", [f]))
 }
 
+/** @hidden */
 export function skipWhileT<V>(f: Predicate<V>) {
   var started = false;
   return function(event: Event<V>, sink: EventSink<V>) {

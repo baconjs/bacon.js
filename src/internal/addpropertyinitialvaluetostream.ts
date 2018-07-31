@@ -1,12 +1,13 @@
-import "./concat";
-import { noMore } from './reply';
-import {EventStream, allowSync } from "./observable";
-import { describe } from './describe';
+import "../concat";
+import { noMore } from '../reply';
+import {EventStream, allowSync } from "../observable";
+import { describe } from '../describe';
 import UpdateBarrier from './updatebarrier';
-import { endEvent, Event } from './event';
-import { Property } from "./observable";;
-import { EventSink } from "./types";
+import { endEvent, Event } from '../event';
+import { Property } from "../observable";;
+import { EventSink } from "../types";
 
+/** @hidden */
 export default function addPropertyInitValueToStream<V>(property: Property<V>, stream: EventStream<V>): Property<V> {
   const justInitValue: EventStream<V> = new EventStream(
     describe(property, "justInitValue"), 

@@ -7,6 +7,7 @@ import { Desc } from "./describe";
 import { Transformer } from "./transform";
 import { Predicate, PredicateOrProperty, withPredicate } from "./predicate";
 
+/** @hidden */
 export function takeWhile<V>(src: Observable<V>, f: PredicateOrProperty<V>): Observable<V> {
   return withPredicate(src, f, takeWhileT, new Desc(src, "takeWhile", [f]))
 }

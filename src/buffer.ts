@@ -8,14 +8,17 @@ import { EventSink } from "./types";
 
 export type DelayFunction = (any) => any
 
+/** @hidden */
 export function bufferWithTime<V>(src: EventStream<V>, delay: number | DelayFunction): EventStream<V> {
   return bufferWithTimeOrCount(src, delay, Number.MAX_VALUE).withDesc(new Desc(src, "bufferWithTime", [delay]));
 };
 
+/** @hidden */
 export function bufferWithCount<V>(src: EventStream<V>, count: number): EventStream<V> {
   return bufferWithTimeOrCount(src,undefined, count).withDesc(new Desc(src, "bufferWithCount", [count]));
 };
 
+/** @hidden */
 export function bufferWithTimeOrCount<V>(src: EventStream<V>, delay?: number | DelayFunction, count?: number): EventStream<V> {
   function flushOrSchedule(buffer: Buffer<V>) {
     if (buffer.values.length === count) {
@@ -76,6 +79,7 @@ interface BufferHandler<V> {
   (buffer: Buffer<V>): any
 }
 
+/** @hidden */
 export function buffer<V>(src: EventStream<V>, delay?: number | DelayFunction, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V> {
   var reply = more;
   if (typeof delay === "number") {

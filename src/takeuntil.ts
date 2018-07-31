@@ -7,10 +7,12 @@ import { Desc } from "./describe";
 import { groupSimultaneous_ } from "./groupsimultaneous";
 import { EventSink } from "./types";
 
+/** @hidden */
 const endMarker = {};
-
+/** @hidden */
 type OrEndMarker<V> = V | {}
 
+/** @hidden */
 export default function takeUntil<V>(src: Observable<V>, stopper: Observable<any>): Observable<V> {
   let endMapped: Observable<OrEndMarker<V>> = (<Observable<OrEndMarker<V>>>src).mapEnd(endMarker);
   let withEndMarker: Observable<OrEndMarker<V>[][]> = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync)

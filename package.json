@@ -105,7 +105,8 @@
     "release": "scripts/release",
     "tsc": "tsc --emitDeclarationOnly --declaration --declarationDir types",
     "watch": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'scripts/dist'",
-    "watch-ts": "tsc --outDir /tmp/deleteme --watch"
+    "watch-ts": "tsc --outDir /tmp/deleteme --watch",
+    "typedoc": "typedoc --out docs --ignoreCompilerErrors src --mode file --excludeNotExported"
   },
   "main": "dist/Bacon.js",
   "types": "types/bacon.d.ts"

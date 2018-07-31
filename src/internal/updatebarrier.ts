@@ -1,9 +1,9 @@
-import _ from './_';
-import { noMore } from './reply';
+import _ from '../_';
+import { noMore } from '../reply';
 import { assertFunction } from "./assert";
-import { Event } from "./event"
-import { Subscribe } from "./types"
-import GlobalScheduler from "./scheduler";
+import { Event } from "../event"
+import { Subscribe } from "../types"
+import GlobalScheduler from "../scheduler";
 
 interface Observable {
   id: number

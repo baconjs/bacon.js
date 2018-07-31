@@ -3,6 +3,7 @@ import "./filter";
 import { Desc } from "./describe";
 import { Observable, Property } from "./observable";
 
+/** @hidden */
 export function slidingWindow<V>(src: Observable<V>, maxValues: number, minValues: number = 0): Property<V[]> {
   return src.scan<V[]>([],
     (function (window: V[], value: V) {

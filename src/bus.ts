@@ -4,7 +4,7 @@ import Observable from "./observable"
 import { endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
 import { EventSink } from "./types"
-import { assertObservable } from "./assert";
+import { assertObservable } from "./internal/assert";
 import { noMore } from "./reply";
 
 interface Subscription<V> {

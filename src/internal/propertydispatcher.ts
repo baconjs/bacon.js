@@ -1,13 +1,14 @@
 import Dispatcher from "./dispatcher";
-import Observable from "./observable";
-import { nop } from "./helpers";
-import { none, Option, Some } from "./optional";
+import Observable from "../observable";
+import { nop } from "../helpers";
+import { none, Option, Some } from "../optional";
 import UpdateBarrier from "./updatebarrier";
-import { endEvent, Event, initialEvent, Value } from "./event";
-import _ from "./_"
-import { EventSink, Subscribe } from "./types"
-import { more, noMore } from "./reply";
+import { endEvent, Event, initialEvent, Value } from "../event";
+import _ from "../_"
+import { EventSink, Subscribe } from "../types"
+import { more, noMore } from "../reply";
 
+/** @hidden */
 export default class PropertyDispatcher<V, O extends Observable<V>> extends Dispatcher<V, O> {
   current: Option<Value<V>> = none()
   currentValueRootId?: number

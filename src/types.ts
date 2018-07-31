@@ -8,6 +8,7 @@ export type Unsub = () => void
 export interface Subscribe<T> {
   (arg: EventSink<T>): any;
 }
+/** @hidden */
 export interface EventStreamDelay<V> {
   (stream: EventStream<V>): EventStream<V>
 }

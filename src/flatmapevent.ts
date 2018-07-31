@@ -7,6 +7,7 @@ export interface EventSpawner<V, V2> {
   (e: Event<V>): Observable<V2>
 }
 
+/** @hidden */
 export default function flatMapEvent<V, V2>(src: Observable<V>, f: EventSpawner<V, V2>): Observable<V2> {
   return flatMap_(
     f,

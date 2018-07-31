@@ -5,6 +5,7 @@ import { Desc } from "./describe";
 import { EventSink, Unsub } from "./types";
 import { more, noMore } from "./reply";
 
+/** @hidden */
 export function holdWhen<V>(src: Observable<V>, valve: Property<boolean>): EventStream<V> {
   var onHold = false
   var bufferedValues: V[] = []

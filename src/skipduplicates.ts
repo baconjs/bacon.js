@@ -7,12 +7,15 @@ import Event, { hasValue } from "./event"
 export interface Equals<A> {
   (left: A, right: A): boolean
 }
+
+/** @hidden */
 export function equals(a, b) { return a === b; }
 
 function isNone(object){
   return ((typeof object !== "undefined" && object !== null) ? object._isNone : false)
 };
 
+/** @hidden */
 export default function skipDuplicates<A>(src: Observable<A>, isEqual: Equals<A> = equals): Observable<A> {
   let desc = new Desc(src, "skipDuplicates", []);
   return withStateMachine<A, Option<A>, A>(none(), function (prev: Option<A>, event: Event<A>): [Option<A>, Event<A>[]] {

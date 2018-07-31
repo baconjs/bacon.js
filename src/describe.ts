@@ -30,6 +30,7 @@ export class Desc {
   }
 };
 
+/** @hidden */
 export function describe (context, method, ...args): Desc {
   const ref = context || method;
   if (ref && ref._isDesc) {
@@ -39,6 +40,7 @@ export function describe (context, method, ...args): Desc {
   }
 }
 
+/** @hidden */
 export function findDeps (x): Observable[] {
   if (isArray(x)) {
     return _.flatMap(findDeps, x);

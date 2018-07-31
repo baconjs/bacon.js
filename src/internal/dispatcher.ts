@@ -1,15 +1,16 @@
-import _ from "./_";
-import { more, noMore, Reply } from "./reply";
-import { nop } from "./helpers";
-import { endEvent, Event } from "./event";
+import _ from "../_";
+import { more, noMore, Reply } from "../reply";
+import { nop } from "../helpers";
+import { endEvent, Event } from "../event";
 import UpdateBarrier from "./updatebarrier";
-import { EventSink, Subscribe, Unsub } from "./types"
+import { EventSink, Subscribe, Unsub } from "../types"
 import { assertFunction } from "./assert";
 
 interface Subscription<V> {
   sink: EventSink<V>
 }
 
+/** @hidden */
 export default class Dispatcher<V, O> {
   _subscribe: Subscribe<V>
   _handleEvent?: EventSink<V>

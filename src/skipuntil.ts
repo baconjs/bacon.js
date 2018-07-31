@@ -4,6 +4,7 @@ import { Desc } from "./describe";
 import Observable from "./observable";
 import { composeT } from "./transform";
 
+/** @hidden */
 export function skipUntil<V>(src: Observable<V>, starter: Observable<any>): Observable<V> {
   var started = starter
     .transform(composeT(takeT(1), mapT<V, boolean>(true)))

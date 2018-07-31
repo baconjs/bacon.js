@@ -6,6 +6,7 @@ import Observable from "./observable"
 import later from "./later"
 import once from "./once"
 
+/** @hidden */
 export function debounce<V>(src: Observable<V>, delay: number): Observable<V> {
   return src.delayChanges(new Desc(src, "debounce", [delay]), function(changes) {
     return changes.flatMapLatest(function(value) {
@@ -14,6 +15,7 @@ export function debounce<V>(src: Observable<V>, delay: number): Observable<V> {
   })
 }
 
+/** @hidden */
 export function debounceImmediate<V>(src: Observable<V>, delay: number): Observable<V> {
   return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function(changes) {
     return changes.flatMapFirst(function(value) {

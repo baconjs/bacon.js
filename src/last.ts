@@ -3,6 +3,7 @@ import { noMore } from "./reply";
 import { endEvent, hasValue, isEnd, Value } from "./event";
 import Observable from "./observable";
 
+/** @hidden */
 export default function last<V>(src: Observable<V>): Observable<V> {
   var lastEvent: Value<V>;
   return src.transform<V>(function (event, sink) {

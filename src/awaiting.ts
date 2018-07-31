@@ -7,6 +7,7 @@ import { allowSync } from "./observable";
 import Observable from "./observable";
 import { Property } from "./observable";;
 
+/** @hidden */
 export default function awaiting(src: Observable<any>, other: Observable<any>): Property<boolean> {
   return groupSimultaneous_([src, other], allowSync)
     .map((values) => values[1].length === 0)

@@ -3,6 +3,7 @@ import { EventSink } from "./types";
 import _ from "./_";
 import { Transformer } from "./transform";
 
+/** @hidden */
 export default function mapErrorT<V>(f: ((any) => V) | V): Transformer<V, V> {
   let theF = _.toFunction(f)
   return function(event: Event<V>, sink: EventSink<V>) {

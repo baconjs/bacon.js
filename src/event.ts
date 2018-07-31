@@ -1,5 +1,6 @@
 import _ from './_';
 
+/** @hidden */
 var eventIdCounter = 0;
 
 export abstract class Event<V> {
@@ -18,6 +19,7 @@ export abstract class Event<V> {
   abstract fmap<V2>(f: (V) => V2): Event<V2>
 }
 
+/** @hidden */
 export abstract class Value<V> extends Event<V> {
   value: V;
   hasValue: boolean = true
@@ -57,6 +59,7 @@ export class Initial<V> extends Value<V> {
   toNext(): Next<V> { return new Next(this.value) }
 }
 
+/** @hidden */
 abstract class NoValue<V> extends Event<V> {
   fmap<V2>(f: (V) => V2): NoValue<V2> {
     return <NoValue<V2>><any>this
@@ -81,9 +84,13 @@ export class Error<V> extends NoValue<V> {
   }
 }
 
+/** @hidden */
 export function initialEvent<V>(value: V): Initial<V> { return new Initial(value); }
+/** @hidden */
 export function nextEvent<V>(value: V): Next<V> { return new Next(value); }
+/** @hidden */
 export function endEvent<V>(): End<V> { return new End(); }
+/** @hidden */
 export function toEvent<V>(x: V | Event<V>): Event<V> {
   if (x && (<any>x)._isEvent) {
     return <Event<V>>x;
@@ -112,5 +119,3 @@ export function hasValue<V>(e: Event<V>): e is Value<V> {
 export function isEnd<V>(e: Event<V>): e is End<V> {
   return e.isEnd
 }
-
-export type EventOrValue<V> = Event<V> | V

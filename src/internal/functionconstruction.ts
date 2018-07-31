@@ -1,4 +1,4 @@
-import _ from './_';
+import _ from '../_';
 
 function withMethodCallSupport(wrapped) {
   return function(f, ...args) {
@@ -26,6 +26,7 @@ const makeFunction_ = withMethodCallSupport(function(f, ...args) {
   }
 });
 
+/** @hidden */
 export function makeFunction(f, args) {
   return makeFunction_(f, ...args);
 }

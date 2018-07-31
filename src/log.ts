@@ -1,6 +1,7 @@
 /* eslint no-console: 0 */
 import Observable from "./observable";
 
+/** @hidden */
 export default function log(args: any[], src: Observable<any>): void {
   src.subscribe(function(event) {
     if (typeof console !== "undefined" && typeof console.log === "function") {

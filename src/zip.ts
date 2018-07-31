@@ -1,4 +1,4 @@
-import { argumentsToObservables, argumentsToObservablesAndFunction } from "./argumentstoobservables";
+import { argumentsToObservables, argumentsToObservablesAndFunction } from "./internal/argumentstoobservables";
 import "./sample";
 import Observable, { EventStream } from "./observable";
 import _ from "./_";
@@ -19,6 +19,7 @@ export function zipWith(...args): EventStream<any> {
 };
 
 
+/** @hidden */
 export function zip<V, V2, Out>(left: Observable<V>, right: Observable<V2>, f: (V, V2) => Out): EventStream<Out> {
   return zipWith([left, right], f || Array).withDesc(new Desc(left, "zip", [right]));
 }

@@ -1,8 +1,9 @@
-import _ from "./_";
-import { isArray, isObservable } from "./helpers";
-import Observable from "./observable";
-import constant from "./constant"
+import _ from "../_";
+import { isArray, isObservable } from "../helpers";
+import Observable from "../observable";
+import constant from "../constant"
 
+/** @hidden */
 export function argumentsToObservables<T>(args: (Observable<T> | Observable<T>[] | T)[]): Observable<T>[] {
   args = Array.prototype.slice.call(args)
   return _.flatMap(singleToObservables, args)
@@ -18,6 +19,7 @@ function singleToObservables<T>(x: (Observable<T> | Observable<T>[] | T)): Obser
   }
 }
 
+/** @hidden */
 export function argumentsToObservablesAndFunction(args): [Observable<any>[], Function] {
   if (_.isFunction(args[0])) {
     return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];

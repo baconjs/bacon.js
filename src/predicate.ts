@@ -7,9 +7,11 @@ import withLatestFrom from "./withlatestfrom";
 import { composeT, Transformer } from "./transform";
 
 export type Predicate<V> = (V) => boolean
+/** @hidden */
 export type PredicateOrBoolean<V> = Predicate<V> | boolean
 export type PredicateOrProperty<V> = Predicate<V> | boolean | Property<boolean>
 
+/** @hidden */
 export function toPredicate<V>(f: PredicateOrBoolean<V>): Predicate<V> {
   if (typeof f == "boolean") {
     return _.always(f)
@@ -23,6 +25,7 @@ export function toPredicate<V>(f: PredicateOrBoolean<V>): Predicate<V> {
 interface Predicate2Transformer<V> {
   (p: Predicate<V>): Transformer<V, V>
 }
+/** @hidden */
 export function withPredicate<V>(src: Observable<V>, f: PredicateOrProperty<V>, predicateTransformer: Predicate2Transformer<V>, desc: Desc): Observable<V> {
   if (f instanceof Property) {
     return withLatestFrom(src, f, (p, v) => [p, v])
