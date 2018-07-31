@@ -1,7 +1,7 @@
 import UpdateBarrier from "./updatebarrier";
 import { Event } from "./event";
 import { Sink, Subscribe } from "./types"
-import Scheduler from "./scheduler"
+import GlobalScheduler from "./scheduler"
 
 export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Subscribe<V> {
   //assertFunction(subscribe)
@@ -34,7 +34,7 @@ export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Sub
             if (inTransaction) {
               UpdateBarrier.soonButNotYet(obs, deliverAsync)
             } else {
-              Scheduler.scheduler.setTimeout(deliverAsync, 0)
+              GlobalScheduler.scheduler.setTimeout(deliverAsync, 0)
             }
           } else {
             asyncDeliveries.push(event)

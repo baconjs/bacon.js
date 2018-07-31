@@ -2,7 +2,7 @@ import Observable, { EventStream, Property } from "./observable";
 import { Desc } from "./describe";
 import { withLatestFrom } from "./withlatestfrom"
 import _, { flip } from "./_"
-import { interval } from "./interval";
+import interval from "./interval";
 
 const makeCombinator = (combinator) => {
   if ((typeof combinator !== "undefined" && combinator !== null)) {

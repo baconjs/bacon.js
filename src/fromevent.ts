@@ -46,7 +46,7 @@ var findHandlerMethods = function(target): [Function, Function] {
   throw new Exception("No suitable event methods in " + target);
 };
 
-export default function fromEventTarget<V>(target, eventSource, eventTransformer): EventStream<V> {
+export default function fromEvent<V>(target, eventSource, eventTransformer): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
   return fromBinder<V>(function (handler) {

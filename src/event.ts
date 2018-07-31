@@ -97,6 +97,10 @@ export function isEvent<V>(e): e is Event<V> {
   return e && e._isEvent
 }
 
+export function isInitial<V>(e): e is Initial<V> {
+  return e && e._isInitial
+}
+
 export function isError<V>(e: Event<V>): e is Error<V> {
   return e.isError
 }

@@ -17,7 +17,7 @@ export type UpdatePattern<O> =
   UpdatePattern5<any, any, any, any, any, O> |
   UpdatePattern6<any, any, any, any, any, any, O>
 
-export default function update<Out>(initial, ...patterns: UpdatePattern<Out>[]): Property<Out> {
+export function update<Out>(initial, ...patterns: UpdatePattern<Out>[]): Property<Out> {
   let rawPatterns = extractRawPatterns(<any>patterns)
 
   for (var i = 0; i < rawPatterns.length; i++) {

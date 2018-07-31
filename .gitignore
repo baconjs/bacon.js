@@ -13,3 +13,4 @@ spec/BaconSpec.coffee
 testing
 performance/performance.js
 browserstack-run.pid
+.rpt2_cache

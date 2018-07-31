@@ -41,10 +41,10 @@ describe "Observable.name", ->
 
 describe "Observable.withDescription", ->
   it "affects toString and inspect", ->
-    expect(Bacon.never().withDescription(Bacon, "una", "mas").inspect()).to.equal("Bacon.una(mas)")
+    expect(Bacon.never().withDescription("Bacon", "una", "mas").inspect()).to.equal("Bacon.una(mas)")
   it "affects desc", ->
-    description = Bacon.never().withDescription(Bacon, "una", "mas").desc
-    expect(description.context).to.equal(Bacon)
+    description = Bacon.never().withDescription("Bacon", "una", "mas").desc
+    expect(description.context).to.equal("Bacon")
     expect(description.method).to.equal("una")
     expect(description.args).to.deep.equal(["mas"])
 

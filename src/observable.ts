@@ -64,7 +64,6 @@ import { flatScan } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
 import decode from "./decode";
-import { Promise } from "es6-promise";
 import { firstToPromise, toPromise } from "./topromise";
 
 var idCounter = 0;

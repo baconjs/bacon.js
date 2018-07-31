@@ -11,7 +11,7 @@ var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
 var babelPlugin = require("rollup-plugin-babel");
-var typescriptPlugin = require("rollup-plugin-typescript");
+var typescriptPlugin = require("rollup-plugin-typescript2");
 
 var recast = require("recast");
 var uglifyjs = require("uglify-js");

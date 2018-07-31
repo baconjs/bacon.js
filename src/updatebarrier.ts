@@ -3,7 +3,7 @@ import { noMore } from './reply';
 import { assertFunction } from "./assert";
 import { Event } from "./event"
 import { Subscribe } from "./types"
-import Scheduler from "./scheduler";
+import GlobalScheduler from "./scheduler";
 
 interface Observable {
   id: number
@@ -48,7 +48,7 @@ function soonButNotYet(obs, f) {
     // Otherwise -> perform with timeout
     //console.log('with timeout')
     
-    Scheduler.scheduler.setTimeout(f, 0)
+    GlobalScheduler.scheduler.setTimeout(f, 0)
   }
 }
 

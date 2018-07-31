@@ -1,0 +1,10 @@
+import "./scan";
+import Observable, { Property } from "./observable";
+export declare type UpdatePattern1<I1, O> = [Observable<I1>, (O: any, I1: any) => O];
+export declare type UpdatePattern2<I1, I2, O> = [Observable<I1>, Observable<I1>, (O: any, I1: any, I2: any) => O];
+export declare type UpdatePattern3<I1, I2, I3, O> = [Observable<I1>, Observable<I1>, Observable<I3>, (O: any, I1: any, I2: any, I3: any) => O];
+export declare type UpdatePattern4<I1, I2, I3, I4, O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, (O: any, I1: any, I2: any, I3: any, I4: any) => O];
+export declare type UpdatePattern5<I1, I2, I3, I4, I5, O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, (O: any, I1: any, I2: any, I3: any, I4: any, I5: any) => O];
+export declare type UpdatePattern6<I1, I2, I3, I4, I5, I6, O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, Observable<I6>, (O: any, I1: any, I2: any, I3: any, I4: any, I5: any, I6: any) => O];
+export declare type UpdatePattern<O> = UpdatePattern1<any, O> | UpdatePattern2<any, any, O> | UpdatePattern3<any, any, any, O> | UpdatePattern4<any, any, any, any, O> | UpdatePattern5<any, any, any, any, any, O> | UpdatePattern6<any, any, any, any, any, any, O>;
+export declare function update<Out>(initial: any, ...patterns: UpdatePattern<Out>[]): Property<Out>;

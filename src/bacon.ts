@@ -1,97 +1,44 @@
-import _ from './_';
-import { End, Error, Event, Initial, Next } from './event';
-import { more, noMore } from './reply';
-import spy from './spy';
-import { Desc } from './describe';
-import Scheduler from './scheduler';
-import CompositeUnsubscribe from "./compositeunsubscribe";
-import Bus from "./bus";
-import once from "./once";
-import retry from "./retry";
-import never from "./never";
-import { combineAsArray, combineWith } from "./combine";
-import { fromCallback, fromNodeCallback } from "./callback";
-import combineTemplate from "./combinetemplate";
-import { concatAll } from "./concat";
-import constant from "./constant";
-import fromArray from "./fromarray";
-import fromBinder from "./frombinder";
-import fromESObservable from "./fromesobservable";
-import fromEventTarget from "./fromevent";
-import fromPoll from "./frompoll";
-import fromPromise from "./frompromise";
-import groupSimultaneous from "./groupsimultaneous";
-import { interval } from "./interval";
-import { B$ } from "./jquery";
-import later from "./later";
-import { mergeAll } from "./merge";
-import { onValues } from "./onvalues";
-import repeat from "./repeat";
-import repeatedly from "./repeatedly";
-import sequentially from "./sequentially";
-import silence from "./silence";
-import tryF from "./try";
-import update from "./update";
-import when from "./when";
-import { zipAsArray, zipWith } from "./zip";
-import { EventStream, default as Observable } from "./observable";
-import UpdateBarrier from "./updatebarrier"
 import "./esobservable";
 
-const Bacon = {
-  _,
-  $: B$,
-  Bus: Bus,
-  CompositeUnsubscribe,
-  Desc,
-  End,
-  Error,
-  Event,
-  EventStream,
-  Initial,
-  Next,
-  Observable,
-  UpdateBarrier,
-  combineAsArray,
-  combineTemplate,
-  combineWith,
-  concatAll,
-  constant,
-  fromArray,
-  fromBinder,
-  fromCallback,
-  fromESObservable,
-  fromEvent: fromEventTarget,
-  fromEventTarget,
-  fromNodeCallback,
-  fromPoll,
-  fromPromise,
-  getScheduler: () => Scheduler.scheduler,
-  groupSimultaneous,
-  interval,
-  later,
-  mergeAll,
-  more,
-  never,
-  noMore,
-  onValues,
-  once,
-  repeat,
-  repeatedly,
-  retry,
-  sequentially,
-  setScheduler: (newScheduler) => Scheduler.scheduler = newScheduler,
-  silence,
-  spy,
-  toString() { return "Bacon"; },
-  try: tryF,
-  update,
-  version: '<version>',
-  when,
-  zipAsArray,
-  zipWith
-};
+export const version = '<version>'
 
-(<any>Bacon).Bacon = Bacon;
-
-export default Bacon;
+export * from "./update"
+export * from "./when"
+export * from "./combine"
+export { default as combineTemplate } from "./combinetemplate"
+export { concatAll } from "./concat"
+export { default as constant } from "./constant"
+export { default as fromArray } from "./fromarray"
+export { default as fromBinder } from "./frombinder"
+export { default as fromEvent, default as fromEventTarget } from "./fromevent";
+export { default as fromPoll } from "./frompoll"
+export { default as groupSimultaneous } from "./groupsimultaneous"
+export { default as interval } from "./interval"
+export { default as later } from "./later"
+export { default as never } from "./never"
+export { default as onValues } from "./onvalues"
+export { default as once } from "./once"
+export { default as repeat } from "./repeat"
+export { default as repeatedly } from "./repeatedly"
+export { default as retry } from "./retry"
+export { default as sequentially } from "./sequentially"
+export { default as silence } from "./silence"
+export { zipAsArray, zipWith } from "./zip"
+export { mergeAll } from "./merge"
+export { more, noMore, Reply } from "./reply"
+export { default as fromPromise } from "./frompromise"
+export { fromCallback, fromNodeCallback } from "./callback"
+export { default as fromESObservable } from "./fromesobservable"
+export { EventStream, Observable, Property } from "./observable"
+export { default as Bus } from "./bus"
+export * from "./types"
+export { Desc } from "./describe"
+export { Event, Next, Initial, End, Error, Value, hasValue, isError, isEnd, isInitial } from "./event"
+export { Binder, EventTransformer, EventLike, FlexibleSink } from "./frombinder"
+export { RetryOptions, RetryContext } from "./retry"
+export { default as CompositeUnsubscribe } from "./compositeunsubscribe"
+export { spy, Spy } from "./spy"
+export { default as try } from "./try"
+export { getScheduler, setScheduler } from "./scheduler"
+export { default as _ } from "./_"
+export { B$ as $ } from "./jquery"

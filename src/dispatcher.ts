@@ -1,5 +1,5 @@
 import _ from "./_";
-import { more, noMore } from "./reply";
+import { more, noMore, Reply } from "./reply";
 import { nop } from "./helpers";
 import { endEvent, Event } from "./event";
 import UpdateBarrier from "./updatebarrier";
@@ -61,7 +61,7 @@ export default class Dispatcher<V, O> {
       throw error;
     }
   }
-  pushIt(event: Event<V>) {
+  pushIt(event: Event<V>): Reply | undefined {
     if (!this.pushing) {
       if (event === this.prevError) {
         return;

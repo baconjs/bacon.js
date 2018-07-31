@@ -3,8 +3,7 @@ import { Desc } from "./describe";
 import { End, Event, hasValue, nextEvent } from "./event";
 import { more, noMore } from "./reply";
 import { nop } from "./helpers";
-import _ from "./_";
-import Scheduler from "./scheduler"
+import GlobalScheduler from "./scheduler"
 import { EventSink } from "./types";
 
 export type DelayFunction = (any) => any
@@ -40,12 +39,12 @@ class Buffer<V> {
   onInput: BufferHandler<V>
   onFlush: BufferHandler<V>
   push: EventSink<V> = (e) => {}
-  scheduled = null
+  scheduled: number | null = null
   end: End<V> | undefined = undefined
   values: V[] = []
   flush() {
     if (this.scheduled) {
-      Scheduler.scheduler.clearTimeout(this.scheduled);
+      GlobalScheduler.scheduler.clearTimeout(this.scheduled);
       this.scheduled = null;
     }
     if (this.values.length > 0) {
@@ -79,11 +78,11 @@ interface BufferHandler<V> {
 
 export function buffer<V>(src: EventStream<V>, delay?: number | DelayFunction, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V> {
   var reply = more;
-  if (!_.isFunction(delay)) {
+  if (typeof delay === "number") {
     var delayMs = delay;
     delay = function(f) {
       //console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
-      return Scheduler.scheduler.setTimeout(f, delayMs);
+      return GlobalScheduler.scheduler.setTimeout(f, delayMs);
     };
   }
 

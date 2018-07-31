@@ -1,6 +1,6 @@
 import Observable from "./observable";
 
-var spies: Spy[] = [];
+var spies: Spy[] = []
 var running = false
 
 export interface Spy {
@@ -22,4 +22,6 @@ export function registerObs(obs: Observable<any>) {
   }
 }
 
-export default (spy: Spy) => spies.push(spy);
+export const spy = (spy: Spy) => spies.push(spy)
+
+export default spy

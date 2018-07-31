@@ -13,12 +13,12 @@ import silence from "./silence";
 import repeat from "./repeat";
 import once from "./once";
 
-interface RetryContext {
+export interface RetryContext {
   error: any
   retriesDone: number
 }
 
-interface RetryOptions<V> {
+export interface RetryOptions<V> {
   source: (number) => Observable<V>
   retries? : number
   delay?(context: RetryContext): number
