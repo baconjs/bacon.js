@@ -3,29 +3,30 @@ expect = require("chai").expect
 
 {
   expectStreamEvents,
+  expectPropertyEvents,
   series,
   unstable,
   semiunstable
 } = require("../SpecHelper")
 
+flattenAndConcat = (obs) ->
+  obs.flatMap((obs) ->
+    obs.fold([], (xs,x) ->
+      xs.concat(x)))
+
+flattenAndMerge = (obs) ->
+  obs.flatMap(Bacon._.id)
+
+takeWhileInclusive = (obs, f) ->
+  obs.transform (event, sink) ->
+    if event.filter(f)
+      sink event
+    else
+      sink event
+      sink new Bacon.End()
+      Bacon.noMore
+
 describe "EventStream.groupBy", ->
-  flattenAndConcat = (obs) ->
-    obs.flatMap((obs) ->
-      obs.fold([], (xs,x) ->
-        xs.concat(x)))
-
-  flattenAndMerge = (obs) ->
-    obs.flatMap(Bacon._.id)
-
-  takeWhileInclusive = (obs, f) ->
-    obs.transform (event, sink) ->
-      if event.filter(f)
-        sink event
-      else
-        sink event
-        sink new Bacon.End()
-        Bacon.noMore
-
   describe "without limiting function", ->
     expectStreamEvents(
       ->
@@ -109,3 +110,9 @@ describe "EventStream.groupBy", ->
         series(2, events).groupBy((i) -> i.chan).map(keyPresses).flatMap(Bacon._.id).map((i) -> i.type + i.key)
       ['keydown4', 'keyup4', 'keydown2', 'keyup2'], semiunstable)
 
+describe "Property.groupBy", ->
+  describe "without limiting function", ->
+    expectPropertyEvents(
+      ->
+        flattenAndConcat series(2, [1,2,2,3,1,2,2,3]).toProperty().groupBy(Bacon._.id)
+      [[1,1],[2,2,2,2],[3,3]], unstable)

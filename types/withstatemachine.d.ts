@@ -1,6 +1,18 @@
 import Observable from "./observable";
 import Event from "./event";
+/**
+ *  State machine function used in [withStateMachine](classes/observable.html#withstatemachine).
+ */
 export interface StateF<In, State, Out> {
+    /**
+     *
+     * @param state current state of the state machine.
+     * @param event input event to react on
+     * @return a tuple containing the next state and an array of events to be emitted.
+  @typeparam  State   type of machine state
+  @typeparam  Out     type of values to be emitted
+  @typeparam  In     type of values in the input events
+     */
     (state: State, event: Event<In>): [State, Event<Out>[]];
 }
 /** @hidden */

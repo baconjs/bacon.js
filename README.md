@@ -893,12 +893,16 @@ and end the stream if you choose. For example, to send an error and end
 the stream in case a value is below zero:
 
 ```js
-if (event.hasValue && event.value < 0) {
-  sink(new Bacon.Error("Value below zero"));
-  return sink(end());
-} else {
-  return sink(event);
-}
+let { fromArray, End, Error, hasValue } = require("baconjs")
+
+fromArray([1, -2,  3]).transform((event, sink) => {
+  if (hasValue(event) && event.value < 0) {
+    sink(new Error("Value below zero"));
+    return sink(new End());
+  } else {
+    return sink(event);
+  }
+}).log()
 ```
 
 Note that it's important to return the value from `sink` so that

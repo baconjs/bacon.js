@@ -2713,7 +2713,7 @@ function groupBy(src, keyF, limitF) {
     var streams = {};
     return src.transform(composeT(filterT(function (x) { return !streams[keyF(x)]; }), mapT(function (firstValue) {
         var key = keyF(firstValue);
-        var similarValues = src.filter(function (x) { return keyF(x) === key; });
+        var similarValues = src.changes().filter(function (x) { return keyF(x) === key; });
         var data = once(firstValue).concat(similarValues);
         var limited = limitF(data, firstValue).transform(function (event, sink) {
             sink(event);
@@ -2956,7 +2956,8 @@ function toPromise(src, PromiseCtr) {
 
 var idCounter = 0;
 /**
-Observable is the base class for [EventsStream](EventStream.html) and Property
+ Observable is the base class for [EventsStream](EventStream.html) and Property
+
  @typeparam V   Type of the elements/values in the stream/property
  */
 var Observable = /** @class */ (function () {
@@ -2966,42 +2967,178 @@ var Observable = /** @class */ (function () {
         this.desc = desc;
         this.initialDesc = desc;
     }
+    /**
+  Creates a Property that indicates whether
+  `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
+  value from `otherObservable`. This is handy for keeping track whether we are
+  currently awaiting an AJAX response:
+  
+  ```js
+  var showAjaxIndicator = ajaxRequest.awaiting(ajaxResponse)
+  ```
+  
+     */
     Observable.prototype.awaiting = function (other) {
         return awaiting(this, other);
     };
+    /**
+  Throttles the observable using a buffer so that at most one value event in minimumInterval is issued.
+  Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputting
+  them with a rate of at most one value per minimumInterval.
+  
+  Example:
+  
+  ```js
+  var throttled = source.bufferingThrottle(2)
+  ```
+  
+  ```
+  source:    asdf----asdf----
+  throttled: a-s-d-f-a-s-d-f-
+  ```
+     */
     Observable.prototype.bufferingThrottle = function (minimumInterval) {
         return bufferingThrottle(this, minimumInterval);
     };
+    /**
+  Combines the latest values of the two
+  streams or properties using a two-arg function. Similarly to [`scan`](#scan), you can use a
+  method name instead, so you could do `a.combine(b, ".concat")` for two
+  properties with array value. The result is a [Property](property.html).
+     */
     Observable.prototype.combine = function (right, f) {
         return combine(this, right, f);
     };
+    /**
+  Throttles stream/property by given amount
+  of milliseconds, but so that event is only emitted after the given
+  "quiet period". Does not affect emitting the initial value of a [Property](property.html).
+  The difference of [`throttle`](#throttle) and [`debounce`](#debounce) is the same as it is in the
+  same methods in jQuery.
+  
+  Example:
+  
+  ```
+  source:             asdf----asdf----
+  source.debounce(2): -----f-------f--
+  ```
+  
+     */
     Observable.prototype.debounce = function (minimumInterval) {
         return debounce(this, minimumInterval);
     };
+    /**
+  Passes the first event in the
+  stream through, but after that, only passes events after a given number
+  of milliseconds have passed since previous output.
+  
+  Example:
+  
+  ```
+  source:                      asdf----asdf----
+  source.debounceImmediate(2): a-d-----a-d-----
+  ```
+     */
     Observable.prototype.debounceImmediate = function (minimumInterval) {
         return debounceImmediate(this, minimumInterval);
     };
+    /**
+  Decodes input using the given mapping. Is a
+  bit like a switch-case or the decode function in Oracle SQL. For
+  example, the following would map the value 1 into the string "mike"
+  and the value 2 into the value of the `who` property.
+  
+  ```js
+  property.decode({1 : "mike", 2 : who})
+  ```
+  
+  This is actually based on [`combineTemplate`](#combinetemplate) so you can compose static
+  and dynamic data quite freely, as in
+  
+  ```js
+  property.decode({1 : { type: "mike" }, 2 : { type: "other", whoThen : who }})
+  ```
+  
+  The return value of [`decode`](#decode) is always a [`Property`](property.html).
+  
+     */
     Observable.prototype.decode = function (cases) {
         return decode(this, cases);
     };
+    /**
+  Delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](property.html).
+  
+  ```js
+  var delayed = source.delay(2)
+  ```
+  
+  ```
+  source:    asdf----asdf----
+  delayed:   --asdf----asdf--
+  ```
+  
+     */
     Observable.prototype.delay = function (delayMs) {
         return delay(this, delayMs);
     };
     Observable.prototype.deps = function () {
         return this.desc.deps();
     };
+    /**
+  Returns a Property that represents the result of a comparison
+  between the previous and current value of the Observable. For the initial value of the Observable,
+  the previous value will be the given start.
+  
+  Example:
+  
+  ```js
+  var distance = function (a,b) { return Math.abs(b - a) }
+  Bacon.sequentially(1, [1,2,3]).diff(0, distance)
+  ```
+  
+  This would result to following elements in the result stream:
+  
+      1 - 0 = 1
+      2 - 1 = 1
+      3 - 2 = 1
+  
+     */
     Observable.prototype.diff = function (start, f) {
         return diff(this, start, f);
     };
+    /**
+  Returns a stream/property where the function f
+  is executed for each value, before dispatching to subscribers. This is
+  useful for debugging, but also for stuff like calling the
+  `preventDefault()` method for events. In fact, you can
+  also use a property-extractor string instead of a function, as in
+  `".preventDefault"`.
+  
+  Please note that for Properties, it's not guaranteed that the function will be called exactly once
+  per event; when a Property loses all of its subscribers it will re-emit its current value when a
+  new subscriber is added.
+     */
     Observable.prototype.doAction = function (f) {
         return this.transform(doActionT(f), new Desc(this, "doAction", [f]));
     };
     Observable.prototype.doEnd = function (f) {
         return this.transform(doEndT(f), new Desc(this, "doEnd", [f]));
     };
+    /**
+  Returns a stream/property where the function f
+  is executed for each error, before dispatching to subscribers.
+  That is, same as [`doAction`](#observable-doaction) but for errors.
+     */
     Observable.prototype.doError = function (f) {
         return this.transform(doErrorT(f), new Desc(this, "doError", [f]));
     };
+    /**
+  Logs each value of the Observable to the console. doLog() behaves like [`log`](#log)
+  but does not subscribe to the event stream. You can think of doLog() as a
+  logger function that – unlike log() – is safe to use in production. doLog() is
+  safe, because it does not cause the same surprising side-effects as log()
+  does.
+     */
     Observable.prototype.doLog = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -3012,25 +3149,56 @@ var Observable = /** @class */ (function () {
     Observable.prototype.endAsValue = function () {
         return endAsValue(this);
     };
+    /**
+    Returns a stream/property that ends the on first [`Error`](error.html) event. The
+    error is included in the output of the returned Observable.
+    
+    @param  predicate   optional predicate function to determine whether to end on a given error
+     */
     Observable.prototype.endOnError = function (predicate) {
         if (predicate === void 0) { predicate = function (x) { return true; }; }
         return endOnError(this, predicate);
     };
+    /**
+  Returns a stream containing [`Error`](error.html) events only.
+  Same as filtering with a function that always returns false.
+     */
     Observable.prototype.errors = function () {
         return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
     };
+    /**
+  Filters values using given predicate function.
+  Instead of a function, you can use a constant value (`true` to include all, `false` to exclude all).
+  
+  You can also filter values based on the value of a
+  property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
+  at the time of the event.
+     */
     Observable.prototype.filter = function (f) {
         return filter(this, f);
     };
+    /**
+  Takes the first element from the stream. Essentially `observable.take(1)`.
+     */
     Observable.prototype.first = function () {
         return take(1, this, new Desc(this, "first"));
     };
+    /**
+  Returns a Promise which will be resolved with the first event coming from an Observable.
+  Like [`toPromise`](#topromise), the global ES6 promise implementation will be used unless a promise
+  constructor is given.
+     */
     Observable.prototype.firstToPromise = function (PromiseCtr) {
         return firstToPromise(this, PromiseCtr);
     };
     Observable.prototype.flatScan = function (seed, f) {
         return flatScan(this, seed, f);
     };
+    /**
+  Works like [`scan`](#scan) but only emits the final
+  value, i.e. the value just before the observable ends. Returns a
+  [`Property`](property.html).
+     */
     Observable.prototype.fold = function (seed, f) {
         return fold(this, seed, f);
     };
@@ -3039,10 +3207,6 @@ var Observable = /** @class */ (function () {
         // TODO: inefficient alias. Also, similar assign alias missing.
         return this.onValue(f);
     };
-    Observable.prototype.groupBy = function (keyF, limitF) {
-        if (limitF === void 0) { limitF = _.id; }
-        return groupBy(this, keyF, limitF);
-    };
     Observable.prototype.holdWhen = function (valve) {
         return holdWhen(this, valve);
     };
@@ -3050,9 +3214,34 @@ var Observable = /** @class */ (function () {
     Observable.prototype.internalDeps = function () {
         return this.initialDesc.deps();
     };
+    /**
+  Takes the last element from the stream. None, if stream is empty.
+  
+  
+  *Note:* `neverEndingStream.last()` creates the stream which doesn't produce any events and never ends.
+     */
     Observable.prototype.last = function () {
         return last(this);
     };
+    /**
+  Logs each value of the Observable to the console.
+  It optionally takes arguments to pass to console.log() alongside each
+  value. To assist with chaining, it returns the original Observable. Note
+  that as a side-effect, the observable will have a constant listener and
+  will not be garbage-collected. So, use this for debugging only and
+  remove from production code. For example:
+  
+  ```js
+  myStream.log("New event in myStream")
+  ```
+  
+  or just
+  
+  ```js
+  myStream.log()
+  ```
+  
+     */
     Observable.prototype.log = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -3061,16 +3250,35 @@ var Observable = /** @class */ (function () {
         log(args, this);
         return this;
     };
+    /**
+  Adds an extra [`Next`](next.html) event just before End. The value is created
+  by calling the given function when the source stream ends. Instead of a
+  function, a static value can be used.
+     */
     Observable.prototype.mapEnd = function (f) {
         return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
     };
+    /**
+  Maps errors using given function. More
+  specifically, feeds the "error" field of the error event to the function
+  and produces a [`Next`](next.html) event based on the return value.
+     */
     Observable.prototype.mapError = function (f) {
         return this.transform(mapErrorT(f), new Desc(this, "mapError", [f]));
     };
+    /**
+  Sets the name of the observable. Overrides the default
+  implementation of [`toString`](#tostring) and `inspect`.
+  Returns the same observable, with mutated name.
+     */
     Observable.prototype.name = function (name) {
         this._name = name;
         return this;
     };
+    /**
+  Subscribes a callback to stream end. The function will be called when the stream ends.
+  Just like `subscribe`, this method returns a function for unsubscribing.
+     */
     Observable.prototype.onEnd = function (f) {
         if (f === void 0) { f = nullVoidSink; }
         return this.subscribe(function (event) {
@@ -3080,6 +3288,10 @@ var Observable = /** @class */ (function () {
             return more;
         });
     };
+    /**
+  Subscribes a handler to error events. The function will be called for each error in the stream.
+  Just like `subscribe`, this method returns a function for unsubscribing.
+     */
     Observable.prototype.onError = function (f) {
         if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
@@ -3089,6 +3301,15 @@ var Observable = /** @class */ (function () {
             return more;
         });
     };
+    /**
+  Subscribes a given handler function to the observable. Function will be called for each new value.
+  This is the simplest way to assign a side-effect to an observable. The difference
+  to the `subscribe` method is that the actual stream values are
+  received, instead of [`Event`](event) objects.
+  Just like `subscribe`, this method returns a function for unsubscribing.
+  `stream.onValue` and `property.onValue` behave similarly, except that the latter also
+  pushes the initial value of the property, in case there is one.
+     */
     Observable.prototype.onValue = function (f) {
         if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
@@ -3098,18 +3319,70 @@ var Observable = /** @class */ (function () {
             return more;
         });
     };
+    /**
+  Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
+     */
     Observable.prototype.onValues = function (f) {
         return this.onValue(function (args) { return f.apply(void 0, args); });
     };
+    /** A synonym for [scan](#scan).
+     */
+    Observable.prototype.reduce = function (seed, f) {
+        return fold(this, seed, f);
+    };
+    /**
+  Scans stream/property with given seed value and
+  accumulator function, resulting to a Property. For example, you might
+  use zero as seed and a "plus" function as the accumulator to create
+  an "integral" property. Instead of a function, you can also supply a
+  method name such as ".concat", in which case this method is called on
+  the accumulator value and the new stream value is used as argument.
+  
+  Example:
+  
+  ```js
+  var plus = function (a,b) { return a + b }
+  Bacon.sequentially(1, [1,2,3]).scan(0, plus)
+  ```
+  
+  This would result to following elements in the result stream:
+  
+      seed value = 0
+      0 + 1 = 1
+      1 + 2 = 3
+      3 + 3 = 6
+  
+  When applied to a Property as in `r = p.scan(seed, f)`, there's a (hopefully insignificant) catch:
+  The starting value for `r` depends on whether `p` has an
+  initial value when scan is applied. If there's no initial value, this works
+  identically to EventStream.scan: the `seed` will be the initial value of
+  `r`. However, if `r` already has a current/initial value `x`, the
+  seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
+  because there can only be 1 initial value for a Property at a time.
+     */
     Observable.prototype.scan = function (seed, f) {
         return scan(this, seed, f);
     };
+    /**
+  Skips the first n elements from the stream
+     */
     Observable.prototype.skip = function (count) {
         return skip(this, count);
     };
+    /**
+  Drops consecutive equal elements. So,
+  from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
+  checking by default. If the isEqual argument is supplied, checks by calling
+  isEqual(oldValue, newValue). For instance, to do a deep comparison,you can
+  use the isEqual function from [underscore.js](http://underscorejs.org/)
+  like `stream.skipDuplicates(_.isEqual)`.
+     */
     Observable.prototype.skipDuplicates = function (isEqual) {
         return skipDuplicates(this, isEqual);
     };
+    /**
+     * Returns a new stream/property which excludes all [Error](error.html) events in the source
+     */
     Observable.prototype.skipErrors = function () {
         return skipErrors(this);
     };
@@ -3119,27 +3392,90 @@ var Observable = /** @class */ (function () {
     Observable.prototype.skipWhile = function (f) {
         return skipWhile(this, f);
     };
+    /**
+  Returns a Property that represents a
+  "sliding window" into the history of the values of the Observable. The
+  result Property will have a value that is an array containing the last `n`
+  values of the original observable, where `n` is at most the value of the
+  `max` argument, and at least the value of the `min` argument. If the
+  `min` argument is omitted, there's no lower limit of values.
+  
+  For example, if you have a stream `s` with value a sequence 1 - 2 - 3 - 4 - 5, the
+  respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
+  [2,3] - [3,4] - [4,5]. The values of `s.slidingWindow(2,2)`would be
+  [1,2] - [2,3] - [3,4] - [4,5].
+  
+     */
     Observable.prototype.slidingWindow = function (maxValues, minValues) {
         if (minValues === void 0) { minValues = 0; }
         return slidingWindow(this, maxValues, minValues);
     };
+    /**
+     * subscribes given handler function to event stream. Function will receive [event](event) objects
+     for all new value, end and error events in the stream.
+     The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
+     You can also unsubscribe by returning [`Bacon.noMore`](../globals.html#nomore) from the handler function as a reply
+     to an Event.
+     `stream.subscribe` and `property.subscribe` behave similarly, except that the latter also
+     pushes the initial value of the property, in case there is one.
+  
+     * @param {EventSink<V>} sink the handler function
+     * @returns {Unsub}
+     */
     Observable.prototype.subscribe = function (sink) {
         var _this = this;
         if (sink === void 0) { sink = nullSink; }
         return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
     };
+    /**
+  Takes at most n values from the stream and then ends the stream. If the stream has
+  fewer than n values then it is unaffected.
+  Equal to [`Bacon.never()`](../globals.html#never) if `n <= 0`.
+     */
     Observable.prototype.take = function (count) {
         return take(count, this);
     };
+    /**
+  Takes elements from source until a value event appears in the other stream.
+  If other stream ends without value, it is ignored.
+     */
     Observable.prototype.takeUntil = function (stopper) {
         return takeUntil(this, stopper);
     };
+    /**
+  Takes while given predicate function holds true, and then ends. Alternatively, you can supply a boolean Property to take elements while the Property holds `true`.
+     */
     Observable.prototype.takeWhile = function (f) {
         return takeWhile(this, f);
     };
+    /**
+  Throttles stream/property by given amount
+  of milliseconds. Events are emitted with the minimum interval of
+  [`delay`](#observable-delay). The implementation is based on [`stream.bufferWithTime`](#stream-bufferwithtime).
+  Does not affect emitting the initial value of a [`Property`](#property).
+  
+  Example:
+  
+  ```js
+  var throttled = source.throttle(2)
+  ```
+  
+  ```
+  source:    asdf----asdf----
+  throttled: --s--f----s--f--
+  ```
+     */
     Observable.prototype.throttle = function (minimumInterval) {
         return throttle(this, minimumInterval);
     };
+    /**
+  Returns a Promise which will be resolved with the last event coming from an Observable.
+  The global ES6 promise implementation will be used unless a promise constructor is given.
+  Use a shim if you need to support legacy browsers or platforms.
+  [caniuse promises](http://caniuse.com/#feat=promises).
+  
+  See also [firstToPromise](#firsttopromise).
+     */
     Observable.prototype.toPromise = function (PromiseCtr) {
         return toPromise(this, PromiseCtr);
     };
@@ -3156,6 +3492,24 @@ var Observable = /** @class */ (function () {
             this.desc = desc;
         return this;
     };
+    /**
+  Sets the structured description of the observable. The [`toString`](#tostring) and `inspect` methods
+  use this data recursively to create a string representation for the observable. This method
+  is probably useful for Bacon core / library / plugin development only.
+  
+  For example:
+  
+      var src = Bacon.once(1)
+      var obs = src.map(function(x) { return -x })
+      console.log(obs.toString())
+      --> Bacon.once(1).map(function)
+      obs.withDescription(src, "times", -1)
+      console.log(obs.toString())
+      --> Bacon.once(1).times(-1)
+  
+  The method returns the same observable with mutated description.
+  
+  */
     Observable.prototype.withDescription = function (context, method) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {
@@ -3164,11 +3518,42 @@ var Observable = /** @class */ (function () {
         this.desc = describe.apply(void 0, [context, method].concat(args));
         return this;
     };
+    /**
+  Returns an EventStream with elements
+  pair-wise lined up with events from this and the other EventStream or Property.
+  A zipped stream will publish only when it has a value from each
+  source and will only produce values up to when any single source ends.
+  
+  The given function `f` is used to create the result value from value in the two
+  sources. If no function is given, the values are zipped into an array.
+  
+  Be careful not to have too much "drift" between streams. If one stream
+  produces many more values than some other excessive buffering will
+  occur inside the zipped observable.
+  
+  Example 1:
+  
+  ```js
+  var x = Bacon.fromArray([1, 2])
+  var y = Bacon.fromArray([3, 4])
+  x.zip(y, function(x, y) { return x + y })
+  
+  # produces values 4, 6
+  ```
+  
+  See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html/zipasarray) for zipping more than 2 sources.
+  
+     */
     Observable.prototype.zip = function (other, f) {
         return zip(this, other, f);
     };
     return Observable;
 }());
+/**
+ A Property is an Observable that represents a value as a function of time.
+
+ @typeparam V   Type of the elements/values in the stream/property
+ */
 var Property = /** @class */ (function (_super) {
     __extends(Property, _super);
     function Property(desc, subscribe, handler) {
@@ -3195,8 +3580,8 @@ var Property = /** @class */ (function (_super) {
             return more;
         }); });
     };
-    Property.prototype.concat = function (right) {
-        return addPropertyInitValueToStream(this, this.changes().concat(right));
+    Property.prototype.concat = function (other) {
+        return addPropertyInitValueToStream(this, this.changes().concat(other));
     };
     /** @hidden */
     Property.prototype.delayChanges = function (desc, f) {
@@ -3223,6 +3608,10 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
         return flatMapWithConcurrencyLimit(this, limit, f);
     };
+    Property.prototype.groupBy = function (keyF, limitF) {
+        if (limitF === void 0) { limitF = _.id; }
+        return groupBy(this, keyF, limitF);
+    };
     Property.prototype.map = function (f) {
         return map(this, f);
     };
@@ -3242,6 +3631,7 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.startWith = function (seed) {
         return startWithP(this, seed);
     };
+    /** @hidden */
     Property.prototype.subscribeInternal = function (sink) {
         if (sink === void 0) { sink = nullSink; }
         return this.dispatcher.subscribe(sink);
@@ -3280,8 +3670,11 @@ function isProperty(x) {
 var allowSync = { forceAsync: false };
 /**
  * EventStream represents a stream of events. It is an Observable object, meaning
- that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
- with a callback. Like this:
+ that you can listen to events in the stream using, for instance, the [`onValue`](#onvalue) method
+ with a callback.
+
+ @typeparam V   Type of the elements/values in the stream/property
+
  */
 var EventStream = /** @class */ (function (_super) {
     __extends(EventStream, _super);
@@ -3295,6 +3688,10 @@ var EventStream = /** @class */ (function (_super) {
         registerObs(_this);
         return _this;
     }
+    EventStream.prototype.changes = function () {
+        return this;
+    };
+    /** @hidden */
     EventStream.prototype.subscribeInternal = function (sink) {
         if (sink === void 0) { sink = nullSink; }
         return this.dispatcher.subscribe(sink);
@@ -3314,6 +3711,10 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
     EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
     EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    EventStream.prototype.groupBy = function (keyF, limitF) {
+        if (limitF === void 0) { limitF = _.id; }
+        return groupBy(this, keyF, limitF);
+    };
     EventStream.prototype.sampledBy = function (sampler, f) {
         if (f === void 0) { f = function (a, b) { return a; }; }
         return sampledByE(this, sampler, f);
@@ -3334,8 +3735,8 @@ var EventStream = /** @class */ (function (_super) {
         var streamSubscribe = disp.subscribe;
         return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
     };
-    EventStream.prototype.concat = function (right, options) {
-        return concatE(this, right, options);
+    EventStream.prototype.concat = function (other, options) {
+        return concatE(this, other, options);
     };
     EventStream.prototype.merge = function (other) {
         assertEventStream(other);

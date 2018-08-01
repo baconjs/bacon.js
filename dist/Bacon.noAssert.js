@@ -2504,7 +2504,7 @@
             return !streams[keyF(x)];
         }), mapT(function (firstValue) {
             var key = keyF(firstValue);
-            var similarValues = src.filter(function (x) {
+            var similarValues = src.changes().filter(function (x) {
                 return keyF(x) === key;
             });
             var data = once(firstValue).concat(similarValues);
@@ -2846,12 +2846,6 @@
             }
             return this.onValue(f);
         };
-        Observable.prototype.groupBy = function (keyF, limitF) {
-            if (limitF === void 0) {
-                limitF = _.id;
-            }
-            return groupBy(this, keyF, limitF);
-        };
         Observable.prototype.holdWhen = function (valve) {
             return holdWhen(this, valve);
         };
@@ -2919,6 +2913,9 @@
             return this.onValue(function (args) {
                 return f.apply(void 0, args);
             });
+        };
+        Observable.prototype.reduce = function (seed, f) {
+            return fold(this, seed, f);
         };
         Observable.prototype.scan = function (seed, f) {
             return scan(this, seed, f);
@@ -3019,8 +3016,8 @@
                 });
             });
         };
-        Property.prototype.concat = function (right) {
-            return addPropertyInitValueToStream(this, this.changes().concat(right));
+        Property.prototype.concat = function (other) {
+            return addPropertyInitValueToStream(this, this.changes().concat(other));
         };
         Property.prototype.delayChanges = function (desc, f) {
             return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
@@ -3045,6 +3042,12 @@
         };
         Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
             return flatMapWithConcurrencyLimit(this, limit, f);
+        };
+        Property.prototype.groupBy = function (keyF, limitF) {
+            if (limitF === void 0) {
+                limitF = _.id;
+            }
+            return groupBy(this, keyF, limitF);
         };
         Property.prototype.map = function (f) {
             return map(this, f);
@@ -3110,6 +3113,9 @@
             registerObs(_this);
             return _this;
         }
+        EventStream.prototype.changes = function () {
+            return this;
+        };
         EventStream.prototype.subscribeInternal = function (sink) {
             if (sink === void 0) {
                 sink = nullSink;
@@ -3149,6 +3155,12 @@
         EventStream.prototype.flatMapEvent = function (f) {
             return flatMapEvent(this, f);
         };
+        EventStream.prototype.groupBy = function (keyF, limitF) {
+            if (limitF === void 0) {
+                limitF = _.id;
+            }
+            return groupBy(this, keyF, limitF);
+        };
         EventStream.prototype.sampledBy = function (sampler, f) {
             if (f === void 0) {
                 f = function (a, b) {
@@ -3171,8 +3183,8 @@
             var streamSubscribe = disp.subscribe;
             return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
         };
-        EventStream.prototype.concat = function (right, options) {
-            return concatE(this, right, options);
+        EventStream.prototype.concat = function (other, options) {
+            return concatE(this, other, options);
         };
         EventStream.prototype.merge = function (other) {
             return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
