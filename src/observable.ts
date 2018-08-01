@@ -427,6 +427,10 @@ Bacon.sequentially(2, events)
 
    */
   abstract groupBy(keyF: (V) => string, limitF?: GroupLimiter<V>): Observable<EventStream<V>>  
+  /**
+Pauses and buffers the event stream if last event in valve is truthy.
+All buffered events are released when valve becomes falsy.
+   */
   holdWhen(valve: Property<boolean>): EventStream<V> {
     return holdWhen(this, valve)
   }
@@ -628,6 +632,10 @@ respective values in `s.slidingWindow(2)` would be [] - [1] - [1,2] -
   slidingWindow(maxValues: number, minValues: number = 0): Property<V[]> {
     return slidingWindow(this, maxValues, minValues)
   }
+  /**
+Adds a starting value to the stream/property, i.e. concats a
+single-element stream containing the single seed value  with this stream.
+   */
   abstract startWith(seed: V): Observable<V>
 
   /**
@@ -1040,6 +1048,9 @@ export class EventStream<V> extends Observable<V> {
     return concatE(this, other, options)
   }
 
+  /**
+  Merges two streams into one stream that delivers events from both
+   */
   merge(other: EventStream<V>): EventStream<V> {
     assertEventStream(other)
     return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
