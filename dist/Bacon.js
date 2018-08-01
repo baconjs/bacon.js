@@ -33,12 +33,16 @@ function __extends(d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
+/** @hidden */
 function nop() { }
+/** @hidden */
 var isArray = Array.isArray || function (xs) { return xs instanceof Array; };
+/** @hidden */
 function isObservable(x) {
     return x && x._isObservable;
 }
 
+/** @hidden */
 var Some = /** @class */ (function () {
     function Some(value) {
         this._isSome = true;
@@ -66,6 +70,7 @@ var Some = /** @class */ (function () {
     Some.prototype.toString = function () { return this.inspect(); };
     return Some;
 }());
+/** @hidden */
 var None = {
     _isNone: true,
     getOrElse: function (value) { return value; },
@@ -259,47 +264,68 @@ var _ = {
     }
 };
 // TODO: move the rest of the functions as separate exports
+/** @hidden */
 function flip(f) {
     return function (a, b) { return f(b, a); };
 }
+/** @hidden */
 
 var recursionDepth = 0;
+
+/**
+ * Return type for various [Sink](#sink) functions. Indicates whether or not the sink
+ * desires more input from its source. See [`Bacon.fromBinder`](#frombinder) for example.
+ */
 
 (function (Reply) {
     Reply["more"] = "<more>";
     Reply["noMore"] = "<no-more>";
 })(exports.Reply || (exports.Reply = {}));
+/**
+ * Reply for "more data, please".
+ */
 var more = exports.Reply.more;
+/**
+ * Reply for "no more data, please".
+ */
 var noMore = exports.Reply.noMore;
 
+/** @hidden */
 function assert(message, condition) {
     if (!condition) {
         throw new Error(message);
     }
 }
+/** @hidden */
 
+/** @hidden */
 function assertEventStream(event) {
     if (!(event != null ? event._isEventStream : void 0)) {
         throw new Error("not an EventStream : " + event);
     }
 }
+/** @hidden */
 function assertObservable(observable) {
     if (!(observable != null ? observable._isObservable : void 0)) {
         throw new Error("not an Observable : " + observable);
     }
 }
+/** @hidden */
 function assertFunction(f) {
     return assert("not a function : " + f, _.isFunction(f));
 }
+/** @hidden */
 function assertArray(xs) {
     if (!isArray(xs)) {
         throw new Error("not an array : " + xs);
     }
 }
+/** @hidden */
 function assertNoArguments(args) {
     return assert("no arguments supported", args.length === 0);
 }
 
+/** @hidden */
 var defaultScheduler = {
     setTimeout: function (f, d) { return setTimeout(f, d); },
     setInterval: function (f, i) { return setInterval(f, i); },
@@ -505,14 +531,15 @@ function wrappedSubscribe(obs, subscribe, sink) {
         doUnsub();
     };
     doUnsub = subscribe(function (event) {
-        return afterTransaction(obs, function () {
+        afterTransaction(obs, function () {
             if (!unsubd) {
                 var reply = sink(event);
                 if (reply === noMore) {
-                    return unsub();
+                    unsub();
                 }
             }
         });
+        return more;
     });
     if (shouldUnsub) {
         doUnsub();
@@ -546,6 +573,7 @@ var Desc = /** @class */ (function () {
     return Desc;
 }());
 
+/** @hidden */
 function describe(context, method) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
@@ -559,6 +587,7 @@ function describe(context, method) {
         return new Desc(context, method, args);
     }
 }
+/** @hidden */
 function findDeps(x) {
     if (isArray(x)) {
         return _.flatMap(findDeps, x);
@@ -574,6 +603,12 @@ function findDeps(x) {
     }
 }
 
+/** @hidden */
+var nullSink = function () { return more; };
+/** @hidden */
+var nullVoidSink = function () { return more; };
+
+/** @hidden */
 function withStateMachine(initState, f, src) {
     return src.transform(withStateMachineT(initState, f), new Desc(src, "withStateMachine", [initState, f]));
 }
@@ -595,6 +630,7 @@ function withStateMachineT(initState, f) {
     };
 }
 
+/** @hidden */
 var eventIdCounter = 0;
 var Event = /** @class */ (function () {
     function Event() {
@@ -613,6 +649,7 @@ var Event = /** @class */ (function () {
     Event.prototype.toNext = function () { return this; };
     return Event;
 }());
+/** @hidden */
 var Value = /** @class */ (function (_super) {
     __extends(Value, _super);
     function Value(value) {
@@ -656,6 +693,7 @@ var Initial = /** @class */ (function (_super) {
     Initial.prototype.toNext = function () { return new Next(this.value); };
     return Initial;
 }(Value));
+/** @hidden */
 var NoValue = /** @class */ (function (_super) {
     __extends(NoValue, _super);
     function NoValue() {
@@ -691,9 +729,13 @@ var Error$1 = /** @class */ (function (_super) {
     };
     return Error;
 }(NoValue));
+/** @hidden */
 function initialEvent(value) { return new Initial(value); }
+/** @hidden */
 function nextEvent(value) { return new Next(value); }
+/** @hidden */
 function endEvent() { return new End(); }
+/** @hidden */
 function toEvent(x) {
     if (x && x._isEvent) {
         return x;
@@ -718,11 +760,13 @@ function isEnd(e) {
     return e.isEnd;
 }
 
+/** @hidden */
 function equals(a, b) { return a === b; }
 function isNone(object) {
     return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
 }
 
+/** @hidden */
 function skipDuplicates(src, isEqual) {
     if (isEqual === void 0) { isEqual = equals; }
     var desc = new Desc(src, "skipDuplicates", []);
@@ -739,9 +783,11 @@ function skipDuplicates(src, isEqual) {
     }, src).withDesc(desc);
 }
 
+/** @hidden */
 function take(count, src, desc) {
     return src.transform(takeT(count), desc || new Desc(src, "take", [count]));
 }
+/** @hidden */
 function takeT(count) {
     return function (e, sink) {
         if (!e.hasValue) {
@@ -763,14 +809,17 @@ function takeT(count) {
     };
 }
 
+/** @hidden */
 function log(args, src) {
     src.subscribe(function (event) {
         if (typeof console !== "undefined" && typeof console.log === "function") {
             console.log.apply(console, args.concat([event.log()]));
         }
+        return more;
     });
 }
 
+/** @hidden */
 function doLogT(args) {
     return function (event, sink) {
         if (typeof console !== "undefined" && console !== null && typeof console.log === "function") {
@@ -780,6 +829,7 @@ function doLogT(args) {
     };
 }
 
+/** @hidden */
 function doErrorT(f) {
     return function (event, sink) {
         if (isError(event)) {
@@ -789,6 +839,7 @@ function doErrorT(f) {
     };
 }
 
+/** @hidden */
 function doActionT(f) {
     return function (event, sink) {
         if (hasValue(event)) {
@@ -798,6 +849,7 @@ function doActionT(f) {
     };
 }
 
+/** @hidden */
 function doEndT(f) {
     return function (event, sink) {
         if (isEnd(event)) {
@@ -807,6 +859,7 @@ function doEndT(f) {
     };
 }
 
+/** @hidden */
 function scan(src, seed, f) {
     var resultProperty;
     var acc = seed;
@@ -851,6 +904,7 @@ function scan(src, seed, f) {
                 if (reply !== noMore) {
                     return sink(event);
                 }
+                return reply;
             }
         });
         UpdateBarrier.whenDoneWith(resultProperty, sendInit);
@@ -859,6 +913,7 @@ function scan(src, seed, f) {
     return resultProperty = new Property(new Desc(src, "scan", [seed, f]), subscribe);
 }
 
+/** @hidden */
 function mapEndT(f) {
     var theF = _.toFunction(f);
     return function (event, sink) {
@@ -873,6 +928,7 @@ function mapEndT(f) {
     };
 }
 
+/** @hidden */
 function mapErrorT(f) {
     var theF = _.toFunction(f);
     return function (event, sink) {
@@ -885,6 +941,7 @@ function mapErrorT(f) {
     };
 }
 
+/** @hidden */
 function skipErrors(src) {
     return src.transform(function (event, sink) {
         if (isError(event)) {
@@ -896,6 +953,7 @@ function skipErrors(src) {
     }, new Desc(src, "skipErrors", []));
 }
 
+/** @hidden */
 function last(src) {
     var lastEvent;
     return src.transform(function (event, sink) {
@@ -915,6 +973,7 @@ function last(src) {
     }).withDesc(new Desc(src, "last", []));
 }
 
+/** @hidden */
 var CompositeUnsubscribe = /** @class */ (function () {
     function CompositeUnsubscribe(ss) {
         if (ss === void 0) { ss = []; }
@@ -984,6 +1043,7 @@ var CompositeUnsubscribe = /** @class */ (function () {
     return CompositeUnsubscribe;
 }());
 
+/** @hidden */
 function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
     //assertFunction(streamSubscribe)
     return function (sink) {
@@ -1026,6 +1086,7 @@ function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
                 if (reply !== noMore) {
                     return sink(event);
                 }
+                return reply;
             }
         });
         subbed = true;
@@ -1034,11 +1095,21 @@ function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
     };
 }
 
+/** @hidden */
 function propertyFromStreamSubscribe(desc, subscribe) {
     assertFunction(subscribe);
     return new Property(desc, streamSubscribeToPropertySubscribe(none(), subscribe));
 }
 
+/**
+ Creates an EventStream that delivers the given
+ single value for the first subscriber. The stream will end immediately
+ after this value. You can also send an [`Bacon.Error`](#bacon-error) event instead of a
+ value: `Bacon.once(new Bacon.Error("fail"))`.
+
+ @param   value   the value or event to emit
+ @typeparam V Type of stream elements
+ */
 function once(value) {
     var s = new EventStream(new Desc("Bacon", "once", [value]), function (sink) {
         UpdateBarrier.soonButNotYet(s, function () {
@@ -1050,6 +1121,7 @@ function once(value) {
     return s;
 }
 
+/** @hidden */
 function flatMap_(f_, src, params) {
     if (params === void 0) { params = {}; }
     var f = _.toFunction(f_);
@@ -1120,11 +1192,12 @@ function flatMap_(f_, src, params) {
                         return noMore;
                     }
                     if (params.limit && composite.count() > params.limit) {
-                        return queue.push(event);
+                        queue.push(event);
                     }
                     else {
-                        return spawn(event);
+                        spawn(event);
                     }
+                    return more;
                 }
             });
         });
@@ -1140,12 +1213,14 @@ function flatMap_(f_, src, params) {
     };
     return result;
 }
+/** @hidden */
 function handleEventValueWith(f) {
     if (typeof f == "function") {
         return (function (event) { return f(event.value); });
     }
     return (function (event) { return f; });
 }
+/** @hidden */
 function makeObservable(x) {
     if (isObservable(x)) {
         return x;
@@ -1155,6 +1230,7 @@ function makeObservable(x) {
     }
 }
 
+/** @hidden */
 function flatMapEvent(src, f) {
     return flatMap_(f, src, {
         mapError: true,
@@ -1162,6 +1238,7 @@ function flatMapEvent(src, f) {
     });
 }
 
+/** @hidden */
 function endAsValue(src) {
     return src.transform(function (event, sink) {
         if (isEnd(event)) {
@@ -1171,6 +1248,7 @@ function endAsValue(src) {
     });
 }
 
+/** @hidden */
 function endOnError(src, predicate) {
     if (predicate === void 0) { predicate = function (x) { return true; }; }
     return src.transform(function (event, sink) {
@@ -1184,6 +1262,7 @@ function endOnError(src, predicate) {
     }, new Desc(src, "endOnError", []));
 }
 
+/** @hidden */
 var Source = /** @class */ (function () {
     function Source(obs, sync) {
         this._isSource = true;
@@ -1204,6 +1283,7 @@ var Source = /** @class */ (function () {
     Source.prototype.mayHave = function (count) { return true; };
     return Source;
 }());
+/** @hidden */
 var DefaultSource = /** @class */ (function (_super) {
     __extends(DefaultSource, _super);
     function DefaultSource() {
@@ -1220,6 +1300,7 @@ var DefaultSource = /** @class */ (function (_super) {
     };
     return DefaultSource;
 }(Source));
+/** @hidden */
 var ConsumingSource = /** @class */ (function (_super) {
     __extends(ConsumingSource, _super);
     function ConsumingSource(obs, sync) {
@@ -1242,6 +1323,7 @@ var ConsumingSource = /** @class */ (function (_super) {
     };
     return ConsumingSource;
 }(Source));
+/** @hidden */
 var BufferingSource = /** @class */ (function (_super) {
     __extends(BufferingSource, _super);
     function BufferingSource(obs) {
@@ -1264,6 +1346,7 @@ var BufferingSource = /** @class */ (function (_super) {
     };
     return BufferingSource;
 }(Source));
+/** @hidden */
 function isTrigger(s) {
     if (s == null)
         return false;
@@ -1274,6 +1357,7 @@ function isTrigger(s) {
         return s._isEventStream;
     }
 }
+/** @hidden */
 function fromObservable(s) {
     if (s != null && s._isSource) {
         return s;
@@ -1286,6 +1370,10 @@ function fromObservable(s) {
     }
 }
 
+/**
+ Creates an EventStream that immediately ends.
+ @typeparam V Type of stream elements
+ */
 function never() {
     return new EventStream(describe("Bacon", "never"), function (sink) {
         sink(endEvent());
@@ -1300,6 +1388,7 @@ function when() {
     }
     return when_(newEventStream, patterns);
 }
+/** @hidden */
 function whenP() {
     var patterns = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -1307,6 +1396,7 @@ function whenP() {
     }
     return when_(propertyFromStreamSubscribe, patterns);
 }
+/** @hidden */
 function when_(ctor, patterns) {
     if (patterns.length === 0) {
         return never();
@@ -1392,6 +1482,7 @@ function when_(ctor, patterns) {
                     }
                 }
                 return source.subscribe(function (e) {
+                    var reply = more;
                     if (e.isEnd) {
                         //console.log "got end"
                         ends = true;
@@ -1399,7 +1490,7 @@ function when_(ctor, patterns) {
                         flushLater();
                     }
                     else if (e.isError) {
-                        var reply = sink(e);
+                        reply = sink(e);
                     }
                     else {
                         var valueEvent = e;
@@ -1419,7 +1510,7 @@ function when_(ctor, patterns) {
                     if (reply === noMore) {
                         unsubAll();
                     }
-                    return reply || more;
+                    return reply;
                 });
             };
         }
@@ -1480,6 +1571,7 @@ function isTypedOrRawPattern(pattern) {
 function isRawPattern(pattern) {
     return pattern[0] instanceof Array;
 }
+/** @hidden */
 function extractRawPatterns(patterns) {
     var rawPatterns = [];
     for (var i = 0; i < patterns.length; i++) {
@@ -1523,14 +1615,17 @@ function cannotSync(source) {
     return !source.sync || source.ended;
 }
 
+/** @hidden */
 function withLatestFromE(sampler, samplee, f) {
     var result = when([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), flip(f)]);
     return result.withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]));
 }
+/** @hidden */
 function withLatestFromP(sampler, samplee, f) {
     var result = whenP([new DefaultSource(samplee.toProperty(), false), new DefaultSource(sampler, true), flip(f)]);
     return result.withDesc(new Desc(sampler, "withLatestFrom", [samplee, f]));
 }
+/** @hidden */
 function withLatestFrom(sampler, samplee, f) {
     if (sampler instanceof Property) {
         return withLatestFromP(sampler, samplee, f);
@@ -1543,12 +1638,14 @@ function withLatestFrom(sampler, samplee, f) {
     }
 }
 
+/** @hidden */
 function map(src, f) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (a, b) { return b; });
     }
     return src.transform(mapT(f), new Desc(src, "map", [f]));
 }
+/** @hidden */
 function mapT(f) {
     var theF = _.toFunction(f);
     return function (e, sink) {
@@ -1564,6 +1661,7 @@ function constant(value) {
     });
 }
 
+/** @hidden */
 function argumentsToObservables(args) {
     args = Array.prototype.slice.call(args);
     return _.flatMap(singleToObservables, args);
@@ -1579,6 +1677,7 @@ function singleToObservables(x) {
         return [constant(x)];
     }
 }
+/** @hidden */
 function argumentsToObservablesAndFunction(args) {
     if (_.isFunction(args[0])) {
         return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];
@@ -1588,6 +1687,7 @@ function argumentsToObservablesAndFunction(args) {
     }
 }
 
+/** @hidden */
 function groupSimultaneous() {
     var streams = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -1597,6 +1697,7 @@ function groupSimultaneous() {
 }
 // TODO: type is not exactly correct, because different inputs may have different types.
 // Result values are arrays where each element is the list from each input observable. Type this.
+/** @hidden */
 function groupSimultaneous_(streams, options) {
     var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
     var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
@@ -1609,6 +1710,7 @@ function groupSimultaneous_(streams, options) {
         })]).withDesc(new Desc("Bacon", "groupSimultaneous", streams));
 }
 
+/** @hidden */
 function awaiting(src, other) {
     return groupSimultaneous_([src, other], allowSync)
         .map(function (values) { return values[1].length === 0; })
@@ -1652,6 +1754,7 @@ function combineWith() {
     }).withDesc(desc);
 }
 
+/** @hidden */
 function combine(left, right, f) {
     return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 }
@@ -1660,6 +1763,7 @@ function wrap(obs) {
     return new DefaultSource(obs, true);
 }
 
+/** @hidden */
 function skip(src, count) {
     return src.transform(function (event, sink) {
         if (!event.hasValue) {
@@ -1675,6 +1779,7 @@ function skip(src, count) {
     }, new Desc(src, "skip", [count]));
 }
 
+/** @hidden */
 function flatMapConcat(src, f) {
     return flatMap_(handleEventValueWith(f), src, {
         desc: new Desc(src, "flatMapConcat", [f]),
@@ -1682,6 +1787,59 @@ function flatMapConcat(src, f) {
     });
 }
 
+/**
+ If none of the other factory methods above apply, you may of course roll your own EventStream by using `fromBinder`.
+
+ <a name="bacon-frombinder"></a>
+ [`Bacon.fromBinder(subscribe)`](#bacon-frombinder "Bacon.fromBinder(subscribe)") The parameter `subscribe` is a function that accepts a `sink` which is a function that your `subscribe` function can "push" events to.
+
+ For example:
+
+ ```js
+ var stream = Bacon.fromBinder(function(sink) {
+  sink("first value")
+  sink([new Bacon.Next("2nd"), new Bacon.Next("3rd")])
+  sink(new Bacon.Error("oops, an error"))
+  sink(new Bacon.End())
+  return function() {
+     // unsub functionality here, this one's a no-op
+  }
+})
+ stream.log()
+ ```
+
+ As shown in the example, you can push
+
+ - A plain value, like `"first value"`
+ - An [`Event`](#event) object including [`Bacon.Error`](#bacon-error) (wraps an error) and [`Bacon.End`](#bacon-end) (indicates
+ stream end).
+ - An array of [event](#event) objects at once
+
+ Other examples can be found on [JSFiddle](http://jsfiddle.net/PG4c4/) and the
+ [Bacon.js blog](http://baconjs.blogspot.fi/2013/12/wrapping-things-in-bacon.html).
+
+ The `subscribe` function must return a function. Let's call that function
+ `unsubscribe`. The returned function can be used by the subscriber (directly or indirectly) to
+ unsubscribe from the EventStream. It should release all resources that the subscribe function reserved.
+
+ The `sink` function may return [`Bacon.noMore`](#bacon-nomore) (as well as [`Bacon.more`](#bacon-more)
+ or any other value). If it returns [`Bacon.noMore`](#bacon-nomore), no further events will be consumed
+ by the subscriber. The `subscribe` function may choose to clean up all resources at this point (e.g.,
+ by calling `unsubscribe`). This is usually not necessary, because further calls to `sink` are ignored,
+ but doing so can increase performance in [rare cases](https://github.com/baconjs/bacon.js/issues/484).
+
+ The EventStream will wrap your `subscribe` function so that it will
+ only be called when the first stream listener is added, and the `unsubscribe`
+ function is called only after the last listener has been removed.
+ The subscribe-unsubscribe cycle may of course be repeated indefinitely,
+ so prepare for multiple calls to the subscribe function.
+
+
+ @param  binder
+ @param  eventTransformer
+ @typeparam V Type of stream elements
+
+ */
 function fromBinder(binder, eventTransformer) {
     if (eventTransformer === void 0) { eventTransformer = _.id; }
     var desc = new Desc("Bacon", "fromBinder", [binder, eventTransformer]);
@@ -1727,6 +1885,15 @@ function fromBinder(binder, eventTransformer) {
     });
 }
 
+/**
+ Polls given function with given interval.
+ Function should return Events: either [`Bacon.Next`](classes/next.html) or [`Bacon.End`](classes/end.html). Polling occurs only
+ when there are subscribers to the stream. Polling ends permanently when
+ `f` returns [`Bacon.End`](classes/end.html).
+ * @param poll interval in milliseconds
+ * @param poll function
+ * @typeparam V Type of stream elements
+ */
 function fromPoll(delay, poll) {
     var desc = new Desc("Bacon", "fromPoll", [delay, poll]);
     return fromBinder((function (handler) {
@@ -1737,6 +1904,13 @@ function fromPoll(delay, poll) {
     }), poll).withDesc(desc);
 }
 
+/**
+ Repeats the single element indefinitely with the given interval (in milliseconds)
+
+ @param   delay   Repeat delay in milliseconds
+ @param   value   The single value to repeat
+ @typeparam V Type of stream elements
+ */
 function interval(delay, value) {
     return fromPoll(delay, function () {
         return nextEvent(value);
@@ -1751,18 +1925,22 @@ var makeCombinator = function (combinator) {
         return _.id;
     }
 };
+/** @hidden */
 function sampledByP(samplee, sampler, f) {
     var combinator = makeCombinator(f);
     var result = withLatestFrom(sampler, samplee, flip(combinator));
     return result.withDesc(new Desc(samplee, "sampledBy", [sampler, combinator]));
 }
+/** @hidden */
 function sampledByE(samplee, sampler, f) {
     return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
 }
+/** @hidden */
 function sampleP(samplee, samplingInterval) {
     return sampledByP(samplee, interval(samplingInterval, {}), function (a, b) { return a; }).withDesc(new Desc(samplee, "sample", [samplingInterval]));
 }
 
+/** @hidden */
 function transformP(src, transformer, desc) {
     return new Property(new Desc(src, "transform", [transformer]), function (sink) {
         return src.subscribeInternal(function (e) {
@@ -1770,6 +1948,7 @@ function transformP(src, transformer, desc) {
         });
     }).withDesc(desc);
 }
+/** @hidden */
 function transformE(src, transformer, desc) {
     return new EventStream(new Desc(src, "transform", [transformer]), function (sink) {
         return src.subscribeInternal(function (e) {
@@ -1777,6 +1956,7 @@ function transformE(src, transformer, desc) {
         });
     }, undefined, allowSync).withDesc(desc);
 }
+/** @hidden */
 function composeT(t1, t2) {
     var finalSink; // mutation used to avoid closure creation while dispatching events
     var sink2 = function (event) {
@@ -1788,6 +1968,7 @@ function composeT(t1, t2) {
     };
 }
 
+/** @hidden */
 function toPredicate(f) {
     if (typeof f == "boolean") {
         return _.always(f);
@@ -1799,6 +1980,7 @@ function toPredicate(f) {
         return f;
     }
 }
+/** @hidden */
 function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
@@ -1813,9 +1995,11 @@ function withPredicate(src, f, predicateTransformer, desc) {
     return src.transform(predicateTransformer(toPredicate(f)), desc);
 }
 
+/** @hidden */
 function filter(src, f) {
     return withPredicate(src, f, filterT, new Desc(src, "filter", [f]));
 }
+/** @hidden */
 function filterT(f) {
     return function (e, sink) {
         if (e.filter(f)) {
@@ -1827,12 +2011,15 @@ function filterT(f) {
     };
 }
 
+/** @hidden */
 function not(src) {
     return src.map(function (x) { return !x; }).withDesc(new Desc(src, "not", []));
 }
+/** @hidden */
 function and(left, right) {
     return left.combine(toProperty(right), function (x, y) { return x && y; }).withDesc(new Desc(left, "and", [right]));
 }
+/** @hidden */
 function or(left, right) {
     return left.combine(toProperty(right), function (x, y) { return x || y; }).withDesc(new Desc(left, "or", [right]));
 }
@@ -1843,6 +2030,7 @@ function toProperty(x) {
     return constant(x);
 }
 
+/** @hidden */
 function flatMapFirst(src, f) {
     return flatMap_(handleEventValueWith(f), src, {
         firstOnly: true,
@@ -1850,13 +2038,14 @@ function flatMapFirst(src, f) {
     });
 }
 
+/** @hidden */
 function concatE(left, right, options) {
     return new EventStream(new Desc(left, "concat", [right]), function (sink) {
         var unsubRight = nop;
         var unsubLeft = left.dispatcher.subscribe(function (e) {
             if (e.isEnd) {
                 unsubRight = right.toEventStream().dispatcher.subscribe(sink);
-                return unsubRight;
+                return more;
             }
             else {
                 return sink(e);
@@ -1867,6 +2056,7 @@ function concatE(left, right, options) {
         };
     }, undefined, options);
 }
+/** @hidden */
 function concatAll() {
     var streams_ = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -1882,6 +2072,7 @@ function concatAll() {
     }
 }
 
+/** @hidden */
 function addPropertyInitValueToStream(property, stream) {
     var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
         var value;
@@ -1902,20 +2093,25 @@ function addPropertyInitValueToStream(property, stream) {
     return justInitValue.concat(stream, allowSync).toProperty();
 }
 
+/** @hidden */
 function fold(src, seed, f) {
     return src.scan(seed, f)
         .last()
         .withDesc(new Desc(src, "fold", [seed, f]));
 }
 
+/** @hidden */
 function startWithE(src, seed) {
     return once(seed).concat(src).withDesc(new Desc(src, "startWith", [seed]));
 }
+/** @hidden */
 function startWithP(src, seed) {
     return src.scan(seed, function (prev, next) { return next; }).withDesc(new Desc(src, "startWith", [seed]));
 }
 
+/** @hidden */
 var endMarker = {};
+/** @hidden */
 function takeUntil(src, stopper) {
     var endMapped = src.mapEnd(endMarker);
     var withEndMarker = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync);
@@ -1947,10 +2143,12 @@ function takeUntil(src, stopper) {
     }, new Desc(src, "takeUntil", [stopper]));
 }
 
+/** @hidden */
 function flatMap(src, f) {
     return flatMap_(handleEventValueWith(f), src, { desc: new Desc(src, "flatMap", [f]) });
 }
 
+/** @hidden */
 function flatMapError(src, f) {
     return flatMap_(function (x) {
         if (x instanceof Error$1) {
@@ -1968,6 +2166,7 @@ function flatMapError(src, f) {
 
 var spies = [];
 var running = false;
+/** @hidden */
 function registerObs(obs) {
     if (spies.length) {
         if (!running) {
@@ -1983,8 +2182,10 @@ function registerObs(obs) {
         }
     }
 }
+/** @hidden */
 var spy = function (spy) { return spies.push(spy); };
 
+/** @hidden */
 function flatMapLatest(src, f_) {
     var f = _.toFunction(f_);
     var stream = isProperty(src) ? src.toEventStream(allowSync) : src;
@@ -1994,6 +2195,7 @@ function flatMapLatest(src, f_) {
     return flatMapped.withDesc(new Desc(src, "flatMapLatest", [f]));
 }
 
+/** @hidden */
 var Dispatcher = /** @class */ (function () {
     function Dispatcher(observable, _subscribe, _handleEvent) {
         this.pushing = false;
@@ -2118,6 +2320,7 @@ var Dispatcher = /** @class */ (function () {
     return Dispatcher;
 }());
 
+/** @hidden */
 var PropertyDispatcher = /** @class */ (function (_super) {
     __extends(PropertyDispatcher, _super);
     function PropertyDispatcher(property, subscribe, handleEvent) {
@@ -2198,6 +2401,7 @@ var PropertyDispatcher = /** @class */ (function (_super) {
     return PropertyDispatcher;
 }(Dispatcher));
 
+/** @hidden */
 function flatMapWithConcurrencyLimit(src, limit, f) {
     return flatMap_(handleEventValueWith(f), src, {
         desc: new Desc(src, "flatMapWithConcurrencyLimit", [limit, f]),
@@ -2205,14 +2409,17 @@ function flatMapWithConcurrencyLimit(src, limit, f) {
     });
 }
 
+/** @hidden */
 function bufferWithTime(src, delay) {
     return bufferWithTimeOrCount(src, delay, Number.MAX_VALUE).withDesc(new Desc(src, "bufferWithTime", [delay]));
 }
 
+/** @hidden */
 function bufferWithCount(src, count) {
     return bufferWithTimeOrCount(src, undefined, count).withDesc(new Desc(src, "bufferWithCount", [count]));
 }
 
+/** @hidden */
 function bufferWithTimeOrCount(src, delay, count) {
     function flushOrSchedule(buffer) {
         if (buffer.values.length === count) {
@@ -2228,7 +2435,7 @@ function bufferWithTimeOrCount(src, delay, count) {
 }
 var Buffer = /** @class */ (function () {
     function Buffer(onFlush, onInput, delay) {
-        this.push = function (e) { };
+        this.push = function (e) { return more; };
         this.scheduled = null;
         this.end = undefined;
         this.values = [];
@@ -2270,6 +2477,7 @@ var Buffer = /** @class */ (function () {
     };
     return Buffer;
 }());
+/** @hidden */
 function buffer(src, delay, onInput, onFlush) {
     if (onInput === void 0) { onInput = nop; }
     if (onFlush === void 0) { onFlush = nop; }
@@ -2303,6 +2511,7 @@ function buffer(src, delay, onInput, onFlush) {
     }).withDesc(new Desc(src, "buffer", []));
 }
 
+/** @hidden */
 function asyncWrapSubscribe(obs, subscribe) {
     //assertFunction(subscribe)
     var subscribing = false;
@@ -2338,6 +2547,7 @@ function asyncWrapSubscribe(obs, subscribe) {
                     else {
                         asyncDeliveries.push(event);
                     }
+                    return more;
                 }
                 else {
                     return sink(event);
@@ -2390,6 +2600,15 @@ function mergeAll() {
     }
 }
 
+/**
+
+ Creates a single-element stream that emits given value after given delay and ends.
+
+ @param delay delay in milliseconds
+ @param value value to be emitted
+ @typeparam V Type of stream elements
+
+ */
 function later(delay, value) {
     return fromBinder(function (sink) {
         var sender = function () {
@@ -2402,6 +2621,7 @@ function later(delay, value) {
     }).withDesc(new Desc("Bacon", "later", [delay, value]));
 }
 
+/** @hidden */
 function delay(src, delay) {
     return src.delayChanges(new Desc(src, "delay", [delay]), function (changes) {
         return changes.flatMap(function (value) {
@@ -2410,6 +2630,7 @@ function delay(src, delay) {
     });
 }
 
+/** @hidden */
 function debounce(src, delay) {
     return src.delayChanges(new Desc(src, "debounce", [delay]), function (changes) {
         return changes.flatMapLatest(function (value) {
@@ -2417,6 +2638,7 @@ function debounce(src, delay) {
         });
     });
 }
+/** @hidden */
 function debounceImmediate(src, delay) {
     return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
         return changes.flatMapFirst(function (value) {
@@ -2425,12 +2647,14 @@ function debounceImmediate(src, delay) {
     });
 }
 
+/** @hidden */
 function throttle(src, delay) {
     return src.delayChanges(new Desc(src, "throttle", [delay]), function (changes) {
         return changes.bufferWithTime(delay).map(function (values) { return values[values.length - 1]; });
     });
 }
 
+/** @hidden */
 function bufferingThrottle(src, minimumInterval) {
     var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
     return src.delayChanges(desc, function (changes) { return changes.flatMapConcat(function (x) {
@@ -2438,6 +2662,7 @@ function bufferingThrottle(src, minimumInterval) {
     }); });
 }
 
+/** @hidden */
 function takeWhile(src, f) {
     return withPredicate(src, f, takeWhileT, new Desc(src, "takeWhile", [f]));
 }
@@ -2453,6 +2678,7 @@ function takeWhileT(f) {
     };
 }
 
+/** @hidden */
 function skipUntil(src, starter) {
     var started = starter
         .transform(composeT(takeT(1), mapT(true)))
@@ -2461,9 +2687,11 @@ function skipUntil(src, starter) {
     return src.filter(started).withDesc(new Desc(src, "skipUntil", [starter]));
 }
 
+/** @hidden */
 function skipWhile(src, f) {
     return withPredicate(src, f, skipWhileT, new Desc(src, "skipWhile", [f]));
 }
+/** @hidden */
 function skipWhileT(f) {
     var started = false;
     return function (event, sink) {
@@ -2479,6 +2707,7 @@ function skipWhileT(f) {
     };
 }
 
+/** @hidden */
 function groupBy(src, keyF, limitF) {
     if (limitF === void 0) { limitF = _.id; }
     var streams = {};
@@ -2497,6 +2726,7 @@ function groupBy(src, keyF, limitF) {
     })));
 }
 
+/** @hidden */
 function slidingWindow(src, maxValues, minValues) {
     if (minValues === void 0) { minValues = 0; }
     return src.scan([], (function (window, value) {
@@ -2507,10 +2737,12 @@ function slidingWindow(src, maxValues, minValues) {
     })).withDesc(new Desc(src, "slidingWindow", [maxValues, minValues]));
 }
 
+/** @hidden */
 function diff(src, start, f) {
     return transformP(scan(src, [start], function (prevTuple, next) { return [next, f(prevTuple[0], next)]; }), composeT(filterT(function (tuple) { return tuple.length === 2; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
 }
 
+/** @hidden */
 function flatScan(src, seed, f) {
     var current = seed;
     return src.flatMapConcat(function (next) {
@@ -2518,6 +2750,7 @@ function flatScan(src, seed, f) {
     }).toProperty().startWith(seed).withDesc(new Desc(src, "flatScan", [seed, f]));
 }
 
+/** @hidden */
 function holdWhen(src, valve) {
     var onHold = false;
     var bufferedValues = [];
@@ -2532,15 +2765,16 @@ function holdWhen(src, valve) {
             if (composite.empty() && subscribed) {
                 return sink(endEvent());
             }
+            return more;
         };
         composite.add(function (unsubAll, unsubMe) {
             return valve.subscribeInternal(function (event) {
                 if (hasValue(event)) {
                     onHold = event.value;
+                    var result = more;
                     if (!onHold) {
                         var toSend = bufferedValues;
                         bufferedValues = [];
-                        var result = more;
                         for (var i = 0; i < toSend.length; i++) {
                             result = sink(nextEvent(toSend[i]));
                         }
@@ -2549,8 +2783,8 @@ function holdWhen(src, valve) {
                             unsubMe();
                             result = noMore;
                         }
-                        return result;
                     }
+                    return result;
                 }
                 else if (event.isEnd) {
                     return endIfBothEnded(unsubMe);
@@ -2563,7 +2797,8 @@ function holdWhen(src, valve) {
         composite.add(function (unsubAll, unsubMe) {
             return src.subscribeInternal(function (event) {
                 if (onHold && hasValue(event)) {
-                    return bufferedValues.push(event.value);
+                    bufferedValues.push(event.value);
+                    return more;
                 }
                 else if (event.isEnd && bufferedValues.length) {
                     srcIsEnded = true;
@@ -2605,6 +2840,7 @@ function zipWith() {
     return when([streams, f]).withDesc(new Desc("Bacon", "zipWith", [f].concat(streams)));
 }
 
+/** @hidden */
 function zip(left, right, f) {
     return zipWith([left, right], f || Array).withDesc(new Desc(left, "zip", [right]));
 }
@@ -2682,11 +2918,13 @@ function combineTemplate(template) {
     return resultProperty.withDesc(new Desc("Bacon", "combineTemplate", [template]));
 }
 
+/** @hidden */
 function decode(src, cases) {
     return src.combine(combineTemplate(cases), function (key, values) { return values[key]; })
         .withDesc(new Desc(src, "decode", [cases]));
 }
 
+/** @hidden */
 function firstToPromise(src, PromiseCtr) {
     // Can't do in the global scope, as shim can be applied after Bacon is loaded.
     if (typeof PromiseCtr !== "function") {
@@ -2711,11 +2949,16 @@ function firstToPromise(src, PromiseCtr) {
     });
 }
 
+/** @hidden */
 function toPromise(src, PromiseCtr) {
     return src.last().firstToPromise(PromiseCtr);
 }
 
 var idCounter = 0;
+/**
+Observable is the base class for [EventsStream](EventStream.html) and Property
+ @typeparam V   Type of the elements/values in the stream/property
+ */
 var Observable = /** @class */ (function () {
     function Observable(desc) {
         this.id = ++idCounter;
@@ -2792,7 +3035,7 @@ var Observable = /** @class */ (function () {
         return fold(this, seed, f);
     };
     Observable.prototype.forEach = function (f) {
-        if (f === void 0) { f = nop; }
+        if (f === void 0) { f = nullSink; }
         // TODO: inefficient alias. Also, similar assign alias missing.
         return this.onValue(f);
     };
@@ -2829,27 +3072,30 @@ var Observable = /** @class */ (function () {
         return this;
     };
     Observable.prototype.onEnd = function (f) {
-        if (f === void 0) { f = nop; }
+        if (f === void 0) { f = nullVoidSink; }
         return this.subscribe(function (event) {
             if (event.isEnd) {
                 return f();
             }
+            return more;
         });
     };
     Observable.prototype.onError = function (f) {
-        if (f === void 0) { f = nop; }
+        if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
             if (event.isError) {
                 return f(event.error);
             }
+            return more;
         });
     };
     Observable.prototype.onValue = function (f) {
-        if (f === void 0) { f = nop; }
+        if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
             if (event.hasValue) {
                 return f(event.value);
             }
+            return more;
         });
     };
     Observable.prototype.onValues = function (f) {
@@ -2879,7 +3125,7 @@ var Observable = /** @class */ (function () {
     };
     Observable.prototype.subscribe = function (sink) {
         var _this = this;
-        if (sink === void 0) { sink = nop; }
+        if (sink === void 0) { sink = nullSink; }
         return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
     };
     Observable.prototype.take = function (count) {
@@ -2936,17 +3182,23 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.and = function (other) {
         return and(this, other);
     };
+    /**
+     * creates a stream of changes to the Property. The stream *does not* include
+     an event for the current value of the Property at the time this method was called.
+     */
     Property.prototype.changes = function () {
         var _this = this;
         return new EventStream(new Desc(this, "changes", []), function (sink) { return _this.dispatcher.subscribe(function (event) {
             if (!event.isInitial) {
                 return sink(event);
             }
+            return more;
         }); });
     };
     Property.prototype.concat = function (right) {
         return addPropertyInitValueToStream(this, this.changes().concat(right));
     };
+    /** @hidden */
     Property.prototype.delayChanges = function (desc, f) {
         return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
     };
@@ -2991,9 +3243,13 @@ var Property = /** @class */ (function (_super) {
         return startWithP(this, seed);
     };
     Property.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nop; }
+        if (sink === void 0) { sink = nullSink; }
         return this.dispatcher.subscribe(sink);
     };
+    /**
+     Creates an EventStream based on this Property. The stream contains also an event for the current
+     value of this Property at the time this method was called.
+     */
     Property.prototype.toEventStream = function (options) {
         var _this = this;
         return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) {
@@ -3012,6 +3268,7 @@ var Property = /** @class */ (function (_super) {
     };
     return Property;
 }(Observable));
+/** @hidden */
 function isProperty(x) {
     return !!x._isProperty;
 }
@@ -3019,7 +3276,13 @@ function isProperty(x) {
 // ideally, this should not exist, but right now the implementation of some operations
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
 // to the outside world, though.
+/** @hidden */
 var allowSync = { forceAsync: false };
+/**
+ * EventStream represents a stream of events. It is an Observable object, meaning
+ that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
+ with a callback. Like this:
+ */
 var EventStream = /** @class */ (function (_super) {
     __extends(EventStream, _super);
     function EventStream(desc, subscribe, handler, options) {
@@ -3033,7 +3296,7 @@ var EventStream = /** @class */ (function (_super) {
         return _this;
     }
     EventStream.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nop; }
+        if (sink === void 0) { sink = nullSink; }
         return this.dispatcher.subscribe(sink);
     };
     EventStream.prototype.toEventStream = function () { return this; };
@@ -3079,6 +3342,7 @@ var EventStream = /** @class */ (function (_super) {
         return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
     };
     EventStream.prototype.not = function () { return not(this); };
+    /** @hidden */
     EventStream.prototype.delayChanges = function (desc, f) {
         return f(this).withDesc(desc);
     };
@@ -3093,6 +3357,7 @@ var EventStream = /** @class */ (function (_super) {
     };
     return EventStream;
 }(Observable));
+/** @hidden */
 function newEventStream(description, subscribe) {
     return new EventStream(description, subscribe);
 }
@@ -3171,6 +3436,16 @@ function lateBindFirst(f) {
     };
 }
 
+/**
+ Creates an EventStream that delivers the given
+ series of values (given as array) to the first subscriber. The stream ends after these
+ values have been delivered. You can also send [`Bacon.Error`](classes/error.html) events, or
+ any combination of pure values and error events like this:
+ `Bacon.fromArray([1, new Bacon.Error()])
+
+ @param   values    Array of values or events to repeat
+ @typeparam V Type of stream elements
+ */
 function fromArray(values) {
     assertArray(values);
     if (!values.length) {
@@ -3237,6 +3512,7 @@ function fromArray(values) {
 //   # => EventStream
 //
 // Returns EventStream
+/** @hidden */
 var eventMethods = [
     ["addEventListener", "removeEventListener"],
     ["addListener", "removeListener"],
@@ -3261,6 +3537,30 @@ var findHandlerMethods = function (target) {
     }
     throw new Error("No suitable event methods in " + target);
 };
+/**
+ creates an EventStream from events
+ on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
+ You can also pass an optional function that transforms the emitted
+ events' parameters.
+
+ ```js
+ Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
+ Bacon.fromEvent(
+ window,
+ function(binder, listener) {
+    binder("scroll", listener, {passive: true})
+  }
+ ).onValue(function() {
+  console.log(window.scrollY)
+})
+ ```
+
+ @param target
+ @param eventSource
+ @param eventTransformer
+ @typeparam V Type of stream elements
+
+ */
 function fromEvent(target, eventSource, eventTransformer) {
     var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
     var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
@@ -3288,6 +3588,35 @@ function onValues() {
     return combineAsArray(args.slice(0, args.length - 1)).onValues(args[arguments.length - 1]);
 }
 
+/**
+ Calls generator function which is expected to return an observable. The returned EventStream contains
+ values and errors from the spawned observable. When the spawned observable ends, the generator is called
+ again to spawn a new observable.
+
+ This is repeated until the generator returns a falsy value
+ (such as `undefined` or `false`).
+
+ The generator function is called with one argument — iteration number starting from `0`.
+
+ Here's an example:
+
+```js
+Bacon.repeat(function(i) {
+if (i < 3) {
+  return Bacon.once(i);
+} else {
+  return false;
+}
+}).log()
+```
+
+ The example will produce values 0, 1 and 2.
+
+ @param {(number) => (Observable<V> | null)} generator
+ @returns {EventStream<V>}
+ @typeparam V Type of stream elements
+
+ */
 function repeat(generator) {
     var index = 0;
     return fromBinder(function (sink) {
@@ -3297,11 +3626,12 @@ function repeat(generator) {
         function handleEvent(event) {
             if (event.isEnd) {
                 if (!flag) {
-                    return flag = true;
+                    flag = true;
                 }
                 else {
-                    return subscribeNext();
+                    subscribeNext();
                 }
+                return more;
             }
             else {
                 return reply = sink(event);
@@ -3320,13 +3650,23 @@ function repeat(generator) {
                     sink(endEvent());
                 }
             }
-            return flag = true;
+            flag = true;
         }
         subscribeNext();
         return function () { return unsub(); };
     }).withDesc(new Desc("Bacon", "repeat", [generator]));
 }
 
+/**
+ Repeats given elements indefinitely
+ with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
+ would lead to `1,2,3,1,2,3...` to be repeated indefinitely.
+
+ @param delay between values, in milliseconds
+ @param values array of values to repeat
+ @typeparam V Type of stream elements
+
+ */
 function repeatedly(delay, values) {
     var index = 0;
     return fromPoll(delay, function () {
@@ -3334,6 +3674,12 @@ function repeatedly(delay, values) {
     }).withDesc(new Desc("Bacon", "repeatedly", [delay, values]));
 }
 
+/**
+ Creates a stream that ends after given amount of milliseconds, without emitting any values.
+
+ @param duration duration of silence in milliseconds
+ @typeparam V Type of stream elements
+ */
 function silence(duration) {
     return later(duration, "")
         .filter(false)
@@ -3392,6 +3738,15 @@ function retry(options) {
     }).withDesc(new Desc("Bacon", "retry", [options]));
 }
 
+/**
+ Creates a stream containing given
+ values (given as array). Delivered with given interval in milliseconds.
+
+ @param delay between elements, in milliseconds
+ @param array of values or events
+ @typeparam V Type of stream elements
+
+ */
 function sequentially(delay, values) {
     var index = 0;
     return fromPoll(delay, function () {
@@ -3411,6 +3766,19 @@ function sequentially(delay, values) {
 function valueAndEnd(value) {
     return [value, endEvent()];
 }
+/**
+ * Creates an EventStream from a Promise object such as JQuery Ajax.
+ This stream will contain a single value or an error, followed immediately by stream end.
+ You can use the optional abort flag (i.e. ´fromPromise(p, true)´ to have the `abort` method of the given promise be called when all subscribers have been removed from the created stream.
+ You can also pass an optional function that transforms the promise value into Events. The default is to transform the value into `[new Bacon.Next(value), new Bacon.End()]`.
+ Check out this [example](https://github.com/raimohanska/baconjs-examples/blob/master/resources/public/index.html).
+
+ *
+ * @param {Promise<V>} source promise object
+ * @param abort should we call the `abort` method of the Promise on unsubscribe. This is a nonstandard feature you should probably ignore.
+ * @param {EventTransformer<V>} eventTransformer
+ * @returns {EventStream<V>}
+ */
 function fromPromise(promise, abort, eventTransformer) {
     if (eventTransformer === void 0) { eventTransformer = valueAndEnd; }
     return fromBinder(function (handler) {
@@ -3479,10 +3847,44 @@ var makeFunction_ = withMethodCallSupport(function (f) {
         return _.always(f);
     }
 });
+/** @hidden */
 function makeFunction(f, args) {
     return makeFunction_.apply(void 0, [f].concat(args));
 }
 
+// TODO: types/doc for the object, fnname variant
+/**
+ Creates an EventStream from a function that
+ accepts a callback. The function is supposed to call its callback just
+ once. For example:
+
+ ```js
+ Bacon.fromCallback(function(callback) {
+  setTimeout(function() {
+    callback("Bacon!")
+  }, 1000)
+})
+ ```
+
+ This would create a stream that outputs a single value "Bacon!" and ends
+ after that. The use of setTimeout causes the value to be delayed by 1
+ second.
+
+ You can also give any number of arguments to [`fromCallback`](#bacon-fromcallback), which will be
+ passed to the function. These arguments can be simple variables, Bacon
+ EventStreams or Properties. For example the following will output "Bacon rules":
+
+ ```js
+ bacon = Bacon.constant('bacon')
+ Bacon.fromCallback(function(a, b, callback) {
+  callback(a + ' ' + b);
+}, bacon, 'rules').log();
+ ```
+
+ * @param f
+ * @param args
+ * @returns {EventStream<V>}
+ */
 function fromCallback(f) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -3495,6 +3897,20 @@ function fromCallback(f) {
         return [value, endEvent()];
     }).withDesc(new Desc("Bacon", "fromCallback", [f].concat(args)));
 }
+/**
+Behaves the same way as `Bacon.fromCallback`,
+except that it expects the callback to be called in the Node.js convention:
+`callback(error, data)`, where error is null if everything is fine. For example:
+
+```js
+var Bacon = require('baconjs').Bacon,
+fs = require('fs');
+var read = Bacon.fromNodeCallback(fs.readFile, 'input.txt');
+read.onError(function(error) { console.log("Reading failed: " + error); });
+read.onValue(function(value) { console.log("Read contents: " + value); });
+```
+
+ */
 function fromNodeCallback(f) {
     var args = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -3511,6 +3927,11 @@ function fromNodeCallback(f) {
     }).withDesc(new Desc("Bacon", "fromNodeCallback", [f].concat(args)));
 }
 
+/**
+ * Creates an EventStream from an
+ [ES Observable](https://github.com/tc39/proposal-observable). Input can be any
+ ES Observable implementation including RxJS and Kefir.
+ */
 function fromESObservable(_observable) {
     var observable;
     if (_observable[symbol("observable")]) {
@@ -3541,6 +3962,13 @@ function fromESObservable(_observable) {
     });
 }
 
+/**
+ A pushable/pluggable stream
+
+ Pro tip: you can also put Errors into streams created with the
+ constructors above, by using an [`Bacon.Error`](error) object instead of a plain
+ value.
+ */
 var Bus = /** @class */ (function (_super) {
     __extends(Bus, _super);
     function Bus() {
@@ -3668,6 +4096,7 @@ var Bus = /** @class */ (function (_super) {
     return Bus;
 }(EventStream));
 
+/** @hidden */
 function tryF(f) {
     return function (value) {
         try {
@@ -3679,7 +4108,22 @@ function tryF(f) {
     };
 }
 
-var B$ = {
+var $ = {
+    /**
+     Creates an EventStream from events on a
+     jQuery or Zepto.js object. You can pass optional arguments to add a
+     jQuery live selector and/or a function that processes the jQuery
+     event and its parameters, if given, like this:
+  
+     ```js
+     $("#my-div").asEventStream("click", ".more-specific-selector")
+     $("#my-div").asEventStream("click", ".more-specific-selector", function(event, args) { return args[0] })
+     $("#my-div").asEventStream("click", function(event, args) { return args[0] })
+     ```
+  
+     Note: you need to install the `asEventStream` method on JQuery by calling
+     [init()](#_.aseventstream) as in `Bacon.$.init($)`.
+     */
     asEventStream: function (eventName, selector, eventTransformer) {
         var _this = this;
         if (_.isFunction(selector)) {
@@ -3692,13 +4136,17 @@ var B$ = {
         }, eventTransformer).withDesc(new Desc(this.selector || this, "asEventStream", [eventName]));
     },
     init: function ($) {
-        $.fn.asEventStream = B$.asEventStream;
+        $.fn.asEventStream = $.asEventStream;
     }
 };
 
+/**
+ *  Bacon.js version as string
+ */
 var version = '<version>';
 
 exports.version = version;
+exports.when = when;
 exports.combineTemplate = combineTemplate;
 exports.concatAll = concatAll;
 exports.constant = constant;
@@ -3742,21 +4190,20 @@ exports.hasValue = hasValue;
 exports.isError = isError;
 exports.isEnd = isEnd;
 exports.isInitial = isInitial;
+exports.isEvent = isEvent;
 exports.CompositeUnsubscribe = CompositeUnsubscribe;
 exports.spy = spy;
 exports.try = tryF;
 exports.getScheduler = getScheduler;
 exports.setScheduler = setScheduler;
 exports._ = _;
-exports.$ = B$;
+exports.$ = $;
 exports.update = update;
-exports.when = when;
-exports.whenP = whenP;
-exports.when_ = when_;
-exports.extractRawPatterns = extractRawPatterns;
 exports.combineAsArray = combineAsArray;
 exports.combineWith = combineWith;
 exports.combine = combine;
+exports.nullSink = nullSink;
+exports.nullVoidSink = nullVoidSink;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

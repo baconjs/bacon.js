@@ -518,14 +518,15 @@
             doUnsub();
         };
         doUnsub = subscribe(function (event) {
-            return afterTransaction(obs, function () {
+            afterTransaction(obs, function () {
                 if (!unsubd) {
                     var reply = sink(event);
                     if (reply === noMore) {
-                        return unsub();
+                        unsub();
                     }
                 }
             });
+            return more;
         });
         if (shouldUnsub) {
             doUnsub();
@@ -591,6 +592,12 @@
             return [];
         }
     }
+    var nullSink = function () {
+        return more;
+    };
+    var nullVoidSink = function () {
+        return more;
+    };
     function withStateMachine(initState, f, src) {
         return src.transform(withStateMachineT(initState, f), new Desc(src, 'withStateMachine', [
             initState,
@@ -818,6 +825,7 @@
             if (typeof console !== 'undefined' && typeof console.log === 'function') {
                 console.log.apply(console, args.concat([event.log()]));
             }
+            return more;
         });
     }
     function doLogT(args) {
@@ -892,6 +900,7 @@
                     if (reply !== noMore) {
                         return sink(event);
                     }
+                    return reply;
                 }
             });
             UpdateBarrier.whenDoneWith(resultProperty, sendInit);
@@ -1057,6 +1066,7 @@
                     if (reply !== noMore) {
                         return sink(event);
                     }
+                    return reply;
                 }
             });
             subbed = true;
@@ -1145,10 +1155,11 @@
                             return noMore;
                         }
                         if (params.limit && composite.count() > params.limit) {
-                            return queue.push(event);
+                            queue.push(event);
                         } else {
-                            return spawn(event);
+                            spawn(event);
                         }
+                        return more;
                     }
                 });
             });
@@ -1412,12 +1423,13 @@
                         }
                     }
                     return source.subscribe(function (e) {
+                        var reply = more;
                         if (e.isEnd) {
                             ends = true;
                             source.markEnded();
                             flushLater();
                         } else if (e.isError) {
-                            var reply = sink(e);
+                            reply = sink(e);
                         } else {
                             var valueEvent = e;
                             source.push(valueEvent);
@@ -1436,7 +1448,7 @@
                         if (reply === noMore) {
                             unsubAll();
                         }
-                        return reply || more;
+                        return reply;
                     });
                 };
             }
@@ -1917,7 +1929,7 @@
             var unsubLeft = left.dispatcher.subscribe(function (e) {
                 if (e.isEnd) {
                     unsubRight = right.toEventStream().dispatcher.subscribe(sink);
-                    return unsubRight;
+                    return more;
                 } else {
                     return sink(e);
                 }
@@ -2254,6 +2266,7 @@
     var Buffer = function () {
         function Buffer(onFlush, onInput, delay) {
             this.push = function (e) {
+                return more;
             };
             this.scheduled = null;
             this.end = undefined;
@@ -2350,6 +2363,7 @@
                         } else {
                             asyncDeliveries.push(event);
                         }
+                        return more;
                     } else {
                         return sink(event);
                     }
@@ -2557,15 +2571,16 @@
                 if (composite.empty() && subscribed) {
                     return sink(endEvent());
                 }
+                return more;
             };
             composite.add(function (unsubAll, unsubMe) {
                 return valve.subscribeInternal(function (event) {
                     if (hasValue(event)) {
                         onHold = event.value;
+                        var result = more;
                         if (!onHold) {
                             var toSend = bufferedValues;
                             bufferedValues = [];
-                            var result = more;
                             for (var i = 0; i < toSend.length; i++) {
                                 result = sink(nextEvent(toSend[i]));
                             }
@@ -2574,8 +2589,8 @@
                                 unsubMe();
                                 result = noMore;
                             }
-                            return result;
                         }
+                        return result;
                     } else if (event.isEnd) {
                         return endIfBothEnded(unsubMe);
                     } else {
@@ -2586,7 +2601,8 @@
             composite.add(function (unsubAll, unsubMe) {
                 return src.subscribeInternal(function (event) {
                     if (onHold && hasValue(event)) {
-                        return bufferedValues.push(event.value);
+                        bufferedValues.push(event.value);
+                        return more;
                     } else if (event.isEnd && bufferedValues.length) {
                         srcIsEnded = true;
                         return endIfBothEnded(unsubMe);
@@ -2826,7 +2842,7 @@
         };
         Observable.prototype.forEach = function (f) {
             if (f === void 0) {
-                f = nop;
+                f = nullSink;
             }
             return this.onValue(f);
         };
@@ -2868,32 +2884,35 @@
         };
         Observable.prototype.onEnd = function (f) {
             if (f === void 0) {
-                f = nop;
+                f = nullVoidSink;
             }
             return this.subscribe(function (event) {
                 if (event.isEnd) {
                     return f();
                 }
+                return more;
             });
         };
         Observable.prototype.onError = function (f) {
             if (f === void 0) {
-                f = nop;
+                f = nullSink;
             }
             return this.subscribe(function (event) {
                 if (event.isError) {
                     return f(event.error);
                 }
+                return more;
             });
         };
         Observable.prototype.onValue = function (f) {
             if (f === void 0) {
-                f = nop;
+                f = nullSink;
             }
             return this.subscribe(function (event) {
                 if (event.hasValue) {
                     return f(event.value);
                 }
+                return more;
             });
         };
         Observable.prototype.onValues = function (f) {
@@ -2928,7 +2947,7 @@
         Observable.prototype.subscribe = function (sink) {
             var _this = this;
             if (sink === void 0) {
-                sink = nop;
+                sink = nullSink;
             }
             return UpdateBarrier.wrappedSubscribe(this, function (sink) {
                 return _this.subscribeInternal(sink);
@@ -2996,6 +3015,7 @@
                     if (!event.isInitial) {
                         return sink(event);
                     }
+                    return more;
                 });
             });
         };
@@ -3051,7 +3071,7 @@
         };
         Property.prototype.subscribeInternal = function (sink) {
             if (sink === void 0) {
-                sink = nop;
+                sink = nullSink;
             }
             return this.dispatcher.subscribe(sink);
         };
@@ -3092,7 +3112,7 @@
         }
         EventStream.prototype.subscribeInternal = function (sink) {
             if (sink === void 0) {
-                sink = nop;
+                sink = nullSink;
             }
             return this.dispatcher.subscribe(sink);
         };
@@ -3371,10 +3391,11 @@
             function handleEvent(event) {
                 if (event.isEnd) {
                     if (!flag) {
-                        return flag = true;
+                        flag = true;
                     } else {
-                        return subscribeNext();
+                        subscribeNext();
                     }
+                    return more;
                 } else {
                     return reply = sink(event);
                 }
@@ -3391,7 +3412,7 @@
                         sink(endEvent());
                     }
                 }
-                return flag = true;
+                flag = true;
             }
             subscribeNext();
             return function () {
@@ -3752,7 +3773,7 @@
             }
         };
     }
-    var B$ = {
+    var $ = {
         asEventStream: function (eventName, selector, eventTransformer) {
             var _this = this;
             if (_.isFunction(selector)) {
@@ -3767,11 +3788,12 @@
             }, eventTransformer).withDesc(new Desc(this.selector || this, 'asEventStream', [eventName]));
         },
         init: function ($) {
-            $.fn.asEventStream = B$.asEventStream;
+            $.fn.asEventStream = $.asEventStream;
         }
     };
     var version = '<version>';
     exports.version = version;
+    exports.when = when;
     exports.combineTemplate = combineTemplate;
     exports.concatAll = concatAll;
     exports.constant = constant;
@@ -3815,20 +3837,19 @@
     exports.isError = isError;
     exports.isEnd = isEnd;
     exports.isInitial = isInitial;
+    exports.isEvent = isEvent;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
     exports.spy = spy;
     exports.try = tryF;
     exports.getScheduler = getScheduler;
     exports.setScheduler = setScheduler;
     exports._ = _;
-    exports.$ = B$;
+    exports.$ = $;
     exports.update = update;
-    exports.when = when;
-    exports.whenP = whenP;
-    exports.when_ = when_;
-    exports.extractRawPatterns = extractRawPatterns;
     exports.combineAsArray = combineAsArray;
     exports.combineWith = combineWith;
     exports.combine = combine;
+    exports.nullSink = nullSink;
+    exports.nullVoidSink = nullVoidSink;
     Object.defineProperty(exports, '__esModule', { value: true });
 }));

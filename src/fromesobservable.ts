@@ -4,6 +4,11 @@ import { symbol } from "./symbol";
 import { EventSink } from "./types";
 import { End, Error, Next } from "./event";
 
+/**
+ * Creates an EventStream from an
+ [ES Observable](https://github.com/tc39/proposal-observable). Input can be any
+ ES Observable implementation including RxJS and Kefir.
+ */
 export default function fromESObservable<V>(_observable): EventStream<V> {
   var observable;
   if (_observable[symbol("observable")]) {

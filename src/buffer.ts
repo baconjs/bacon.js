@@ -41,7 +41,7 @@ class Buffer<V> {
   delay: DelayFunction
   onInput: BufferHandler<V>
   onFlush: BufferHandler<V>
-  push: EventSink<V> = (e) => {}
+  push: EventSink<V> = (e) => more
   scheduled: number | null = null
   end: End<V> | undefined = undefined
   values: V[] = []

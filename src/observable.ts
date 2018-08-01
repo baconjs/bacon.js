@@ -1,7 +1,6 @@
 import UpdateBarrier from "./internal/updatebarrier";
 import { Desc, describe } from "./describe";
-import { nop } from "./helpers";
-import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink } from "./types"
+import { EventSink, EventStreamDelay, nullSink, nullVoidSink, Sink, Subscribe, Unsub, VoidSink } from "./types"
 import { default as withStateMachine, StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
@@ -51,7 +50,7 @@ import delay from "./delay";
 import { debounce, debounceImmediate } from "./debounce";
 import throttle from "./throttle";
 import bufferingThrottle from "./bufferingthrottle";
-import { Transformer, transformE, transformP } from "./transform";
+import { transformE, Transformer, transformP } from "./transform";
 import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
 import { PredicateOrProperty } from "./predicate";
@@ -65,12 +64,13 @@ import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
 import decode from "./decode";
 import { firstToPromise, toPromise } from "./topromise";
+import { more } from "./reply"
 
 var idCounter = 0;
 
 /**
 Observable is the base class for [EventsStream](EventStream.html) and Property
- @typeparam V Type of the elements/values in the stream/property
+ @typeparam V   Type of the elements/values in the stream/property
  */
 export abstract class Observable<V> {
   desc: Desc
@@ -158,7 +158,7 @@ export abstract class Observable<V> {
   fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return fold(this, seed, f)
   }
-  forEach(f: Sink<V> = nop) : Unsub {
+  forEach(f: Sink<V> = nullSink) : Unsub {
     // TODO: inefficient alias. Also, similar assign alias missing.
     return this.onValue(f)
   }
@@ -191,19 +191,22 @@ export abstract class Observable<V> {
     return this;
   }
   abstract not(): Observable<boolean>
-  onEnd(f: VoidSink = nop): Unsub {
+  onEnd(f: VoidSink = nullVoidSink): Unsub {
     return this.subscribe(function(event) {
       if (event.isEnd) { return f(); }
+      return more
     });
   }
-  onError(f: Sink<any> = nop): Unsub {
+  onError(f: Sink<any> = nullSink): Unsub {
     return this.subscribe(function(event) {
       if (event.isError) { return f(event.error) }
+      return more
     })
   }
-  onValue(f: Sink<V> = nop) : Unsub {
+  onValue(f: Sink<V> = nullSink) : Unsub {
     return this.subscribe(function(event) {
       if (event.hasValue) { return f(event.value) }
+      return more
     });
   }
   onValues(f): Unsub {
@@ -232,7 +235,7 @@ export abstract class Observable<V> {
     return slidingWindow(this, maxValues, minValues)
   }
   abstract startWith(seed: V): Observable<V>
-  subscribe(sink: EventSink<V> = nop): Unsub {
+  subscribe(sink: EventSink<V> = nullSink): Unsub {
     return UpdateBarrier.wrappedSubscribe(this, sink => this.subscribeInternal(sink), sink)
   }
   abstract subscribeInternal(sink: EventSink<V>): Unsub
@@ -296,6 +299,10 @@ export class Property<V> extends Observable<V> {
     return and(this, other)
   }
 
+  /**
+   * creates a stream of changes to the Property. The stream *does not* include
+   an event for the current value of the Property at the time this method was called.
+   */
   changes(): EventStream<V> {
     return new EventStream(
       new Desc(this, "changes", []),
@@ -303,6 +310,7 @@ export class Property<V> extends Observable<V> {
         if (!event.isInitial) {
           return sink(event);
         }
+        return more
       })
     )
   }
@@ -368,10 +376,14 @@ export class Property<V> extends Observable<V> {
     return startWithP(this, seed)
   }
 
-  subscribeInternal(sink: EventSink<V> = nop): Unsub {
+  subscribeInternal(sink: EventSink<V> = nullSink): Unsub {
     return this.dispatcher.subscribe(sink)
   }
 
+  /**
+   Creates an EventStream based on this Property. The stream contains also an event for the current
+   value of this Property at the time this method was called.
+   */
   toEventStream(options?: EventStreamOptions): EventStream<V> {
     return new EventStream(
       new Desc(this, "toEventStream", []),
@@ -411,6 +423,11 @@ export const allowSync = { forceAsync: false }
 /** @hidden */
 export interface EventStreamOptions { forceAsync: boolean }
 
+/**
+ * EventStream represents a stream of events. It is an Observable object, meaning
+ that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
+ with a callback. Like this:
+ */
 export class EventStream<V> extends Observable<V> {
   dispatcher: Dispatcher<V, EventStream<V>>
   _isEventStream: boolean = true
@@ -423,7 +440,7 @@ export class EventStream<V> extends Observable<V> {
     registerObs(this)
   }
 
-  subscribeInternal(sink: EventSink<V> = nop): Unsub {
+  subscribeInternal(sink: EventSink<V> = nullSink): Unsub {
     return this.dispatcher.subscribe(sink)
   }
 

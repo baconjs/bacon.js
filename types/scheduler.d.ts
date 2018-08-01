@@ -1,11 +1,11 @@
-export declare type Scheduled = number;
 export interface Scheduler {
-    setTimeout(f: Function, d: number): Scheduled;
-    setInterval(f: Function, i: number): Scheduled;
-    clearInterval(id: Scheduled): any;
-    clearTimeout(id: Scheduled): any;
+    setTimeout(f: Function, d: number): number;
+    setInterval(f: Function, i: number): number;
+    clearInterval(id: number): any;
+    clearTimeout(id: number): any;
     now(): number;
 }
+/** @hidden */
 export declare const defaultScheduler: Scheduler;
 declare const GlobalScheduler: {
     scheduler: Scheduler;

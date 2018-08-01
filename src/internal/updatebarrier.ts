@@ -1,5 +1,5 @@
 import _ from '../_';
-import { noMore } from '../reply';
+import { Reply, more, noMore } from '../reply';
 import { assertFunction } from "./assert";
 import { Event } from "../event"
 import { Subscribe } from "../types"
@@ -203,15 +203,16 @@ function wrappedSubscribe<V>(obs: Observable, subscribe: Subscribe<V>, sink: Eve
     unsubd = true
     doUnsub()
   }
-  doUnsub = subscribe(function(event: Event<V>) {
-    return afterTransaction(obs, function() {
+  doUnsub = subscribe(function(event: Event<V>): Reply {
+    afterTransaction(obs, function() {
       if (!unsubd) {
         var reply = sink(event);
         if (reply === noMore) {
-          return unsub();
+          unsub();
         }
       }
     })
+    return more
   })
   if (shouldUnsub) {
     doUnsub();

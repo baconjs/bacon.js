@@ -2,6 +2,7 @@ import UpdateBarrier from "./updatebarrier";
 import { Event } from "../event";
 import { Sink, Subscribe } from "../types"
 import GlobalScheduler from "../scheduler"
+import { Reply, more } from "../reply";
 
 /** @hidden */
 export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Subscribe<V> {
@@ -24,7 +25,7 @@ export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Sub
     }
 
     try {
-      return subscribe(function wrappedSink(event: Event<V>) {
+      return subscribe(function wrappedSink(event: Event<V>): Reply {
         if (subscribing || asyncDeliveries) {
           // Deliver async if currently subscribing
           // Also queue further events until async delivery has been completed
@@ -40,6 +41,7 @@ export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Sub
           } else {
             asyncDeliveries.push(event)
           }
+          return more
         } else {
           return sink(event)
         }

@@ -10,6 +10,8 @@ export declare class Desc {
     deps(): Observable[];
     toString(): string;
 }
+/** @hidden */
 export declare function describe(context: any, method: any, ...args: any[]): Desc;
+/** @hidden */
 export declare function findDeps(x: any): Observable[];
 export default describe;

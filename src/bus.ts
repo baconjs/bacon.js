@@ -11,6 +11,13 @@ interface Subscription<V> {
   input: Observable<V>
 }
 
+/**
+ A pushable/pluggable stream
+
+ Pro tip: you can also put Errors into streams created with the
+ constructors above, by using an [`Bacon.Error`](error) object instead of a plain
+ value.
+ */
 export default class Bus<V> extends EventStream<V> {
   sink?: EventSink<V>;
   pushing: boolean = false

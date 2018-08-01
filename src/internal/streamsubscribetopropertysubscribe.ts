@@ -1,5 +1,5 @@
 import { nop } from "../helpers";
-import { more, noMore } from "../reply";
+import { Reply, more, noMore } from "../reply";
 import { Option, Some } from "../optional";
 import { Event, Initial, Value } from "../event";
 import { Sink, Subscribe, Unsub } from "../types"
@@ -26,7 +26,7 @@ export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<
       }
     };
 
-    unsub = streamSubscribe(function(event: Event<V>) {
+    unsub = streamSubscribe(function(event: Event<V>): Reply {
       if (event instanceof Value) {
         if (event.isInitial && !subbed) {
           initValue = new Some(event.value);
@@ -41,7 +41,10 @@ export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<
         if (event.isEnd) {
           reply = sendInit();
         }
-        if (reply !== noMore) { return sink(event); }
+        if (reply !== noMore) {
+          return sink(event);
+        }
+        return reply
       }
     });
     subbed = true;

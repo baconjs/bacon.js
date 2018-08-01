@@ -47,6 +47,30 @@ var findHandlerMethods = function(target): [Function, Function] {
   throw new Exception("No suitable event methods in " + target);
 };
 
+/**
+ creates an EventStream from events
+ on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
+ You can also pass an optional function that transforms the emitted
+ events' parameters.
+
+ ```js
+ Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
+ Bacon.fromEvent(
+ window,
+ function(binder, listener) {
+    binder("scroll", listener, {passive: true})
+  }
+ ).onValue(function() {
+  console.log(window.scrollY)
+})
+ ```
+
+ @param target
+ @param eventSource
+ @param eventTransformer
+ @typeparam V Type of stream elements
+
+ */
 export default function fromEvent<V>(target, eventSource, eventTransformer): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);

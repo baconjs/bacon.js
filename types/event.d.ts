@@ -13,6 +13,7 @@ export declare abstract class Event<V> {
     toNext(): Event<V>;
     abstract fmap<V2>(f: (V: any) => V2): Event<V2>;
 }
+/** @hidden */
 export declare abstract class Value<V> extends Event<V> {
     value: V;
     hasValue: boolean;
@@ -36,6 +37,7 @@ export declare class Initial<V> extends Value<V> {
     _isInitial: boolean;
     toNext(): Next<V>;
 }
+/** @hidden */
 declare abstract class NoValue<V> extends Event<V> {
     fmap<V2>(f: (V: any) => V2): NoValue<V2>;
     hasValue: boolean;
@@ -50,9 +52,13 @@ export declare class Error<V> extends NoValue<V> {
     isError: boolean;
     toString(): string;
 }
+/** @hidden */
 export declare function initialEvent<V>(value: V): Initial<V>;
+/** @hidden */
 export declare function nextEvent<V>(value: V): Next<V>;
+/** @hidden */
 export declare function endEvent<V>(): End<V>;
+/** @hidden */
 export declare function toEvent<V>(x: V | Event<V>): Event<V>;
 export default Event;
 export declare function isEvent<V>(e: any): e is Event<V>;
@@ -60,4 +66,3 @@ export declare function isInitial<V>(e: any): e is Initial<V>;
 export declare function isError<V>(e: Event<V>): e is Error<V>;
 export declare function hasValue<V>(e: Event<V>): e is Value<V>;
 export declare function isEnd<V>(e: Event<V>): e is End<V>;
-export declare type EventOrValue<V> = Event<V> | V;

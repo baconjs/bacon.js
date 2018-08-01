@@ -1,5 +1,8 @@
 import "./esobservable";
 
+/**
+ *  Bacon.js version as string
+ */
 export const version = '<version>'
 
 export * from "./update"

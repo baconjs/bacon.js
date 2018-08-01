@@ -5,13 +5,17 @@ import { Equals } from "./skipduplicates";
 import { Accumulator } from "./scan";
 import { SpawnerOrObservable } from "./flatmap_";
 import { EventSpawner } from "./flatmapevent";
-import PropertyDispatcher from "./propertydispatcher";
-import Dispatcher from "./dispatcher";
+import PropertyDispatcher from "./internal/propertydispatcher";
+import Dispatcher from "./internal/dispatcher";
 import { Option } from "./optional";
 import { Transformer } from "./transform";
 import { PredicateOrProperty } from "./predicate";
-import { GroupLimiter, GroupKey } from "./groupby";
+import { GroupLimiter } from "./groupby";
 import { Differ } from "./diff";
+/**
+Observable is the base class for [EventsStream](EventStream.html) and Property
+ @typeparam V   Type of the elements/values in the stream/property
+ */
 export declare abstract class Observable<V> {
     desc: Desc;
     id: number;
@@ -27,6 +31,7 @@ export declare abstract class Observable<V> {
     debounceImmediate(minimumInterval: number): this;
     decode(cases: any): Property<any>;
     delay(delayMs: number): this;
+    /** @hidden */
     abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     deps(): any[];
     diff<V2>(start: V, f: Differ<V, V2>): Property<V2>;
@@ -50,7 +55,7 @@ export declare abstract class Observable<V> {
     flatScan<V2>(seed: V2, f: (V2: any, V: any) => Observable<V2>): Property<V2>;
     fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
     forEach(f?: Sink<V>): Unsub;
-    groupBy(keyF: (T: any) => GroupKey, limitF?: GroupLimiter<V>): Observable<Observable<V>>;
+    groupBy(keyF: (T: any) => string, limitF?: GroupLimiter<V>): Observable<Observable<V>>;
     holdWhen(valve: Property<boolean>): EventStream<V>;
     inspect(): string;
     internalDeps(): any[];
@@ -90,6 +95,7 @@ export declare abstract class Observable<V> {
     abstract withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>;
     zip<V2, Out>(other: Observable<V2>, f: (V: any, V2: any) => Out): EventStream<Out>;
 }
+/** @hidden */
 export interface ObservableConstructor {
     (description: Desc, subscribe: Subscribe<any>): Observable<any>;
 }
@@ -98,8 +104,13 @@ export declare class Property<V> extends Observable<V> {
     _isProperty: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>);
     and(other: Property<any>): Property<boolean>;
+    /**
+     * creates a stream of changes to the Property. The stream *does not* include
+     an event for the current value of the Property at the time this method was called.
+     */
     changes(): EventStream<V>;
     concat(right: Observable<V>): Property<V>;
+    /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
     flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
@@ -115,18 +126,30 @@ export declare class Property<V> extends Observable<V> {
     sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
     startWith(seed: V): Property<V>;
     subscribeInternal(sink?: EventSink<V>): Unsub;
+    /**
+     Creates an EventStream based on this Property. The stream contains also an event for the current
+     value of this Property at the time this method was called.
+     */
     toEventStream(options?: EventStreamOptions): EventStream<V>;
     toProperty(): Property<V>;
     transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Property<V2>;
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out>;
 }
+/** @hidden */
 export declare function isProperty<V>(x: any): x is Property<V>;
+/** @hidden */
 export declare const allowSync: {
     forceAsync: boolean;
 };
+/** @hidden */
 export interface EventStreamOptions {
     forceAsync: boolean;
 }
+/**
+ * EventStream represents a stream of events. It is an Observable object, meaning
+ that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
+ with a callback. Like this:
+ */
 export declare class EventStream<V> extends Observable<V> {
     dispatcher: Dispatcher<V, EventStream<V>>;
     _isEventStream: boolean;
@@ -149,10 +172,12 @@ export declare class EventStream<V> extends Observable<V> {
     concat(right: Observable<V>, options?: EventStreamOptions): EventStream<V>;
     merge(other: EventStream<V>): EventStream<V>;
     not(): EventStream<boolean>;
+    /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     bufferWithTime(delay: number): EventStream<V>;
     bufferWithCount(count: number): EventStream<V>;
     bufferWithTimeOrCount(delay?: number, count?: number): EventStream<V>;
 }
+/** @hidden */
 export declare function newEventStream<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;
 export default Observable;

@@ -52,6 +52,7 @@ export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumul
         if (reply !== noMore) {
           return sink(event);
         }
+        return reply
       }
     });
     UpdateBarrier.whenDoneWith(resultProperty, sendInit);

@@ -1,3 +1,4 @@
+/** @hidden */
 interface Option<V> {
     getOrElse(arg: V): V;
     get(): V;
@@ -9,6 +10,7 @@ interface Option<V> {
     inspect(): string;
     toString(): string;
 }
+/** @hidden */
 declare class Some<V> implements Option<V> {
     value: V;
     constructor(value: V);
@@ -23,6 +25,7 @@ declare class Some<V> implements Option<V> {
     inspect(): string;
     toString(): string;
 }
+/** @hidden */
 declare const None: {
     _isNone: boolean;
     getOrElse<V>(value: V): V;

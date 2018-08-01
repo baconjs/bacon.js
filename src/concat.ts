@@ -6,6 +6,7 @@ import { EventSink } from "./types";
 import _ from "./_";
 import never from "./never";
 import { argumentsToObservables } from "./internal/argumentstoobservables";
+import { more } from "./reply";
 
 /** @hidden */
 export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?: EventStreamOptions): EventStream<V> {
@@ -14,7 +15,7 @@ export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?:
     var unsubLeft = left.dispatcher.subscribe(function(e) {
       if (e.isEnd) {
         unsubRight = right.toEventStream().dispatcher.subscribe(sink);
-        return unsubRight;
+        return more;
       } else {
         return sink(e);
       }

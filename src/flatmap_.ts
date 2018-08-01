@@ -73,7 +73,7 @@ export function flatMap_<In, Out>(f_: SpawnerOrObservable<In, Out>, src: Observa
       if (composite.empty()) { return sink(endEvent()) }
       return more
     }
-    composite.add(function(__, unsubRoot: Unsub) { return root.subscribeInternal(function(event: Event<In>) {
+    composite.add(function(__, unsubRoot: Unsub) { return root.subscribeInternal(function(event: Event<In>): Reply {
       if (event.isEnd) {
         return checkEnd(unsubRoot)
       } else if (event.isError && !params.mapError) {
@@ -83,10 +83,11 @@ export function flatMap_<In, Out>(f_: SpawnerOrObservable<In, Out>, src: Observa
       } else {
         if (composite.unsubscribed) { return noMore }
         if (params.limit && composite.count() > params.limit) {
-          return queue.push(event)
+          queue.push(event)
         } else {
-          return spawn(event)
+          spawn(event)
         }
+        return more
       }
     })
     })

@@ -1,7 +1,10 @@
 import "./esobservable";
+/**
+ *  Bacon.js version as string
+ */
 export declare const version = "<version>";
 export * from "./update";
-export * from "./when";
+export { when, Pattern, Pattern1, Pattern2, Pattern3, Pattern4, Pattern5, Pattern6 } from "./when";
 export * from "./combine";
 export { default as combineTemplate } from "./combinetemplate";
 export { concatAll } from "./concat";
@@ -31,7 +34,7 @@ export { EventStream, Observable, Property } from "./observable";
 export { default as Bus } from "./bus";
 export * from "./types";
 export { Desc } from "./describe";
-export { Event, Next, Initial, End, Error, Value, hasValue, isError, isEnd, isInitial } from "./event";
+export { Event, Next, Initial, End, Error, Value, hasValue, isError, isEnd, isInitial, isEvent } from "./event";
 export { Binder, EventTransformer, EventLike, FlexibleSink } from "./frombinder";
 export { RetryOptions, RetryContext } from "./retry";
 export { default as CompositeUnsubscribe } from "./compositeunsubscribe";
@@ -39,4 +42,4 @@ export { spy, Spy } from "./spy";
 export { default as try } from "./try";
 export { getScheduler, setScheduler } from "./scheduler";
 export { default as _ } from "./_";
-export { B$ as $ } from "./jquery";
+export { $ } from "./jquery";

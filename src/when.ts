@@ -133,13 +133,14 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
       }
 
       return source.subscribe(function(e: Event<any>) {
+        var reply = more
         if (e.isEnd) {
           //console.log "got end"
           ends = true;
           source.markEnded();
           flushLater();
         } else if (e.isError) {
-          var reply = sink(e);
+          reply = sink(e);
         } else {
           let valueEvent = <AnyValue>e
           //console.log "got value", e.value
@@ -151,7 +152,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
           }
         }
         if (reply === noMore) { unsubAll(); }
-        return reply || more;
+        return reply;
       });
     }}
 
