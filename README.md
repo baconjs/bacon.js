@@ -903,6 +903,7 @@ fromArray([1, -2,  3]).transform((event, sink) => {
     return sink(event);
   }
 }).log()
+
 ```
 
 Note that it's important to return the value from `sink` so that
@@ -1041,6 +1042,8 @@ the first value comes from the stream.
 Difference to [`scan`](#observable-scan) is that the function `f` can return an [`EventStream`](#eventstream) or a [`Property`](#property) instead
 of a pure value, meaning that you can use [`flatScan`](#stream-flatscan) for asynchronous updates of state. It serializes
 updates so that that the next update will be queued until the previous one has completed.
+
+TODO: continue from here
 
 Property
 --------

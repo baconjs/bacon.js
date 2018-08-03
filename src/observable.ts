@@ -41,7 +41,7 @@ import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
 import { Event } from "./event";
 import Dispatcher from "./internal/dispatcher";
 import { concatE } from "./concat";
-import { bufferWithCount, bufferWithTime, bufferWithTimeOrCount } from "./buffer";
+import { bufferWithCount, bufferWithTime, bufferWithTimeOrCount, DelayFunction } from "./buffer";
 import asyncWrapSubscribe from "./internal/asyncwrapsubscribe";
 import { none, Option, toOption } from "./optional";
 import { mergeAll } from "./merge";
@@ -369,6 +369,17 @@ A super method of *flatMap* family. It limits the number of open spawned streams
 and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
    */
   abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Observable<V2>
+
+  /**
+   Scans stream with given seed value and accumulator function, resulting to a Property.
+   Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
+   of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
+   updates so that that the next update will be queued until the previous one has completed.
+
+   * @param seed initial value to start with
+   * @param f transition function from previous state and new value to next state
+   * @typeparam V2 state and result type
+   */
   flatScan<V2>(seed: V2, f: (V2, V) => Observable<V2>): Property<V2> {
     return <any>flatScan(this, seed, f)
   }
@@ -609,9 +620,21 @@ like `stream.skipDuplicates(_.isEqual)`.
   skipErrors(): this {
     return <any>skipErrors(this)
   }
+
+  /**
+   Skips elements from the source, until a value event
+   appears in the given `starter` stream/property. In other words, starts delivering values
+   from the source after first value appears in `starter`.
+   */
   skipUntil(starter: Observable<any>): this {
     return <any>skipUntil(this, starter)
   }
+
+  /**
+   Skips elements until the given predicate function returns falsy once, and then
+   lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
+   while the Property holds a truthy value.
+   */
   skipWhile<V>(f: PredicateOrProperty<V>): this {
     return <any>skipWhile(this, f)
   }
@@ -708,6 +731,12 @@ See also [firstToPromise](#firsttopromise).
   toPromise(PromiseCtr): Promise<V> {
     return toPromise(this, PromiseCtr)
   }
+
+  /**
+   In case of EventStream, creates a Property based on the EventStream.
+
+   In case of Property, returns the Property itself.
+   */
   abstract toProperty(): Property<V>
   toString(): string {
     if (this._name) {
@@ -948,6 +977,9 @@ export class Property<V> extends Observable<V> {
     );
   }
 
+  /**
+   Returns the Property itself.
+   */
   toProperty(): Property<V> {
     assertNoArguments(arguments);
     return this;
@@ -1035,14 +1067,25 @@ export class EventStream<V> extends Observable<V> {
     return startWithE(this,seed)
   }
 
-  toProperty(...initValue_: (V | Option<V>)[]): Property<V> {
-    let initValue: Option<V> = initValue_.length
-      ? toOption<V>(initValue_[0])
+  /**
+   Creates a Property based on the
+   EventStream.
+
+   Without arguments, you'll get a Property without an initial value.
+   The Property will get its first actual value from the stream, and after that it'll
+   always have a current value.
+
+   You can also give an initial value that will be used as the current value until
+   the first value comes from the stream.
+   */
+  toProperty(initValue?: V): Property<V> {
+    let usedInitValue: Option<V> = arguments.length
+      ? toOption<V>(<any>initValue)
       : none<V>()
     let disp = this.dispatcher
     let desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments))
     let streamSubscribe = disp.subscribe
-    return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe))
+    return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe))
   }
   concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
     return concatE(this, other, options)
@@ -1063,15 +1106,48 @@ export class EventStream<V> extends Observable<V> {
     return <any>f(this).withDesc(desc)
   }
 
-  bufferWithTime(delay: number): EventStream<V> {
+  /**
+   Buffers stream events with given delay.
+   The buffer is flushed at most once in the given interval. So, if your input
+   contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
+   and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
+
+   Also works with a given "defer-function" instead
+   of a delay. Here's a simple example, which is equivalent to
+   stream.bufferWithTime(10):
+
+   ```js
+   stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+   ```
+
+   * @param delay buffer duration in milliseconds
+   */
+  bufferWithTime(delay: number | DelayFunction): EventStream<V> {
     return bufferWithTime(this, delay)
   }
 
+  /**
+   Buffers stream events with given count.
+   The buffer is flushed when it contains the given number of elements or the source stream ends.
+
+   So, if you buffer a stream of `[1, 2, 3, 4, 5]` with count `2`, you'll get output
+   events with values `[1, 2]`, `[3, 4]` and `[5]`.
+
+   * @param {number} count
+   */
   bufferWithCount(count: number): EventStream<V> {
     return bufferWithCount(this, count)
   }
 
-  bufferWithTimeOrCount(delay?: number, count?: number): EventStream<V> {
+  /**
+   Buffers stream events and
+   flushes when either the buffer contains the given number elements or the
+   given amount of milliseconds has passed since last buffered event.
+
+   * @param {number | DelayFunction} delay in milliseconds or as a function
+   * @param {number} count  maximum buffer size
+   */
+  bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V> {
     return bufferWithTimeOrCount(this, delay, count)
   }
 }

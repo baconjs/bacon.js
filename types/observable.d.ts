@@ -7,7 +7,7 @@ import { SpawnerOrObservable } from "./flatmap_";
 import { EventSpawner } from "./flatmapevent";
 import PropertyDispatcher from "./internal/propertydispatcher";
 import Dispatcher from "./internal/dispatcher";
-import { Option } from "./optional";
+import { DelayFunction } from "./buffer";
 import { Transformer } from "./transform";
 import { PredicateOrProperty } from "./predicate";
 import { GroupLimiter } from "./groupby";
@@ -320,6 +320,10 @@ export declare abstract class Observable<V> {
   
      */
     abstract groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): Observable<EventStream<V>>;
+    /**
+  Pauses and buffers the event stream if last event in valve is truthy.
+  All buffered events are released when valve becomes falsy.
+     */
     holdWhen(valve: Property<boolean>): EventStream<V>;
     inspect(): string;
     internalDeps(): any[];
@@ -455,7 +459,17 @@ export declare abstract class Observable<V> {
      * Returns a new stream/property which excludes all [Error](error.html) events in the source
      */
     skipErrors(): this;
+    /**
+     Skips elements from the source, until a value event
+     appears in the given `starter` stream/property. In other words, starts delivering values
+     from the source after first value appears in `starter`.
+     */
     skipUntil(starter: Observable<any>): this;
+    /**
+     Skips elements until the given predicate function returns falsy once, and then
+     lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
+     while the Property holds a truthy value.
+     */
     skipWhile<V>(f: PredicateOrProperty<V>): this;
     /**
   Returns a Property that represents a
@@ -472,6 +486,10 @@ export declare abstract class Observable<V> {
   
      */
     slidingWindow(maxValues: number, minValues?: number): Property<V[]>;
+    /**
+  Adds a starting value to the stream/property, i.e. concats a
+  single-element stream containing the single seed value  with this stream.
+     */
     abstract startWith(seed: V): Observable<V>;
     /**
      * subscribes given handler function to event stream. Function will receive [event](event) objects
@@ -531,6 +549,11 @@ export declare abstract class Observable<V> {
   See also [firstToPromise](#firsttopromise).
      */
     toPromise(PromiseCtr: any): Promise<V>;
+    /**
+     In case of EventStream, creates a Property based on the EventStream.
+  
+     In case of Property, returns the Property itself.
+     */
     abstract toProperty(): Property<V>;
     toString(): string;
     /**
@@ -669,6 +692,9 @@ export declare class Property<V> extends Observable<V> {
      value of this Property at the time this method was called.
      */
     toEventStream(options?: EventStreamOptions): EventStream<V>;
+    /**
+     Returns the Property itself.
+     */
     toProperty(): Property<V>;
     transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Property<V2>;
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out>;
@@ -712,15 +738,62 @@ export declare class EventStream<V> extends Observable<V> {
     groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
     sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
     startWith(seed: V): EventStream<V>;
-    toProperty(...initValue_: (V | Option<V>)[]): Property<V>;
+    /**
+     Creates a Property based on the
+     EventStream.
+  
+     Without arguments, you'll get a Property without an initial value.
+     The Property will get its first actual value from the stream, and after that it'll
+     always have a current value.
+  
+     You can also give an initial value that will be used as the current value until
+     the first value comes from the stream.
+     */
+    toProperty(initValue?: V): Property<V>;
     concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
+    /**
+    Merges two streams into one stream that delivers events from both
+     */
     merge(other: EventStream<V>): EventStream<V>;
     not(): EventStream<boolean>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
-    bufferWithTime(delay: number): EventStream<V>;
+    /**
+     Buffers stream events with given delay.
+     The buffer is flushed at most once in the given interval. So, if your input
+     contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
+     and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
+  
+     Also works with a given "defer-function" instead
+     of a delay. Here's a simple example, which is equivalent to
+     stream.bufferWithTime(10):
+  
+     ```js
+     stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+     ```
+  
+     * @param delay buffer duration in milliseconds
+     */
+    bufferWithTime(delay: number | DelayFunction): EventStream<V>;
+    /**
+     Buffers stream events with given count.
+     The buffer is flushed when it contains the given number of elements or the source stream ends.
+  
+     So, if you buffer a stream of `[1, 2, 3, 4, 5]` with count `2`, you'll get output
+     events with values `[1, 2]`, `[3, 4]` and `[5]`.
+  
+     * @param {number} count
+     */
     bufferWithCount(count: number): EventStream<V>;
-    bufferWithTimeOrCount(delay?: number, count?: number): EventStream<V>;
+    /**
+     Buffers stream events and
+     flushes when either the buffer contains the given number elements or the
+     given amount of milliseconds has passed since last buffered event.
+  
+     * @param {number | DelayFunction} delay in milliseconds or as a function
+     * @param {number} count  maximum buffer size
+     */
+    bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V>;
 }
 /** @hidden */
 export declare function newEventStream<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;

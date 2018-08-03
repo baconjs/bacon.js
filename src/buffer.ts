@@ -6,7 +6,12 @@ import { nop } from "./helpers";
 import GlobalScheduler from "./scheduler"
 import { EventSink } from "./types";
 
-export type DelayFunction = (any) => any
+export type VoidFunction = () => void
+/**
+ *  Delay function used by `bufferWithTime` and `bufferWithTimeOrCount`. Your implementation should
+ *  call the given void function to cause a buffer flush.
+ */
+export type DelayFunction = (VoidFunc) => any
 
 /** @hidden */
 export function bufferWithTime<V>(src: EventStream<V>, delay: number | DelayFunction): EventStream<V> {
@@ -20,25 +25,25 @@ export function bufferWithCount<V>(src: EventStream<V>, count: number): EventStr
 
 /** @hidden */
 export function bufferWithTimeOrCount<V>(src: EventStream<V>, delay?: number | DelayFunction, count?: number): EventStream<V> {
+  const delayFunc = toDelayFunction(delay)
   function flushOrSchedule(buffer: Buffer<V>) {
     if (buffer.values.length === count) {
       //console.log Bacon.scheduler.now() + ": count-flush"
       return buffer.flush();
-    } else if (delay !== undefined) {
-      return buffer.schedule();
+    } else if (delayFunc !== undefined) {
+      return buffer.schedule(delayFunc);
     }
   }
   var desc = new Desc(src, "bufferWithTimeOrCount", [delay, count]);
-  return buffer(src, delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
+  return buffer(src, flushOrSchedule, flushOrSchedule).withDesc(desc);
 }
 
 class Buffer<V> {
-  constructor(onFlush, onInput, delay) {
+  constructor(onFlush, onInput) {
     this.onFlush = onFlush
     this.onInput = onInput
-    this.delay = delay
   }
-  delay: DelayFunction
+  delay?: DelayFunction
   onInput: BufferHandler<V>
   onFlush: BufferHandler<V>
   push: EventSink<V> = (e) => more
@@ -64,9 +69,9 @@ class Buffer<V> {
       if ((this.end != null)) { return this.push(this.end); }
     }
   }
-  schedule() {
+  schedule(delay: DelayFunction) {
     if (!this.scheduled) {
-      return this.scheduled = this.delay(() => {
+      return this.scheduled = delay(() => {
         //console.log Bacon.scheduler.now() + ": scheduled flush"
         return this.flush();
       });
@@ -75,22 +80,28 @@ class Buffer<V> {
 
 }
 
+function toDelayFunction(delay: number | DelayFunction | undefined): DelayFunction | undefined {
+  if (delay === undefined) {
+    return undefined
+  }
+  if (typeof delay === "number") {
+    var delayMs = delay;
+    return function(f) {
+      //console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
+      return GlobalScheduler.scheduler.setTimeout(f, delayMs);
+    };
+  }
+  return delay
+}
+
 interface BufferHandler<V> {
   (buffer: Buffer<V>): any
 }
 
 /** @hidden */
-export function buffer<V>(src: EventStream<V>, delay?: number | DelayFunction, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V> {
+export function buffer<V>(src: EventStream<V>, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V> {
   var reply = more;
-  if (typeof delay === "number") {
-    var delayMs = delay;
-    delay = function(f) {
-      //console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
-      return GlobalScheduler.scheduler.setTimeout(f, delayMs);
-    };
-  }
-
-  var buffer = new Buffer<V>(onFlush, onInput, delay)
+  var buffer = new Buffer<V>(onFlush, onInput)
 
   return src.transform((event: Event<V>, sink: EventSink<V>) => {
     buffer.push = sink

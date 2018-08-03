@@ -2421,27 +2421,27 @@ function bufferWithCount(src, count) {
 
 /** @hidden */
 function bufferWithTimeOrCount(src, delay, count) {
+    var delayFunc = toDelayFunction(delay);
     function flushOrSchedule(buffer) {
         if (buffer.values.length === count) {
             //console.log Bacon.scheduler.now() + ": count-flush"
             return buffer.flush();
         }
-        else if (delay !== undefined) {
-            return buffer.schedule();
+        else if (delayFunc !== undefined) {
+            return buffer.schedule(delayFunc);
         }
     }
     var desc = new Desc(src, "bufferWithTimeOrCount", [delay, count]);
-    return buffer(src, delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
+    return buffer(src, flushOrSchedule, flushOrSchedule).withDesc(desc);
 }
 var Buffer = /** @class */ (function () {
-    function Buffer(onFlush, onInput, delay) {
+    function Buffer(onFlush, onInput) {
         this.push = function (e) { return more; };
         this.scheduled = null;
         this.end = undefined;
         this.values = [];
         this.onFlush = onFlush;
         this.onInput = onInput;
-        this.delay = delay;
     }
     Buffer.prototype.flush = function () {
         if (this.scheduled) {
@@ -2466,10 +2466,10 @@ var Buffer = /** @class */ (function () {
             }
         }
     };
-    Buffer.prototype.schedule = function () {
+    Buffer.prototype.schedule = function (delay) {
         var _this = this;
         if (!this.scheduled) {
-            return this.scheduled = this.delay(function () {
+            return this.scheduled = delay(function () {
                 //console.log Bacon.scheduler.now() + ": scheduled flush"
                 return _this.flush();
             });
@@ -2477,19 +2477,25 @@ var Buffer = /** @class */ (function () {
     };
     return Buffer;
 }());
-/** @hidden */
-function buffer(src, delay, onInput, onFlush) {
-    if (onInput === void 0) { onInput = nop; }
-    if (onFlush === void 0) { onFlush = nop; }
-    var reply = more;
+function toDelayFunction(delay) {
+    if (delay === undefined) {
+        return undefined;
+    }
     if (typeof delay === "number") {
         var delayMs = delay;
-        delay = function (f) {
+        return function (f) {
             //console.log Bacon.scheduler.now() + ": schedule for " + (Bacon.scheduler.now() + delayMs)
             return GlobalScheduler.scheduler.setTimeout(f, delayMs);
         };
     }
-    var buffer = new Buffer(onFlush, onInput, delay);
+    return delay;
+}
+/** @hidden */
+function buffer(src, onInput, onFlush) {
+    if (onInput === void 0) { onInput = nop; }
+    if (onFlush === void 0) { onFlush = nop; }
+    var reply = more;
+    var buffer = new Buffer(onFlush, onInput);
     return src.transform(function (event, sink) {
         buffer.push = sink;
         if (hasValue(event)) {
@@ -3207,6 +3213,10 @@ var Observable = /** @class */ (function () {
         // TODO: inefficient alias. Also, similar assign alias missing.
         return this.onValue(f);
     };
+    /**
+  Pauses and buffers the event stream if last event in valve is truthy.
+  All buffered events are released when valve becomes falsy.
+     */
     Observable.prototype.holdWhen = function (valve) {
         return holdWhen(this, valve);
     };
@@ -3386,9 +3396,19 @@ var Observable = /** @class */ (function () {
     Observable.prototype.skipErrors = function () {
         return skipErrors(this);
     };
+    /**
+     Skips elements from the source, until a value event
+     appears in the given `starter` stream/property. In other words, starts delivering values
+     from the source after first value appears in `starter`.
+     */
     Observable.prototype.skipUntil = function (starter) {
         return skipUntil(this, starter);
     };
+    /**
+     Skips elements until the given predicate function returns falsy once, and then
+     lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
+     while the Property holds a truthy value.
+     */
     Observable.prototype.skipWhile = function (f) {
         return skipWhile(this, f);
     };
@@ -3646,6 +3666,9 @@ var Property = /** @class */ (function (_super) {
             return sink(event.toNext());
         }); }, undefined, options);
     };
+    /**
+     Returns the Property itself.
+     */
     Property.prototype.toProperty = function () {
         assertNoArguments(arguments);
         return this;
@@ -3722,22 +3745,32 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.startWith = function (seed) {
         return startWithE(this, seed);
     };
-    EventStream.prototype.toProperty = function () {
-        var initValue_ = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            initValue_[_i] = arguments[_i];
-        }
-        var initValue = initValue_.length
-            ? toOption(initValue_[0])
+    /**
+     Creates a Property based on the
+     EventStream.
+  
+     Without arguments, you'll get a Property without an initial value.
+     The Property will get its first actual value from the stream, and after that it'll
+     always have a current value.
+  
+     You can also give an initial value that will be used as the current value until
+     the first value comes from the stream.
+     */
+    EventStream.prototype.toProperty = function (initValue) {
+        var usedInitValue = arguments.length
+            ? toOption(initValue)
             : none();
         var disp = this.dispatcher;
         var desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
         var streamSubscribe = disp.subscribe;
-        return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
+        return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
     };
     EventStream.prototype.concat = function (other, options) {
         return concatE(this, other, options);
     };
+    /**
+    Merges two streams into one stream that delivers events from both
+     */
     EventStream.prototype.merge = function (other) {
         assertEventStream(other);
         return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
@@ -3747,12 +3780,45 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.delayChanges = function (desc, f) {
         return f(this).withDesc(desc);
     };
+    /**
+     Buffers stream events with given delay.
+     The buffer is flushed at most once in the given interval. So, if your input
+     contains [1,2,3,4,5,6,7], then you might get two events containing [1,2,3,4]
+     and [5,6,7] respectively, given that the flush occurs between numbers 4 and 5.
+  
+     Also works with a given "defer-function" instead
+     of a delay. Here's a simple example, which is equivalent to
+     stream.bufferWithTime(10):
+  
+     ```js
+     stream.bufferWithTime(function(f) { setTimeout(f, 10) })
+     ```
+  
+     * @param delay buffer duration in milliseconds
+     */
     EventStream.prototype.bufferWithTime = function (delay$$1) {
         return bufferWithTime(this, delay$$1);
     };
+    /**
+     Buffers stream events with given count.
+     The buffer is flushed when it contains the given number of elements or the source stream ends.
+  
+     So, if you buffer a stream of `[1, 2, 3, 4, 5]` with count `2`, you'll get output
+     events with values `[1, 2]`, `[3, 4]` and `[5]`.
+  
+     * @param {number} count
+     */
     EventStream.prototype.bufferWithCount = function (count) {
         return bufferWithCount(this, count);
     };
+    /**
+     Buffers stream events and
+     flushes when either the buffer contains the given number elements or the
+     given amount of milliseconds has passed since last buffered event.
+  
+     * @param {number | DelayFunction} delay in milliseconds or as a function
+     * @param {number} count  maximum buffer size
+     */
     EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
         return bufferWithTimeOrCount(this, delay$$1, count);
     };

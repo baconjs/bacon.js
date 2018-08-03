@@ -2250,21 +2250,22 @@
         return bufferWithTimeOrCount(src, undefined, count).withDesc(new Desc(src, 'bufferWithCount', [count]));
     }
     function bufferWithTimeOrCount(src, delay, count) {
+        var delayFunc = toDelayFunction(delay);
         function flushOrSchedule(buffer) {
             if (buffer.values.length === count) {
                 return buffer.flush();
-            } else if (delay !== undefined) {
-                return buffer.schedule();
+            } else if (delayFunc !== undefined) {
+                return buffer.schedule(delayFunc);
             }
         }
         var desc = new Desc(src, 'bufferWithTimeOrCount', [
             delay,
             count
         ]);
-        return buffer(src, delay, flushOrSchedule, flushOrSchedule).withDesc(desc);
+        return buffer(src, flushOrSchedule, flushOrSchedule).withDesc(desc);
     }
     var Buffer = function () {
-        function Buffer(onFlush, onInput, delay) {
+        function Buffer(onFlush, onInput) {
             this.push = function (e) {
                 return more;
             };
@@ -2273,7 +2274,6 @@
             this.values = [];
             this.onFlush = onFlush;
             this.onInput = onInput;
-            this.delay = delay;
         }
         Buffer.prototype.flush = function () {
             if (this.scheduled) {
@@ -2295,17 +2295,29 @@
                 }
             }
         };
-        Buffer.prototype.schedule = function () {
+        Buffer.prototype.schedule = function (delay) {
             var _this = this;
             if (!this.scheduled) {
-                return this.scheduled = this.delay(function () {
+                return this.scheduled = delay(function () {
                     return _this.flush();
                 });
             }
         };
         return Buffer;
     }();
-    function buffer(src, delay, onInput, onFlush) {
+    function toDelayFunction(delay) {
+        if (delay === undefined) {
+            return undefined;
+        }
+        if (typeof delay === 'number') {
+            var delayMs = delay;
+            return function (f) {
+                return GlobalScheduler.scheduler.setTimeout(f, delayMs);
+            };
+        }
+        return delay;
+    }
+    function buffer(src, onInput, onFlush) {
         if (onInput === void 0) {
             onInput = nop;
         }
@@ -2313,13 +2325,7 @@
             onFlush = nop;
         }
         var reply = more;
-        if (typeof delay === 'number') {
-            var delayMs = delay;
-            delay = function (f) {
-                return GlobalScheduler.scheduler.setTimeout(f, delayMs);
-            };
-        }
-        var buffer = new Buffer(onFlush, onInput, delay);
+        var buffer = new Buffer(onFlush, onInput);
         return src.transform(function (event, sink) {
             buffer.push = sink;
             if (hasValue(event)) {
@@ -3172,16 +3178,12 @@
         EventStream.prototype.startWith = function (seed) {
             return startWithE(this, seed);
         };
-        EventStream.prototype.toProperty = function () {
-            var initValue_ = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                initValue_[_i] = arguments[_i];
-            }
-            var initValue = initValue_.length ? toOption(initValue_[0]) : none();
+        EventStream.prototype.toProperty = function (initValue) {
+            var usedInitValue = arguments.length ? toOption(initValue) : none();
             var disp = this.dispatcher;
             var desc = new Desc(this, 'toProperty', Array.prototype.slice.apply(arguments));
             var streamSubscribe = disp.subscribe;
-            return new Property(desc, streamSubscribeToPropertySubscribe(initValue, streamSubscribe));
+            return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
         };
         EventStream.prototype.concat = function (other, options) {
             return concatE(this, other, options);
