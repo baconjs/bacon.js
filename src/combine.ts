@@ -6,9 +6,24 @@ import { Desc } from "./describe";
 import { isObservable } from "./helpers";
 import { DefaultSource, Source } from "./internal/source";
 import Observable from "./observable";
-import { Property } from "./observable";;
+import { Property } from "./observable";
 
-export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[]) {
+/**
+ Combines Properties, EventStreams and constant values so that the result Property will have an array of the latest
+ values from all sources as its value. The inputs may contain both Properties and EventStreams.
+
+
+ ```js
+ property = Bacon.constant(1)
+ stream = Bacon.once(2)
+ constant = 3
+ Bacon.combineAsArray(property, stream, constant)
+ # produces the value [1,2,3]
+ ```
+
+ * @param streams streams and properties to combine
+ */
+export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[]): Property<V[]> {
   streams = argumentsToObservables(streams)
   if (streams.length) {
     var sources: Source<V, V>[] = [];
@@ -18,7 +33,7 @@ export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[
         : constant(streams[i]))
       sources.push(wrap(stream));
     }
-    return whenP([sources, (...xs) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
+    return whenP<V[]>([sources, (...xs) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
   } else {
     return constant([]);
   }

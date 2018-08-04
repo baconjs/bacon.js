@@ -1653,9 +1653,12 @@ function mapT(f) {
     };
 }
 
-function constant(value) {
-    return new Property(new Desc("Bacon", "constant", [value]), function (sink) {
-        sink(initialEvent(value));
+/**
+ Creates a constant property with value `x`.
+ */
+function constant(x) {
+    return new Property(new Desc("Bacon", "constant", [x]), function (sink) {
+        sink(initialEvent(x));
         sink(endEvent());
         return nop;
     });
@@ -1719,6 +1722,21 @@ function awaiting(src, other) {
         .withDesc(new Desc(src, "awaiting", [other]));
 }
 
+/**
+ Combines Properties, EventStreams and constant values so that the result Property will have an array of the latest
+ values from all sources as its value. The inputs may contain both Properties and EventStreams.
+
+
+ ```js
+ property = Bacon.constant(1)
+ stream = Bacon.once(2)
+ constant = 3
+ Bacon.combineAsArray(property, stream, constant)
+ # produces the value [1,2,3]
+ ```
+
+ * @param streams streams and properties to combine
+ */
 function combineAsArray() {
     var streams = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -3580,7 +3598,10 @@ var Observable = /** @class */ (function () {
     return Observable;
 }());
 /**
- A Property is an Observable that represents a value as a function of time.
+ A reactive property. Has the concept of "current value".
+ You can create a Property from an EventStream by using either [`toProperty`](eventstream.html#toproperty)
+ or [`scan`](eventstream.html#scan) method. Note: depending on how a Property is created, it may or may not
+ have an initial value. The current value stays as its last value after the stream has ended.
 
  @typeparam V   Type of the elements/values in the stream/property
  */
@@ -3594,6 +3615,10 @@ var Property = /** @class */ (function (_super) {
         registerObs(_this);
         return _this;
     }
+    /**
+     Combines properties with the `&&` operator. It produces a new value when either of the Properties change,
+     combining the latest values using `&&`.
+     */
     Property.prototype.and = function (other) {
         return and(this, other);
     };
@@ -3648,9 +3673,17 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.not = function () {
         return not(this);
     };
+    /**
+     Combines properties with the `||` operator. It produces a new value when either of the Properties change,
+     combining the latest values using `||`.
+     */
     Property.prototype.or = function (other) {
         return or(this, other);
     };
+    /**
+     Creates an EventStream by sampling the
+     property value at given interval (in milliseconds)
+     */
     Property.prototype.sample = function (interval) {
         return sampleP(this, interval);
     };
@@ -3658,6 +3691,12 @@ var Property = /** @class */ (function (_super) {
         if (f === void 0) { f = function (a, b) { return a; }; }
         return sampledByP(this, sampler, f);
     };
+    /**
+    Adds an initial "default" value for the
+    Property. If the Property doesn't have an initial value of it's own, the
+    given value will be used as the initial value. If the property has an
+    initial value of its own, the given value will be ignored.
+     */
     Property.prototype.startWith = function (seed) {
         return startWithP(this, seed);
     };

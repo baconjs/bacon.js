@@ -563,6 +563,19 @@ Like [`onValue`](#onvalue), but splits the value (assuming its an array) as func
   reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return fold(this, seed, f)
   }
+
+  /**
+  Creates an EventStream by sampling this
+  stream/property value at each event from the `sampler` stream. The result
+  `EventStream` will contain the sampled value at each event in the source
+  stream.
+
+   @param {Observable<V2>} sampler
+   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
+
+   @typeparam V2  type of values in the sampler stream
+   @typeparam R   type of values in the result stream
+   */
   abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R): Observable<R>
   /**
 Scans stream/property with given seed value and
@@ -856,7 +869,10 @@ export interface ObservableConstructor {
 }
 
 /**
- A Property is an Observable that represents a value as a function of time.
+ A reactive property. Has the concept of "current value".
+ You can create a Property from an EventStream by using either [`toProperty`](eventstream.html#toproperty)
+ or [`scan`](eventstream.html#scan) method. Note: depending on how a Property is created, it may or may not
+ have an initial value. The current value stays as its last value after the stream has ended.
 
  @typeparam V   Type of the elements/values in the stream/property
  */
@@ -871,6 +887,10 @@ export class Property<V> extends Observable<V> {
     registerObs(this);
   }
 
+  /**
+   Combines properties with the `&&` operator. It produces a new value when either of the Properties change,
+   combining the latest values using `&&`.
+   */
   and(other: Property<any>): Property<boolean> {
     return and(this, other)
   }
@@ -940,10 +960,18 @@ export class Property<V> extends Observable<V> {
     return <any>not(this)
   }
 
+  /**
+   Combines properties with the `||` operator. It produces a new value when either of the Properties change,
+   combining the latest values using `||`.
+   */
   or(other: Property<any>): Property<boolean> {
     return or(this, other)
   }
 
+  /**
+   Creates an EventStream by sampling the
+   property value at given interval (in milliseconds)
+   */
   sample(interval: number): EventStream<V> {
     return sampleP(this, interval)
   }
@@ -952,6 +980,12 @@ export class Property<V> extends Observable<V> {
     return sampledByP(this, sampler, f)
   }
 
+  /**
+  Adds an initial "default" value for the
+  Property. If the Property doesn't have an initial value of it's own, the
+  given value will be used as the initial value. If the property has an
+  initial value of its own, the given value will be ignored.
+   */
   startWith(seed: V): Property<V> {
     return startWithP(this, seed)
   }

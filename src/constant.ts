@@ -4,9 +4,12 @@ import { endEvent, initialEvent } from "./event";
 import { nop } from "./helpers";
 import { EventSink } from "./types";
 
-export default function constant<V>(value: V) {
-  return new Property<V>(new Desc("Bacon", "constant", [value]), function(sink : EventSink<V>) {
-    sink(initialEvent(value));
+/**
+ Creates a constant property with value `x`.
+ */
+export default function constant<V>(x: V) {
+  return new Property<V>(new Desc("Bacon", "constant", [x]), function(sink : EventSink<V>) {
+    sink(initialEvent(x));
     sink(endEvent());
     return nop;
   });

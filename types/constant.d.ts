@@ -1,2 +1,5 @@
 import { Property } from "./observable";
-export default function constant<V>(value: V): Property<V>;
+/**
+ Creates a constant property with value `x`.
+ */
+export default function constant<V>(x: V): Property<V>;

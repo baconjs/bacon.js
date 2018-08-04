@@ -1043,8 +1043,6 @@ Difference to [`scan`](#observable-scan) is that the function `f` can return an 
 of a pure value, meaning that you can use [`flatScan`](#stream-flatscan) for asynchronous updates of state. It serializes
 updates so that that the next update will be queued until the previous one has completed.
 
-TODO: continue from here
-
 Property
 --------
 
@@ -1111,6 +1109,7 @@ events. Note that [`property.changes()`](#property-changes) does NOT skip duplic
 <a name="property-or"></a>
 [`property.or(other)`](#property-or "property.or(other)") combines properties with the `||` operator.
 
+
 <a name="property-startwith"></a>
 [`property.startWith(value)`](#property-startwith "property.startWith(value)") adds an initial "default" value for the
 Property. If the Property doesn't have an initial value of it's own, the
@@ -1120,12 +1119,16 @@ initial value of its own, the given value will be ignored.
 Combining multiple streams and properties
 -----------------------------------------
 
+
 <a name="bacon-combineasarray"></a>
 [`Bacon.combineAsArray(streams)`](#bacon-combineasarray "Bacon.combineAsArray(streams)") combines Properties, EventStreams and
 constant values so that the result Property will have an array of all
 property values as its value. The input array may contain both Properties
 and EventStreams. In the latter case, the stream is first converted into
 a Property and then combined with the other properties.
+
+
+
 
 <a name="bacon-combineasarray-multiple-streams"></a>
 [`Bacon.combineAsArray(s1, s2...)`](#bacon-combineasarray-multiple-streams "Bacon.combineAsArray(s1, s2...)") just like above, but with streams
@@ -1138,6 +1141,8 @@ constant = 3
 Bacon.combineAsArray(property, stream, constant)
 # produces the value [1,2,3]
 ```
+
+TODO: continue here 
 
 <a name="bacon-combinewith"></a>
 [`Bacon.combineWith(f, stream1, stream2...)`](#bacon-combinewith "Bacon.combineWith(f, stream1, stream2 ...)") combines given *n* Properties,

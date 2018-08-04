@@ -269,6 +269,16 @@ export declare abstract class Observable<V> {
   and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
      */
     abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Observable<V2>;
+    /**
+     Scans stream with given seed value and accumulator function, resulting to a Property.
+     Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
+     of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
+     updates so that that the next update will be queued until the previous one has completed.
+  
+     * @param seed initial value to start with
+     * @param f transition function from previous state and new value to next state
+     * @typeparam V2 state and result type
+     */
     flatScan<V2>(seed: V2, f: (V2: any, V: any) => Observable<V2>): Property<V2>;
     /**
   Works like [`scan`](#scan) but only emits the final
@@ -410,6 +420,18 @@ export declare abstract class Observable<V> {
     /** A synonym for [scan](#scan).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    /**
+    Creates an EventStream by sampling this
+    stream/property value at each event from the `sampler` stream. The result
+    `EventStream` will contain the sampled value at each event in the source
+    stream.
+  
+     @param {Observable<V2>} sampler
+     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
+  
+     @typeparam V2  type of values in the sampler stream
+     @typeparam R   type of values in the result stream
+     */
     abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V: any, V2: any) => R): Observable<R>;
     /**
   Scans stream/property with given seed value and
@@ -654,7 +676,10 @@ export interface ObservableConstructor {
     (description: Desc, subscribe: Subscribe<any>): Observable<any>;
 }
 /**
- A Property is an Observable that represents a value as a function of time.
+ A reactive property. Has the concept of "current value".
+ You can create a Property from an EventStream by using either [`toProperty`](eventstream.html#toproperty)
+ or [`scan`](eventstream.html#scan) method. Note: depending on how a Property is created, it may or may not
+ have an initial value. The current value stays as its last value after the stream has ended.
 
  @typeparam V   Type of the elements/values in the stream/property
  */
@@ -662,6 +687,10 @@ export declare class Property<V> extends Observable<V> {
     dispatcher: PropertyDispatcher<V, Property<V>>;
     _isProperty: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>);
+    /**
+     Combines properties with the `&&` operator. It produces a new value when either of the Properties change,
+     combining the latest values using `&&`.
+     */
     and(other: Property<any>): Property<boolean>;
     /**
      * creates a stream of changes to the Property. The stream *does not* include
@@ -681,9 +710,23 @@ export declare class Property<V> extends Observable<V> {
     groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): Property<EventStream<V>>;
     map<V2>(f: ((V: any) => V2) | Property<V2>): Property<V2>;
     not(): Property<boolean>;
+    /**
+     Combines properties with the `||` operator. It produces a new value when either of the Properties change,
+     combining the latest values using `||`.
+     */
     or(other: Property<any>): Property<boolean>;
+    /**
+     Creates an EventStream by sampling the
+     property value at given interval (in milliseconds)
+     */
     sample(interval: number): EventStream<V>;
     sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
+    /**
+    Adds an initial "default" value for the
+    Property. If the Property doesn't have an initial value of it's own, the
+    given value will be used as the initial value. If the property has an
+    initial value of its own, the given value will be ignored.
+     */
     startWith(seed: V): Property<V>;
     /** @hidden */
     subscribeInternal(sink?: EventSink<V>): Unsub;

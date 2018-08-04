@@ -1611,9 +1611,9 @@
             return sink(e.fmap(theF));
         };
     }
-    function constant(value) {
-        return new Property(new Desc('Bacon', 'constant', [value]), function (sink) {
-            sink(initialEvent(value));
+    function constant(x) {
+        return new Property(new Desc('Bacon', 'constant', [x]), function (sink) {
+            sink(initialEvent(x));
             sink(endEvent());
             return nop;
         });
