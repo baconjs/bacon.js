@@ -28,6 +28,6 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-export declare function combineWith(f: Function, ...streams: Observable<any>[]): Property<any>;
+export declare function combineWith<Out>(f: (...any: any[]) => Out, ...streams: Observable<any>[]): Property<Out>;
 /** @hidden */
 export declare function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (V: any, V2: any) => R): Property<R>;

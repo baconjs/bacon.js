@@ -1949,13 +1949,9 @@
             streams_[_i] = arguments[_i];
         }
         var streams = argumentsToObservables(streams_);
-        if (streams.length) {
-            return _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
-                return a.concat(b);
-            }).withDesc(new Desc('Bacon', 'concatAll', streams));
-        } else {
-            return never();
-        }
+        return (streams.length ? _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
+            return a.concat(b);
+        }) : never()).withDesc(new Desc('Bacon', 'concatAll', streams));
     }
     function addPropertyInitValueToStream(property, stream) {
         var justInitValue = new EventStream(describe(property, 'justInitValue'), function (sink) {
@@ -2645,12 +2641,12 @@
             }
         ]).withDesc(new Desc('Bacon', 'zipAsArray', args));
     }
-    function zipWith() {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
+    function zipWith(f) {
+        var streams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            streams[_i - 1] = arguments[_i];
         }
-        var _a = argumentsToObservablesAndFunction(args), streams = _a[0], f = _a[1];
+        var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
         streams = _.map(function (s) {
             return s.toEventStream();
         }, streams);
@@ -2660,10 +2656,7 @@
         ]).withDesc(new Desc('Bacon', 'zipWith', [f].concat(streams)));
     }
     function zip(left, right, f) {
-        return zipWith([
-            left,
-            right
-        ], f || Array).withDesc(new Desc(left, 'zip', [right]));
+        return zipWith(f || Array, left, right).withDesc(new Desc(left, 'zip', [right]));
     }
     function combineTemplate(template) {
         function current(ctxStack) {

@@ -9,6 +9,12 @@ import { Desc } from "./describe";
 import Observable from "./observable";
 import { Unsub } from "./types";
 
+/**
+ Merges given array of EventStreams or Properties, by collecting the values from all of the sources into a single
+ EventStream.
+
+ See also [`merge`](classes/eventstream.html#merge).
+ */
 export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): EventStream<V> {
   streams = argumentsToObservables(streams);
   if (streams.length) {
@@ -24,6 +30,7 @@ export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): Ev
               } else {
                 return more
               }
+
             } else {
               var reply = sink(event)
               if (reply === noMore) { unsubBoth() }

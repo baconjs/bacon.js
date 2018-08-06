@@ -2089,20 +2089,21 @@ function concatE(left, right, options) {
         };
     }, undefined, options);
 }
-/** @hidden */
+/**
+ Concatenates given array of EventStreams or Properties. Works by subcribing to the first source, and listeing to that
+ until it ends. Then repeatedly subscribes to the next source, until all sources have ended.
+
+ See [`concat`](#observable-concat)
+ */
 function concatAll() {
     var streams_ = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         streams_[_i] = arguments[_i];
     }
     var streams = argumentsToObservables(streams_);
-    if (streams.length) {
-        return _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) { return a.concat(b); })
-            .withDesc(new Desc("Bacon", "concatAll", streams));
-    }
-    else {
-        return never();
-    }
+    return (streams.length
+        ? _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) { return a.concat(b); })
+        : never()).withDesc(new Desc("Bacon", "concatAll", streams));
 }
 
 /** @hidden */
@@ -2599,6 +2600,12 @@ function asyncWrapSubscribe(obs, subscribe) {
     };
 }
 
+/**
+ Merges given array of EventStreams or Properties, by collecting the values from all of the sources into a single
+ EventStream.
+
+ See also [`merge`](classes/eventstream.html#merge).
+ */
 function mergeAll() {
     var streams = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -2854,6 +2861,30 @@ function holdWhen(src, valve) {
     });
 }
 
+/**
+ Zips the array of EventStreams / Properties in to a new
+ EventStream that will have an array of values from each source as
+ its value. Zipping means that events from each source are combined
+ pairwise so that the 1st event from each source is published first, then
+ the 2nd event from each. The results will be published as soon as there
+ is a value from each source.
+
+ Be careful not to have too much "drift" between streams. If one stream
+ produces many more values than some other excessive buffering will
+ occur inside the zipped observable.
+
+ Example:
+
+ ```js
+ x = Bacon.fromArray([1,2,3])
+ y = Bacon.fromArray([10, 20, 30])
+ z = Bacon.fromArray([100, 200, 300])
+ Bacon.zipAsArray(x, y, z)
+
+ # produces values [1, 10, 100], [2, 20, 200] and [3, 30, 300]
+ ```
+
+ */
 function zipAsArray() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -2868,22 +2899,60 @@ function zipAsArray() {
             return xs;
         }]).withDesc(new Desc("Bacon", "zipAsArray", args));
 }
-// TODO: quite untyped
-function zipWith() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
+/**
+ Like [`zipAsArray`](#bacon-zipasarray) but uses the given n-ary
+ function to combine the n values from n sources, instead of returning them in an Array.
+ */
+function zipWith(f) {
+    var streams = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        streams[_i - 1] = arguments[_i];
     }
-    var _a = argumentsToObservablesAndFunction(args), streams = _a[0], f = _a[1];
+    var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
     streams = _.map((function (s) { return s.toEventStream(); }), streams);
     return when([streams, f]).withDesc(new Desc("Bacon", "zipWith", [f].concat(streams)));
 }
 
 /** @hidden */
 function zip(left, right, f) {
-    return zipWith([left, right], f || Array).withDesc(new Desc(left, "zip", [right]));
+    return zipWith(f || Array, left, right).withDesc(new Desc(left, "zip", [right]));
 }
 
+/**
+ Combines Properties, EventStreams and constant values using a template
+ object. For instance, assuming you've got streams or properties named
+ `password`, `username`, `firstname` and `lastname`, you can do
+
+ ```js
+ var password, username, firstname, lastname; // <- properties or streams
+ var loginInfo = Bacon.combineTemplate({
+    magicNumber: 3,
+    userid: username,
+    passwd: password,
+    name: { first: firstname, last: lastname }})
+ ```
+
+ .. and your new loginInfo property will combine values from all these
+ streams using that template, whenever any of the streams/properties
+ get a new value. For instance, it could yield a value such as
+
+ ```js
+ { magicNumber: 3,
+   userid: "juha",
+   passwd: "easy",
+   name : { first: "juha", last: "paananen" }}
+ ```
+
+ In addition to combining data from streams, you can include constant
+ values in your templates.
+
+ Note that all Bacon.combine* methods produce a Property instead of an EventStream.
+ If you need the result as an [`EventStream`](classes/eventstream.html) you might want to use [`property.changes()`](classes/property.html#changes)
+
+ ```js
+ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
+ ```
+ */
 function combineTemplate(template) {
     function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
     function setValue(ctxStack, key, value) {
@@ -4115,6 +4184,17 @@ function fromEvent(target, eventSource, eventTransformer) {
     }, eventTransformer).withDesc(desc);
 }
 
+/**
+ A shorthand for combining multiple
+ sources (streams, properties, constants) as array and assigning the
+ side-effect function f for the values. The following example would log
+ the number 3.
+
+ ```js
+ function f(a, b) { console.log(a + b) }
+ Bacon.onValues(Bacon.constant(1), Bacon.constant(2), f)
+ ```
+ */
 function onValues() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {

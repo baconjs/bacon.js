@@ -50,9 +50,9 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-export function combineWith(f: Function, ...streams: Observable<any>[]) {
+export function combineWith<Out>(f: (...any) => Out, ...streams: Observable<any>[]): Property<Out> {
   // TODO: untyped
-  var [streams, f] = argumentsToObservablesAndFunction(arguments);
+  var [streams, f] = argumentsToObservablesAndFunction<Out>(arguments);
   var desc = new Desc("Bacon", "combineWith", [f, ...streams]);
   return combineAsArray(streams).map(function (values) {
     return f(...values);

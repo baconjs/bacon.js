@@ -26,13 +26,16 @@ export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?:
   }, undefined, options);
 }
 
-/** @hidden */
+/**
+ Concatenates given array of EventStreams or Properties. Works by subcribing to the first source, and listeing to that
+ until it ends. Then repeatedly subscribes to the next source, until all sources have ended.
+
+ See [`concat`](#observable-concat)
+ */
 export function concatAll<V>(...streams_: (Observable<V> | Observable<V>[])[]): EventStream<V> {
   let streams = argumentsToObservables(streams_)
-  if (streams.length) {
-    return _.fold(_.tail(streams), _.head(streams).toEventStream(), (a, b) => a.concat(b))
-      .withDesc(new Desc("Bacon", "concatAll", streams))
-  } else {
-    return never();
-  }
+  return (streams.length
+    ? _.fold(_.tail(streams), _.head(streams).toEventStream(), (a, b) => a.concat(b))
+    : never()
+  ).withDesc(new Desc("Bacon", "concatAll", streams))
 }
