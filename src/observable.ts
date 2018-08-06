@@ -391,6 +391,12 @@ value, i.e. the value just before the observable ends. Returns a
   fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return fold(this, seed, f)
   }
+
+  /**
+   An alias for [onValue](#onvalue).
+
+   Subscribes a given handler function to the observable. Function will be called for each new value (not for errors or stream end).
+   */
   forEach(f: Sink<V> = nullSink) : Unsub {
     // TODO: inefficient alias. Also, similar assign alias missing.
     return this.onValue(f)
@@ -751,6 +757,8 @@ See also [firstToPromise](#firsttopromise).
    In case of Property, returns the Property itself.
    */
   abstract toProperty(): Property<V>
+
+  /** @hidden */
   toString(): string {
     if (this._name) {
       return this._name;
@@ -779,6 +787,7 @@ the connection to the underlying stream will be closed when no more
 events are needed.
    */
   abstract transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Observable<V2>
+
   withDesc(desc?: Desc): this {
     if (desc) this.desc = desc;
     return this;
@@ -857,7 +866,6 @@ x.zip(y, function(x, y) { return x + y })
 See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html/zipasarray) for zipping more than 2 sources.
 
    */
-
   zip<V2, Out>(other: Observable<V2>, f: (V, V2) => Out): EventStream<Out> {
     return zip(this, other, f)
   }

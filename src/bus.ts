@@ -12,11 +12,11 @@ interface Subscription<V> {
 }
 
 /**
- A pushable/pluggable stream
+ An [`EventStream`](eventstream.html) that allows you to [`push`](#push) values into the stream.
 
- Pro tip: you can also put Errors into streams created with the
- constructors above, by using an [`Bacon.Error`](error) object instead of a plain
- value.
+ It also allows plugging other streams into the Bus, as inputs. The Bus practically
+ merges all plugged-in streams and the values pushed using the [`push`](#push)
+ method.
  */
 export default class Bus<V> extends EventStream<V> {
   sink?: EventSink<V>;
@@ -35,56 +35,16 @@ export default class Bus<V> extends EventStream<V> {
     EventStream.call(this, new Desc("Bacon", "Bus", []), this.subscribeAll);
   }
 
-  unsubAll() {
-    var iterable = this.subscriptions;
-    for (var i = 0, sub; i < iterable.length; i++) {
-      sub = iterable[i];
-      if (typeof sub.unsub === "function") { sub.unsub(); }
-    }
-  }
+  /**
+   Plugs the given stream as an input to the Bus. All events from
+   the given stream will be delivered to the subscribers of the Bus.
+   Returns a function that can be used to unplug the same stream.
 
-  subscribeAll(newSink: EventSink<V>) {
-    if (this.ended) {
-      newSink(endEvent());
-    } else {
-      this.sink = newSink;
-      var iterable = this.subscriptions.slice();
-      for (var i = 0, subscription; i < iterable.length; i++) {
-        subscription = iterable[i];
-        this.subscribeInput(subscription);
-      }
-    }
-    return this.unsubAll;
-  }
+   The plug method practically allows you to merge in other streams after
+   the creation of the Bus.
 
-  guardedSink(input: Observable<V>) {
-    return (event) => {
-      if (event.isEnd) {
-        this.unsubscribeInput(input);
-        return noMore;
-      } else if (this.sink) {
-        return this.sink(event);
-      }
-    };
-  }
-
-  subscribeInput(subscription) {
-    subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
-    return subscription.unsub;
-  }
-
-  unsubscribeInput(input: Observable<V>) {
-    var iterable = this.subscriptions;
-    for (var i = 0, sub; i < iterable.length; i++) {
-      sub = iterable[i];
-      if (sub.input === input) {
-        if (typeof sub.unsub === "function") { sub.unsub(); }
-        this.subscriptions.splice(i, 1);
-        return;
-      }
-    }
-  }
-
+   * @returns a function that can be called to "unplug" the source from Bus.
+   */
   plug(input: Observable<V>) {
     assertObservable(input);
     if (this.ended) { return; }
@@ -94,12 +54,20 @@ export default class Bus<V> extends EventStream<V> {
     return (() => this.unsubscribeInput(input));
   }
 
+  /**
+   Ends the stream. Sends an [End](end.html) event to all subscribers.
+   After this call, there'll be no more events to the subscribers.
+   Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
+   */
   end() {
     this.ended = true;
     this.unsubAll();
     if (typeof this.sink === "function") { return this.sink(endEvent()); }
   }
 
+  /**
+   * Pushes a new value to the stream.
+   */
   push(value: V) {
     if (!this.ended && typeof this.sink === "function") {
       var rootPush = !this.pushing
@@ -130,7 +98,65 @@ export default class Bus<V> extends EventStream<V> {
     }
   }
 
+  /**
+   * Pushes an error to this stream.
+   */
   error(error: any) {
     if (typeof this.sink === "function") { return this.sink(new Error(error)); }
+  }
+
+  /** @hidden */
+  unsubAll() {
+    var iterable = this.subscriptions;
+    for (var i = 0, sub; i < iterable.length; i++) {
+      sub = iterable[i];
+      if (typeof sub.unsub === "function") { sub.unsub(); }
+    }
+  }
+
+  /** @hidden */
+  subscribeAll(newSink: EventSink<V>) {
+    if (this.ended) {
+      newSink(endEvent());
+    } else {
+      this.sink = newSink;
+      var iterable = this.subscriptions.slice();
+      for (var i = 0, subscription; i < iterable.length; i++) {
+        subscription = iterable[i];
+        this.subscribeInput(subscription);
+      }
+    }
+    return this.unsubAll;
+  }
+
+  /** @hidden */
+  guardedSink(input: Observable<V>) {
+    return (event) => {
+      if (event.isEnd) {
+        this.unsubscribeInput(input);
+        return noMore;
+      } else if (this.sink) {
+        return this.sink(event);
+      }
+    };
+  }
+
+  /** @hidden */
+  subscribeInput(subscription) {
+    subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+    return subscription.unsub;
+  }
+
+  /** @hidden */
+  unsubscribeInput(input: Observable<V>) {
+    var iterable = this.subscriptions;
+    for (var i = 0, sub; i < iterable.length; i++) {
+      sub = iterable[i];
+      if (sub.input === input) {
+        if (typeof sub.unsub === "function") { sub.unsub(); }
+        this.subscriptions.splice(i, 1);
+        return;
+      }
+    }
   }
 }

@@ -1167,7 +1167,6 @@ Bacon.combineWith(Math.max, streams)
 <a name="bacon-combinewith-f-last"></a>
 [`Bacon.combineWith(stream1, stream2..., f)`](#bacon-combinewith-f-last "Bacon.combineWith(stream1, stream2 ..., f)") like above
 
-TODO: continue here 
 <a name="bacon-combinetemplate"></a>
 [`Bacon.combineTemplate(template)`](#bacon-combinetemplate "Bacon.combineTemplate(template)") combines Properties, EventStreams and
 constant values using a template
@@ -1213,6 +1212,7 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 [`Bacon.concatAll(streams)`](#bacon-concatall "Bacon.concatAll(streams)") concatenates given array of EventStreams or Properties, returns an EventStream. See [`concat`](#observable-concat)
 
 `Bacon.concatAll(stream1, stream2 ...)` concatenates given EventStreams.
+
 
 <a name="bacon-zipasarray"></a>
 [`Bacon.zipAsArray(streams)`](#bacon-zipasarray "Bacon.zipAsArray(streams)") zips the array of EventStreams / Properties in to a new
@@ -1379,6 +1379,8 @@ mechanism in the
 
 Event
 -----
+
+TODO: continue here 
 
 <a name="bacon-event"></a>
 [`Bacon.Event`](#bacon-event "Bacon.Event") has subclasses [`Bacon.Next`](#bacon-next), [`Bacon.End`](#bacon-end), [`Bacon.Error`](#bacon-error) and [`Bacon.Initial`](#bacon-initial)
