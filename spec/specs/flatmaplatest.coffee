@@ -42,5 +42,12 @@ describe "Property.flatMapLatest", ->
     expectPropertyEvents(
       -> Bacon.constant("asdf").flatMapLatest(Bacon.constant("bacon"))
       ["bacon"], semiunstable)
+  it "Delivers initial value synchronously (fix #719)", ->
+      flatMapLatestP = Bacon.never()
+        .toProperty(0)
+        .flatMapLatest((x) => Bacon.once(x))
+      result = []
+      flatMapLatestP.onValue((x) -> result.push(x))
+      expect(result).to.deep.equal([0])
   it "toString", ->
     expect(Bacon.constant(1).flatMapLatest(->).toString()).to.equal("Bacon.constant(1).flatMapLatest(function)")

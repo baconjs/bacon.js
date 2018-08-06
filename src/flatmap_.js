@@ -9,6 +9,8 @@ import EventStream from "./eventstream";
 import { propertyFromStreamSubscribe } from "./property";
 import { noMore, more } from "./reply";
 import once from "./once";
+import { allowSync } from "./eventstream";
+const syncEventStream = (desc, subscribe) => new EventStream(desc, subscribe, undefined, allowSync)
 
 Observable.prototype.flatMap_ = function(f, params = { }) {
     const root = this
@@ -17,7 +19,7 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
     const isProperty = this._isProperty
     const ctor = isProperty
       ? propertyFromStreamSubscribe
-      : EventStream
+      : syncEventStream
     let initialSpawned = false
     
     var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
