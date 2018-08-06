@@ -1307,7 +1307,7 @@
         CompositeUnsubscribe: CompositeUnsubscribe,
         never: never,
         constant: constant,
-        version: '<version>'
+        version: '2.0.8'
     };
     Bacon.Bacon = Bacon;
     function map(p) {
@@ -1884,7 +1884,7 @@
     }
     Bacon.once = once;
     var syncEventStream = function (desc, subscribe) {
-        return new EventStream(dest, subscribe, undefined, allowSync);
+        return new EventStream(desc, subscribe, undefined, allowSync);
     };
     Observable.prototype.flatMap_ = function (f) {
         var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
