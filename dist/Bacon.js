@@ -2051,7 +2051,7 @@ function once(value) {
 Bacon.once = once;
 
 var syncEventStream = function (desc, subscribe) {
-  return new EventStream(dest, subscribe, undefined, allowSync);
+  return new EventStream(desc, subscribe, undefined, allowSync);
 };
 
 Observable.prototype.flatMap_ = function (f) {
