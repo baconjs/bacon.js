@@ -1,3 +1,7 @@
+## 2.0.9
+
+- Fix Property.flatMapLatest (#719)
+
 ## 2.0.5
 
 - Fix force-async behavior in EventStream constructor (#713)
