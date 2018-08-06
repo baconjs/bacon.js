@@ -1129,7 +1129,7 @@ function flatMap_(f_, src, params) {
     var rootDep = [root];
     var childDeps = [];
     var isProperty$$1 = src._isProperty;
-    var ctor = (isProperty$$1 ? propertyFromStreamSubscribe : newEventStream);
+    var ctor = (isProperty$$1 ? propertyFromStreamSubscribe : newEventStreamAllowSync);
     var initialSpawned = false;
     var desc = params.desc || new Desc(src, "flatMap_", [f]);
     var result = ctor(desc, function (sink) {
@@ -3197,6 +3197,16 @@ var Observable = /** @class */ (function () {
     Observable.prototype.firstToPromise = function (PromiseCtr) {
         return firstToPromise(this, PromiseCtr);
     };
+    /**
+     Scans stream with given seed value and accumulator function, resulting to a Property.
+     Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
+     of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
+     updates so that that the next update will be queued until the previous one has completed.
+  
+     * @param seed initial value to start with
+     * @param f transition function from previous state and new value to next state
+     * @typeparam V2 state and result type
+     */
     Observable.prototype.flatScan = function (seed, f) {
         return flatScan(this, seed, f);
     };
@@ -3827,6 +3837,10 @@ var EventStream = /** @class */ (function (_super) {
 /** @hidden */
 function newEventStream(description, subscribe) {
     return new EventStream(description, subscribe);
+}
+/** @hidden */
+function newEventStreamAllowSync(description, subscribe) {
+    return new EventStream(description, subscribe, undefined, allowSync);
 }
 
 function symbol(key) {

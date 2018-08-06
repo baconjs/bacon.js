@@ -1096,7 +1096,7 @@
         var rootDep = [root];
         var childDeps = [];
         var isProperty$$1 = src._isProperty;
-        var ctor = isProperty$$1 ? propertyFromStreamSubscribe : newEventStream;
+        var ctor = isProperty$$1 ? propertyFromStreamSubscribe : newEventStreamAllowSync;
         var initialSpawned = false;
         var desc = params.desc || new Desc(src, 'flatMap_', [f]);
         var result = ctor(desc, function (sink) {
@@ -3210,6 +3210,9 @@
     }(Observable);
     function newEventStream(description, subscribe) {
         return new EventStream(description, subscribe);
+    }
+    function newEventStreamAllowSync(description, subscribe) {
+        return new EventStream(description, subscribe, undefined, allowSync);
     }
     function symbol(key) {
         if (typeof Symbol !== 'undefined' && Symbol[key]) {

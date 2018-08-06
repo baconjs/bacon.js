@@ -1,14 +1,13 @@
-import CompositeUnsubscribe from "./compositeunsubscribe"
-import { Desc } from "./describe"
-import { endEvent, Event } from "./event"
-import { isObservable } from "./helpers"
-import _ from "./_"
-import Observable, { ObservableConstructor } from "./observable"
-import propertyFromStreamSubscribe from "./internal/propertyfromstreamsubscribe"
-import { more, noMore, Reply } from "./reply"
-import once from "./once"
-import { newEventStream } from "./observable"
-import { EventSink, Unsub } from "./types"
+import CompositeUnsubscribe from "./compositeunsubscribe";
+import {Desc} from "./describe";
+import {endEvent, Event} from "./event";
+import {isObservable} from "./helpers";
+import _ from "./_";
+import Observable, {newEventStreamAllowSync, ObservableConstructor} from "./observable";
+import propertyFromStreamSubscribe from "./internal/propertyfromstreamsubscribe";
+import {more, noMore, Reply} from "./reply";
+import once from "./once";
+import {EventSink, Unsub} from "./types";
 
 export type SpawnerOrObservable<V, V2> = ((V) => (Observable<V2> | EventOrValue<V2>)) | Observable<V2>
 
@@ -32,7 +31,7 @@ export function flatMap_<In, Out>(f_: SpawnerOrObservable<In, Out>, src: Observa
   const rootDep = [root as Observable<any>]
   const childDeps: Observable<Out>[] = []
   const isProperty = (<any>src)._isProperty
-  const ctor = (isProperty ? propertyFromStreamSubscribe : newEventStream) as ObservableConstructor
+  const ctor = (isProperty ? propertyFromStreamSubscribe : newEventStreamAllowSync) as ObservableConstructor
   let initialSpawned = false
   const desc = params.desc || new Desc(src, "flatMap_", [f])
 

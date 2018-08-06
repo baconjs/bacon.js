@@ -1157,4 +1157,9 @@ export function newEventStream<V>(description: Desc, subscribe: Subscribe<V>) {
   return new EventStream(description, subscribe)
 }
 
+/** @hidden */
+export function newEventStreamAllowSync<V>(description: Desc, subscribe: Subscribe<V>) {
+  return new EventStream(description, subscribe, undefined, allowSync)
+}
+
 export default Observable
