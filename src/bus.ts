@@ -19,10 +19,15 @@ interface Subscription<V> {
  method.
  */
 export default class Bus<V> extends EventStream<V> {
+  /** @hidden */
   sink?: EventSink<V>;
+  /** @hidden */
   pushing: boolean = false
+  /** @hidden */
   pushQueue? : V[] = undefined
+  /** @hidden */
   ended: boolean = false
+  /** @hidden */
   subscriptions: Subscription<V>[] = []
 
   constructor() {

@@ -5,7 +5,9 @@ var eventIdCounter = 0;
 
 export abstract class Event<V> {
   id: number = ++eventIdCounter
+  /** @hidden */
   isEvent: boolean = true
+  /** @hidden */
   _isEvent: boolean = true
   isEnd: boolean = false
   isInitial: boolean = false

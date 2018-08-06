@@ -8,7 +8,10 @@ export class Desc {
   context: any
   method?: string
   args?: any[]
+  /** @hidden */
   cached?: Observable[]
+  /** @hidden */
+  _isDesc: boolean = true
   constructor(context: any, method: string, args: any[] = []) {
     //assert("context missing", context)
     //assert("method missing", method)
@@ -17,7 +20,6 @@ export class Desc {
     this.method = method;
     this.args = args;
   }
-  _isDesc: boolean = true
   deps(): Observable[] {
     if (!this.cached) {
       this.cached = findDeps([this.context].concat(this.args));

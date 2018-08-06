@@ -76,8 +76,11 @@ var idCounter = 0;
 export abstract class Observable<V> {
   desc: Desc
   id: number = ++idCounter
+  /** @hidden */
   initialDesc: Desc
+  /** @hidden */
   _name?: string
+  /** @hidden */
   _isObservable = true
 
   constructor(desc: Desc) {
@@ -885,7 +888,9 @@ export interface ObservableConstructor {
  @typeparam V   Type of the elements/values in the stream/property
  */
 export class Property<V> extends Observable<V> {
+  /** @hidden */
   dispatcher: PropertyDispatcher<V, Property<V>>
+  /** @hidden */
   _isProperty = true
 
   constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>) {
@@ -1059,7 +1064,9 @@ export interface EventStreamOptions { forceAsync: boolean }
 
  */
 export class EventStream<V> extends Observable<V> {
+  /** @hidden */
   dispatcher: Dispatcher<V, EventStream<V>>
+  /** @hidden */
   _isEventStream: boolean = true
   constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>, options?: EventStreamOptions) {
     super(desc)
