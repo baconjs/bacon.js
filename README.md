@@ -258,56 +258,14 @@ method.
 Event
 -----
 
-TODO: continue here 
-
-<a name="bacon-event"></a>
-[`Bacon.Event`](#bacon-event "Bacon.Event") has subclasses [`Bacon.Next`](#bacon-next), [`Bacon.End`](#bacon-end), [`Bacon.Error`](#bacon-error) and [`Bacon.Initial`](#bacon-initial)
-
-<a name="bacon-next"></a>
-[`Bacon.Next`](#bacon-next "Bacon.Next") next value in an EventStream or a Property. Check [`event.isNext`](#event-isnext) to
-distinguish a Next event from other events.
-
-<a name="bacon-end"></a>
-[`Bacon.End`](#bacon-end "Bacon.End") an end-of-stream event of EventStream or Property. Check [`event.isEnd`](#event-isend) to
-distinguish an End from other events.
-
-<a name="bacon-error"></a>
-[`Bacon.Error`](#bacon-error "Bacon.Error") an error event. Check [`event.isError`](#event-iserror) to distinguish these events
-in your subscriber, or use [`onError`](#observable-onerror) to react to error events only.
-`errorEvent.error` returns the associated error object (usually string).
-
-<a name="bacon-initial"></a>
-[`Bacon.Initial`](#bacon-initial "Bacon.Initial") the initial (current) value of a Property. Check [`event.isInitial`](#event-isinitial) to
-distinguish from other events. Only sent immediately after subscription
-to a Property.
-
-### Event properties
-
-<a name="event-value"></a>
-[`event.value`](#event-value "event.value") the value associated with a Next or Initial event
-
-<a name="event-hasvalue"></a>
-[`event.hasValue`](#event-hasvalue "event.hasValue") true for events of type Initial and Next
-
-<a name="event-isnext"></a>
-[`event.isNext`](#event-isnext "event.isNext") true for Next events
-
-<a name="event-isinitial"></a>
-[`event.isInitial`](#event-isinitial "event.isInitial") true for Initial events
-
-<a name="event-iserror"></a>
-[`event.isError`](#event-iserror "event.isError") true for Error events
-
-<a name="event-isend"></a>
-[`event.isEnd`](#event-isend "event.isEnd") true for End events
-
-<a name="event-error"></a>
-[`event.error`](#event-error "event.error") the error value of Error events
 
 Errors
 ------
 
-[`Bacon.Error`](#bacon-error) events are always passed through all stream combinators. So, even
+
+TODO: continue from here
+
+[`Error`](classes/error.html) events are always passed through all stream combinators. So, even
 if you filter all values out, the error events will pass through. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.

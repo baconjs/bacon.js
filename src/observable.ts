@@ -684,7 +684,7 @@ single-element stream containing the single seed value  with this stream.
   abstract startWith(seed: V): Observable<V>
 
   /**
-   * subscribes given handler function to event stream. Function will receive [event](event) objects
+   * subscribes given handler function to event stream. Function will receive [event](event.html) objects
    for all new value, end and error events in the stream.
    The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
    You can also unsubscribe by returning [`Bacon.noMore`](../globals.html#nomore) from the handler function as a reply
