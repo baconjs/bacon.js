@@ -1142,8 +1142,6 @@ Bacon.combineAsArray(property, stream, constant)
 # produces the value [1,2,3]
 ```
 
-TODO: continue here 
-
 <a name="bacon-combinewith"></a>
 [`Bacon.combineWith(f, stream1, stream2...)`](#bacon-combinewith "Bacon.combineWith(f, stream1, stream2 ...)") combines given *n* Properties,
 EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`.
@@ -1169,6 +1167,7 @@ Bacon.combineWith(Math.max, streams)
 <a name="bacon-combinewith-f-last"></a>
 [`Bacon.combineWith(stream1, stream2..., f)`](#bacon-combinewith-f-last "Bacon.combineWith(stream1, stream2 ..., f)") like above
 
+TODO: continue here 
 <a name="bacon-combinetemplate"></a>
 [`Bacon.combineTemplate(template)`](#bacon-combinetemplate "Bacon.combineTemplate(template)") combines Properties, EventStreams and
 constant values using a template

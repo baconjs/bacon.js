@@ -840,4 +840,6 @@ export declare class EventStream<V> extends Observable<V> {
 }
 /** @hidden */
 export declare function newEventStream<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;
+/** @hidden */
+export declare function newEventStreamAllowSync<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;
 export default Observable;

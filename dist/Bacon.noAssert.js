@@ -1703,7 +1703,11 @@
             return constant([]);
         }
     }
-    function combineWith() {
+    function combineWith(f) {
+        var streams = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            streams[_i - 1] = arguments[_i];
+        }
         var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
         var desc = new Desc('Bacon', 'combineWith', [f].concat(streams));
         return combineAsArray(streams).map(function (values) {

@@ -1763,8 +1763,23 @@ function combineAsArray() {
         return constant([]);
     }
 }
-// TODO: untyped
-function combineWith() {
+/**
+  Combines given *n* Properties,
+  EventStreams and constant values using the given n-ary function `f(v1, v2 ...)`.
+
+  To calculate the current sum of three numeric Properties, you can do
+
+```js
+function sum3(x,y,z) { return x + y + z }
+Bacon.combineWith(sum3, p1, p2, p3)
+```
+*/
+function combineWith(f) {
+    var streams = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        streams[_i - 1] = arguments[_i];
+    }
+    // TODO: untyped
     var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
     var desc = new Desc("Bacon", "combineWith", [f].concat(streams));
     return combineAsArray(streams).map(function (values) {
