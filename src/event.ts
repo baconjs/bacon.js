@@ -160,7 +160,7 @@ export function isEvent<V>(e): e is Event<V> {
 }
 
 /**
- * Returns true if the given event is an [Initial](classes/error.html) value of a [Property](classes/property.html).
+ * Returns true if the given event is an [Initial](classes/initial.html) value of a [Property](classes/property.html).
  */
 export function isInitial<V>(e): e is Initial<V> {
   return e && e._isInitial
