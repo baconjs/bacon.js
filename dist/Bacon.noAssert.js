@@ -558,10 +558,10 @@
             this.args = args;
         }
         Desc.prototype.deps = function () {
-            if (!this.cached) {
-                this.cached = findDeps([this.context].concat(this.args));
+            if (!this.cachedDeps) {
+                this.cachedDeps = findDeps([this.context].concat(this.args));
             }
-            return this.cached;
+            return this.cachedDeps;
         };
         Desc.prototype.toString = function () {
             var args = _.map(_.toString, this.args);
@@ -768,6 +768,9 @@
     }
     function isEnd(e) {
         return e.isEnd;
+    }
+    function isNext(e) {
+        return e.isNext;
     }
     function equals(a, b) {
         return a === b;
@@ -3674,56 +3677,6 @@
             EventStream.call(_this, new Desc('Bacon', 'Bus', []), _this.subscribeAll);
             return _this;
         }
-        Bus.prototype.unsubAll = function () {
-            var iterable = this.subscriptions;
-            for (var i = 0, sub; i < iterable.length; i++) {
-                sub = iterable[i];
-                if (typeof sub.unsub === 'function') {
-                    sub.unsub();
-                }
-            }
-        };
-        Bus.prototype.subscribeAll = function (newSink) {
-            if (this.ended) {
-                newSink(endEvent());
-            } else {
-                this.sink = newSink;
-                var iterable = this.subscriptions.slice();
-                for (var i = 0, subscription; i < iterable.length; i++) {
-                    subscription = iterable[i];
-                    this.subscribeInput(subscription);
-                }
-            }
-            return this.unsubAll;
-        };
-        Bus.prototype.guardedSink = function (input) {
-            var _this = this;
-            return function (event) {
-                if (event.isEnd) {
-                    _this.unsubscribeInput(input);
-                    return noMore;
-                } else if (_this.sink) {
-                    return _this.sink(event);
-                }
-            };
-        };
-        Bus.prototype.subscribeInput = function (subscription) {
-            subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
-            return subscription.unsub;
-        };
-        Bus.prototype.unsubscribeInput = function (input) {
-            var iterable = this.subscriptions;
-            for (var i = 0, sub; i < iterable.length; i++) {
-                sub = iterable[i];
-                if (sub.input === input) {
-                    if (typeof sub.unsub === 'function') {
-                        sub.unsub();
-                    }
-                    this.subscriptions.splice(i, 1);
-                    return;
-                }
-            }
-        };
         Bus.prototype.plug = function (input) {
             var _this = this;
             if (this.ended) {
@@ -3774,6 +3727,56 @@
         Bus.prototype.error = function (error) {
             if (typeof this.sink === 'function') {
                 return this.sink(new Error$1(error));
+            }
+        };
+        Bus.prototype.unsubAll = function () {
+            var iterable = this.subscriptions;
+            for (var i = 0, sub; i < iterable.length; i++) {
+                sub = iterable[i];
+                if (typeof sub.unsub === 'function') {
+                    sub.unsub();
+                }
+            }
+        };
+        Bus.prototype.subscribeAll = function (newSink) {
+            if (this.ended) {
+                newSink(endEvent());
+            } else {
+                this.sink = newSink;
+                var iterable = this.subscriptions.slice();
+                for (var i = 0, subscription; i < iterable.length; i++) {
+                    subscription = iterable[i];
+                    this.subscribeInput(subscription);
+                }
+            }
+            return this.unsubAll;
+        };
+        Bus.prototype.guardedSink = function (input) {
+            var _this = this;
+            return function (event) {
+                if (event.isEnd) {
+                    _this.unsubscribeInput(input);
+                    return noMore;
+                } else if (_this.sink) {
+                    return _this.sink(event);
+                }
+            };
+        };
+        Bus.prototype.subscribeInput = function (subscription) {
+            subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+            return subscription.unsub;
+        };
+        Bus.prototype.unsubscribeInput = function (input) {
+            var iterable = this.subscriptions;
+            for (var i = 0, sub; i < iterable.length; i++) {
+                sub = iterable[i];
+                if (sub.input === input) {
+                    if (typeof sub.unsub === 'function') {
+                        sub.unsub();
+                    }
+                    this.subscriptions.splice(i, 1);
+                    return;
+                }
             }
         };
         return Bus;
@@ -3852,6 +3855,7 @@
     exports.isEnd = isEnd;
     exports.isInitial = isInitial;
     exports.isEvent = isEvent;
+    exports.isNext = isNext;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
     exports.spy = spy;
     exports.try = tryF;

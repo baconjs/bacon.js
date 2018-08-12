@@ -552,6 +552,7 @@ var UpdateBarrier = { toString: toString, whenDoneWith: whenDoneWith, hasWaiters
 var Desc = /** @class */ (function () {
     function Desc(context, method, args) {
         if (args === void 0) { args = []; }
+        /** @hidden */
         this._isDesc = true;
         //assert("context missing", context)
         //assert("method missing", method)
@@ -561,10 +562,10 @@ var Desc = /** @class */ (function () {
         this.args = args;
     }
     Desc.prototype.deps = function () {
-        if (!this.cached) {
-            this.cached = findDeps([this.context].concat(this.args));
+        if (!this.cachedDeps) {
+            this.cachedDeps = findDeps([this.context].concat(this.args));
         }
-        return this.cached;
+        return this.cachedDeps;
     };
     Desc.prototype.toString = function () {
         var args = _.map(_.toString, this.args);
@@ -632,10 +633,15 @@ function withStateMachineT(initState, f) {
 
 /** @hidden */
 var eventIdCounter = 0;
+/**
+ * Base class for all events passed through [EventStreams](eventstream.html) and [Properties](property.html).
+ */
 var Event = /** @class */ (function () {
     function Event() {
         this.id = ++eventIdCounter;
+        /** @hidden */
         this.isEvent = true;
+        /** @hidden */
         this._isEvent = true;
         this.isEnd = false;
         this.isInitial = false;
@@ -643,13 +649,21 @@ var Event = /** @class */ (function () {
         this.isError = false;
         this.hasValue = false;
     }
+    /** @hidden */
     Event.prototype.filter = function (f) { return true; };
+    /** @hidden */
     Event.prototype.inspect = function () { return this.toString(); };
+    /** @hidden */
     Event.prototype.log = function () { return this.toString(); };
+    /** @hidden */
     Event.prototype.toNext = function () { return this; };
     return Event;
 }());
-/** @hidden */
+/**
+ *  Base class for all [Events](event.html) carrying a value.
+ *
+ *  Can be distinguished from other events using [hasValue](../globals.html#hasvalue)
+ **/
 var Value = /** @class */ (function (_super) {
     __extends(Value, _super);
     function Value(value) {
@@ -661,39 +675,61 @@ var Value = /** @class */ (function (_super) {
         _this.value = value;
         return _this;
     }
+    /** @hidden */
     Value.prototype.fmap = function (f) {
         return this.apply(f(this.value));
     };
+    /** @hidden */
     Value.prototype.filter = function (f) { return f(this.value); };
+    /** @hidden */
     Value.prototype.toString = function () { return _.toString(this.value); };
     //toString(): string { return "<value " + this.id + ">" + _.toString(this.value) }
+    /** @hidden */
     Value.prototype.log = function () { return this.value; };
     return Value;
 }(Event));
+/**
+ *  Indicates a new value in an [EventStream](eventstream.html) or a [Property](property.html).
+ *
+ *  Can be distinguished from other events using [isNext](../globals.html#isnext)
+ */
 var Next = /** @class */ (function (_super) {
     __extends(Next, _super);
     function Next(value) {
         var _this = _super.call(this, value) || this;
         _this.isNext = true;
+        /** @hidden */
         _this._isNext = true; // some compatibility stuff?
         return _this;
     }
+    /** @hidden */
     Next.prototype.apply = function (value) { return new Next(value); };
     return Next;
 }(Value));
+/**
+ * An event carrying the initial value of a [Property](classes/property.html). This event can be emitted by a property
+ * immediately when subscribing to it.
+ *
+ * Can be distinguished from other events using [isInitial](../globals.html#isinitial)
+ */
 var Initial = /** @class */ (function (_super) {
     __extends(Initial, _super);
     function Initial(value) {
         var _this = _super.call(this, value) || this;
         _this.isInitial = true;
+        /** @hidden */
         _this._isInitial = true;
         return _this;
     }
+    /** @hidden */
     Initial.prototype.apply = function (value) { return new Initial(value); };
+    /** @hidden */
     Initial.prototype.toNext = function () { return new Next(this.value); };
     return Initial;
 }(Value));
-/** @hidden */
+/**
+ * Base class for events not carrying a value.
+ */
 var NoValue = /** @class */ (function (_super) {
     __extends(NoValue, _super);
     function NoValue() {
@@ -701,11 +737,18 @@ var NoValue = /** @class */ (function (_super) {
         _this.hasValue = false;
         return _this;
     }
+    /** @hidden */
     NoValue.prototype.fmap = function (f) {
         return this;
     };
     return NoValue;
 }(Event));
+/**
+ * An event that indicates the end of an [EventStream](classes/eventstream.html) or a [Property](classes/property.html).
+ * No more events can be emitted after this one.
+ *
+ * Can be distinguished from other events using [isEnd](../globals.html#isend)
+ */
 var End = /** @class */ (function (_super) {
     __extends(End, _super);
     function End() {
@@ -713,9 +756,13 @@ var End = /** @class */ (function (_super) {
         _this.isEnd = true;
         return _this;
     }
+    /** @hidden */
     End.prototype.toString = function () { return "<end>"; };
     return End;
 }(NoValue));
+/**
+ *  An event carrying an error. You can use [onError](observable.html#onerror) to subscribe to errors.
+ */
 var Error$1 = /** @class */ (function (_super) {
     __extends(Error, _super);
     function Error(error) {
@@ -724,6 +771,7 @@ var Error$1 = /** @class */ (function (_super) {
         _this.error = error;
         return _this;
     }
+    /** @hidden */
     Error.prototype.toString = function () {
         return "<error> " + _.toString(this.error);
     };
@@ -744,20 +792,42 @@ function toEvent(x) {
         return nextEvent(x);
     }
 }
+/**
+ * Returns true if the given object is an [Event](classes/event.html).
+ */
 function isEvent(e) {
     return e && e._isEvent;
 }
+/**
+ * Returns true if the given event is an [Initial](classes/initial.html) value of a [Property](classes/property.html).
+ */
 function isInitial(e) {
     return e && e._isInitial;
 }
+/**
+ * Returns true if the given event is an [Error](classes/error.html) event of an [Observable](classes/observable.html).
+ */
 function isError(e) {
     return e.isError;
 }
+/**
+ * Returns true if the given event is a [Value](classes/value.html), i.e. a [Next](classes/next.html) or
+ * an [Initial](classes/error.html) value of an [Observable](classes/observable.html).
+ */
 function hasValue(e) {
     return e.hasValue;
 }
+/**
+ * Returns true if the given event is an [End](classes/end.html)
+ */
 function isEnd(e) {
     return e.isEnd;
+}
+/**
+ * Returns true if the given event is a [Next](classes/next.html)
+ */
+function isNext(e) {
+    return e.isNext;
 }
 
 /** @hidden */
@@ -1381,6 +1451,43 @@ function never() {
     });
 }
 
+/**
+ The `when` method provides a generalization of the [`zip`](classes/observable.html#zip) function. While zip
+ synchronizes events from multiple streams pairwse, the join patterns used in `when` allow
+ the implementation of more advanced synchronization patterns.
+
+ Consider implementing a game with discrete time ticks. We want to
+ handle key-events synchronized on tick-events, with at most one key
+ event handled per tick. If there are no key events, we want to just
+ process a tick.
+
+ ```js
+ Bacon.when(
+ [tick, keyEvent, function(_, k) { handleKeyEvent(k); return handleTick(); }],
+ [tick, handleTick])
+ ```
+
+ Order is important here. If the [tick] patterns had been written
+ first, this would have been tried first, and preferred at each tick.
+
+ Join patterns are indeed a generalization of zip, and for EventStreams, zip is
+ equivalent to a single-rule join pattern. The following observables
+ have the same output, assuming that all sources are EventStreams.
+
+ ```js
+ Bacon.zipWith(a,b,c, combine)
+ Bacon.when([a,b,c], combine)
+ ```
+
+ Note that [`Bacon.when`](#bacon-when) does not trigger updates for events from Properties though;
+ if you use a Property in your pattern, its value will be just sampled when all the
+ other sources (EventStreams) have a value. This is useful when you need a value of a Property
+ in your calculations. If you want your pattern to fire for a Property too, you can
+ convert it into an EventStream using [`property.changes()`](#property-changes) or [`property.toEventStream()`](#property-toeventstream)
+
+ * @param {Pattern<O>} patterns Join patterns
+ * @typeparam O result type
+ */
 function when() {
     var patterns = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -1923,8 +2030,8 @@ function fromBinder(binder, eventTransformer) {
  Function should return Events: either [`Bacon.Next`](classes/next.html) or [`Bacon.End`](classes/end.html). Polling occurs only
  when there are subscribers to the stream. Polling ends permanently when
  `f` returns [`Bacon.End`](classes/end.html).
- * @param poll interval in milliseconds
- * @param poll function
+ * @param delay poll interval in milliseconds
+ * @param poll function to be polled
  * @typeparam V Type of stream elements
  */
 function fromPoll(delay, poll) {
@@ -2216,7 +2323,10 @@ function registerObs(obs) {
         }
     }
 }
-/** @hidden */
+/**
+ Adds your function as a "spy" that will get notified on all new Observables.
+ This will allow a visualization/analytics tool to spy on all Bacon activity.
+ */
 var spy = function (spy) { return spies.push(spy); };
 
 /** @hidden */
@@ -3070,7 +3180,11 @@ var idCounter = 0;
  */
 var Observable = /** @class */ (function () {
     function Observable(desc) {
+        /**
+         * Unique numeric id of this Observable. Implemented using a simple counter starting from 1.
+         */
         this.id = ++idCounter;
+        /** @hidden */
         this._isObservable = true;
         this.desc = desc;
         this.initialDesc = desc;
@@ -3189,6 +3303,12 @@ var Observable = /** @class */ (function () {
     Observable.prototype.delay = function (delayMs) {
         return delay(this, delayMs);
     };
+    /**
+     * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
+     This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
+     Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
+     The `deps` method will skip these internal dependencies. See also: [internalDeps](#internaldeps)
+     */
     Observable.prototype.deps = function () {
         return this.desc.deps();
     };
@@ -3320,6 +3440,11 @@ var Observable = /** @class */ (function () {
     Observable.prototype.fold = function (seed, f) {
         return fold(this, seed, f);
     };
+    /**
+     An alias for [onValue](#onvalue).
+  
+     Subscribes a given handler function to the observable. Function will be called for each new value (not for errors or stream end).
+     */
     Observable.prototype.forEach = function (f) {
         if (f === void 0) { f = nullSink; }
         // TODO: inefficient alias. Also, similar assign alias missing.
@@ -3333,6 +3458,11 @@ var Observable = /** @class */ (function () {
         return holdWhen(this, valve);
     };
     Observable.prototype.inspect = function () { return this.toString(); };
+    /**
+     * Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
+     This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
+     See also: [deps](#deps)
+     */
     Observable.prototype.internalDeps = function () {
         return this.initialDesc.deps();
     };
@@ -3543,7 +3673,7 @@ var Observable = /** @class */ (function () {
         return slidingWindow(this, maxValues, minValues);
     };
     /**
-     * subscribes given handler function to event stream. Function will receive [event](event) objects
+     * subscribes given handler function to event stream. Function will receive [event](event.html) objects
      for all new value, end and error events in the stream.
      The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
      You can also unsubscribe by returning [`Bacon.noMore`](../globals.html#nomore) from the handler function as a reply
@@ -3611,6 +3741,9 @@ var Observable = /** @class */ (function () {
     Observable.prototype.toPromise = function (PromiseCtr) {
         return toPromise(this, PromiseCtr);
     };
+    /**
+     *Returns a textual description of the Observable. For instance, `Bacon.once(1).map(function() {}).toString()` would return "Bacon.once(1).map(function)".
+     **/
     Observable.prototype.toString = function () {
         if (this._name) {
             return this._name;
@@ -3693,6 +3826,7 @@ var Property = /** @class */ (function (_super) {
     __extends(Property, _super);
     function Property(desc, subscribe, handler) {
         var _this = _super.call(this, desc) || this;
+        /** @hidden */
         _this._isProperty = true;
         assertFunction(subscribe);
         _this.dispatcher = new PropertyDispatcher(_this, subscribe, handler);
@@ -3836,6 +3970,7 @@ var EventStream = /** @class */ (function (_super) {
     __extends(EventStream, _super);
     function EventStream(desc, subscribe, handler, options) {
         var _this = _super.call(this, desc) || this;
+        /** @hidden */
         _this._isEventStream = true;
         if (options !== allowSync) {
             subscribe = asyncWrapSubscribe(_this, subscribe);
@@ -4014,6 +4149,42 @@ Observable.prototype.toESObservable = function () {
 
 Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable;
 
+/**
+ Creates a Property from an initial value and updates the value based on multiple inputs.
+ The inputs are defined similarly to [`Bacon.when`](#bacon-when), like this:
+
+ ```js
+ var result = Bacon.update(
+ initial,
+ [x,y,z, (previous,x,y,z) => { ... }],
+ [x,y,   (previous,x,y) => { ... }])
+ ```
+
+ As input, each function above will get the previous value of the `result` Property, along with values from the listed Observables.
+ The value returned by the function will be used as the next value of `result`.
+
+ Just like in [`Bacon.when`](#when), only EventStreams will trigger an update, while Properties will be just sampled.
+ So, if you list a single EventStream and several Properties, the value will be updated only when an event occurs in the EventStream.
+
+ Here's a simple gaming example:
+
+ ```js
+ let scoreMultiplier = Bacon.constant(1)
+ let hitUfo = Bacon.interval(1000)
+ let hitMotherShip = Bacon.later(10000)
+ let score = Bacon.update(
+ 0,
+ [hitUfo, scoreMultiplier, (score, _, multiplier) => score + 100 * multiplier ],
+ [hitMotherShip, (score, _) => score + 2000 ]
+ )
+ ```
+
+ In the example, the `score` property is updated when either `hitUfo` or `hitMotherShip` occur. The `scoreMultiplier` Property is sampled to take multiplier into account when `hitUfo` occurs.
+
+ * @param initial
+ * @param {UpdatePattern<Out>} patterns
+ * @returns {Property<Out>}
+ */
 function update(initial) {
     var patterns = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -4301,6 +4472,22 @@ function silence(duration) {
         .withDesc(new Desc("Bacon", "silence", [duration]));
 }
 
+/**
+ Used to retry the call when there is an [`Error`](classes/error.html) event in the stream produced by the `source` function.
+
+ ```js
+ var triggeringStream, ajaxCall // <- ajaxCall gives Errors on network or server errors
+ ajaxResult = triggeringStream.flatMap(function(url) {
+    return Bacon.retry({
+        source: function(attemptNumber) { return ajaxCall(url) },
+        retries: 5,
+        isRetryable: function (error) { return error.httpStatusCode !== 404; },
+        delay: function(context) { return 100; } // Just use the same delay always
+    })
+})
+ ```
+ * @param options (click for details)
+ */
 function retry(options) {
     if (!_.isFunction(options.source)) {
         throw new Error("'source' option has to be a function");
@@ -4578,19 +4765,23 @@ function fromESObservable(_observable) {
 }
 
 /**
- A pushable/pluggable stream
+ An [`EventStream`](eventstream.html) that allows you to [`push`](#push) values into the stream.
 
- Pro tip: you can also put Errors into streams created with the
- constructors above, by using an [`Bacon.Error`](error) object instead of a plain
- value.
+ It also allows plugging other streams into the Bus, as inputs. The Bus practically
+ merges all plugged-in streams and the values pushed using the [`push`](#push)
+ method.
  */
 var Bus = /** @class */ (function (_super) {
     __extends(Bus, _super);
     function Bus() {
         var _this = _super.call(this, new Desc("Bacon", "Bus", []), function (sink) { return _this.subscribeAll(sink); }) || this;
+        /** @hidden */
         _this.pushing = false;
+        /** @hidden */
         _this.pushQueue = undefined;
+        /** @hidden */
         _this.ended = false;
+        /** @hidden */
         _this.subscriptions = [];
         _this.unsubAll = _.bind(_this.unsubAll, _this);
         _this.subscribeAll = _.bind(_this.subscribeAll, _this);
@@ -4600,58 +4791,16 @@ var Bus = /** @class */ (function (_super) {
         EventStream.call(_this, new Desc("Bacon", "Bus", []), _this.subscribeAll);
         return _this;
     }
-    Bus.prototype.unsubAll = function () {
-        var iterable = this.subscriptions;
-        for (var i = 0, sub; i < iterable.length; i++) {
-            sub = iterable[i];
-            if (typeof sub.unsub === "function") {
-                sub.unsub();
-            }
-        }
-    };
-    Bus.prototype.subscribeAll = function (newSink) {
-        if (this.ended) {
-            newSink(endEvent());
-        }
-        else {
-            this.sink = newSink;
-            var iterable = this.subscriptions.slice();
-            for (var i = 0, subscription; i < iterable.length; i++) {
-                subscription = iterable[i];
-                this.subscribeInput(subscription);
-            }
-        }
-        return this.unsubAll;
-    };
-    Bus.prototype.guardedSink = function (input) {
-        var _this = this;
-        return function (event) {
-            if (event.isEnd) {
-                _this.unsubscribeInput(input);
-                return noMore;
-            }
-            else if (_this.sink) {
-                return _this.sink(event);
-            }
-        };
-    };
-    Bus.prototype.subscribeInput = function (subscription) {
-        subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
-        return subscription.unsub;
-    };
-    Bus.prototype.unsubscribeInput = function (input) {
-        var iterable = this.subscriptions;
-        for (var i = 0, sub; i < iterable.length; i++) {
-            sub = iterable[i];
-            if (sub.input === input) {
-                if (typeof sub.unsub === "function") {
-                    sub.unsub();
-                }
-                this.subscriptions.splice(i, 1);
-                return;
-            }
-        }
-    };
+    /**
+     Plugs the given stream as an input to the Bus. All events from
+     the given stream will be delivered to the subscribers of the Bus.
+     Returns a function that can be used to unplug the same stream.
+  
+     The plug method practically allows you to merge in other streams after
+     the creation of the Bus.
+  
+     * @returns a function that can be called to "unplug" the source from Bus.
+     */
     Bus.prototype.plug = function (input) {
         var _this = this;
         assertObservable(input);
@@ -4665,6 +4814,11 @@ var Bus = /** @class */ (function (_super) {
         }
         return (function () { return _this.unsubscribeInput(input); });
     };
+    /**
+     Ends the stream. Sends an [End](end.html) event to all subscribers.
+     After this call, there'll be no more events to the subscribers.
+     Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
+     */
     Bus.prototype.end = function () {
         this.ended = true;
         this.unsubAll();
@@ -4672,6 +4826,9 @@ var Bus = /** @class */ (function (_super) {
             return this.sink(endEvent());
         }
     };
+    /**
+     * Pushes a new value to the stream.
+     */
     Bus.prototype.push = function (value) {
         if (!this.ended && typeof this.sink === "function") {
             var rootPush = !this.pushing;
@@ -4703,9 +4860,69 @@ var Bus = /** @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Pushes an error to this stream.
+     */
     Bus.prototype.error = function (error) {
         if (typeof this.sink === "function") {
             return this.sink(new Error$1(error));
+        }
+    };
+    /** @hidden */
+    Bus.prototype.unsubAll = function () {
+        var iterable = this.subscriptions;
+        for (var i = 0, sub; i < iterable.length; i++) {
+            sub = iterable[i];
+            if (typeof sub.unsub === "function") {
+                sub.unsub();
+            }
+        }
+    };
+    /** @hidden */
+    Bus.prototype.subscribeAll = function (newSink) {
+        if (this.ended) {
+            newSink(endEvent());
+        }
+        else {
+            this.sink = newSink;
+            var iterable = this.subscriptions.slice();
+            for (var i = 0, subscription; i < iterable.length; i++) {
+                subscription = iterable[i];
+                this.subscribeInput(subscription);
+            }
+        }
+        return this.unsubAll;
+    };
+    /** @hidden */
+    Bus.prototype.guardedSink = function (input) {
+        var _this = this;
+        return function (event) {
+            if (event.isEnd) {
+                _this.unsubscribeInput(input);
+                return noMore;
+            }
+            else if (_this.sink) {
+                return _this.sink(event);
+            }
+        };
+    };
+    /** @hidden */
+    Bus.prototype.subscribeInput = function (subscription) {
+        subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+        return subscription.unsub;
+    };
+    /** @hidden */
+    Bus.prototype.unsubscribeInput = function (input) {
+        var iterable = this.subscriptions;
+        for (var i = 0, sub; i < iterable.length; i++) {
+            sub = iterable[i];
+            if (sub.input === input) {
+                if (typeof sub.unsub === "function") {
+                    sub.unsub();
+                }
+                this.subscriptions.splice(i, 1);
+                return;
+            }
         }
     };
     return Bus;
@@ -4723,6 +4940,9 @@ function tryF(f) {
     };
 }
 
+/**
+ * JQuery integration support
+ */
 var $ = {
     /**
      Creates an EventStream from events on a
@@ -4806,6 +5026,7 @@ exports.isError = isError;
 exports.isEnd = isEnd;
 exports.isInitial = isInitial;
 exports.isEvent = isEvent;
+exports.isNext = isNext;
 exports.CompositeUnsubscribe = CompositeUnsubscribe;
 exports.spy = spy;
 exports.try = tryF;

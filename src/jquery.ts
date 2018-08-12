@@ -2,6 +2,9 @@ import { Desc } from "./describe";
 import fromBinder from "./frombinder";
 import _ from "./_";
 
+/**
+ * JQuery/Zepto integration support
+ */
 export const $ = {
   /**
    Creates an EventStream from events on a
@@ -29,6 +32,10 @@ export const $ = {
       return (() => (<any>this).off(eventName, selector, handler));
     }, eventTransformer).withDesc(new Desc((<any>this).selector || this, "asEventStream", [eventName]));
   },
+
+  /**
+   * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
+   */
   init($) {
     $.fn.asEventStream = $.asEventStream;
   }

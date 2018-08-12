@@ -34,7 +34,7 @@ export { EventStream, Observable, Property } from "./observable";
 export { default as Bus } from "./bus";
 export * from "./types";
 export { Desc } from "./describe";
-export { Event, Next, Initial, End, Error, Value, hasValue, isError, isEnd, isInitial, isEvent } from "./event";
+export { Event, Next, Initial, End, Error, Value, hasValue, isError, isEnd, isInitial, isEvent, isNext } from "./event";
 export { Binder, EventTransformer, EventLike, FlexibleSink } from "./frombinder";
 export { RetryOptions, RetryContext } from "./retry";
 export { default as CompositeUnsubscribe } from "./compositeunsubscribe";

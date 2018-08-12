@@ -18,10 +18,23 @@ import { Differ } from "./diff";
  @typeparam V   Type of the elements/values in the stream/property
  */
 export declare abstract class Observable<V> {
+    /**
+     * Contains a structured version of what [`toString`](#tostring) returns.
+     The structured description is an object that contains the fields `context`, `method` and `args`.
+     For example, for `Bacon.fromArray([1,2,3]).desc` you'd get
+  
+     { context: "Bacon", method: "fromArray", args: [[1,2,3]] }
+     */
     desc: Desc;
+    /**
+     * Unique numeric id of this Observable. Implemented using a simple counter starting from 1.
+     */
     id: number;
+    /** @hidden */
     initialDesc: Desc;
+    /** @hidden */
     _name?: string;
+    /** @hidden */
     _isObservable: boolean;
     constructor(desc: Desc);
     /**
@@ -140,7 +153,13 @@ export declare abstract class Observable<V> {
     delay(delayMs: number): this;
     /** @hidden */
     abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
-    deps(): any[];
+    /**
+     * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
+     This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
+     Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
+     The `deps` method will skip these internal dependencies. See also: [internalDeps](#internaldeps)
+     */
+    deps(): Observable<any>[];
     /**
   Returns a Property that represents the result of a comparison
   between the previous and current value of the Observable. For the initial value of the Observable,
@@ -286,6 +305,11 @@ export declare abstract class Observable<V> {
   [`Property`](property.html).
      */
     fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    /**
+     An alias for [onValue](#onvalue).
+  
+     Subscribes a given handler function to the observable. Function will be called for each new value (not for errors or stream end).
+     */
     forEach(f?: Sink<V>): Unsub;
     /**
   Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
@@ -336,6 +360,11 @@ export declare abstract class Observable<V> {
      */
     holdWhen(valve: Property<boolean>): EventStream<V>;
     inspect(): string;
+    /**
+     * Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
+     This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
+     See also: [deps](#deps)
+     */
     internalDeps(): any[];
     /**
   Takes the last element from the stream. None, if stream is empty.
@@ -514,7 +543,7 @@ export declare abstract class Observable<V> {
      */
     abstract startWith(seed: V): Observable<V>;
     /**
-     * subscribes given handler function to event stream. Function will receive [event](event) objects
+     * subscribes given handler function to event stream. Function will receive [event](event.html) objects
      for all new value, end and error events in the stream.
      The subscribe() call returns a `unsubscribe` function that you can call to unsubscribe.
      You can also unsubscribe by returning [`Bacon.noMore`](../globals.html#nomore) from the handler function as a reply
@@ -577,6 +606,9 @@ export declare abstract class Observable<V> {
      In case of Property, returns the Property itself.
      */
     abstract toProperty(): Property<V>;
+    /**
+     *Returns a textual description of the Observable. For instance, `Bacon.once(1).map(function() {}).toString()` would return "Bacon.once(1).map(function)".
+     **/
     toString(): string;
     /**
   Lets you do more custom event handling: you
@@ -684,7 +716,9 @@ export interface ObservableConstructor {
  @typeparam V   Type of the elements/values in the stream/property
  */
 export declare class Property<V> extends Observable<V> {
+    /** @hidden */
     dispatcher: PropertyDispatcher<V, Property<V>>;
+    /** @hidden */
     _isProperty: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>);
     /**
@@ -761,7 +795,9 @@ export interface EventStreamOptions {
 
  */
 export declare class EventStream<V> extends Observable<V> {
+    /** @hidden */
     dispatcher: Dispatcher<V, EventStream<V>>;
+    /** @hidden */
     _isEventStream: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>, options?: EventStreamOptions);
     changes(): EventStream<V>;

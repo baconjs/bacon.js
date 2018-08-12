@@ -74,7 +74,17 @@ var idCounter = 0;
  @typeparam V   Type of the elements/values in the stream/property
  */
 export abstract class Observable<V> {
+  /**
+   * Contains a structured version of what [`toString`](#tostring) returns.
+   The structured description is an object that contains the fields `context`, `method` and `args`.
+   For example, for `Bacon.fromArray([1,2,3]).desc` you'd get
+
+   { context: "Bacon", method: "fromArray", args: [[1,2,3]] }
+   */
   desc: Desc
+  /**
+   * Unique numeric id of this Observable. Implemented using a simple counter starting from 1.
+   */
   id: number = ++idCounter
   /** @hidden */
   initialDesc: Desc
@@ -219,7 +229,14 @@ delayed:   --asdf----asdf--
 
   /** @hidden */
   abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
-  deps(): any[] {
+
+  /**
+   * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
+   This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
+   Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
+   The `deps` method will skip these internal dependencies. See also: [internalDeps](#internaldeps)
+   */
+  deps(): Observable<any>[] {
     return this.desc.deps()
   }
   /**
@@ -455,6 +472,12 @@ All buffered events are released when valve becomes falsy.
     return holdWhen(this, valve)
   }
   inspect() { return this.toString() }
+
+  /**
+   * Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
+   This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
+   See also: [deps](#deps)
+   */
   internalDeps(): any[] {
     return this.initialDesc.deps();
   }
@@ -761,7 +784,9 @@ See also [firstToPromise](#firsttopromise).
    */
   abstract toProperty(): Property<V>
 
-  /** @hidden */
+  /**
+   *Returns a textual description of the Observable. For instance, `Bacon.once(1).map(function() {}).toString()` would return "Bacon.once(1).map(function)".
+   **/
   toString(): string {
     if (this._name) {
       return this._name;

@@ -1,15 +1,13 @@
 import { isArray, isObservable } from "./helpers"
+import Observable from "./observable"
 import _ from "./_"
-
-interface Observable {
-}
 
 export class Desc {
   context: any
   method?: string
   args?: any[]
   /** @hidden */
-  cached?: Observable[]
+  cachedDeps?: Observable<any>[]
   /** @hidden */
   _isDesc: boolean = true
   constructor(context: any, method: string, args: any[] = []) {
@@ -20,11 +18,11 @@ export class Desc {
     this.method = method;
     this.args = args;
   }
-  deps(): Observable[] {
-    if (!this.cached) {
-      this.cached = findDeps([this.context].concat(this.args));
+  deps(): Observable<any>[] {
+    if (!this.cachedDeps) {
+      this.cachedDeps = findDeps([this.context].concat(this.args));
     }
-    return this.cached;
+    return this.cachedDeps;
   }
   toString() {
     let args = _.map(_.toString, this.args)
@@ -43,7 +41,7 @@ export function describe (context, method, ...args): Desc {
 }
 
 /** @hidden */
-export function findDeps (x): Observable[] {
+export function findDeps (x): Observable<any>[] {
   if (isArray(x)) {
     return _.flatMap(findDeps, x);
   } else if (isObservable(x)) {

@@ -23,7 +23,10 @@ export function registerObs(obs: Observable<any>) {
   }
 }
 
-/** @hidden */
+/**
+ Adds your function as a "spy" that will get notified on all new Observables.
+ This will allow a visualization/analytics tool to spy on all Bacon activity.
+ */
 export const spy = (spy: Spy) => spies.push(spy)
 
 export default spy
