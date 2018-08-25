@@ -239,6 +239,8 @@ subscribing to the stream/property and handling the values in your
 callback. If you need the value of more than one source, use one of the
 combine methods.
 
+TODO: fix the rest of the document
+
 Bus
 ---
 
