@@ -1119,84 +1119,6 @@ export class EventStream<V> extends Observable<V> {
     registerObs(this)
   }
 
-  changes(): EventStream<V> {
-    return this
-  }
-
-  /** @hidden */
-  subscribeInternal(sink: EventSink<V> = nullSink): Unsub {
-    return this.dispatcher.subscribe(sink)
-  }
-
-  toEventStream() { return this }
-
-  transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2> {
-    return transformE(this, transformer, desc)
-  }
-
-  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
-    return <any>withStateMachine<V, State, Out>(initState, f, this)
-  }
-
-  map<V2>(f: ((V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
-
-  flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
-  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
-  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
-  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
-
-  groupBy(keyF: (V) => string, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
-    return <any>groupBy(this, keyF, limitF)
-  }
-
-  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByE(this, sampler, f)}
-
-  startWith(seed: V): EventStream<V> {
-    return startWithE(this,seed)
-  }
-
-  /**
-   Creates a Property based on the
-   EventStream.
-
-   Without arguments, you'll get a Property without an initial value.
-   The Property will get its first actual value from the stream, and after that it'll
-   always have a current value.
-
-   You can also give an initial value that will be used as the current value until
-   the first value comes from the stream.
-   */
-  toProperty(initValue?: V): Property<V> {
-    let usedInitValue: Option<V> = arguments.length
-      ? toOption<V>(<any>initValue)
-      : none<V>()
-    let disp = this.dispatcher
-    let desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments))
-    let streamSubscribe = disp.subscribe
-    return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe))
-  }
-  concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
-    return concatE(this, other, options)
-  }
-
-  /**
-  Merges two streams into one stream that delivers events from both
-   */
-  merge(other: EventStream<V>): EventStream<V> {
-    assertEventStream(other)
-    return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
-  }
-
-  not(): EventStream<boolean> {return <any>not(this) }
-
-  /** @hidden */
-  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
-    return <any>f(this).withDesc(desc)
-  }
-
   /**
    Buffers stream events with given delay.
    The buffer is flushed at most once in the given interval. So, if your input
@@ -1241,9 +1163,83 @@ export class EventStream<V> extends Observable<V> {
   bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V> {
     return bufferWithTimeOrCount(this, delay, count)
   }
+  changes(): EventStream<V> {
+    return this
+  }
+  concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
+    return concatE(this, other, options)
+  }
+  /** @hidden */
+  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
+    return <any>f(this).withDesc(desc)
+  }
+
+  flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
+  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
+  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
+  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMapError(f: (any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+
+  groupBy(keyF: (V) => string, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
+    return <any>groupBy(this, keyF, limitF)
+  }
+
+  map<V2>(f: ((V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
+
+  /**
+   Merges two streams into one stream that delivers events from both
+   */
+  merge(other: EventStream<V>): EventStream<V> {
+    assertEventStream(other)
+    return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
+  }
+
+  not(): EventStream<boolean> {return <any>not(this) }
+
+  sampledBy<V2, R>(sampler: Observable<V2>, f: (V, V2) => R = (a, b) => a): Observable<R> {return sampledByE(this, sampler, f)}
+
+  startWith(seed: V): EventStream<V> {
+    return startWithE(this,seed)
+  }
+  /** @hidden */
+  subscribeInternal(sink: EventSink<V> = nullSink): Unsub {
+    return this.dispatcher.subscribe(sink)
+  }
+
+  toEventStream() { return this }
+  /**
+   Creates a Property based on the
+   EventStream.
+
+   Without arguments, you'll get a Property without an initial value.
+   The Property will get its first actual value from the stream, and after that it'll
+   always have a current value.
+
+   You can also give an initial value that will be used as the current value until
+   the first value comes from the stream.
+   */
+  toProperty(initValue?: V): Property<V> {
+    let usedInitValue: Option<V> = arguments.length
+      ? toOption<V>(<any>initValue)
+      : none<V>()
+    let disp = this.dispatcher
+    let desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments))
+    let streamSubscribe = disp.subscribe
+    return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe))
+  }
+
+  transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2> {
+    return transformE(this, transformer, desc)
+  }
 
   withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V, V2) => R): EventStream<R> {
     return withLatestFromE(this, samplee, f)
+  }
+
+  withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
+    return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
 }
 
