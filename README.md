@@ -1,9 +1,6 @@
 Bacon.js
 ========
 
-TODO: fix doc links
-TODO: include Typescript
-
 <img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />
 
 A small functional reactive programming lib for JavaScript.
@@ -43,24 +40,63 @@ Please contribute!
 [![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
 [![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
-Install
-=======
+## Install and Usage
+### NPM, CommonJS, Node.js
 
-If you're targeting to [node.js](http://nodejs.org/), you can
+If you're on to CommonJS ([node.js](http://nodejs.org/), [webpack](https://webpack.js.org/) or similar) you can install Bacon using npm.
 
     npm install baconjs
+    
+Try it like this:    
+
+```js
+node
+Bacon=require("baconjs")
+Bacon.once("hello").log()
+```
+    
+The global methods, such as [`once`](globals.html#once) are available in the `Bacon` object.
+
+### Typescript
+
+Bacon.js starting from version 3.0 is a Typescript library so you won't need any external types. Just
+Install using `npm`.
+
+    npm install baconjs
+
+Then you can
+
+```typescript
+import { EventStream, once } from "baconjs"
+
+let s: EventStream<string> = once("hello")
+s.log()
+```
+
+As you can see, the global methods, such as [`once`](globals.html#once) are imported separately.
+
+### Bower
 
 For [bower](https://github.com/twitter/bower) users:
 
     bower install bacon
 
+### CDN / Script Tags
+
 Both minified and unminified versions available on [cdnjs](https://cdnjs.com/libraries/bacon.js).
 
-Starting from 0.7.45, you can build your own Bacon.js bundle with selected features
-only. See instructions [here](#build).
+So you can also include Bacon.js using
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bacon.js/2.0.9/Bacon.js"></script>
+<script>
+Bacon.once("hello").log()
+</script>
+```
+
+### Github
 
 Prefer to drink from the firehose? Download from Github [master](https://raw.github.com/baconjs/bacon.js/master/dist/Bacon.js).
-
 
 Intro
 =====
@@ -68,83 +104,81 @@ Intro
 The idea of Functional Reactive Programming is quite well described by Conal Elliot at [Stack Overflow](http://stackoverflow.com/questions/1028250/what-is-functional-reactive-programming/1030631#1030631).
 
 Bacon.js is a library for functional reactive programming. Or let's say it's a library for
-working with [events](#event) and dynamic values (which are called [Properties](#property) in Bacon.js).
+working with [events](globals.html#event) in [EventStreams](classes/eventstream.html) and dynamic values (which are called [Properties](classes/property.html) in Bacon.js).
 
-Anyways, you can wrap an event source,
-say "mouse clicks on an element" into an [`EventStream`](#eventstream) by saying
+You can wrap an event source, say "mouse clicks on a DOM element" into an [EventStream](classes/eventstream.html) by saying
 
 ```js
-var clicks = $("h1").asEventStream("click")
+let $ = (selector) => document.querySelector(selector) 
+var clickE = Bacon.fromEvent($("h1"), "click")
 ```
 
-Each EventStream represents a stream of events. It is an Observable object, meaning
-that you can listen to events in the stream using, for instance, the [`onValue`](#stream-onvalue) method
+The `$` helper function above could be replaced with, for instance, jQuery or Zepto.
+
+Each EventStream represents a stream of events. It is an [Observable](classes/observable.html), meaning
+that you can listen to events in the stream using, for instance, the [`onValue`](classes/observable.html#onvalue) method
 with a callback. Like this:
 
 ```js
-clicks.onValue(function() { alert("you clicked the h1 element") })
+clickE.onValue(() => alert("you clicked the h1 element") )
 ```
 
-But you can do neater stuff too. The Bacon of bacon.js is in that you can transform,
-filter and combine these streams in a multitude of ways (see API below). The methods [`map`](#observable-map),
-[`filter`](#observable-filter), for example, are similar to same functions in functional list programming
+But you can do neater stuff too. The Bacon of Bacon.js is that you can transform,
+filter and combine these streams in a multitude of ways (see [EventStream API](classes/eventstream.html)). The methods [`map`](classes/eventstream.html#map),
+[`filter`](classes/eventstream.html#filter), for example, are similar to same functions in functional list programming
 (like [Underscore](http://underscorejs.org/)). So, if you say
 
 ```js
-var plus = $("#plus").asEventStream("click").map(1)
-var minus = $("#minus").asEventStream("click").map(-1)
-var both = plus.merge(minus)
+let plusE = Bacon.fromEvent($("#plus"), "click").map(1)
+let minusE = Bacon.fromEvent($("#minus"), "click").map(-1)
+let bothE = plusE.merge(minusE)
 ```
 
 .. you'll have a stream that will output the number 1 when the "plus" button is clicked
-and another stream outputting -1 when the "minus" button is clicked. The `both` stream will
+and another stream outputting -1 when the "minus" button is clicked. The `bothE` stream will
 be a merged stream containing events from both the plus and minus streams. This allows
 you to subscribe to both streams with one handler:
 
 ```js
-both.onValue(function(val) { /* val will be 1 or -1 */ })
+bothE.onValue(val => { /* val will be 1 or -1 */ console.log(val) })
 ```
 
-In addition to EventStreams, bacon.js has a thing called [`Property`](#property), that is almost like an
-EventStream, but has a "current value". So things that change and have a current state are
-Properties, while things that consist of discrete events are EventStreams. You could think
-mouse clicks as an EventStream and mouse position as a Property. You can create Properties from
-an EventStream with [`scan`](#observable-scan) or [`toProperty`](#stream-toproperty) methods. So, let's say
+Note that you can also use the [`log`](classes/observable.html#log) method to log stream values to `console`:
 
 ```js
-function add(x, y) { return x + y }
-var counter = both.scan(0, add)
-counter.onValue(function(sum) { $("#sum").text(sum) })
+bothE.log()
 ```
 
-The `counter` property will contain the sum of the values in the `both` stream, so it's practically
-a counter that can be increased and decreased using the plus and minus buttons. The [`scan`](#observable-scan) method
-was used here to calculate the "current sum" of events in the `both` stream, by giving a "seed value"
+
+In addition to EventStreams, bacon.js has a thing called [`Property`](classes/property.html), that is almost like an
+EventStream, but has a "current value". So things that change and have a current state are
+Properties, while things that consist of discrete events are EventStreams. You could think
+mouse clicks as an EventStream and mouse cursor position as a Property. You can create Properties from
+an EventStream with [`scan`](classes/observable.html#scan) or [`toProperty`](classes/eventstream.html#toproperty) methods. So, let's say
+
+```js
+let add = (x, y) => x + y
+let counterP = bothE.scan(0, add)
+counterP.onValue(sum => $("#sum").textContent = sum )
+```
+
+The `counterP` property will contain the sum of the values in the `bothE` stream, so it's practically
+a counter that can be increased and decreased using the plus and minus buttons. The [`scan`](classes/observable.html#scan) method
+was used here to calculate the "current sum" of events in the `bothE` stream, by giving a "seed value"
 `0` and an "accumulator function" `add`. The scan method creates a property that starts with the given
 seed value and on each event in the source stream applies the accumulator function to the current
 property value and the new value from the stream.
 
-Properties can be very conveniently used for assigning values and attributes to DOM elements with JQuery.
-Here we assign the value of a property as the text of a span element whenever it changes:
+
+Hiding and showing the result div depending on the content of the property value is equally straightforward
 
 ```js
-property.assign($("span"), "text")
+let hiddenIfZero = value => value == 0 ? "hidden" : "visible"
+counterP.map(hiddenIfZero)
+  .onValue(visibility => { $("#sum").style.visibility = visibility })
 ```
 
-Hiding and showing the same span depending on the content of the property value is equally straightforward
-
-```js
-function hiddenForEmptyValue(value) { return value == "" ? "hidden" : "visible" }
-property.map(hiddenForEmptyValue).assign($("span"), "css", "visibility")
-```
-
-In the example above a property value of "hello" would be mapped to "visible", which in turn would result in Bacon calling
-
-```js
-$("span").css("visibility", "visible")
-```
-
-For an actual tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
+For an actual (though a bit outdated) tutorial, please check out my [blog posts](http://nullzzz.blogspot.fi/2012/11/baconjs-tutorial-part-i-hacking-with.html)
 
 API
 ===
@@ -152,50 +186,48 @@ API
 TODO: correct references to the new typedocs
 TODO: Observable, EventStream, Property
 
-Creating streams
+Creating EventStreams and Properties
 ----------------
 
-<a name="$-aseventstream"></a>
-<a name="bacon-frompromise"></a>
-<a name="bacon-fromevent"></a>
-<a name="bacon-fromcallback"></a>
-<a name="bacon-fromnodecallback"></a>
-<a name="bacon-fromesobservable"></a>
-<a name="bacon-frompoll"></a>
-<a name="bacon-once"></a>
-<a name="bacon-fromarray"></a>
-<a name="bacon-interval"></a>
-<a name="bacon-sequentially"></a>
-<a name="bacon-repeatedly"></a>
-<a name="bacon-repeat"></a>
-<a name="bacon-never"></a>
-<a name="bacon-later"></a>
-<a name="bacon-frombinder"></a>
+There's a multitude of methods for creating an [EventStream](classes/eventstream.html) from different sources.
 
+- From DOM EventTarget or Node.JS EventEmitter objects using [fromEvent](globals.html#fromevent)
+- From a Promise using [fromPromise](globals.html#frompromise)
+- From an unary callback using [fromCallback](globals.html#fromcallback)
+- From a Node.js style callback using [fromNodeCallback](globals.html#fromnodecallback)
+- From RxJs or Kefir observables using [fromESObservable](globals.html#fromesobservable)
+- By polling a synchronous function using [fromPoll](globals.html#fromPoll)
+- Emit a single event instantly using [once](globals.html#once)
+- Emit a single event with a delay [later](globals.html#later)
+- Emit the same event indefinitely using [interval](globals.html#interval)
+- Emit an array of events instantly [fromArray](globals.html#fromarray)
+- Emit an array of events with a delay [sequentially](globals.html#sequentially)
+- Emit an array of events repeatedly with a delay [repeatedly](globals.html#repeatedly)
+- Use a generator function to be called repeatedly [repeat](globals.html#repeat)
+- Create a stream that never emits an event, ending immediately [never](globals.html#never)
+- Create a stream that never emits an event, ending with a delay [silence](globals.html#silence)
+- Create stream using a custom binder function [fromBinder](globals.html#frombinder)
+- Wrap jQuery events using [asEventStream](globals.html#_)
+
+Properties are usually created based on EventStreams. Here are some ways.
+
+- Create a constant property with [constant](globals.html#constant)
+- Create a property based on an EventStream with [toProperty](classes/eventstream.html#toproperty)
+- Scan an EventStream with an accumulator function with [scan](classes/eventstream.html#scan)
+- Create a state property based on multiple sources using [update](globals.html#update)
 
 Combining multiple streams and properties
 -----------------------------------------
 
-<a name="bacon-combineasarray"></a>
-<a name="bacon-combinewith"></a>
-<a name="bacon-combinetemplate"></a>
-<a name="bacon-mergeall"></a>
-<a name="bacon-concatall"></a>
-<a name="bacon-zipasarray"></a>
-<a name="bacon-zipwith"></a>
-<a name="bacon-onvalues"></a>
+You can combine the latest value from multple sources using [combine](classes/observable.html#combine), [combineAsArray](globals.html#combineasarray), 
+[combineWith](globals.html#combinewith) or [combineTemplate](globals.html#combinetemplate).
 
-Function Construction rules
----------------------------
+You can merge multiple streams into one using [merge](classes/observable.html#merge) or [mergeAll](globals.html#merge).
 
-Function construction rules, which allowed you to use string shorthands for properties and methods,
-were removed in version 3.0, as they are not as useful as they used to be, due to the moderd, short
-lambda syntax in ES6 and Typescript, as well as libraries like Ramda and partial.lenses.
+You can concat streams using [concat](classes/observable.html#concat) or [concatAll](globals.html#concatall).
 
-Lazy evaluation
----------------
-
-Lazy evaluation of event values has been removed in version 2.0
+If you want to get the value of an observable but emit only when another stream emits an event, you might want to use [sampledBy](classes/observable.html#sampledby)
+or its cousin [withLatestFro](classes/observable.html#withlatestfrom).
 
 Latest value of Property or EventStream
 ---------------------------------------
@@ -296,6 +328,18 @@ Bacon.js provides ways to get some descriptive metadata about all Observables.
 <a name="observable-desc"></a>
 
 <a name="bacon-spy"></a>
+
+## Changes to earlier versions
+
+### Function Construction rules removed in 3.0
+
+Function construction rules, which allowed you to use string shorthands for properties and methods,
+were removed in version 3.0, as they are not as useful as they used to be, due to the moderd, short
+lambda syntax in ES6 and Typescript, as well as libraries like Ramda and partial.lenses.
+
+### Lazy evaluation removed in 2.0
+
+Lazy evaluation of event values has been removed in version 2.0
 
 Cleaning up
 -----------
