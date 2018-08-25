@@ -104,7 +104,7 @@
     "release": "scripts/release",
     "tsc": "tsc --emitDeclarationOnly --declaration --declarationDir types",
     "watch-dist": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'scripts/dist'",
-    "watch-doc": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'npm run typedoc'",
+    "watch-doc": "node_modules/nodemon/bin/nodemon.js -w src -w README.md -e js,ts,json,md --ignore 'dist/*' --exec 'npm run typedoc'",
     "watch-ts": "tsc --outDir /tmp/deleteme --watch",
     "typedoc": "typedoc --out docs --ignoreCompilerErrors src --mode file --excludeNotExported"
   },
