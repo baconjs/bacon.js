@@ -1,3 +1,6 @@
+/**
+ * JQuery/Zepto integration support
+ */
 export declare const $: {
     /**
      Creates an EventStream from events on a
@@ -15,5 +18,8 @@ export declare const $: {
      [init()](#_.aseventstream) as in `Bacon.$.init($)`.
      */
     asEventStream(eventName: any, selector: any, eventTransformer: any): import("../../../../../Users/juha/code/bacon.js/src/observable").EventStream<{}>;
+    /**
+     * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
+     */
     init($: any): void;
 };

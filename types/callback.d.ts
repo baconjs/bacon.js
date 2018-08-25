@@ -5,11 +5,7 @@ import { EventStream } from "./observable";
  once. For example:
 
  ```js
- Bacon.fromCallback(function(callback) {
-  setTimeout(function() {
-    callback("Bacon!")
-  }, 1000)
-})
+ Bacon.fromCallback(callback => callback("bacon"))
  ```
 
  This would create a stream that outputs a single value "Bacon!" and ends

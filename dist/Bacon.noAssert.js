@@ -3098,6 +3098,9 @@
         Property.prototype.transform = function (transformer, desc) {
             return transformP(this, transformer, desc);
         };
+        Property.prototype.withLatestFrom = function (samplee, f) {
+            return withLatestFromP(this, samplee, f);
+        };
         Property.prototype.withStateMachine = function (initState, f) {
             return withStateMachine(initState, f, this);
         };
@@ -3119,26 +3122,23 @@
             registerObs(_this);
             return _this;
         }
+        EventStream.prototype.bufferWithTime = function (delay$$1) {
+            return bufferWithTime(this, delay$$1);
+        };
+        EventStream.prototype.bufferWithCount = function (count) {
+            return bufferWithCount(this, count);
+        };
+        EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
+            return bufferWithTimeOrCount(this, delay$$1, count);
+        };
         EventStream.prototype.changes = function () {
             return this;
         };
-        EventStream.prototype.subscribeInternal = function (sink) {
-            if (sink === void 0) {
-                sink = nullSink;
-            }
-            return this.dispatcher.subscribe(sink);
+        EventStream.prototype.concat = function (other, options) {
+            return concatE(this, other, options);
         };
-        EventStream.prototype.toEventStream = function () {
-            return this;
-        };
-        EventStream.prototype.transform = function (transformer, desc) {
-            return transformE(this, transformer, desc);
-        };
-        EventStream.prototype.withStateMachine = function (initState, f) {
-            return withStateMachine(initState, f, this);
-        };
-        EventStream.prototype.map = function (f) {
-            return map(this, f);
+        EventStream.prototype.delayChanges = function (desc, f) {
+            return f(this).withDesc(desc);
         };
         EventStream.prototype.flatMap = function (f) {
             return flatMap(this, f);
@@ -3167,6 +3167,15 @@
             }
             return groupBy(this, keyF, limitF);
         };
+        EventStream.prototype.map = function (f) {
+            return map(this, f);
+        };
+        EventStream.prototype.merge = function (other) {
+            return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
+        };
+        EventStream.prototype.not = function () {
+            return not(this);
+        };
         EventStream.prototype.sampledBy = function (sampler, f) {
             if (f === void 0) {
                 f = function (a, b) {
@@ -3178,6 +3187,15 @@
         EventStream.prototype.startWith = function (seed) {
             return startWithE(this, seed);
         };
+        EventStream.prototype.subscribeInternal = function (sink) {
+            if (sink === void 0) {
+                sink = nullSink;
+            }
+            return this.dispatcher.subscribe(sink);
+        };
+        EventStream.prototype.toEventStream = function () {
+            return this;
+        };
         EventStream.prototype.toProperty = function (initValue) {
             var usedInitValue = arguments.length ? toOption(initValue) : none();
             var disp = this.dispatcher;
@@ -3185,26 +3203,14 @@
             var streamSubscribe = disp.subscribe;
             return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
         };
-        EventStream.prototype.concat = function (other, options) {
-            return concatE(this, other, options);
+        EventStream.prototype.transform = function (transformer, desc) {
+            return transformE(this, transformer, desc);
         };
-        EventStream.prototype.merge = function (other) {
-            return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
+        EventStream.prototype.withLatestFrom = function (samplee, f) {
+            return withLatestFromE(this, samplee, f);
         };
-        EventStream.prototype.not = function () {
-            return not(this);
-        };
-        EventStream.prototype.delayChanges = function (desc, f) {
-            return f(this).withDesc(desc);
-        };
-        EventStream.prototype.bufferWithTime = function (delay$$1) {
-            return bufferWithTime(this, delay$$1);
-        };
-        EventStream.prototype.bufferWithCount = function (count) {
-            return bufferWithCount(this, count);
-        };
-        EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
-            return bufferWithTimeOrCount(this, delay$$1, count);
+        EventStream.prototype.withStateMachine = function (initState, f) {
+            return withStateMachine(initState, f, this);
         };
         return EventStream;
     }(Observable);

@@ -651,6 +651,17 @@ export declare abstract class Observable<V> {
   */
     withDescription(context: any, method: any, ...args: any[]): this;
     /**
+     Creates an EventStream by sampling a given `samplee`
+     stream/property value at each event from the this stream/property.
+  
+     @param {Observable<V2>} samplee
+     @param f function to select/calculate the result value based on the value in the source stream and the samplee
+  
+     @typeparam V2  type of values in the samplee
+     @typeparam R   type of values in the result
+     */
+    abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): Observable<R>;
+    /**
   Lets you run a state machine
   on an observable. Give it an initial state object and a state
   transformation function that processes each incoming event and
@@ -774,6 +785,7 @@ export declare class Property<V> extends Observable<V> {
      */
     toProperty(): Property<V>;
     transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Property<V2>;
+    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): Property<R>;
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out>;
 }
 /** @hidden */
@@ -800,43 +812,6 @@ export declare class EventStream<V> extends Observable<V> {
     /** @hidden */
     _isEventStream: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>, options?: EventStreamOptions);
-    changes(): EventStream<V>;
-    /** @hidden */
-    subscribeInternal(sink?: EventSink<V>): Unsub;
-    toEventStream(): this;
-    transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2>;
-    withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out>;
-    map<V2>(f: ((V: any) => V2) | Property<V2> | V2): EventStream<V2>;
-    flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapError(f: (any: any) => Observable<V>): EventStream<V>;
-    flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2>;
-    groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
-    sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
-    startWith(seed: V): EventStream<V>;
-    /**
-     Creates a Property based on the
-     EventStream.
-  
-     Without arguments, you'll get a Property without an initial value.
-     The Property will get its first actual value from the stream, and after that it'll
-     always have a current value.
-  
-     You can also give an initial value that will be used as the current value until
-     the first value comes from the stream.
-     */
-    toProperty(initValue?: V): Property<V>;
-    concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
-    /**
-    Merges two streams into one stream that delivers events from both
-     */
-    merge(other: EventStream<V>): EventStream<V>;
-    not(): EventStream<boolean>;
-    /** @hidden */
-    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      Buffers stream events with given delay.
      The buffer is flushed at most once in the given interval. So, if your input
@@ -873,6 +848,44 @@ export declare class EventStream<V> extends Observable<V> {
      * @param {number} count  maximum buffer size
      */
     bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V>;
+    changes(): EventStream<V>;
+    concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
+    /** @hidden */
+    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
+    flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
+    flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
+    flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
+    flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
+    flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2>;
+    flatMapError(f: (any: any) => Observable<V>): EventStream<V>;
+    flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2>;
+    groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
+    map<V2>(f: ((V: any) => V2) | Property<V2> | V2): EventStream<V2>;
+    /**
+     Merges two streams into one stream that delivers events from both
+     */
+    merge(other: EventStream<V>): EventStream<V>;
+    not(): EventStream<boolean>;
+    sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
+    startWith(seed: V): EventStream<V>;
+    /** @hidden */
+    subscribeInternal(sink?: EventSink<V>): Unsub;
+    toEventStream(): this;
+    /**
+     Creates a Property based on the
+     EventStream.
+  
+     Without arguments, you'll get a Property without an initial value.
+     The Property will get its first actual value from the stream, and after that it'll
+     always have a current value.
+  
+     You can also give an initial value that will be used as the current value until
+     the first value comes from the stream.
+     */
+    toProperty(initValue?: V): Property<V>;
+    transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2>;
+    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): EventStream<R>;
+    withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out>;
 }
 /** @hidden */
 export declare function newEventStream<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;

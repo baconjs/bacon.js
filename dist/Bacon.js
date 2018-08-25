@@ -3943,6 +3943,9 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.transform = function (transformer, desc) {
         return transformP(this, transformer, desc);
     };
+    Property.prototype.withLatestFrom = function (samplee, f) {
+        return withLatestFromP(this, samplee, f);
+    };
     Property.prototype.withStateMachine = function (initState, f) {
         return withStateMachine(initState, f, this);
     };
@@ -3979,75 +3982,6 @@ var EventStream = /** @class */ (function (_super) {
         registerObs(_this);
         return _this;
     }
-    EventStream.prototype.changes = function () {
-        return this;
-    };
-    /** @hidden */
-    EventStream.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nullSink; }
-        return this.dispatcher.subscribe(sink);
-    };
-    EventStream.prototype.toEventStream = function () { return this; };
-    EventStream.prototype.transform = function (transformer, desc) {
-        return transformE(this, transformer, desc);
-    };
-    EventStream.prototype.withStateMachine = function (initState, f) {
-        return withStateMachine(initState, f, this);
-    };
-    EventStream.prototype.map = function (f) { return map(this, f); };
-    EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
-    EventStream.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
-    EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
-    EventStream.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
-    EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
-    EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
-    EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
-    EventStream.prototype.groupBy = function (keyF, limitF) {
-        if (limitF === void 0) { limitF = _.id; }
-        return groupBy(this, keyF, limitF);
-    };
-    EventStream.prototype.sampledBy = function (sampler, f) {
-        if (f === void 0) { f = function (a, b) { return a; }; }
-        return sampledByE(this, sampler, f);
-    };
-    EventStream.prototype.startWith = function (seed) {
-        return startWithE(this, seed);
-    };
-    /**
-     Creates a Property based on the
-     EventStream.
-  
-     Without arguments, you'll get a Property without an initial value.
-     The Property will get its first actual value from the stream, and after that it'll
-     always have a current value.
-  
-     You can also give an initial value that will be used as the current value until
-     the first value comes from the stream.
-     */
-    EventStream.prototype.toProperty = function (initValue) {
-        var usedInitValue = arguments.length
-            ? toOption(initValue)
-            : none();
-        var disp = this.dispatcher;
-        var desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
-        var streamSubscribe = disp.subscribe;
-        return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
-    };
-    EventStream.prototype.concat = function (other, options) {
-        return concatE(this, other, options);
-    };
-    /**
-    Merges two streams into one stream that delivers events from both
-     */
-    EventStream.prototype.merge = function (other) {
-        assertEventStream(other);
-        return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
-    };
-    EventStream.prototype.not = function () { return not(this); };
-    /** @hidden */
-    EventStream.prototype.delayChanges = function (desc, f) {
-        return f(this).withDesc(desc);
-    };
     /**
      Buffers stream events with given delay.
      The buffer is flushed at most once in the given interval. So, if your input
@@ -4089,6 +4023,78 @@ var EventStream = /** @class */ (function (_super) {
      */
     EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
         return bufferWithTimeOrCount(this, delay$$1, count);
+    };
+    EventStream.prototype.changes = function () {
+        return this;
+    };
+    EventStream.prototype.concat = function (other, options) {
+        return concatE(this, other, options);
+    };
+    /** @hidden */
+    EventStream.prototype.delayChanges = function (desc, f) {
+        return f(this).withDesc(desc);
+    };
+    EventStream.prototype.flatMap = function (f) { return flatMap(this, f); };
+    EventStream.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
+    EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    EventStream.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
+    EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
+    EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
+    EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    EventStream.prototype.groupBy = function (keyF, limitF) {
+        if (limitF === void 0) { limitF = _.id; }
+        return groupBy(this, keyF, limitF);
+    };
+    EventStream.prototype.map = function (f) { return map(this, f); };
+    /**
+     Merges two streams into one stream that delivers events from both
+     */
+    EventStream.prototype.merge = function (other) {
+        assertEventStream(other);
+        return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
+    };
+    EventStream.prototype.not = function () { return not(this); };
+    EventStream.prototype.sampledBy = function (sampler, f) {
+        if (f === void 0) { f = function (a, b) { return a; }; }
+        return sampledByE(this, sampler, f);
+    };
+    EventStream.prototype.startWith = function (seed) {
+        return startWithE(this, seed);
+    };
+    /** @hidden */
+    EventStream.prototype.subscribeInternal = function (sink) {
+        if (sink === void 0) { sink = nullSink; }
+        return this.dispatcher.subscribe(sink);
+    };
+    EventStream.prototype.toEventStream = function () { return this; };
+    /**
+     Creates a Property based on the
+     EventStream.
+  
+     Without arguments, you'll get a Property without an initial value.
+     The Property will get its first actual value from the stream, and after that it'll
+     always have a current value.
+  
+     You can also give an initial value that will be used as the current value until
+     the first value comes from the stream.
+     */
+    EventStream.prototype.toProperty = function (initValue) {
+        var usedInitValue = arguments.length
+            ? toOption(initValue)
+            : none();
+        var disp = this.dispatcher;
+        var desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
+        var streamSubscribe = disp.subscribe;
+        return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
+    };
+    EventStream.prototype.transform = function (transformer, desc) {
+        return transformE(this, transformer, desc);
+    };
+    EventStream.prototype.withLatestFrom = function (samplee, f) {
+        return withLatestFromE(this, samplee, f);
+    };
+    EventStream.prototype.withStateMachine = function (initState, f) {
+        return withStateMachine(initState, f, this);
     };
     return EventStream;
 }(Observable));
@@ -4661,11 +4667,7 @@ function makeFunction(f, args) {
  once. For example:
 
  ```js
- Bacon.fromCallback(function(callback) {
-  setTimeout(function() {
-    callback("Bacon!")
-  }, 1000)
-})
+ Bacon.fromCallback(callback => callback("bacon"))
  ```
 
  This would create a stream that outputs a single value "Bacon!" and ends
@@ -4941,7 +4943,7 @@ function tryF(f) {
 }
 
 /**
- * JQuery integration support
+ * JQuery/Zepto integration support
  */
 var $ = {
     /**
@@ -4970,6 +4972,9 @@ var $ = {
             return (function () { return _this.off(eventName, selector, handler); });
         }, eventTransformer).withDesc(new Desc(this.selector || this, "asEventStream", [eventName]));
     },
+    /**
+     * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
+     */
     init: function ($) {
         $.fn.asEventStream = $.asEventStream;
     }
