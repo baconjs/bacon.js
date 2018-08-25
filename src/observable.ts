@@ -843,6 +843,17 @@ The method returns the same observable with mutated description.
     this.desc = describe(context, method, ...args);
     return this;
   }
+
+  /**
+   Creates an EventStream by sampling a given `samplee`
+   stream/property value at each event from the this stream/property.
+
+   @param {Observable<V2>} samplee
+   @param f function to select/calculate the result value based on the value in the source stream and the samplee
+
+   @typeparam V2  type of values in the samplee
+   @typeparam R   type of values in the result
+   */
   abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V, V2) => R): Observable<R>
   /**
 Lets you run a state machine
