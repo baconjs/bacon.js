@@ -41,6 +41,7 @@ Please contribute!
 [![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
 ## Install and Usage
+
 ### NPM, CommonJS, Node.js
 
 If you're on to CommonJS ([node.js](http://nodejs.org/), [webpack](https://webpack.js.org/) or similar) you can install Bacon using npm.
@@ -93,6 +94,11 @@ So you can also include Bacon.js using
 Bacon.once("hello").log()
 </script>
 ```
+
+### AMD / require.js
+
+Bacon.js is an UMD module so it should work with AMD/require.js too. Not tested lately though.
+
 
 ### Github
 
@@ -535,48 +541,10 @@ Compatibility with browsers
 
 TLDR: good.
 
-Bacon.js is not browser dependent, because it is not a UI library.
+Bacon.js is not browser dependent, because it is not a UI library. It should work on all ES5-ish runtimes.
 
-I have personally used it Bacon.js with Chrome, Firefox, Safari, IE 6+, iPhone, iPad.
+Automatically tested on each commit on modern browsers in Browserstack.
 
-Automatically tested on each commit on modern browsers.
-
-
-Node.js
-=======
-
-Sure. Works. Try it out.
-
-    npm install baconjs
-
-Then type `node` and try the following
-
-```js
-Bacon = require("baconjs").Bacon
-Bacon.sequentially(1000, ["B", "A", "C", "O", "N"]).log()
-```
-
-AMD
-===
-
-Yep. Currently exports Bacon through AMD and assigns to `window` for backwards
-compatibility.
-
-If you would like to use it with jQuery and AMD, you should monkey patch jQuery
-explicitly so that module loading order does not matter
-
-```js
-define(function (require) {
-    var $ = require('jquery'),
-        Bacon = require('Bacon');
-
-    $.fn.asEventStream = Bacon.$.asEventStream;
-
-    $(document).asEventStream('click').onValue(function (e) {
-        console.log(e.clientX + ', ' + e.clientY);
-    });
-});
-```
 
 Why Bacon?
 ==========
@@ -584,7 +552,12 @@ Why Bacon?
 Bacon.js exists largely because I got frustrated with RxJs, which is a good library, but at that time
 didn't have very good documentation and wasn't open-source. Things have improved a lot in the Rx
 world since that. Yet, there are still compelling reasons to use Bacon.js instead. Like, for instance,
-more consistent stream/property behavior and (arguably) simplicity of use.
+
+- more consistent stream/property behavior 
+- simplicity of use
+- atomic updates
+
+If you're more into performance and less into atomic updates, you might want to check out [Kefir.js](https://kefirjs.github.io/kefir/)!
 
 Contribute
 ==========
