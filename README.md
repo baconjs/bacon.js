@@ -227,7 +227,7 @@ You can merge multiple streams into one using [merge](classes/observable.html#me
 You can concat streams using [concat](classes/observable.html#concat) or [concatAll](globals.html#concatall).
 
 If you want to get the value of an observable but emit only when another stream emits an event, you might want to use [sampledBy](classes/observable.html#sampledby)
-or its cousin [withLatestFro](classes/observable.html#withlatestfrom).
+or its cousin [withLatestFrom](classes/observable.html#withlatestfrom).
 
 Latest value of Property or EventStream
 ---------------------------------------
