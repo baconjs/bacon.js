@@ -65,6 +65,7 @@ import { zip } from "./zip";
 import decode from "./decode";
 import { firstToPromise, toPromise } from "./topromise";
 import { more } from "./reply"
+import { withLatestFromE, withLatestFromP } from "./withlatestfrom";
 
 var idCounter = 0;
 
@@ -842,6 +843,7 @@ The method returns the same observable with mutated description.
     this.desc = describe(context, method, ...args);
     return this;
   }
+  abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V, V2) => R): Observable<R>
   /**
 Lets you run a state machine
 on an observable. Give it an initial state object and a state
@@ -1061,6 +1063,10 @@ export class Property<V> extends Observable<V> {
     return transformP(this, transformer, desc)
   }
 
+  withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V, V2) => R): Property<R> {
+    return withLatestFromP(this, samplee, f)
+  }
+
   withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
@@ -1223,6 +1229,10 @@ export class EventStream<V> extends Observable<V> {
    */
   bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V> {
     return bufferWithTimeOrCount(this, delay, count)
+  }
+
+  withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V, V2) => R): EventStream<R> {
+    return withLatestFromE(this, samplee, f)
   }
 }
 
