@@ -70,7 +70,7 @@ import { withLatestFromE, withLatestFromP } from "./withlatestfrom";
 var idCounter = 0;
 
 /**
- Observable is the base class for [EventsStream](EventStream.html) and Property
+ Observable is the base class for [EventsStream](eventstream.html) and [Property](property.html)
 
  @typeparam V   Type of the elements/values in the stream/property
  */

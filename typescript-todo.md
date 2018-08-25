@@ -22,9 +22,10 @@ If TypeScript had higher-kinded types, this might be avoidable.
 
 ### TODO
 
+- Tsdocs lose types of callback functions. See docs/classes/observable.html#map for example
+- Tsdocs for eventstream and property methods do not inherit content from observable. Need to duplicate? 
+- README not fully updated yet
 - jQuery "this" binding test failing.
-- Documentation updates, maybe generate more from source, now that we have actual type signatures available.
-- Export Bacon as a proper ts lib
 - The `npm run dist` thingie that uses Rollup currently hides typescript type errors.
 As an interim solution there's `npm run watch-ts`
 - Partial builds not working. Work not started. See below.

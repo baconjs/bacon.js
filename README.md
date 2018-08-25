@@ -222,7 +222,7 @@ Combining multiple streams and properties
 You can combine the latest value from multple sources using [combine](classes/observable.html#combine), [combineAsArray](globals.html#combineasarray), 
 [combineWith](globals.html#combinewith) or [combineTemplate](globals.html#combinetemplate).
 
-You can merge multiple streams into one using [merge](classes/observable.html#merge) or [mergeAll](globals.html#merge).
+You can merge multiple streams into one using [merge](classes/eventstream.html#merge) or [mergeAll](globals.html#mergeall).
 
 You can concat streams using [concat](classes/observable.html#concat) or [concatAll](globals.html#concatall).
 
