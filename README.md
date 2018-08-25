@@ -7,9 +7,9 @@ A small functional reactive programming lib for JavaScript.
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
-concepts like [`map`](#observable-map) and [`filter`](#observable-filter). Stop working on individual events and work with event streams instead.
-Combine your data with [`merge`](#stream-merge) and [`combine`](#observable-combine).
-Then switch to the heavier weapons and wield [`flatMap`](#observable-flatmap) and [`combineTemplate`](#bacon-combinetemplate) like a boss.
+concepts like [`map`](classes/observable.html#map) and [`filter`](classes/observable.html#filter). Stop working on individual events and work with event streams instead.
+Combine your data with [`merge`](classes/eventstream.html#merge) and [`combine`](classes/observable.html#combine).
+Then switch to the heavier weapons and wield [`flatMap`](classes/observable.html#flatmap) and [`combineTemplate`](globals.html#combinetemplate) like a boss.
 
 It's the `_` of Events. Too bad the symbol `~` is not allowed in JavaScript.
 
@@ -189,9 +189,6 @@ For an actual (though a bit outdated) tutorial, please check out my [blog posts]
 API
 ===
 
-TODO: correct references to the new typedocs
-TODO: Observable, EventStream, Property
-
 Creating EventStreams and Properties
 ----------------
 
@@ -245,34 +242,40 @@ subscribing to the stream/property and handling the values in your
 callback. If you need the value of more than one source, use one of the
 combine methods.
 
-TODO: fix the rest of the document
-
 Bus
 ---
 
-[`Bus`](#bus) is an [`EventStream`](#eventstream) that allows you to [`push`](#bus-push) values into the stream.
-It also allows plugging other streams into the Bus. The Bus practically
-merges all plugged-in streams and the values pushed using the [`push`](#bus-push)
-method.
+[`Bus`](classes/bus.html) is an [`EventStream`](classes/eventstream.html) that allows you to [`push`](classes/bus.html#push) values into the stream.
+It also allows plugging other streams into the Bus. 
 
 Event
 -----
+
+There are essentially three kinds of [Events](classes/event.html) that are emitted by EventStreams and Properties:
+
+- [Value](classes/value.html) events that convey a value. If you subscribe using [onValue](classes/observable.html#onvalue), 
+  you'll only deal with values. Also [`map`](classes/observable.html#map), [`filter`](classes/observable.html#filter) and most of the other operators
+  also deal with values only.
+- [Error](classes/error.html) events indicate that an error has occurred. More on errors below!
+- [End](classes/end.html) event is emitted at most once, and is always the last event emitted by an Observable.
+
+If you want to subscribe to all events from an Observable, you can use the [subscribe](classes/observable.html#subscribe) method.
 
 
 Errors
 ------
 
-[`Error`](classes/error.html) events are always passed through all stream combinators. So, even
+[`Error`](classes/error.html) events are always passed through all stream operators. So, even
 if you filter all values out, the error events will pass through. If you
 use flatMap, the result stream will contain Error events from the source
 as well as all the spawned stream.
 
-You can take action on errors by using the [`observable.onError(f)`](#observable-onerror)
-callback.
+You can take action on errors by using [`onError`](classes/observable.html#onerror).
 
-See documentation on [`onError`](#observable-onerror), [`mapError`](#observable-maperror), [`errors`](#errors), [`skipErrors`](#observable-skiperrors), [`Bacon.retry`](#bacon-retry) and [`flatMapError`](#observable-flatmaperror) above.
+See also [`mapError`](classes/observable.html#maperror), [`errors`](classes/observable.html#errors), [`skipErrors`](classes/observable.html#skiperrors), 
+[`Bacon.retry`](globals.html#retry) and [`flatMapError`](classes/observable.html#flatmaperror).
 
-In case you want to convert (some) value events into [`Error`](#bacon-error) events, you may use [`flatMap`](#observable-flatmap) like this:
+In case you want to convert (some) value events into [`Error`](classes/error.html) events, you may use [`flatMap`](classes/observable.html#flatmap) like this:
 
 ```js
 stream = Bacon.fromArray([1,2,3,4]).flatMap(function(x) {
@@ -283,7 +286,7 @@ stream = Bacon.fromArray([1,2,3,4]).flatMap(function(x) {
 })
 ```
 
-Conversely, if you want to convert some [`Error`](#bacon-error) events into value events, you may use [`flatMapError`](#observable-flatmaperror):
+Conversely, if you want to convert some [`Error`](classes/error.html) events into value events, you may use [`flatMapError`](classes/observable.html#flatmaperror):
 
 ```js
 myStream.flatMapError(function(error) {
@@ -291,15 +294,15 @@ myStream.flatMapError(function(error) {
 })
 ```
 
-Note also that Bacon.js combinators do not catch errors that are thrown.
-Especially [`map`](#observable-map) doesn't do so. If you want to map things
+Note also that Bacon.js operators do not catch errors that are thrown.
+Especially [`map`](classes/observable.html#map) doesn't do so. If you want to map things
 and wrap caught errors into Error events, you can do the following:
 
 ```js
 wrapped = source.flatMap(Bacon.try(dangerousOperation))
 ```
 
-For example, you can use `Bacon.try` to handle JSON parse errors:
+For example, you can use [`Bacon.try`](globals.html#try) to handle JSON parse errors:
 
 ```js
 var jsonStream = Bacon
@@ -311,11 +314,11 @@ jsonStream.onError(function(err) {
 })
 ```
 
-An Error does not terminate the stream. The method [`observable.endOnError()`](#observable-endonerror)
-returns a stream/property that ends immediately after first error.
+An Error does not terminate the stream. The method [`endOnError`](classes/observable.html#endonerror)
+returns a stream/property that ends immediately after the first error.
 
-Bacon.js doesn't currently generate any [`Error`](#bacon-error) events itself (except when
-converting errors using Bacon.fromPromise). Error
+Bacon.js doesn't currently generate any [`Error`](classes/error.html) events itself (except when
+converting errors using [`fromPromise`](globals.html#frompromise)). Error
 events definitely would be generated by streams derived from IO sources
 such as AJAX calls.
 
@@ -327,15 +330,8 @@ Introspection and metadata
 
 Bacon.js provides ways to get some descriptive metadata about all Observables.
 
-<a name="observable-tostring"></a>
-
-<a name="observable-deps"></a>
-
-<a name="observable-internaldeps"></a>
-
-<a name="observable-desc"></a>
-
-<a name="bacon-spy"></a>
+See [`toString`](classes/observable.html#tostring), [`deps`](classes/observable.html#deps), [`desc`](classes/observable.html#desc),
+[`spy`](globals.html#spy).
 
 ## Changes to earlier versions
 
@@ -355,13 +351,14 @@ Cleaning up
 As described above, a subscriber can signal the loss of interest in new events
 in any of these two ways:
 
-1. Return [`Bacon.noMore`](#bacon-nomore) from the handler function
-2. Call the `dispose()` function that was returned by the `subscribe()`
+1. Return [`noMore`](globals.html#nomore) from the handler function
+2. Call the `dispose()` function that was returned by the [`subscribe`](classes/observable.html#subscribe) or [`onValue`](classes/observable.html#onvalue)
    call.
 
 Based on my experience, an actual side-effect subscriber
-in application-code almost never does this. Instead you'll use methods like [takeUntil](globals.html#takeuntil)
+in application-code almost never does this. Instead you'll use methods like [takeUntil](classes/observable.html#takeuntil)
 to stop listening to a source when something happens. 
+
 
 EventStream and Property semantics
 ----------------------------------
@@ -385,18 +382,18 @@ different perspectives. The contract between an EventStream and its
 subscriber is as follows:
 
 1. For each new value, the subscriber function is called. The new
-   value is wrapped into a [`Next`](#bacon-next) event.
-2. The subscriber function returns a result which is either [`Bacon.noMore`](#bacon-nomore) or
-[`Bacon.more`](#bacon-more). The `undefined` value is handled like [`Bacon.more`](#bacon-more).
-3. In case of [`Bacon.noMore`](#bacon-nomore) the source must never call the subscriber again.
+   value is wrapped into a [`Next`](classes/next.html) event.
+2. The subscriber function returns a result which is either [`noMore`](globals.html#nomore) or
+[`more`](globals.html#more). The `undefined` value is handled like [`more`](globals.html#more).
+3. In case of [`noMore`](globals.html#nomore) the source must never call the subscriber again.
 4. When the stream ends, the subscriber function will be called with
-   and [`Bacon.End`](#bacon-end) event. The return value of the subscribe function is
+   and [`End`](classes/end.html) event. The return value of the subscribe function is
    ignored in this case.
 
-A [`Property`](#property) behaves similarly to an [`EventStream`](#eventstream) except that
+A [`Property`](classes/property.html) behaves similarly to an [`EventStream`](classes/eventstream.html) except that
 
 1. On a call to `subscribe`, it will deliver its current value
-(if any) to the provided subscriber function wrapped into an [`Initial`](#bacon-initial)
+(if any) to the provided subscriber function wrapped into an [`Initial`](classes/initial.html)
 event.
 2. This means that if the Property has previously emitted the value `x`
 to its subscribers and that is the latest value emitted, it will deliver
@@ -438,8 +435,8 @@ Error handling is also a bit different: the Error event does not
 terminate a stream. So, a stream may contain multiple errors. To me,
 this makes more sense than always terminating the stream on error; this
 way the application developer has more direct control over error
-handling. You can always use [`stream.endOnError()`](#observable-endonerror) to get a stream
-that ends on error!
+handling. You can always use [`endOnError`](classes/observable.html#endonerror) to get a stream
+that ends on the first error!
 
 Examples
 ========
@@ -456,12 +453,12 @@ Build
 
 First check out the Bacon.js repository and run `npm install`.
 
-Then build the coffeescript sources into javascript:
+Then build the Typescript sources into a javascript bundle (plus typescript type definitions):
 
     npm run dist
 
 Result javascript files will be generated in `dist` directory. If your planning
-to develop Bacon.js yourself, you'll want to run [tests] too.
+to develop Bacon.js yourself, you'll want to run [tests] too using `npm test`.
 
 You can also build a bundle with selected features only. For instance
 
@@ -481,29 +478,14 @@ Test
 
 Run all unit tests:
 
-    ./test
-
-Run limited set of unit tests:
-
-    ./test core _ frompromise
-
-The names correspond to the file names under `spec/specs`. The library will
-be built with the listed features only.
-
-You can also test all features individually:
-
-    ./test-individually.js
+    npm test
+    
+The tests are run against the javascript bundle in the `dist` directory. You can build the bundle using `npm run dist`.
 
 This will loop thru all files under `spec/specs` and build the library with the
 single feature and run the test.
 
-Run browser tests (using testem):
-
-    npm install
-    npm install -g testem
-    testem
-
-Run browser (without testem):
+Run browser tests locally:
 
     npm install
     browsertest/browserify
@@ -522,7 +504,7 @@ Dependencies
 ============
 
 Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
-Build/test: node.js, npm, coffeescript
+Build/test: see [package.json].
 
 Compatibility with other libs
 =============================
