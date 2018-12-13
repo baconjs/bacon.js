@@ -23,6 +23,10 @@ export default Bacon.fromArray = function(values) {
         if (pushing) {
           return;
         }
+        if (i === values.length) {
+          sink(endEvent());
+          return false;
+        }
         pushing = true;
         while (pushNeeded) {
           pushNeeded = false;

@@ -319,7 +319,7 @@ verifyLateEval = (srcF, expectedEvents) ->
         events.push(event)
 
 
-verifySingleSubscriber = (srcF, expectedEvents) ->
+module.exports.verifySingleSubscriber = verifySingleSubscriber = (srcF, expectedEvents) ->
   verifyStreamWith "(single subscriber)", srcF, expectedEvents, (src, events, done) ->
     src.subscribe (event) ->
       if event.isEnd

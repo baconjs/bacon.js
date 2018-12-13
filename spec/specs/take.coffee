@@ -11,7 +11,8 @@ expect = require("chai").expect
   unstable,
   fromArray,
   t,
-  once
+  once,
+  verifySingleSubscriber
 } = require("../SpecHelper")
 
 describe "EventStream.take", ->
@@ -31,10 +32,30 @@ describe "EventStream.take", ->
           throw "testing" if value == "lol" # special string that will be catched by TickScheduler
         s
       ["wut"], unstable) # the outputs don't really matter - it's just that the stream terminates normally
-  describe "works with synchronous source", ->
+  describe "works with asynchronous fromArray source", ->
     expectStreamEvents(
       -> fromArray([1,2,3,4]).take(2)
       [1,2])
+
+    stream = fromArray([1,2,3,4])
+    verifySingleSubscriber(
+      -> stream.take(2)
+      [1, 2])
+    verifySingleSubscriber(
+      -> stream.take(2)
+      [3, 4])
+    verifySingleSubscriber(
+      -> stream.take(2)
+      [])
+
+    streamToo = fromArray([1,2])
+    verifySingleSubscriber(
+      -> streamToo.take(4)
+      [1, 2])
+    verifySingleSubscriber(
+      -> streamToo.take(2)
+      [])
+
   it "toString", ->
     expect(Bacon.never().take(1).toString()).to.equal("Bacon.never().take(1)")
 
