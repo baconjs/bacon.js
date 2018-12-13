@@ -2,7 +2,8 @@
 
 version=$1
 if [ -z $version ]; then
-  echo "Enter release version:"
+  currentversion=`scripts/version`
+  echo "Enter release version (current is $currentversion):"
   read version
 fi
 export DIST_VERSION=$version

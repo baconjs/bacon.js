@@ -1307,7 +1307,7 @@
         CompositeUnsubscribe: CompositeUnsubscribe,
         never: never,
         constant: constant,
-        version: '2.0.5'
+        version: '2.0.9'
     };
     Bacon.Bacon = Bacon;
     function map(p) {
@@ -1883,13 +1883,16 @@
         return s;
     }
     Bacon.once = once;
+    var syncEventStream = function (desc, subscribe) {
+        return new EventStream(desc, subscribe, undefined, allowSync);
+    };
     Observable.prototype.flatMap_ = function (f) {
         var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         var root = this;
         var rootDep = [root];
         var childDeps = [];
         var isProperty = this._isProperty;
-        var ctor = isProperty ? propertyFromStreamSubscribe : EventStream;
+        var ctor = isProperty ? propertyFromStreamSubscribe : syncEventStream;
         var initialSpawned = false;
         var result = ctor(params.desc || new Desc(this, 'flatMap_', arguments), function (sink) {
             var composite = new CompositeUnsubscribe();

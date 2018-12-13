@@ -1260,7 +1260,7 @@ Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
 """
 
 doc.fn "Bacon.mergeAll(streams)", """
-merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#observable-merge)
+merges given array of EventStreams or Properties. Returns an EventStream. See [`merge`](#stream-merge)
 
 `Bacon.mergeAll(stream1, stream2 ...)` merges given EventStreams.
 """
@@ -1873,7 +1873,7 @@ latter is for observable properties that have the concept of "current value".
 
 Also, there are no "cold observables", which
 means also that all EventStreams and Properties are consistent among subscribers:
-when as event occurs, all subscribers will observe the same event. If you're
+when an event occurs, all subscribers will observe the same event. If you're
 experienced with RxJs, you've probably bumped into some wtf's related to cold
 observables and inconsistent output from streams constructed using scan and startWith.
 None of that will happen with bacon.js.
