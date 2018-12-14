@@ -1,3 +1,7 @@
+## 2.0.10
+
+- Fix Bacon.fromArray bug (#724)
+
 ## 2.0.9
 
 - Fix Property.flatMapLatest (#719)
