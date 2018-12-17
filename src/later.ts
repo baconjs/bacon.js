@@ -1,10 +1,9 @@
 import { Desc } from "./describe";
-import { endEvent } from "./event";
-import fromBinder from "./frombinder";
+import { endEvent, toEvent } from "./event";
+import fromBinder, { FlexibleSink } from "./frombinder";
 import "./scheduler"
 import GlobalScheduler from "./scheduler";
 import { EventStream } from "./observable";
-import { EventSink } from "./types";
 
 /**
 
@@ -16,9 +15,9 @@ import { EventSink } from "./types";
 
  */
 export default function later<V>(delay: number, value: V): EventStream<V> {
-  return fromBinder(function (sink: EventSink<V>) {
+  return fromBinder(function (sink: FlexibleSink<V>) {
     var sender = function () {
-      return sink([value, endEvent()])
+      return sink([toEvent(value), endEvent()])
     }
     var id = GlobalScheduler.scheduler.setTimeout(sender, delay)
     return function () {

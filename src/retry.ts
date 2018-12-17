@@ -72,7 +72,7 @@ export default function retry<V>(options: RetryOptions<V>): EventStream<V> {
     return true;
   };
   var finished = false;
-  var errorEvent: Error<V> | null = null;
+  var errorEvent: Error | null = null;
 
   return repeat<V>(function(count: number) {
     function valueStream(): Observable<V> {

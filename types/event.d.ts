@@ -75,9 +75,9 @@ export declare class Initial<V> extends Value<V> {
 /**
  * Base class for events not carrying a value.
  */
-declare abstract class NoValue<V> extends Event<V> {
+export declare abstract class NoValue extends Event<any> {
     /** @hidden */
-    fmap<V2>(f: (value: V) => V2): NoValue<V2>;
+    fmap<V2>(f: Function): NoValue;
     hasValue: boolean;
 }
 /**
@@ -86,7 +86,7 @@ declare abstract class NoValue<V> extends Event<V> {
  *
  * Can be distinguished from other events using [isEnd](../globals.html#isend)
  */
-export declare class End<V> extends NoValue<V> {
+export declare class End extends NoValue {
     isEnd: boolean;
     /** @hidden */
     toString(): string;
@@ -94,7 +94,7 @@ export declare class End<V> extends NoValue<V> {
 /**
  *  An event carrying an error. You can use [onError](observable.html#onerror) to subscribe to errors.
  */
-export declare class Error<V> extends NoValue<V> {
+export declare class Error extends NoValue {
     /**
      * The actual error object carried by this event
      */
@@ -109,7 +109,7 @@ export declare function initialEvent<V>(value: V): Initial<V>;
 /** @hidden */
 export declare function nextEvent<V>(value: V): Next<V>;
 /** @hidden */
-export declare function endEvent<V>(): End<V>;
+export declare function endEvent(): End;
 /** @hidden */
 export declare function toEvent<V>(x: V | Event<V>): Event<V>;
 export default Event;
@@ -124,7 +124,7 @@ export declare function isInitial<V>(e: any): e is Initial<V>;
 /**
  * Returns true if the given event is an [Error](classes/error.html) event of an [Observable](classes/observable.html).
  */
-export declare function isError<V>(e: Event<V>): e is Error<V>;
+export declare function isError<V>(e: Event<V>): e is Error;
 /**
  * Returns true if the given event is a [Value](classes/value.html), i.e. a [Next](classes/next.html) or
  * an [Initial](classes/error.html) value of an [Observable](classes/observable.html).
@@ -133,7 +133,7 @@ export declare function hasValue<V>(e: Event<V>): e is Value<V>;
 /**
  * Returns true if the given event is an [End](classes/end.html)
  */
-export declare function isEnd<V>(e: Event<V>): e is End<V>;
+export declare function isEnd<V>(e: Event<V>): e is End;
 /**
  * Returns true if the given event is a [Next](classes/next.html)
  */

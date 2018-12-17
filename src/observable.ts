@@ -38,7 +38,7 @@ import { registerObs } from "./spy";
 import flatMapLatest from "./flatmaplatest";
 import PropertyDispatcher from "./internal/propertydispatcher";
 import flatMapWithConcurrencyLimit from "./flatmapwithconcurrencylimit";
-import { Event } from "./event";
+import { Event, hasValue, isError } from "./event";
 import Dispatcher from "./internal/dispatcher";
 import { concatE } from "./concat";
 import { bufferWithCount, bufferWithTime, bufferWithTimeOrCount, DelayFunction } from "./buffer";
@@ -566,7 +566,7 @@ Just like `subscribe`, this method returns a function for unsubscribing.
    */
   onError(f: Sink<any> = nullSink): Unsub {
     return this.subscribe(function(event) {
-      if (event.isError) { return f(event.error) }
+      if (isError(event)) { return f(event.error) }
       return more
     })
   }
@@ -581,15 +581,16 @@ pushes the initial value of the property, in case there is one.
    */
   onValue(f: Sink<V> = nullSink) : Unsub {
     return this.subscribe(function(event) {
-      if (event.hasValue) { return f(event.value) }
+      if (hasValue(event)) { return f(event.value) }
       return more
     });
   }
   /**
 Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
+Only applicable for observables with arrays as values.
    */
   onValues(f): Unsub {
-    return this.onValue(function(args) { return f(...args) });
+    return this.onValue(function(args) { return f(...(<any>args)) });
   }
   /** A synonym for [scan](#scan).
    */
@@ -1135,7 +1136,7 @@ export class EventStream<V> extends Observable<V> {
 
    * @param delay buffer duration in milliseconds
    */
-  bufferWithTime(delay: number | DelayFunction): EventStream<[V]> {
+  bufferWithTime(delay: number | DelayFunction): EventStream<V[]> {
     return bufferWithTime(this, delay)
   }
 
@@ -1148,7 +1149,7 @@ export class EventStream<V> extends Observable<V> {
 
    * @param {number} count
    */
-  bufferWithCount(count: number): EventStream<[V]> {
+  bufferWithCount(count: number): EventStream<V[]> {
     return bufferWithCount(this, count)
   }
 
@@ -1160,7 +1161,7 @@ export class EventStream<V> extends Observable<V> {
    * @param {number | DelayFunction} delay in milliseconds or as a function
    * @param {number} count  maximum buffer size
    */
-  bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<[V]> {
+  bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V[]> {
     return bufferWithTimeOrCount(this, delay, count)
   }
   changes(): EventStream<V> {

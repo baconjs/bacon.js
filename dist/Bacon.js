@@ -2130,6 +2130,7 @@ function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
             .transform(composeT(predicateTransformer(function (tuple) { return tuple[1]; }), mapT(function (tuple) { return tuple[0]; })), desc);
+        // the `any` type above is needed because the type argument for Predicate2Transformer is fixed. We'd need higher-kinded types to be able to express this properly, I think.
     }
     return src.transform(predicateTransformer(toPredicate(f)), desc);
 }
@@ -2646,10 +2647,10 @@ function buffer(src, onInput, onFlush) {
             //console.log Bacon.scheduler.now() + ": input " + event.value
             onInput(buffer);
         }
-        else if (event.isError) {
+        else if (isError(event)) {
             reply = sink(event);
         }
-        else if (event.isEnd) {
+        else if (isEnd(event)) {
             buffer.end = event;
             if (!buffer.scheduled) {
                 //console.log Bacon.scheduler.now() + ": end-flush"
@@ -2767,7 +2768,7 @@ function mergeAll() {
 function later(delay, value) {
     return fromBinder(function (sink) {
         var sender = function () {
-            return sink([value, endEvent()]);
+            return sink([toEvent(value), endEvent()]);
         };
         var id = GlobalScheduler.scheduler.setTimeout(sender, delay);
         return function () {
@@ -3154,10 +3155,10 @@ function firstToPromise(src, PromiseCtr) {
     }
     return new PromiseCtr(function (resolve, reject) {
         return src.subscribe(function (event) {
-            if (event.hasValue) {
+            if (hasValue(event)) {
                 resolve(event.value);
             }
-            if (event.isError) {
+            if (isError(event)) {
                 reject(event.error);
             }
             // One event is enough
@@ -3546,7 +3547,7 @@ var Observable = /** @class */ (function () {
     Observable.prototype.onError = function (f) {
         if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
-            if (event.isError) {
+            if (isError(event)) {
                 return f(event.error);
             }
             return more;
@@ -3564,7 +3565,7 @@ var Observable = /** @class */ (function () {
     Observable.prototype.onValue = function (f) {
         if (f === void 0) { f = nullSink; }
         return this.subscribe(function (event) {
-            if (event.hasValue) {
+            if (hasValue(event)) {
                 return f(event.value);
             }
             return more;
@@ -3572,6 +3573,7 @@ var Observable = /** @class */ (function () {
     };
     /**
   Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
+  Only applicable for observables with arrays as values.
      */
     Observable.prototype.onValues = function (f) {
         return this.onValue(function (args) { return f.apply(void 0, args); });

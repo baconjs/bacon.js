@@ -443,6 +443,7 @@ export declare abstract class Observable<V> {
     onValue(f?: Sink<V>): Unsub;
     /**
   Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
+  Only applicable for observables with arrays as values.
      */
     onValues(f: any): Unsub;
     /** A synonym for [scan](#scan).
@@ -827,7 +828,7 @@ export declare class EventStream<V> extends Observable<V> {
   
      * @param delay buffer duration in milliseconds
      */
-    bufferWithTime(delay: number | DelayFunction): EventStream<[V]>;
+    bufferWithTime(delay: number | DelayFunction): EventStream<V[]>;
     /**
      Buffers stream events with given count.
      The buffer is flushed when it contains the given number of elements or the source stream ends.
@@ -837,7 +838,7 @@ export declare class EventStream<V> extends Observable<V> {
   
      * @param {number} count
      */
-    bufferWithCount(count: number): EventStream<[V]>;
+    bufferWithCount(count: number): EventStream<V[]>;
     /**
      Buffers stream events and
      flushes when either the buffer contains the given number elements or the
@@ -846,7 +847,7 @@ export declare class EventStream<V> extends Observable<V> {
      * @param {number | DelayFunction} delay in milliseconds or as a function
      * @param {number} count  maximum buffer size
      */
-    bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<[V]>;
+    bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V[]>;
     changes(): EventStream<V>;
     concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
     /** @hidden */

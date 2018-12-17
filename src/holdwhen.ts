@@ -41,7 +41,7 @@ export function holdWhen<V>(src: Observable<V>, valve: Property<boolean>): Event
         } else if (event.isEnd) {
           return endIfBothEnded(unsubMe)
         } else {
-          return sink(event)
+          return sink(<any>event)
         }
       })
     })

@@ -77,7 +77,7 @@ export function flatMap_<In, Out>(spawner: EventSpawner<In, Out>, src: Observabl
       if (event.isEnd) {
         return checkEnd(unsubRoot)
       } else if (event.isError && !params.mapError) {
-        return sink(event)
+        return sink(<any>event)
       } else if (params.firstOnly && composite.count() > 1) {
         return more
       } else {

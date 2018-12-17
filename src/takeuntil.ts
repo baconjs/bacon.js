@@ -29,13 +29,13 @@ export default function takeUntil<V>(src: Observable<V>, stopper: Observable<any
             if (value === endMarker) {
               return sink(endEvent());
             } else {
-              reply = sink(nextEvent(value));
+              reply = sink(nextEvent(<any>value));
             }
           }
           return reply;
         }
       } else {
-        return sink(event);
+        return sink(<any>event);
       }
     }, new Desc(src, "takeUntil", [stopper])
   )

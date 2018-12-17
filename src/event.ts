@@ -97,10 +97,10 @@ export class Initial<V> extends Value<V> {
 /**
  * Base class for events not carrying a value.
  */
-abstract class NoValue<V> extends Event<V> {
+export abstract class NoValue extends Event<any> {
   /** @hidden */
-  fmap<V2>(f: (value: V) => V2): NoValue<V2> {
-    return <NoValue<V2>><any>this
+  fmap<V2>(f: Function): NoValue {
+    return this
   }
   hasValue: boolean = false
 }
@@ -111,7 +111,7 @@ abstract class NoValue<V> extends Event<V> {
  *
  * Can be distinguished from other events using [isEnd](../globals.html#isend)
  */
-export class End<V> extends NoValue<V> {
+export class End extends NoValue {
   isEnd: boolean = true
   /** @hidden */
   toString(): string { return "<end>" }
@@ -120,7 +120,7 @@ export class End<V> extends NoValue<V> {
 /**
  *  An event carrying an error. You can use [onError](observable.html#onerror) to subscribe to errors.
  */
-export class Error<V> extends NoValue<V> {
+export class Error extends NoValue {
   /**
    * The actual error object carried by this event
    */
@@ -141,7 +141,7 @@ export function initialEvent<V>(value: V): Initial<V> { return new Initial(value
 /** @hidden */
 export function nextEvent<V>(value: V): Next<V> { return new Next(value); }
 /** @hidden */
-export function endEvent<V>(): End<V> { return new End(); }
+export function endEvent(): End { return new End(); }
 /** @hidden */
 export function toEvent<V>(x: V | Event<V>): Event<V> {
   if (x && (<any>x)._isEvent) {
@@ -169,7 +169,7 @@ export function isInitial<V>(e: any): e is Initial<V> {
 /**
  * Returns true if the given event is an [Error](classes/error.html) event of an [Observable](classes/observable.html).
  */
-export function isError<V>(e: Event<V>): e is Error<V> {
+export function isError<V>(e: Event<V>): e is Error {
   return e.isError
 }
 
@@ -184,7 +184,7 @@ export function hasValue<V>(e: Event<V>): e is Value<V> {
 /**
  * Returns true if the given event is an [End](classes/end.html)
  */
-export function isEnd<V>(e: Event<V>): e is End<V> {
+export function isEnd<V>(e: Event<V>): e is End {
   return e.isEnd
 }
 

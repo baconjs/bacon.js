@@ -1,6 +1,6 @@
 import UpdateBarrier from "./updatebarrier";
 import { Event } from "../event";
-import { Sink, Subscribe } from "../types"
+import { EventSink, Subscribe } from "../types"
 import GlobalScheduler from "../scheduler"
 import { Reply, more } from "../reply";
 
@@ -9,7 +9,7 @@ export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Sub
   //assertFunction(subscribe)
   var subscribing = false
 
-  return function wrappedSubscribe(sink: Sink<V>) {
+  return function wrappedSubscribe(sink: EventSink<V>) {
     //assertFunction(sink)
     const inTransaction = UpdateBarrier.isInTransaction()
     subscribing = true

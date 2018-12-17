@@ -1,6 +1,7 @@
 import Exception from "./exception";
 import Observable from "./observable";
 import { noMore } from "./reply";
+import { isError, hasValue } from "./event";
 import "./last";
 
 declare var Promise: any
@@ -18,8 +19,8 @@ export function firstToPromise<V>(src: Observable<V>, PromiseCtr: Function | und
 
   return new (<any>PromiseCtr)((resolve, reject) =>
     src.subscribe((event) => {
-      if (event.hasValue) { resolve(event.value); }
-      if (event.isError) { reject(event.error); }
+      if (hasValue(event)) { resolve(event.value); }
+      if (isError(event)) { reject(event.error); }
       // One event is enough
       return noMore;
     }));

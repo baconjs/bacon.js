@@ -50,7 +50,7 @@ export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumul
           reply = sendInit();
         }
         if (reply !== noMore) {
-          return sink(event);
+          return sink(<any>event);
         }
         return reply
       }

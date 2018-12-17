@@ -2334,9 +2334,9 @@
             if (hasValue(event)) {
                 buffer.values.push(event.value);
                 onInput(buffer);
-            } else if (event.isError) {
+            } else if (isError(event)) {
                 reply = sink(event);
-            } else if (event.isEnd) {
+            } else if (isEnd(event)) {
                 buffer.end = event;
                 if (!buffer.scheduled) {
                     buffer.flush();
@@ -2422,7 +2422,7 @@
         return fromBinder(function (sink) {
             var sender = function () {
                 return sink([
-                    value,
+                    toEvent(value),
                     endEvent()
                 ]);
             };
@@ -2751,10 +2751,10 @@
         }
         return new PromiseCtr(function (resolve, reject) {
             return src.subscribe(function (event) {
-                if (event.hasValue) {
+                if (hasValue(event)) {
                     resolve(event.value);
                 }
-                if (event.isError) {
+                if (isError(event)) {
                     reject(event.error);
                 }
                 return noMore;
@@ -2898,7 +2898,7 @@
                 f = nullSink;
             }
             return this.subscribe(function (event) {
-                if (event.isError) {
+                if (isError(event)) {
                     return f(event.error);
                 }
                 return more;
@@ -2909,7 +2909,7 @@
                 f = nullSink;
             }
             return this.subscribe(function (event) {
-                if (event.hasValue) {
+                if (hasValue(event)) {
                     return f(event.value);
                 }
                 return more;
