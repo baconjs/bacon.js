@@ -14,17 +14,17 @@ export type VoidFunction = () => void
 export type DelayFunction = (VoidFunc) => any
 
 /** @hidden */
-export function bufferWithTime<V>(src: EventStream<V>, delay: number | DelayFunction): EventStream<V> {
+export function bufferWithTime<V>(src: EventStream<V>, delay: number | DelayFunction): EventStream<[V]> {
   return bufferWithTimeOrCount(src, delay, Number.MAX_VALUE).withDesc(new Desc(src, "bufferWithTime", [delay]));
 };
 
 /** @hidden */
-export function bufferWithCount<V>(src: EventStream<V>, count: number): EventStream<V> {
+export function bufferWithCount<V>(src: EventStream<V>, count: number): EventStream<[V]> {
   return bufferWithTimeOrCount(src,undefined, count).withDesc(new Desc(src, "bufferWithCount", [count]));
 };
 
 /** @hidden */
-export function bufferWithTimeOrCount<V>(src: EventStream<V>, delay?: number | DelayFunction, count?: number): EventStream<V> {
+export function bufferWithTimeOrCount<V>(src: EventStream<V>, delay?: number | DelayFunction, count?: number): EventStream<[V]> {
   const delayFunc = toDelayFunction(delay)
   function flushOrSchedule(buffer: Buffer<V>) {
     if (buffer.values.length === count) {
@@ -46,7 +46,7 @@ class Buffer<V> {
   delay?: DelayFunction
   onInput: BufferHandler<V>
   onFlush: BufferHandler<V>
-  push: EventSink<V> = (e) => more
+  push: EventSink<[V]> = (e) => more
   scheduled: number | null = null
   end: End<V> | undefined = undefined
   values: V[] = []
@@ -99,11 +99,11 @@ interface BufferHandler<V> {
 }
 
 /** @hidden */
-export function buffer<V>(src: EventStream<V>, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V> {
+export function buffer<V>(src: EventStream<V>, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<[V]> {
   var reply = more;
   var buffer = new Buffer<V>(onFlush, onInput)
 
-  return src.transform((event: Event<V>, sink: EventSink<V>) => {
+  return src.transform((event: Event<V>, sink: EventSink<[V]>) => {
     buffer.push = sink
     if (hasValue(event)) {
       buffer.values.push(event.value);

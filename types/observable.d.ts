@@ -13,7 +13,7 @@ import { PredicateOrProperty } from "./predicate";
 import { GroupLimiter } from "./groupby";
 import { Differ } from "./diff";
 /**
- Observable is the base class for [EventsStream](EventStream.html) and Property
+ Observable is the base class for [EventsStream](eventstream.html) and [Property](property.html)
 
  @typeparam V   Type of the elements/values in the stream/property
  */
@@ -78,7 +78,7 @@ export declare abstract class Observable<V> {
   method name instead, so you could do `a.combine(b, ".concat")` for two
   properties with array value. The result is a [Property](property.html).
      */
-    combine<V2, R>(right: Observable<V2>, f: (V: any, V2: any) => R): Property<R>;
+    combine<V2, R>(right: Observable<V2>, f: (left: V, right: V2) => R): Property<R>;
     /**
   Concatenates two streams/properties into one stream/property so that
   it will deliver events from `observable` until it ends and then deliver
@@ -192,7 +192,7 @@ export declare abstract class Observable<V> {
   per event; when a Property loses all of its subscribers it will re-emit its current value when a
   new subscriber is added.
      */
-    doAction(f: (V: any) => any): this;
+    doAction(f: (value: V) => any): this;
     doEnd(f: Function): this;
     /**
   Returns a stream/property where the function f
@@ -215,7 +215,7 @@ export declare abstract class Observable<V> {
     
     @param  predicate   optional predicate function to determine whether to end on a given error
      */
-    endOnError(predicate?: (any: any) => boolean): this;
+    endOnError(predicate?: (error: any) => boolean): this;
     /**
   Returns a stream containing [`Error`](error.html) events only.
   Same as filtering with a function that always returns false.
@@ -229,7 +229,7 @@ export declare abstract class Observable<V> {
   property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
   at the time of the event.
      */
-    filter(f: ((V: any) => boolean) | boolean | Property<boolean>): this;
+    filter(f: ((value: V) => boolean) | boolean | Property<boolean>): this;
     /**
   Takes the first element from the stream. Essentially `observable.take(1)`.
      */
@@ -239,7 +239,7 @@ export declare abstract class Observable<V> {
   Like [`toPromise`](#topromise), the global ES6 promise implementation will be used unless a promise
   constructor is given.
      */
-    firstToPromise(PromiseCtr: any): Promise<V>;
+    firstToPromise(PromiseCtr: Function | undefined): Promise<V>;
     /**
   For each element in the source stream, spawn a new
   stream using the function `f`. Collect events from each of the spawned
@@ -268,7 +268,7 @@ export declare abstract class Observable<V> {
   value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
   passed through, which can be implemented using flatMapError.
      */
-    abstract flatMapError(f: (any: any) => Observable<V>): Observable<V>;
+    abstract flatMapError(f: (error: any) => Observable<V>): Observable<V>;
     abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>;
     /**
   Like [`flatMap`](#observable-flatmap), but only spawns a new
@@ -298,7 +298,7 @@ export declare abstract class Observable<V> {
      * @param f transition function from previous state and new value to next state
      * @typeparam V2 state and result type
      */
-    flatScan<V2>(seed: V2, f: (V2: any, V: any) => Observable<V2>): Property<V2>;
+    flatScan<V2>(seed: V2, f: (acc: V2, value: V) => Observable<V2>): Property<V2>;
     /**
   Works like [`scan`](#scan) but only emits the final
   value, i.e. the value just before the observable ends. Returns a
@@ -353,7 +353,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
-    abstract groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): Observable<EventStream<V>>;
+    abstract groupBy(keyF: (value: V) => string, limitF?: GroupLimiter<V>): Observable<EventStream<V>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
   All buffered events are released when valve becomes falsy.
@@ -399,7 +399,7 @@ export declare abstract class Observable<V> {
   in which case each element in the source stream will be mapped to the current value of
   the given property.
     */
-    abstract map<V2>(f: ((V: any) => V2) | Property<V2> | V2): Observable<V2>;
+    abstract map<V2>(f: ((value: V) => V2) | Property<V2> | V2): Observable<V2>;
     /**
   Adds an extra [`Next`](next.html) event just before End. The value is created
   by calling the given function when the source stream ends. Instead of a
@@ -411,7 +411,7 @@ export declare abstract class Observable<V> {
   specifically, feeds the "error" field of the error event to the function
   and produces a [`Next`](next.html) event based on the return value.
      */
-    mapError(f: ((any: any) => V) | V): this;
+    mapError(f: ((error: any) => V) | V): this;
     /**
   Sets the name of the observable. Overrides the default
   implementation of [`toString`](#tostring) and `inspect`.
@@ -461,7 +461,7 @@ export declare abstract class Observable<V> {
      @typeparam V2  type of values in the sampler stream
      @typeparam R   type of values in the result stream
      */
-    abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (V: any, V2: any) => R): Observable<R>;
+    abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (value: V, samplerValue: V2) => R): Observable<R>;
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -599,7 +599,7 @@ export declare abstract class Observable<V> {
   
   See also [firstToPromise](#firsttopromise).
      */
-    toPromise(PromiseCtr: any): Promise<V>;
+    toPromise(PromiseCtr: Function | undefined): Promise<V>;
     /**
      In case of EventStream, creates a Property based on the EventStream.
   
@@ -649,7 +649,7 @@ export declare abstract class Observable<V> {
   The method returns the same observable with mutated description.
   
   */
-    withDescription(context: any, method: any, ...args: any[]): this;
+    withDescription(context: any, method: string, ...args: any[]): this;
     /**
      Creates an EventStream by sampling a given `samplee`
      stream/property value at each event from the this stream/property.
@@ -660,7 +660,7 @@ export declare abstract class Observable<V> {
      @typeparam V2  type of values in the samplee
      @typeparam R   type of values in the result
      */
-    abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): Observable<R>;
+    abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, otherValue: V2) => R): Observable<R>;
     /**
   Lets you run a state machine
   on an observable. Give it an initial state object and a state
@@ -712,7 +712,7 @@ export declare abstract class Observable<V> {
   See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html/zipasarray) for zipping more than 2 sources.
   
      */
-    zip<V2, Out>(other: Observable<V2>, f: (V: any, V2: any) => Out): EventStream<Out>;
+    zip<V2, Out>(other: Observable<V2>, f: (value: V, otherValue: V2) => Out): EventStream<Out>;
 }
 /** @hidden */
 export interface ObservableConstructor {
@@ -747,13 +747,13 @@ export declare class Property<V> extends Observable<V> {
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
     flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
-    flatMapError(f: (any: any) => Observable<V>): EventStream<V>;
+    flatMapError(f: (error: any) => Observable<V>): EventStream<V>;
     flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2>;
     flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
     flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Property<V2>;
     flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Property<V2>;
-    groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): Property<EventStream<V>>;
-    map<V2>(f: ((V: any) => V2) | Property<V2>): Property<V2>;
+    groupBy(keyF: (value: V) => string, limitF?: GroupLimiter<V>): Property<EventStream<V>>;
+    map<V2>(f: ((value: V) => V2) | Property<V2>): Property<V2>;
     not(): Property<boolean>;
     /**
      Combines properties with the `||` operator. It produces a new value when either of the Properties change,
@@ -765,7 +765,7 @@ export declare class Property<V> extends Observable<V> {
      property value at given interval (in milliseconds)
      */
     sample(interval: number): EventStream<V>;
-    sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
+    sampledBy<V2, R>(sampler: Observable<V2>, f?: (value: V, samplerValue: V2) => R): Observable<R>;
     /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
@@ -785,7 +785,7 @@ export declare class Property<V> extends Observable<V> {
      */
     toProperty(): Property<V>;
     transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): Property<V2>;
-    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): Property<R>;
+    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, otherValue: V2) => R): Property<R>;
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out>;
 }
 /** @hidden */
@@ -828,7 +828,7 @@ export declare class EventStream<V> extends Observable<V> {
   
      * @param delay buffer duration in milliseconds
      */
-    bufferWithTime(delay: number | DelayFunction): EventStream<V>;
+    bufferWithTime(delay: number | DelayFunction): EventStream<[V]>;
     /**
      Buffers stream events with given count.
      The buffer is flushed when it contains the given number of elements or the source stream ends.
@@ -838,7 +838,7 @@ export declare class EventStream<V> extends Observable<V> {
   
      * @param {number} count
      */
-    bufferWithCount(count: number): EventStream<V>;
+    bufferWithCount(count: number): EventStream<[V]>;
     /**
      Buffers stream events and
      flushes when either the buffer contains the given number elements or the
@@ -847,7 +847,7 @@ export declare class EventStream<V> extends Observable<V> {
      * @param {number | DelayFunction} delay in milliseconds or as a function
      * @param {number} count  maximum buffer size
      */
-    bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V>;
+    bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<[V]>;
     changes(): EventStream<V>;
     concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
     /** @hidden */
@@ -857,16 +857,16 @@ export declare class EventStream<V> extends Observable<V> {
     flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
     flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2>;
     flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2>;
-    flatMapError(f: (any: any) => Observable<V>): EventStream<V>;
+    flatMapError(f: (error: any) => Observable<V>): EventStream<V>;
     flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2>;
-    groupBy(keyF: (V: any) => string, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
-    map<V2>(f: ((V: any) => V2) | Property<V2> | V2): EventStream<V2>;
+    groupBy(keyF: (value: V) => string, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
+    map<V2>(f: ((value: V) => V2) | Property<V2> | V2): EventStream<V2>;
     /**
      Merges two streams into one stream that delivers events from both
      */
     merge(other: EventStream<V>): EventStream<V>;
     not(): EventStream<boolean>;
-    sampledBy<V2, R>(sampler: Observable<V2>, f?: (V: any, V2: any) => R): Observable<R>;
+    sampledBy<V2, R>(sampler: Observable<V2>, f?: (value: V, samplerValue: V2) => R): Observable<R>;
     startWith(seed: V): EventStream<V>;
     /** @hidden */
     subscribeInternal(sink?: EventSink<V>): Unsub;
@@ -884,7 +884,7 @@ export declare class EventStream<V> extends Observable<V> {
      */
     toProperty(initValue?: V): Property<V>;
     transform<V2>(transformer: Transformer<V, V2>, desc?: Desc): EventStream<V2>;
-    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (V: any, V2: any) => R): EventStream<R>;
+    withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, othervalue: V2) => R): EventStream<R>;
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out>;
 }
 /** @hidden */

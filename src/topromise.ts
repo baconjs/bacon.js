@@ -6,7 +6,7 @@ import "./last";
 declare var Promise: any
 
 /** @hidden */
-export function firstToPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
+export function firstToPromise<V>(src: Observable<V>, PromiseCtr: Function | undefined): Promise<V> {
   // Can't do in the global scope, as shim can be applied after Bacon is loaded.
   if (typeof PromiseCtr !== "function") {
     if (typeof Promise === "function") {
@@ -16,7 +16,7 @@ export function firstToPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
     }
   }
 
-  return new PromiseCtr((resolve, reject) =>
+  return new (<any>PromiseCtr)((resolve, reject) =>
     src.subscribe((event) => {
       if (event.hasValue) { resolve(event.value); }
       if (event.isError) { reject(event.error); }
