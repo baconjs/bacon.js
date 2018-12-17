@@ -12,10 +12,10 @@ import doEndT from "./doend";
 import { Accumulator, default as scan } from "./scan";
 import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
-import { SpawnerOrObservable } from "./flatmap_";
+import { SpawnerOrObservable, EventSpawner } from "./flatmap_";
 import skipErrors from "./skiperrors";
 import last from "./last";
-import { default as flatMapEvent, EventSpawner } from "./flatmapevent";
+import { default as flatMapEvent } from "./flatmapevent";
 import endAsValue from "./endasvalue"
 import endOnError from "./endonerror";
 import awaiting from "./awaiting";

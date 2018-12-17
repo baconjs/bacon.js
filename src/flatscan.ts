@@ -3,7 +3,7 @@ import { Observable, Property } from "./observable";
 import { Desc } from "./describe";
 
 /** @hidden */
-export function flatScan<In, Out>(src: Observable<In>, seed: Out, f: (Out, In) => Observable<Out>): Property<Out> {
+export function flatScan<In, Out>(src: Observable<In>, seed: Out, f: (acc: Out, value: In) => Observable<Out>): Property<Out> {
   let current = seed
   return src.flatMapConcat((next: In) =>
     makeObservable(f(current, next)).doAction(updated => current = updated)

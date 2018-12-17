@@ -18,7 +18,7 @@ interface StreamMap<V> {
 }
 
 /** @hidden */
-export function groupBy<V>(src: Observable<V>, keyF: (V) => string, limitF: GroupLimiter<V> = _.id): Observable<EventStream<V>> {
+export function groupBy<V>(src: Observable<V>, keyF: (value: V) => string, limitF: GroupLimiter<V> = _.id): Observable<EventStream<V>> {
   var streams: StreamMap<V> = {};
   return src.transform(composeT(
     filterT((x: V) => !streams[keyF(x)]),

@@ -6,6 +6,8 @@ interface Subscription {
   (unsubAll: Unsub, unsubMe: Unsub): Unsub
 }
 
+// TODO: types here are most likely messed up.
+
 /** @hidden */
 export default class CompositeUnsubscribe {
   unsubscribed: boolean = false

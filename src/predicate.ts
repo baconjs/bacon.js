@@ -25,11 +25,15 @@ export function toPredicate<V>(f: PredicateOrBoolean<V>): Predicate<V> {
 interface Predicate2Transformer<V> {
   (p: Predicate<V>): Transformer<V, V>
 }
+
+type BoolTuple<T> = [T, boolean]
+
 /** @hidden */
 export function withPredicate<V>(src: Observable<V>, f: PredicateOrProperty<V>, predicateTransformer: Predicate2Transformer<V>, desc: Desc): Observable<V> {
   if (f instanceof Property) {
-    return withLatestFrom(src, f, (p, v) => [p, v])
-      .transform(composeT(predicateTransformer(([v, p]) => p), mapT(([v, p]) => v)), desc)
+    return withLatestFrom(src, f, (p, v) => <BoolTuple<V>>[p, v])
+      .transform(composeT(<any>predicateTransformer((tuple: BoolTuple<V>) => tuple[1]), mapT((tuple: BoolTuple<V>) => tuple[0])), desc)
+      // the `any` type above is needed because the type argument for Predicate2Transformer is fixed. We'd need higher-kinded types to be able to express this properly, I think.
   }
   return src.transform(predicateTransformer(toPredicate(f)), desc)
 }

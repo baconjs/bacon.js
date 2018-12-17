@@ -3,6 +3,7 @@ import { BufferingSource } from "./internal/source";
 import { Desc } from "./describe";
 import { EventStream, EventStreamOptions } from "./observable";
 import _ from "./_"
+import { Subscribe } from "./types";
 import Observable from "./observable";
 import { argumentsToObservables } from "./internal/argumentstoobservables";
 
@@ -16,10 +17,10 @@ export default function groupSimultaneous<V>(...streams: (Observable<V> | Observ
 // Result values are arrays where each element is the list from each input observable. Type this.
 /** @hidden */
 export function groupSimultaneous_<V>(streams: Observable<V>[], options?: EventStreamOptions): EventStream<V[][]> {
-  let sources = _.map(stream => new BufferingSource<V>(stream), streams)
+  let sources = _.map((stream: Observable<V>) => new BufferingSource<V>(stream), streams)
 
-  let ctor = (desc, subscribe) => new EventStream(desc, subscribe, undefined, options)
-  return <any>when_(ctor, [sources, (function (...xs) {
+  let ctor = (desc: Desc, subscribe: Subscribe<V>) => new EventStream(desc, subscribe, undefined, options)
+  return <any>when_(ctor, [sources, (function (...xs: any[]) {
     return xs;
   })]).withDesc(new Desc("Bacon", "groupSimultaneous", streams));
 }

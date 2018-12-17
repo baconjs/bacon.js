@@ -18,7 +18,7 @@ export abstract class Event<V> {
   isError: boolean = false
   hasValue: boolean = false
   /** @hidden */
-  filter(f: (V) => boolean) : boolean { return true }
+  filter(f: (value: V) => boolean) : boolean { return true }
   /** @hidden */
   inspect(): string { return this.toString() }
   /** @hidden */
@@ -26,7 +26,7 @@ export abstract class Event<V> {
   /** @hidden */
   toNext(): Event<V> { return this }
   /** @hidden */
-  abstract fmap<V2>(f: (V) => V2): Event<V2>
+  abstract fmap<V2>(f: (value: V) => V2): Event<V2>
 }
 
 /**
@@ -45,11 +45,11 @@ export abstract class Value<V> extends Event<V> {
     this.value = value
   }
   /** @hidden */
-  fmap<V2>(f: (V) => V2): Value<V2> {
+  fmap<V2>(f: (value: V) => V2): Value<V2> {
     return this.apply(f(this.value))
   }
   /** @hidden */
-  filter(f: (V)=>boolean): boolean { return f(this.value) }
+  filter(f: (value: V)=>boolean): boolean { return f(this.value) }
   /** @hidden */
   toString(): string { return _.toString(this.value) }
   //toString(): string { return "<value " + this.id + ">" + _.toString(this.value) }
@@ -99,7 +99,7 @@ export class Initial<V> extends Value<V> {
  */
 abstract class NoValue<V> extends Event<V> {
   /** @hidden */
-  fmap<V2>(f: (V) => V2): NoValue<V2> {
+  fmap<V2>(f: (value: V) => V2): NoValue<V2> {
     return <NoValue<V2>><any>this
   }
   hasValue: boolean = false
@@ -155,14 +155,14 @@ export default Event
 /**
  * Returns true if the given object is an [Event](classes/event.html).
  */
-export function isEvent<V>(e): e is Event<V> {
+export function isEvent<V>(e: any): e is Event<V> {
   return e && e._isEvent
 }
 
 /**
  * Returns true if the given event is an [Initial](classes/initial.html) value of a [Property](classes/property.html).
  */
-export function isInitial<V>(e): e is Initial<V> {
+export function isInitial<V>(e: any): e is Initial<V> {
   return e && e._isInitial
 }
 

@@ -1043,6 +1043,7 @@ function last(src) {
     }).withDesc(new Desc(src, "last", []));
 }
 
+// TODO: types here are most likely messed up.
 /** @hidden */
 var CompositeUnsubscribe = /** @class */ (function () {
     function CompositeUnsubscribe(ss) {
@@ -1192,16 +1193,15 @@ function once(value) {
 }
 
 /** @hidden */
-function flatMap_(f_, src, params) {
+function flatMap_(spawner, src, params) {
     if (params === void 0) { params = {}; }
-    var f = _.toFunction(f_);
     var root = src;
     var rootDep = [root];
     var childDeps = [];
     var isProperty$$1 = src._isProperty;
     var ctor = (isProperty$$1 ? propertyFromStreamSubscribe : newEventStreamAllowSync);
     var initialSpawned = false;
-    var desc = params.desc || new Desc(src, "flatMap_", [f]);
+    var desc = params.desc || new Desc(src, "flatMap_", [spawner]);
     var result = ctor(desc, function (sink) {
         var composite = new CompositeUnsubscribe();
         var queue = [];
@@ -1212,7 +1212,7 @@ function flatMap_(f_, src, params) {
                 }
                 initialSpawned = true;
             }
-            var child = makeObservable(f(event));
+            var child = makeObservable(spawner(event));
             childDeps.push(child);
             return composite.add(function (unsubAll, unsubMe) {
                 return child.subscribeInternal(function (event) {
@@ -1286,7 +1286,12 @@ function flatMap_(f_, src, params) {
 /** @hidden */
 function handleEventValueWith(f) {
     if (typeof f == "function") {
-        return (function (event) { return f(event.value); });
+        return (function (event) {
+            if (hasValue(event)) {
+                return f(event.value);
+            }
+            return event;
+        });
     }
     return (function (event) { return f; });
 }
@@ -2124,13 +2129,7 @@ function toPredicate(f) {
 function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .transform(composeT(predicateTransformer(function (_a) {
-            var v = _a[0], p = _a[1];
-            return p;
-        }), mapT(function (_a) {
-            var v = _a[0], p = _a[1];
-            return v;
-        })), desc);
+            .transform(composeT(predicateTransformer(function (tuple) { return tuple[1]; }), mapT(function (tuple) { return tuple[0]; })), desc);
     }
     return src.transform(predicateTransformer(toPredicate(f)), desc);
 }

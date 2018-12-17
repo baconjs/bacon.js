@@ -3,8 +3,7 @@ import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink } from ".
 import { StateF } from "./withstatemachine";
 import { Equals } from "./skipduplicates";
 import { Accumulator } from "./scan";
-import { SpawnerOrObservable } from "./flatmap_";
-import { EventSpawner } from "./flatmapevent";
+import { SpawnerOrObservable, EventSpawner } from "./flatmap_";
 import PropertyDispatcher from "./internal/propertydispatcher";
 import Dispatcher from "./internal/dispatcher";
 import { DelayFunction } from "./buffer";

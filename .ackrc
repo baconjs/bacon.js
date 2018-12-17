@@ -1,0 +1,7 @@
+--ignore-dir=node_modules
+--ignore-dir=browsertest
+--ignore-dir=dist
+--ignore-dir=.rpt2_cache
+--ignore-dir=docs
+--ignore-dir=types
+

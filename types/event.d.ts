@@ -13,7 +13,7 @@ export declare abstract class Event<V> {
     isError: boolean;
     hasValue: boolean;
     /** @hidden */
-    filter(f: (V: any) => boolean): boolean;
+    filter(f: (value: V) => boolean): boolean;
     /** @hidden */
     inspect(): string;
     /** @hidden */
@@ -21,7 +21,7 @@ export declare abstract class Event<V> {
     /** @hidden */
     toNext(): Event<V>;
     /** @hidden */
-    abstract fmap<V2>(f: (V: any) => V2): Event<V2>;
+    abstract fmap<V2>(f: (value: V) => V2): Event<V2>;
 }
 /**
  *  Base class for all [Events](event.html) carrying a value.
@@ -33,9 +33,9 @@ export declare abstract class Value<V> extends Event<V> {
     hasValue: boolean;
     constructor(value: V);
     /** @hidden */
-    fmap<V2>(f: (V: any) => V2): Value<V2>;
+    fmap<V2>(f: (value: V) => V2): Value<V2>;
     /** @hidden */
-    filter(f: (V: any) => boolean): boolean;
+    filter(f: (value: V) => boolean): boolean;
     /** @hidden */
     toString(): string;
     /** @hidden */
@@ -77,7 +77,7 @@ export declare class Initial<V> extends Value<V> {
  */
 declare abstract class NoValue<V> extends Event<V> {
     /** @hidden */
-    fmap<V2>(f: (V: any) => V2): NoValue<V2>;
+    fmap<V2>(f: (value: V) => V2): NoValue<V2>;
     hasValue: boolean;
 }
 /**

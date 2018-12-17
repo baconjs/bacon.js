@@ -12,7 +12,7 @@ export declare class Desc {
     toString(): string;
 }
 /** @hidden */
-export declare function describe(context: any, method: any, ...args: any[]): Desc;
+export declare function describe(context: any, method: string, ...args: any[]): Desc;
 /** @hidden */
 export declare function findDeps(x: any): Observable<any>[];
 export default describe;
