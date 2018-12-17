@@ -81,6 +81,7 @@
     "shelljs": "^0.5.3",
     "sinon": "^1.12.2",
     "ts-node": "^7.0.0",
+    "typedoc": "^0.13.0",
     "typescript": "^2.9.2",
     "uglify-js": "^2.6",
     "when": "^3.6.4",
