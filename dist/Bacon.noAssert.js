@@ -2541,23 +2541,19 @@
         ]));
     }
     function diff(src, start, f) {
-        function stepFunction(state, e) {
-            if (hasValue(e)) {
-                return [
-                    e.value,
-                    [nextEvent(f(state, e.value))]
-                ];
-            }
+        return transformP(scan(src, [start], function (prevTuple, next) {
             return [
-                state,
-                [e]
+                next,
+                f(prevTuple[0], next)
             ];
-        }
-        var p = transformP(src.toProperty(), withStateMachineT(start, stepFunction), new Desc(src, 'diff', [
+        }), composeT(filterT(function (tuple) {
+            return tuple.length === 2;
+        }), mapT(function (tuple) {
+            return tuple[1];
+        })), new Desc(src, 'diff', [
             start,
             f
         ]));
-        return p;
     }
     function flatScan(src, seed, f) {
         var current = seed;
