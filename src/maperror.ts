@@ -4,7 +4,7 @@ import _ from "./_";
 import { Transformer } from "./transform";
 
 /** @hidden */
-export default function mapErrorT<V>(f: ((any) => V) | V): Transformer<V, V> {
+export default function mapErrorT<V>(f: ((error: any) => V) | V): Transformer<V, V> {
   let theF = _.toFunction(f)
   return function(event: Event<V>, sink: EventSink<V>) {
     if (isError(event)) {

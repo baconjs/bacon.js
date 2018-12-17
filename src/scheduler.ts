@@ -1,8 +1,8 @@
 export interface Scheduler {
   setTimeout(f: Function, d: number): number
   setInterval(f: Function, i: number): number
-  clearInterval(id: number)
-  clearTimeout(id: number)
+  clearInterval(id: number): any
+  clearTimeout(id: number): any
   now(): number
 }
 

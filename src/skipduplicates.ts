@@ -1,5 +1,5 @@
 import withStateMachine from "./withstatemachine";
-import { none, Option, Some } from "./optional";
+import { none, Option, Some, isNone } from "./optional";
 import { Desc } from "./describe";
 import Observable from "./observable";
 import Event, { hasValue } from "./event"
@@ -9,11 +9,7 @@ export interface Equals<A> {
 }
 
 /** @hidden */
-export function equals(a, b) { return a === b; }
-
-function isNone(object){
-  return ((typeof object !== "undefined" && object !== null) ? object._isNone : false)
-};
+export function equals<A>(a: A, b: A) { return a === b; }
 
 /** @hidden */
 export default function skipDuplicates<A>(src: Observable<A>, isEqual: Equals<A> = equals): Observable<A> {

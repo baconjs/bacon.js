@@ -1,3 +1,4 @@
+import { End } from "./event";
 import { Transformer } from "./transform";
 /** @hidden */
-export default function mapEndT<V>(f: ((End: any) => V) | V): Transformer<V, V>;
+export default function mapEndT<V>(f: ((end: End) => V) | V): Transformer<V, V>;

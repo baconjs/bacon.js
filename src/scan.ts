@@ -13,7 +13,7 @@ export interface Accumulator<In, Out> {
 
 /** @hidden */
 export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumulator<In, Out>): Property<Out> {
-  let resultProperty;
+  let resultProperty: Property<Out>;
   let acc = seed
   let initHandled = false;
   const subscribe: Subscribe<Out> = (sink: EventSink<Out>) => {

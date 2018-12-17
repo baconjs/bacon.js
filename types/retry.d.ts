@@ -15,7 +15,7 @@ export interface RetryOptions<V> {
     /**
      * Required. A function that produces an Observable. The function gets attempt number (starting from zero) as its argument.
      */
-    source: (number: any) => Observable<V>;
+    source: (attemptNumber: number) => Observable<V>;
     /**
      * Required. The number of times to retry the `source` function _in addition to the initial attempt_. The default value is 0 (zero) for retrying indefinitely.
      */

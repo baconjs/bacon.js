@@ -31,7 +31,7 @@ export function withStateMachine<In,State,Out>(initState: State, f: StateF<In, S
 
 export default withStateMachine
 
-function withStateMachineT<In,State,Out>(initState: State, f: StateF<In, State, Out>): Transformer<In, Out> {
+export function withStateMachineT<In,State,Out>(initState: State, f: StateF<In, State, Out>): Transformer<In, Out> {
   let state = initState;
   return (event: Event<In>, sink: EventSink<Out>) => {
     var fromF = f(state, event);

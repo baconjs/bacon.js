@@ -11,13 +11,13 @@ export function firstToPromise<V>(src: Observable<V>, PromiseCtr: Function | und
   // Can't do in the global scope, as shim can be applied after Bacon is loaded.
   if (typeof PromiseCtr !== "function") {
     if (typeof Promise === "function") {
-      PromiseCtr = f => new Promise(f);
+      PromiseCtr = (f: Function) => new Promise(f);
     } else {
       throw new Exception("There isn't default Promise, use shim or parameter");
     }
   }
 
-  return new (<any>PromiseCtr)((resolve, reject) =>
+  return new (<any>PromiseCtr)((resolve: ((v: V) => {}), reject: ((e: any) => {})) =>
     src.subscribe((event) => {
       if (hasValue(event)) { resolve(event.value); }
       if (isError(event)) { reject(event.error); }
@@ -27,6 +27,6 @@ export function firstToPromise<V>(src: Observable<V>, PromiseCtr: Function | und
 };
 
 /** @hidden */
-export function toPromise<V>(src: Observable<V>, PromiseCtr): Promise<V> {
+export function toPromise<V>(src: Observable<V>, PromiseCtr: Function | undefined): Promise<V> {
   return src.last().firstToPromise(PromiseCtr);
 };

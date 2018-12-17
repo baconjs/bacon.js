@@ -445,7 +445,7 @@ export declare abstract class Observable<V> {
   Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
   Only applicable for observables with arrays as values.
      */
-    onValues(f: any): Unsub;
+    onValues(f: Function): Unsub;
     /** A synonym for [scan](#scan).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
@@ -521,7 +521,7 @@ export declare abstract class Observable<V> {
      lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
      while the Property holds a truthy value.
      */
-    skipWhile<V>(f: PredicateOrProperty<V>): this;
+    skipWhile(f: PredicateOrProperty<V>): this;
     /**
   Returns a Property that represents a
   "sliding window" into the history of the values of the Observable. The
@@ -571,7 +571,7 @@ export declare abstract class Observable<V> {
     /**
   Takes while given predicate function holds true, and then ends. Alternatively, you can supply a boolean Property to take elements while the Property holds `true`.
      */
-    takeWhile<V>(f: PredicateOrProperty<V>): this;
+    takeWhile(f: PredicateOrProperty<V>): this;
     /**
   Throttles stream/property by given amount
   of milliseconds. Events are emitted with the minimum interval of

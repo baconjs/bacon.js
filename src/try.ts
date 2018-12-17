@@ -3,7 +3,7 @@ import { Error } from "./event";
 import { EventStream } from "./observable";
 
 /** @hidden */
-export default function tryF<In, Out>(f: (In) => Out): (In) => EventStream<Out> {
+export default function tryF<In, Out>(f: (value: In) => Out): (value: In) => EventStream<Out> {
   return function(value) {
     try {
       return once(f(value));

@@ -100,6 +100,9 @@
             return new Some(v);
         }
     }
+    function isNone(object) {
+        return typeof object !== 'undefined' && object !== null ? object._isNone : false;
+    }
     var _ = {
         indexOf: function () {
             if (Array.prototype.indexOf) {
@@ -774,9 +777,6 @@
     }
     function equals(a, b) {
         return a === b;
-    }
-    function isNone(object) {
-        return typeof object !== 'undefined' && object !== null ? object._isNone : false;
     }
     function skipDuplicates(src, isEqual) {
         if (isEqual === void 0) {
@@ -1817,13 +1817,13 @@
             value
         ]));
     }
-    var makeCombinator = function (combinator) {
+    function makeCombinator(combinator) {
         if (typeof combinator !== 'undefined' && combinator !== null) {
             return combinator;
         } else {
             return _.id;
         }
-    };
+    }
     function sampledByP(samplee, sampler, f) {
         var combinator = makeCombinator(f);
         var result = withLatestFrom(sampler, samplee, flip(combinator));
@@ -2541,19 +2541,23 @@
         ]));
     }
     function diff(src, start, f) {
-        return transformP(scan(src, [start], function (prevTuple, next) {
+        function stepFunction(state, e) {
+            if (hasValue(e)) {
+                return [
+                    e.value,
+                    [nextEvent(f(state, e.value))]
+                ];
+            }
             return [
-                next,
-                f(prevTuple[0], next)
+                state,
+                [e]
             ];
-        }), composeT(filterT(function (tuple) {
-            return tuple.length === 2;
-        }), mapT(function (tuple) {
-            return tuple[1];
-        })), new Desc(src, 'diff', [
+        }
+        var p = transformP(src.toProperty(), withStateMachineT(start, stepFunction), new Desc(src, 'diff', [
             start,
             f
         ]));
+        return p;
     }
     function flatScan(src, seed, f) {
         var current = seed;

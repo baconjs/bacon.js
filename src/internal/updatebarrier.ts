@@ -20,7 +20,7 @@ var waiterObs: Observable[] = [];
 var waiters = {};
 var aftersStack: [Afters[], number][] = []
 var aftersStackHeight = 0
-var flushed = {}
+var flushed: { [ key : number ]: boolean} = {}
 var processingAfters = false
 
 function toString() {

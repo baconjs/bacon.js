@@ -13,7 +13,7 @@ export function diff<V, V2>(src: Observable<V>, start: V, f: Differ<V, V2>): Pro
       scan(src, [start], (prevTuple: V[], next) => [next, f(prevTuple[0], next)]),
       composeT(
         filterT( tuple => tuple.length === 2 ),
-        mapT(tuple => tuple[1])
+        mapT(tuple => <any>tuple[1])
       ),
       new Desc(src, "diff", [start, f])
     )

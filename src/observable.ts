@@ -589,7 +589,7 @@ pushes the initial value of the property, in case there is one.
 Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
 Only applicable for observables with arrays as values.
    */
-  onValues(f): Unsub {
+  onValues(f: Function): Unsub {
     return this.onValue(function(args) { return f(...(<any>args)) });
   }
   /** A synonym for [scan](#scan).
@@ -682,7 +682,7 @@ like `stream.skipDuplicates(_.isEqual)`.
    lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
    while the Property holds a truthy value.
    */
-  skipWhile<V>(f: PredicateOrProperty<V>): this {
+  skipWhile(f: PredicateOrProperty<V>): this {
     return <any>skipWhile(this, f)
   }
   /**
@@ -743,7 +743,7 @@ If other stream ends without value, it is ignored.
   /**
 Takes while given predicate function holds true, and then ends. Alternatively, you can supply a boolean Property to take elements while the Property holds `true`.
    */
-  takeWhile<V>(f: PredicateOrProperty<V>): this {
+  takeWhile(f: PredicateOrProperty<V>): this {
     return <any>takeWhile(this, f)
   }
   /**

@@ -2,9 +2,9 @@
 interface Option<V> {
   getOrElse(arg: V): V
   get(): V
-  filter(f: (V) => boolean): Option<V>
-  map<V2>(f: (V) => V2): Option<V2>
-  forEach(f: (V) => any): void
+  filter(f: (value: V) => boolean): Option<V>
+  map<V2>(f: (value: V) => V2): Option<V2>
+  forEach(f: (value: V) => any): void
   isDefined: boolean
   toArray(): V[]
   inspect(): string
@@ -20,17 +20,17 @@ class Some<V> implements Option<V> {
   _isSome = true
   getOrElse(arg: V) { return this.value; }
   get() { return this.value; }
-  filter(f: (V) => boolean): Option<V> {
+  filter(f: (value: V) => boolean): Option<V> {
     if (f(this.value) ) {
       return new Some(this.value);
     } else {
       return None;
     }
   }
-  map<V2>(f: (V) => V2): Option<V2> {
+  map<V2>(f: (value: V) => V2): Option<V2> {
     return new Some(f(this.value));
   }
-  forEach(f: (V) => any): void {
+  forEach(f: (value: V) => any): void {
     f(this.value)
   }
   isDefined = true
@@ -63,4 +63,9 @@ function toOption<V>(v: V | Option<V>): Option<V> {
   }
 };
 
-export { Option, Some, None, none, toOption };
+function isNone(object: any): boolean {
+  return ((typeof object !== "undefined" && object !== null) ? object._isNone : false)
+};
+
+
+export { Option, Some, None, none, toOption, isNone };

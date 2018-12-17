@@ -93,6 +93,10 @@ function toOption(v) {
     }
 }
 
+function isNone(object) {
+    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
+}
+
 var _ = {
     indexOf: (function () {
         if (Array.prototype.indexOf) {
@@ -832,10 +836,6 @@ function isNext(e) {
 
 /** @hidden */
 function equals(a, b) { return a === b; }
-function isNone(object) {
-    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
-}
-
 /** @hidden */
 function skipDuplicates(src, isEqual) {
     if (isEqual === void 0) { isEqual = equals; }
@@ -2062,14 +2062,14 @@ function interval(delay, value) {
     }).withDesc(new Desc("Bacon", "interval", [delay, value]));
 }
 
-var makeCombinator = function (combinator) {
+function makeCombinator(combinator) {
     if ((typeof combinator !== "undefined" && combinator !== null)) {
         return combinator;
     }
     else {
         return _.id;
     }
-};
+}
 /** @hidden */
 function sampledByP(samplee, sampler, f) {
     var combinator = makeCombinator(f);
@@ -2129,7 +2129,7 @@ function toPredicate(f) {
 function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .transform(composeT(predicateTransformer(function (tuple) { return tuple[1]; }), mapT(function (tuple) { return tuple[0]; })), desc);
+            .transform(composeT(predicateTransformer((function (tuple) { return tuple[1]; })), mapT(function (tuple) { return tuple[0]; })), desc);
         // the `any` type above is needed because the type argument for Predicate2Transformer is fixed. We'd need higher-kinded types to be able to express this properly, I think.
     }
     return src.transform(predicateTransformer(toPredicate(f)), desc);
@@ -2895,7 +2895,14 @@ function slidingWindow(src, maxValues, minValues) {
 
 /** @hidden */
 function diff(src, start, f) {
-    return transformP(scan(src, [start], function (prevTuple, next) { return [next, f(prevTuple[0], next)]; }), composeT(filterT(function (tuple) { return tuple.length === 2; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
+    function stepFunction(state, e) {
+        if (hasValue(e)) {
+            return [e.value, [nextEvent(f(state, e.value))]];
+        }
+        return [state, [e]];
+    }
+    var p = transformP(src.toProperty(), withStateMachineT(start, stepFunction), new Desc(src, "diff", [start, f]));
+    return p;
 }
 
 /** @hidden */

@@ -7,7 +7,7 @@ import withLatestFrom from "./withlatestfrom"
 import _ from "./_"
 
 /** @hidden */
-export function map<V, V2>(src: Observable<V>, f: ((V) => V2) | Property<V2> | V2): Observable<V2> {
+export function map<V, V2>(src: Observable<V>, f: ((value: V) => V2) | Property<V2> | V2): Observable<V2> {
   if (f instanceof Property) {
     return withLatestFrom(src, f, (a, b) => b)
   }
@@ -15,7 +15,7 @@ export function map<V, V2>(src: Observable<V>, f: ((V) => V2) | Property<V2> | V
 }
 
 /** @hidden */
-export function mapT<V, V2>(f: ((V) => V2) | V2) {
+export function mapT<V, V2>(f: ((value: V) => V2) | V2) {
   let theF = _.toFunction(f)
   return (e: Event<V>, sink: EventSink<V2>) => {
     return sink(e.fmap(theF))

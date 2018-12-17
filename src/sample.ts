@@ -4,7 +4,9 @@ import { withLatestFrom } from "./withlatestfrom"
 import _, { flip } from "./_"
 import interval from "./interval";
 
-const makeCombinator = (combinator) => {
+type Combinator<V, V2, R> = (x: V, y: V2) => R;
+
+function makeCombinator<V, V2, R>(combinator: Combinator<V, V2, R> | undefined) {
   if ((typeof combinator !== "undefined" && combinator !== null)) {
     return combinator;
   } else {
@@ -13,14 +15,14 @@ const makeCombinator = (combinator) => {
 }
 
 /** @hidden */
-export function sampledByP<V, V2, R>(samplee: Property<V>, sampler: Observable<V2>, f: (V, V2) => R): Observable<R> {
-  let combinator: (V, V2) => R = makeCombinator(f)
+export function sampledByP<V, V2, R>(samplee: Property<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
+  let combinator: (x: V, y: V2) => R = makeCombinator(f)
   var result = withLatestFrom(sampler, samplee, flip(combinator))
   return result.withDesc(new Desc(samplee, "sampledBy", [sampler, combinator]));
 }
 
 /** @hidden */
-export function sampledByE<V, V2, R>(samplee: EventStream<V>, sampler: Observable<V2>, f: (V, V2) => R): Observable<R> {
+export function sampledByE<V, V2, R>(samplee: EventStream<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
   return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
 }
 

@@ -2,7 +2,7 @@ import { Property } from "./observable";
 import { Desc } from "./describe";
 import Observable from "./observable";
 import { Transformer } from "./transform";
-export declare type Predicate<V> = (V: any) => boolean;
+export declare type Predicate<V> = (value: V) => boolean;
 /** @hidden */
 export declare type PredicateOrBoolean<V> = Predicate<V> | boolean;
 export declare type PredicateOrProperty<V> = Predicate<V> | boolean | Property<boolean>;

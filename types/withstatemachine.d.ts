@@ -1,5 +1,6 @@
 import Observable from "./observable";
 import Event from "./event";
+import { Transformer } from "./transform";
 /**
  *  State machine function used in [withStateMachine](classes/observable.html#withstatemachine).
  */
@@ -18,3 +19,4 @@ export interface StateF<In, State, Out> {
 /** @hidden */
 export declare function withStateMachine<In, State, Out>(initState: State, f: StateF<In, State, Out>, src: Observable<In>): Observable<Out>;
 export default withStateMachine;
+export declare function withStateMachineT<In, State, Out>(initState: State, f: StateF<In, State, Out>): Transformer<In, Out>;
