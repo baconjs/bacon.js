@@ -2,8 +2,6 @@ import { Event } from "./event"
 import { EventStream } from "./observable";
 import { more, Reply } from "./reply";
 
-/** 
- */
 export type Sink<V> = (value: V) => Reply
 export type EventSink<V> = Sink<Event<V>>
 export type VoidSink = () => Reply
@@ -14,10 +12,6 @@ export type Unsub = () => void
 export const nullSink: Sink<any> = () => more
 /** @hidden */
 export const nullVoidSink: VoidSink = () => more
-export interface Subscribe<T> {
-  (arg: EventSink<T>): any;
-}
+export type Subscribe<T> = (arg: EventSink<T>) => any;
 /** @hidden */
-export interface EventStreamDelay<V> {
-  (stream: EventStream<V>): EventStream<V>
-}
+export type EventStreamDelay<V> = (stream: EventStream<V>) => EventStream<V>
