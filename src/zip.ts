@@ -30,8 +30,8 @@ import when from "./when";
 
  */
 export function zipAsArray<V>(...args: (Observable<V> | Observable<V>[])[]): Observable<V[]> {
-  let streams = _.map(((s) => s.toEventStream()), argumentsToObservables(args));
-  return when([streams, (...xs) => xs]).withDesc(new Desc("Bacon", "zipAsArray", args));
+  let streams = _.map(((s: Observable<V>) => s.toEventStream()), argumentsToObservables(args));
+  return when([streams, (...xs: V[]) => xs]).withDesc(new Desc("Bacon", "zipAsArray", args));
 }
 
 
@@ -40,14 +40,14 @@ export function zipAsArray<V>(...args: (Observable<V> | Observable<V>[])[]): Obs
  function to combine the n values from n sources, instead of returning them in an Array.
  */
 
-export function zipWith<Out>(f: (...any) => Out, ...streams: Observable<any>[]): EventStream<Out> {
+export function zipWith<Out>(f: (...any: any[]) => Out, ...streams: Observable<any>[]): EventStream<Out> {
   var [streams, f] = argumentsToObservablesAndFunction<Out>(arguments);
-  streams = _.map(((s) => s.toEventStream()), streams);
+  streams = _.map(((s: Observable<any>) => s.toEventStream()), streams);
   return when([streams, f]).withDesc(new Desc("Bacon", "zipWith", (<any[]>[f]).concat(streams)));
 };
 
 
 /** @hidden */
-export function zip<V, V2, Out>(left: Observable<V>, right: Observable<V2>, f: (V, V2) => Out): EventStream<Out> {
+export function zip<V, V2, Out>(left: Observable<V>, right: Observable<V2>, f: (left: V, right: V2) => Out): EventStream<Out> {
   return zipWith<Out>(f || Array, left, right).withDesc(new Desc(left, "zip", [right]));
 }
