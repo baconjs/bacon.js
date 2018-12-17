@@ -6,27 +6,27 @@ export declare type ObservableOrSource<V> = Observable<V> | Source<any, V>;
 /**
  *  Join pattern consisting of a single EventStream and a mapping function.
  */
-export declare type Pattern1<I1, O> = [ObservableOrSource<I1>, (I1: any) => O];
+export declare type Pattern1<I1, O> = [ObservableOrSource<I1>, (a: I1) => O];
 /**
  *  Join pattern consisting of a 2 Observables and a combinator function. At least one of the Observables must be an EventStream.
  */
-export declare type Pattern2<I1, I2, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, (I1: any, I2: any) => O];
+export declare type Pattern2<I1, I2, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, (a: I1, b: I2) => O];
 /**
  *  Join pattern consisting of a 3 Observables and a combinator function. At least one of the Observables must be an EventStream.
  */
-export declare type Pattern3<I1, I2, I3, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, (I1: any, I2: any, I3: any) => O];
+export declare type Pattern3<I1, I2, I3, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, (a: I1, b: I2, c: I3) => O];
 /**
  *  Join pattern consisting of a 4 Observables and a combinator function. At least one of the Observables must be an EventStream.
  */
-export declare type Pattern4<I1, I2, I3, I4, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, (I1: any, I2: any, I3: any, I4: any) => O];
+export declare type Pattern4<I1, I2, I3, I4, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, (a: I1, b: I2, c: I3, d: I4) => O];
 /**
  *  Join pattern consisting of a 5 Observables and a combinator function. At least one of the Observables must be an EventStream.
  */
-export declare type Pattern5<I1, I2, I3, I4, I5, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, (I1: any, I2: any, I3: any, I4: any, I5: any) => O];
+export declare type Pattern5<I1, I2, I3, I4, I5, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, (a: I1, b: I2, c: I3, d: I4, e: I5) => O];
 /**
  *  Join pattern consisting of a 6 Observables and a combinator function. At least one of the Observables must be an EventStream.
  */
-export declare type Pattern6<I1, I2, I3, I4, I5, I6, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, ObservableOrSource<I6>, (I1: any, I2: any, I3: any, I4: any, I5: any, I6: any) => O];
+export declare type Pattern6<I1, I2, I3, I4, I5, I6, O> = [ObservableOrSource<I1>, ObservableOrSource<I1>, ObservableOrSource<I3>, ObservableOrSource<I4>, ObservableOrSource<I5>, ObservableOrSource<I6>, (a: I1, b: I2, c: I3, d: I4, e: I5, f: I6) => O];
 /** @hidden */
 export declare type RawPattern = [AnyObservableOrSource[], AnyFunction];
 /**

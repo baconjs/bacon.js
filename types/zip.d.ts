@@ -31,4 +31,4 @@ export declare function zipAsArray<V>(...args: (Observable<V> | Observable<V>[])
  */
 export declare function zipWith<Out>(f: (...any: any[]) => Out, ...streams: Observable<any>[]): EventStream<Out>;
 /** @hidden */
-export declare function zip<V, V2, Out>(left: Observable<V>, right: Observable<V2>, f: (V: any, V2: any) => Out): EventStream<Out>;
+export declare function zip<V, V2, Out>(left: Observable<V>, right: Observable<V2>, f: (left: V, right: V2) => Out): EventStream<Out>;
