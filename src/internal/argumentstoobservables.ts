@@ -20,7 +20,7 @@ function singleToObservables<T>(x: (Observable<T> | Observable<T>[] | T)): Obser
 }
 
 /** @hidden */
-export function argumentsToObservablesAndFunction<V>(args): [Observable<any>[], (...any) => V] {
+export function argumentsToObservablesAndFunction<V>(args: IArguments): [Observable<any>[], (...args: any[]) => V] {
   if (_.isFunction(args[0])) {
     return [argumentsToObservables(Array.prototype.slice.call(args, 1)), args[0]];
   } else {

@@ -3,9 +3,10 @@ import { Event } from "../event";
 import { EventSink, Subscribe } from "../types"
 import GlobalScheduler from "../scheduler"
 import { Reply, more } from "../reply";
+import { Observable } from "../observable";
 
 /** @hidden */
-export default function asyncWrapSubscribe<V>(obs, subscribe: Subscribe<V>): Subscribe<V> {
+export default function asyncWrapSubscribe<V>(obs: Observable<V>, subscribe: Subscribe<V>): Subscribe<V> {
   //assertFunction(subscribe)
   var subscribing = false
 

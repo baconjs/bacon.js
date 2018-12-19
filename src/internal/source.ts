@@ -30,7 +30,7 @@ export abstract class Source<In, Out> {
 
   mayHave(count: number): boolean { return true; }
 
-  abstract hasAtLeast(count): boolean
+  abstract hasAtLeast(count: number): boolean
 
   abstract push(event: Event<In>): void
 }
