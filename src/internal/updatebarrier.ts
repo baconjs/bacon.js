@@ -12,12 +12,12 @@ interface Observable {
 
 type Call = () => any
 type Afters = [Observable, Call]
-type Sink<V> = (V) => any
+type Sink<V> = (value: V) => any
 type EventSink<V> = Sink<Event<V>>
 
 var rootEvent: Event<any> | undefined = undefined;
 var waiterObs: Observable[] = [];
-var waiters = {};
+var waiters: { [ obsId: number]: Call[]} = {};
 var aftersStack: [Afters[], number][] = []
 var aftersStackHeight = 0
 var flushed: { [ key : number ]: boolean} = {}
@@ -27,7 +27,7 @@ function toString() {
   return _.toString({rootEvent, processingAfters, waiterObs, waiters, aftersStack, aftersStackHeight, flushed})
 }
 
-function ensureStackHeight(h) {
+function ensureStackHeight(h: number) {
   if (h <= aftersStackHeight) return
   if (!aftersStack[h-1]) {
     aftersStack[h-1]=[[],0]
@@ -39,7 +39,7 @@ function isInTransaction() {
   return rootEvent !== undefined
 }
 
-function soonButNotYet(obs, f) {
+function soonButNotYet(obs: Observable, f: Call) {
   if (rootEvent) {
     // If in transaction -> perform within transaction
     //console.log('in tx')
@@ -121,7 +121,7 @@ function processAfters() {
 
 function whenDoneWith(obs: Observable, f: Call) {
   if (rootEvent) {
-    var obsWaiters = waiters[obs.id];
+    var obsWaiters: Call[] = waiters[obs.id];
     if (obsWaiters === undefined) {
       obsWaiters = waiters[obs.id] = [f];
       return waiterObs.push(obs);

@@ -1,4 +1,5 @@
 import { Desc } from "./describe";
+import { EventStream } from "./observable";
 import fromBinder from "./frombinder";
 import _ from "./_";
 
@@ -21,7 +22,7 @@ export const $ = {
    Note: you need to install the `asEventStream` method on JQuery by calling
    [init()](#_.aseventstream) as in `Bacon.$.init($)`.
    */
-  asEventStream(eventName, selector, eventTransformer) {
+  asEventStream(eventName: string, selector: string | undefined, eventTransformer: any): EventStream<any> {
     if (_.isFunction(selector)) {
       eventTransformer = selector;
       selector = undefined;

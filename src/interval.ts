@@ -10,7 +10,7 @@ import { EventStream } from "./observable";
  @param   value   The single value to repeat
  @typeparam V Type of stream elements
  */
-export default function interval<V>(delay, value: V): EventStream<V> {
+export default function interval<V>(delay: number, value: V): EventStream<V> {
   return fromPoll<V>(delay, function () {
     return nextEvent(value);
   }).withDesc(new Desc("Bacon", "interval", [delay, value]));

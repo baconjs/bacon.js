@@ -28,11 +28,11 @@ export abstract class Source<In, Out> {
   }
   abstract consume(): Event<Out> | undefined
 
-  mayHave(count): boolean { return true; }
+  mayHave(count: number): boolean { return true; }
 
   abstract hasAtLeast(count): boolean
 
-  abstract push(event: Event<In>)
+  abstract push(event: Event<In>): void
 }
 
 /** @hidden */
@@ -43,11 +43,11 @@ export class DefaultSource<V> extends Source<V, V> {
     return this.value
   }
 
-  push(x: Event<V>) {
+  push(x: Event<V>): void {
     this.value = x
   }
 
-  hasAtLeast(c) {
+  hasAtLeast(c: number) {
     return !!this.value
   }
 }
@@ -57,19 +57,19 @@ export class ConsumingSource<V> extends Source<V, V> {
   flatten = false
   queue: Event<V>[] = []
 
-  constructor(obs: Observable<V>, sync) {
+  constructor(obs: Observable<V>, sync: boolean) {
     super(obs, sync)
   }
   consume(): Event<V> | undefined {
     return this.queue.shift();
   }
-  push(x: Event<V>) {
-    return this.queue.push(x);
+  push(x: Event<V>): void {
+    this.queue.push(x);
   }
-  mayHave(count) {
+  mayHave(count: number) {
     return !this.ended || this.queue.length >= count;
   }
-  hasAtLeast(count) {
+  hasAtLeast(count: number) {
     return this.queue.length >= count;
   }
 }
@@ -78,7 +78,7 @@ export class ConsumingSource<V> extends Source<V, V> {
 export class BufferingSource<V> extends Source<V, V[]> {
   queue: V[] = []
 
-  constructor(obs) {
+  constructor(obs: Observable<V>) {
     super(obs, true)
   }
 
@@ -92,14 +92,14 @@ export class BufferingSource<V> extends Source<V, V[]> {
   push(x: Event<V>) {
     return this.queue.push(x.value);
   }
-  hasAtLeast(count) {
+  hasAtLeast(count: number) {
     return true;
   }
 }
 
 
 /** @hidden */
-export function isTrigger(s): boolean {
+export function isTrigger(s: any): boolean {
   if (s == null) return false
   if (s._isSource) {
     return s.sync;
