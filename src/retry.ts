@@ -9,6 +9,7 @@ import Observable from "./observable";
 import { EventStream } from "./observable";
 import { Error, Event, hasValue, isError } from "./event";
 import { EventSink } from "./types";
+import { Reply, more } from "./reply";
 import silence from "./silence";
 import repeat from "./repeat";
 import once from "./once";
@@ -76,12 +77,14 @@ export default function retry<V>(options: RetryOptions<V>): EventStream<V> {
 
   return repeat<V>(function(count: number) {
     function valueStream(): Observable<V> {
-      return source(count).endOnError().transform(function (event: Event<V>, sink: EventSink<V>) {
+      return source(count).endOnError().transform(function (event: Event<V>, sink: EventSink<V>): Reply {
         if (isError(event)) {
           errorEvent = event;
           if (!(isRetryable(errorEvent.error) && (retries === 0 || retriesDone < retries))) {
             finished = true;
             return sink(event);
+          } else {
+            return more;
           }
         } else {
           if (hasValue(event)) {

@@ -27,10 +27,11 @@ export function groupBy<V>(src: Observable<V>, keyF: (value: V) => string, limit
       var similarValues: Observable<V> = src.changes().filter(x => keyF(x) === key )
       var data: EventStream<V> = once(firstValue).concat(similarValues)
       var limited = limitF(data, firstValue).transform((event: Event<V>, sink: EventSink<V>) => {
-        sink(event)
+        let reply = sink(event)
         if (event.isEnd) {
           delete streams[key];
         }
+        return reply
       })
       streams[key] = limited;
       return limited;

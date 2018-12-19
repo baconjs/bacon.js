@@ -1,5 +1,5 @@
 import { Desc } from "./describe";
-import { noMore } from "./reply";
+import { noMore, more } from "./reply";
 import { endEvent, hasValue, isEnd, Value } from "./event";
 import Observable from "./observable";
 
@@ -15,8 +15,9 @@ export default function last<V>(src: Observable<V>): Observable<V> {
       return noMore;
     } else if (hasValue(event)) {
       lastEvent = event;
+      return more;
     } else {
-      sink(event)
+      return sink(event)
     }
   }).withDesc(new Desc(src, "last", []));
 }
