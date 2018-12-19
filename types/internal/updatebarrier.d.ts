@@ -5,11 +5,11 @@ interface Observable {
     internalDeps(): Observable[];
 }
 declare type Call = () => any;
-declare type Sink<V> = (V: any) => any;
+declare type Sink<V> = (value: V) => any;
 declare type EventSink<V> = Sink<Event<V>>;
 declare function toString(): any;
 declare function isInTransaction(): boolean;
-declare function soonButNotYet(obs: any, f: any): void;
+declare function soonButNotYet(obs: Observable, f: Call): void;
 declare function afterTransaction(obs: Observable, f: Call): void;
 declare function whenDoneWith(obs: Observable, f: Call): any;
 declare function inTransaction(event: Event<any> | undefined, context: any, f: Function, args: any[]): any;

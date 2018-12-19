@@ -1,2 +1,2 @@
 /** @hidden */
-export declare function makeFunction(f: any, args: any): any;
+export declare function makeFunction(f: Function, args: any[]): any;

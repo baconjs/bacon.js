@@ -1,3 +1,4 @@
+import { EventStream } from "./observable";
 /**
  * JQuery/Zepto integration support
  */
@@ -17,7 +18,7 @@ export declare const $: {
      Note: you need to install the `asEventStream` method on JQuery by calling
      [init()](#_.aseventstream) as in `Bacon.$.init($)`.
      */
-    asEventStream(eventName: any, selector: any, eventTransformer: any): import("../../../../../Users/juha/code/bacon.js/src/observable").EventStream<{}>;
+    asEventStream(eventName: string, selector: string | undefined, eventTransformer: any): EventStream<any>;
     /**
      * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
      */

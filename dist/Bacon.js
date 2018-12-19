@@ -1036,9 +1036,10 @@ function last(src) {
         }
         else if (hasValue(event)) {
             lastEvent = event;
+            return more;
         }
         else {
-            sink(event);
+            return sink(event);
         }
     }).withDesc(new Desc(src, "last", []));
 }
@@ -1319,7 +1320,9 @@ function endAsValue(src) {
         if (isEnd(event)) {
             sink(nextEvent({}));
             sink(endEvent());
+            return noMore;
         }
+        return more;
     });
 }
 
@@ -1388,7 +1391,7 @@ var ConsumingSource = /** @class */ (function (_super) {
         return this.queue.shift();
     };
     ConsumingSource.prototype.push = function (x) {
-        return this.queue.push(x);
+        this.queue.push(x);
     };
     ConsumingSource.prototype.mayHave = function (count) {
         return !this.ended || this.queue.length >= count;
@@ -2872,10 +2875,11 @@ function groupBy(src, keyF, limitF) {
         var similarValues = src.changes().filter(function (x) { return keyF(x) === key; });
         var data = once(firstValue).concat(similarValues);
         var limited = limitF(data, firstValue).transform(function (event, sink) {
-            sink(event);
+            var reply = sink(event);
             if (event.isEnd) {
                 delete streams[key];
             }
+            return reply;
         });
         streams[key] = limited;
         return limited;
@@ -4519,6 +4523,9 @@ function retry(options) {
                         finished = true;
                         return sink(event);
                     }
+                    else {
+                        return more;
+                    }
                 }
                 else {
                     if (hasValue(event)) {
@@ -4573,7 +4580,7 @@ function sequentially(delay, values) {
 }
 
 function valueAndEnd(value) {
-    return [value, endEvent()];
+    return [toEvent(value), endEvent()];
 }
 /**
  * Creates an EventStream from a Promise object such as JQuery Ajax.

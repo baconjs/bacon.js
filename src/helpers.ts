@@ -4,9 +4,9 @@ import Observable from "./observable";
 export function nop(): void {}
 
 /** @hidden */
-export const isArray: ((any) => boolean) = Array.isArray || function(xs) { return xs instanceof Array };
+export const isArray: ((x: any) => boolean) = Array.isArray || function(xs) { return xs instanceof Array };
 
 /** @hidden */
-export function isObservable<T>(x): x is Observable<T> {
+export function isObservable<T>(x: any): x is Observable<T> {
   return x && x._isObservable
 }

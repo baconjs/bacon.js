@@ -956,8 +956,9 @@
                 return noMore;
             } else if (hasValue(event)) {
                 lastEvent = event;
+                return more;
             } else {
-                sink(event);
+                return sink(event);
             }
         }).withDesc(new Desc(src, 'last', []));
     }
@@ -1207,7 +1208,9 @@
             if (isEnd(event)) {
                 sink(nextEvent({}));
                 sink(endEvent());
+                return noMore;
             }
+            return more;
         });
     }
     function endOnError(src, predicate) {
@@ -1275,7 +1278,7 @@
             return this.queue.shift();
         };
         ConsumingSource.prototype.push = function (x) {
-            return this.queue.push(x);
+            this.queue.push(x);
         };
         ConsumingSource.prototype.mayHave = function (count) {
             return !this.ended || this.queue.length >= count;
@@ -2518,10 +2521,11 @@
             });
             var data = once(firstValue).concat(similarValues);
             var limited = limitF(data, firstValue).transform(function (event, sink) {
-                sink(event);
+                var reply = sink(event);
                 if (event.isEnd) {
                     delete streams[key];
                 }
+                return reply;
             });
             streams[key] = limited;
             return limited;
@@ -3478,6 +3482,8 @@
                         if (!(isRetryable(errorEvent.error) && (retries === 0 || retriesDone < retries))) {
                             finished = true;
                             return sink(event);
+                        } else {
+                            return more;
                         }
                     } else {
                         if (hasValue(event)) {
@@ -3524,7 +3530,7 @@
     }
     function valueAndEnd(value) {
         return [
-            value,
+            toEvent(value),
             endEvent()
         ];
     }

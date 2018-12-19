@@ -1,10 +1,10 @@
-import fromBinder, { EventTransformer } from "./frombinder";
+import fromBinder, { EventTransformer, EventLike } from "./frombinder";
 import { Desc } from "./describe";
-import { endEvent, Error } from "./event";
+import { endEvent, toEvent, Error } from "./event";
 import { EventStream } from "./observable";
 
-function valueAndEnd(value) {
-  return [value, endEvent()];
+function valueAndEnd<V>(value: V): EventLike<V> {
+  return [toEvent(value), endEvent()];
 }
 
 /**
