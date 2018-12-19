@@ -103,7 +103,7 @@ var _ = {
   bind(fn, me) {
     return function() { return fn.apply(me, arguments); };
   },
-  isFunction(f) { return typeof f === "function"; },
+  isFunction(f: any): f is Function { return typeof f === "function"; },
 
   toFunction<V, V2>(f: ((V) => V2) | V2): ((V) => V2) {
     if (typeof f == "function") {

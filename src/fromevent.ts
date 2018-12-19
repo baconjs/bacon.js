@@ -1,8 +1,14 @@
 import Exception from './exception';
 import { Desc } from './describe';
-import fromBinder from './frombinder';
+import fromBinder, { EventTransformer } from './frombinder';
 import _ from './_';
 import { EventStream } from "./observable";
+
+export type EventSourceFn = (binder: Function, listener: Function) => any
+
+function isEventSourceFn(x: any): x is EventSourceFn {
+  return _.isFunction(x)
+}
 
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
@@ -32,7 +38,7 @@ var eventMethods = [
   ["bind", "unbind"]
 ];
 
-var findHandlerMethods = function(target): [Function, Function] {
+var findHandlerMethods = function(target: any): [Function, Function] {
   var pair;
   for (var i = 0; i < eventMethods.length; i++) {
     pair = eventMethods[i];
@@ -71,11 +77,11 @@ var findHandlerMethods = function(target): [Function, Function] {
  @typeparam V Type of stream elements
 
  */
-export default function fromEvent<V>(target, eventSource, eventTransformer): EventStream<V> {
+export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer: EventTransformer<V>): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
   return fromBinder<V>(function (handler) {
-    if (_.isFunction(eventSource)) {
+    if (isEventSourceFn(eventSource)) {
       eventSource(sub.bind(target), handler);
       return function () {
         return eventSource(unsub.bind(target), handler);
