@@ -2,7 +2,7 @@ import { EventStream } from "./observable";
 import CompositeUnsubscribe from "./compositeunsubscribe";
 import { argumentsToObservables } from "./internal/argumentstoobservables";
 import never from "./never";
-import _ from "./_";
+import { map } from "./_";
 import { more, noMore } from "./reply";
 import { endEvent, Event } from "./event";
 import { Desc } from "./describe";
@@ -39,7 +39,7 @@ export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): Ev
           })
         }
       }
-      var sinks = _.map(smartSink, streams);
+      var sinks = map(smartSink, streams);
       return new CompositeUnsubscribe(sinks).unsubscribe;
     })
   } else {

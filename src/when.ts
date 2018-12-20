@@ -5,7 +5,7 @@ import UpdateBarrier from "./internal/updatebarrier";
 import { fromObservable, isTrigger, Source } from "./internal/source";
 import { endEvent, Event, Value } from "./event";
 import { more, noMore, Reply } from "./reply";
-import _ from "./_";
+import { all, map, toArray, toFunction, contains, any, indexOf, filter } from "./_";
 import { assert } from "./internal/assert";
 import never from "./never";
 import propertyFromStreamSubscribe from "./internal/propertyfromstreamsubscribe"
@@ -116,7 +116,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
     return never()
   }
 
-  var needsBarrier: boolean = (_.any(sources, (s: AnySource) => s.flatten)) && containsDuplicateDeps(_.map(((s: AnySource) => s.obs), sources))
+  var needsBarrier: boolean = (any(sources, (s: AnySource) => s.flatten)) && containsDuplicateDeps(map(((s: AnySource) => s.obs), sources))
 
   var desc = new Desc("Bacon", "when", Array.prototype.slice.call(patterns))
 
@@ -164,7 +164,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
               //console.log('sinking', applied)
               reply = sink((trigger).e.apply(applied));
               if (triggers.length) {
-                triggers = _.filter(nonFlattened, triggers);
+                triggers = filter(nonFlattened, triggers);
               }
               if (reply === noMore) {
                 return reply;
@@ -181,7 +181,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
         var reply: Reply = flushWhileTriggers();
         if (ends) {
           //console.log "ends detected"
-          if  (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
+          if  (all(sources, cannotSync) || all(ixPats, cannotMatch)) {
             //console.log "actually ending"
             reply = noMore;
             sink(endEvent());
@@ -204,7 +204,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
           //console.log "got value", e.value
           source.push(valueEvent);
           if (source.sync) {
-            //console.log "queuing", e.toString(), _.toString(resultStream)
+            //console.log "queuing", e.toString(), toString(resultStream)
             triggers.push({source: source, e: valueEvent});
             if (needsBarrier || UpdateBarrier.hasWaiters()) { flushLater(); } else { flush(); }
           }
@@ -214,7 +214,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
       });
     }}
 
-    return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
+    return new CompositeUnsubscribe(map(part, sources)).unsubscribe;
   });
   return resultStream;
 }
@@ -234,7 +234,7 @@ function processRawPatterns(rawPatterns: RawPattern[]): [AnySource[], IndexPatte
     var triggerFound = false;
     for (var j = 0, s; j < patSources.length; j++) {
       s = patSources[j];
-      var index = _.indexOf(sources, s);
+      var index = indexOf(sources, s);
       if (!triggerFound) {
         triggerFound = isTrigger(s);
       }
@@ -259,7 +259,7 @@ function processRawPatterns(rawPatterns: RawPattern[]): [AnySource[], IndexPatte
       pats.push(pat);
     }
   }
-  return [_.map(fromObservable, sources), pats]
+  return [map(fromObservable, sources), pats]
 }
 
 function extractLegacyPatterns(sourceArgs: any[]): RawPattern[] {
@@ -267,8 +267,8 @@ function extractLegacyPatterns(sourceArgs: any[]): RawPattern[] {
   var len = sourceArgs.length;
   var rawPatterns: RawPattern[] = []
   while (i < len) {
-    let patSources: AnyObservableOrSource[] = _.toArray(sourceArgs[i++]);
-    let f: AnyFunction = _.toFunction(sourceArgs[i++]);
+    let patSources: AnyObservableOrSource[] = toArray(sourceArgs[i++]);
+    let f: AnyFunction = toFunction(sourceArgs[i++]);
     rawPatterns.push([patSources, f])
   }
   var usage = "when: expecting arguments in the form (Observable+,function)+";
@@ -295,10 +295,10 @@ export function extractRawPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
       return extractLegacyPatterns(patterns)
     }
     if (isRawPattern(pattern)) {
-      rawPatterns.push([pattern[0], _.toFunction(pattern[1])])
+      rawPatterns.push([pattern[0], toFunction(pattern[1])])
     } else { // typed pattern, then
       let sources: AnySource[] = <any>pattern.slice(0, pattern.length - 1)
-      let f: AnyFunction = <any>_.toFunction(<any>pattern[pattern.length - 1])
+      let f: AnyFunction = <any>toFunction(<any>pattern[pattern.length - 1])
       rawPatterns.push([sources, f])
     }
   }
@@ -312,13 +312,13 @@ interface Trigger {
 
 function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservable[] = []) {
   function checkObservable(obs: AnyObservable): boolean {
-    if (_.contains(state, obs)) {
+    if (contains(state, obs)) {
       return true;
     } else {
       var deps = obs.internalDeps();
       if (deps.length) {
         state.push(obs);
-        return _.any(deps, checkObservable);
+        return any(deps, checkObservable);
       } else {
         state.push(obs);
         return false;
@@ -326,7 +326,7 @@ function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservabl
     }
   }
 
-  return _.any(observables, checkObservable);
+  return any(observables, checkObservable);
 }
 
 function cannotSync(source: AnySource) {
