@@ -35,7 +35,7 @@ export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[
     }
     return whenP<V[]>([sources, (...xs: V[]) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
   } else {
-    return constant([]);
+    return constant<V[]>([]);
   }
 }
 

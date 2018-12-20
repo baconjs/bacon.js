@@ -119,9 +119,9 @@ export function handleEventValueWith<In, Out>(f: SpawnerOrObservable<In, Out>): 
 /** @hidden */
 export function makeObservable<V>(x: V | Observable<V> | Event<V>): Observable<V> {
   if (isObservable(x)) {
-    return <any>x
+    return x as Observable<V>
   } else {
-    return <any>once(x)
+    return once<V>(x as Event<V>)
   }
 }
 
