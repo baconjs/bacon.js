@@ -2,7 +2,7 @@ import Observable from "./observable";
 import { Desc } from "./describe";
 import { EventSink } from "./types";
 import Event from "./event"
-import { Reply } from "./reply";
+import { more, noMore } from "./reply";
 import { Transformer } from "./transform";
 
 /** 
@@ -37,11 +37,11 @@ export function withStateMachineT<In,State,Out>(initState: State, f: StateF<In, 
     var fromF = f(state, event);
     var [newState, outputs] = fromF;
     state = newState;
-    var reply = Reply.more;
+    var reply = more;
     for (var i = 0; i < outputs.length; i++) {
       let output = outputs[i];
       reply = sink(output)
-      if (reply === Reply.noMore) {
+      if (reply === noMore) {
         return reply;
       }
     }

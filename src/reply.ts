@@ -2,16 +2,13 @@
  * Return type for various [Sink](#sink) functions. Indicates whether or not the sink
  * desires more input from its source. See [`Bacon.fromBinder`](#frombinder) for example.
  */
-export enum Reply {
-  more = "<more>",
-  noMore = "<no-more>"
-}
+export type Reply = "<no-more>" | undefined
 
 /**
  * Reply for "more data, please".
  */
-export const more: Reply = Reply.more
+export const more: Reply = undefined
 /**
  * Reply for "no more data, please".
  */
-export const noMore: Reply = Reply.noMore
+export const noMore: Reply = "<no-more>"

@@ -149,7 +149,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
       function flushWhileTriggers(): Reply {
         var trigger: Trigger | undefined
         if ((trigger = triggers.pop()) !== undefined) {
-          var reply = Reply.more;
+          var reply = more;
           for (var i = 0, p; i < ixPats.length; i++) {
             p = ixPats[i];
             if (match(p)) {
@@ -166,7 +166,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
               if (triggers.length) {
                 triggers = _.filter(nonFlattened, triggers);
               }
-              if (reply === Reply.noMore) {
+              if (reply === noMore) {
                 return reply;
               } else {
                 return flushWhileTriggers();
@@ -174,7 +174,7 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
             }
           }
         }
-        return Reply.more;
+        return more;
       }
       function flush(): void {
         //console.log "flushing", _.toString(resultStream)
@@ -183,11 +183,11 @@ export function when_<O>(ctor: ObservableConstructor, patterns: Pattern<O>[]): O
           //console.log "ends detected"
           if  (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
             //console.log "actually ending"
-            reply = Reply.noMore;
+            reply = noMore;
             sink(endEvent());
           }
         }
-        if (reply === Reply.noMore) { unsubAll(); }
+        if (reply === noMore) { unsubAll(); }
       }
 
       return source.subscribe(function(e: Event<any>) {

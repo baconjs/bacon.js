@@ -1,11 +1,11 @@
 import _ from "./_";
 import { EventStream } from "./observable";
 import Observable from "./observable"
-import { endEvent, Error, nextEvent } from "./event";
+import { Event, endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
 import { EventSink, Unsub } from "./types"
 import { assertObservable } from "./internal/assert";
-import { noMore } from "./reply";
+import { noMore, more } from "./reply";
 
 interface Subscription<V> {
   input: Observable<V>
