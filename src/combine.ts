@@ -33,7 +33,7 @@ export function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[
         : constant(streams[i]))
       sources.push(wrap(stream));
     }
-    return whenP<V[]>([sources, (...xs) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
+    return whenP<V[]>([sources, (...xs: V[]) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
   } else {
     return constant([]);
   }
@@ -50,7 +50,7 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-export function combineWith<Out>(f: (...any) => Out, ...streams: Observable<any>[]): Property<Out> {
+export function combineWith<Out>(f: (...args: any[]) => Out, ...streams: Observable<any>[]): Property<Out> {
   // TODO: untyped
   var [streams, f] = argumentsToObservablesAndFunction<Out>(arguments);
   var desc = new Desc("Bacon", "combineWith", [f, ...streams]);
@@ -60,7 +60,7 @@ export function combineWith<Out>(f: (...any) => Out, ...streams: Observable<any>
 };
 
 /** @hidden */
-export function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (V, V2) => R): Property<R> {
+export function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (left: V, right: V2) => R): Property<R> {
   return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 };
 

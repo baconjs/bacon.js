@@ -3,12 +3,13 @@ import { EventStream } from "./observable";
 import Observable from "./observable"
 import { endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
-import { EventSink } from "./types"
+import { EventSink, Unsub } from "./types"
 import { assertObservable } from "./internal/assert";
 import { noMore } from "./reply";
 
 interface Subscription<V> {
   input: Observable<V>
+  unsub: Unsub | undefined
 }
 
 /**
@@ -53,7 +54,7 @@ export default class Bus<V> extends EventStream<V> {
   plug(input: Observable<V>) {
     assertObservable(input);
     if (this.ended) { return; }
-    var sub = { input: input };
+    var sub = { input: input, unsub: undefined };
     this.subscriptions.push(sub);
     if (typeof this.sink !== "undefined") { this.subscribeInput(sub); }
     return (() => this.unsubscribeInput(input));
@@ -158,7 +159,9 @@ export default class Bus<V> extends EventStream<V> {
     for (var i = 0, sub; i < iterable.length; i++) {
       sub = iterable[i];
       if (sub.input === input) {
-        if (typeof sub.unsub === "function") { sub.unsub(); }
+        if (typeof sub.unsub === "function") { 
+          sub.unsub(); 
+        }
         this.subscriptions.splice(i, 1);
         return;
       }

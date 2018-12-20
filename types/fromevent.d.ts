@@ -1,4 +1,6 @@
+import { EventTransformer } from './frombinder';
 import { EventStream } from "./observable";
+export declare type EventSourceFn = (binder: Function, listener: Function) => any;
 /**
  creates an EventStream from events
  on a DOM EventTarget or Node.JS EventEmitter object, or an object that supports event listeners using `on`/`off` methods.
@@ -23,4 +25,4 @@ import { EventStream } from "./observable";
  @typeparam V Type of stream elements
 
  */
-export default function fromEvent<V>(target: any, eventSource: any, eventTransformer: any): EventStream<V>;
+export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer: EventTransformer<V>): EventStream<V>;

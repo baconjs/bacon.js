@@ -2,7 +2,6 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "noImplicitThis": true,
-    "noImplicitAny": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "noUnusedLocals": true

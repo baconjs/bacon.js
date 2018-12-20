@@ -35,7 +35,7 @@ import { EventStream } from "./observable";
  * @param args
  * @returns {EventStream<V>}
  */
-export function fromCallback<V>(f, ...args): EventStream<V> {
+export function fromCallback<V>(f: Function, ...args: any[]): EventStream<V> {
   return fromBinder<V>(
     function(handler) {
       makeFunction(f, args)(handler);
@@ -61,7 +61,7 @@ read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 
  */
-export function fromNodeCallback<V>(f, ...args): EventStream<V> {
+export function fromNodeCallback<V>(f: Function, ...args: any[]): EventStream<V> {
   return fromBinder<V>(
     function(handler) {
       makeFunction(f, args)(handler);

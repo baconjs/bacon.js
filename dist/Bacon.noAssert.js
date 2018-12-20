@@ -3338,6 +3338,9 @@
             return stream;
         }
     }
+    function isEventSourceFn(x) {
+        return _.isFunction(x);
+    }
     var eventMethods = [
         [
             'addEventListener',
@@ -3388,7 +3391,7 @@
             eventSource
         ]);
         return fromBinder(function (handler) {
-            if (_.isFunction(eventSource)) {
+            if (isEventSourceFn(eventSource)) {
                 eventSource(sub.bind(target), handler);
                 return function () {
                     return eventSource(unsub.bind(target), handler);
@@ -3694,7 +3697,10 @@
             if (this.ended) {
                 return;
             }
-            var sub = { input: input };
+            var sub = {
+                input: input,
+                unsub: undefined
+            };
             this.subscriptions.push(sub);
             if (typeof this.sink !== 'undefined') {
                 this.subscribeInput(sub);

@@ -72,7 +72,7 @@ var _ = {
   without(x, xs) {
     return _.filter((function(y) { return y !== x; }), xs);
   },
-  remove(x, xs) {
+  remove<V>(x: V, xs: V[]): V[] | undefined {
     var i = _.indexOf(xs, x);
     if (i >= 0) {
       return xs.splice(i, 1);

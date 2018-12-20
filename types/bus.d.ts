@@ -1,8 +1,9 @@
 import { EventStream } from "./observable";
 import Observable from "./observable";
-import { EventSink } from "./types";
+import { EventSink, Unsub } from "./types";
 interface Subscription<V> {
     input: Observable<V>;
+    unsub: Unsub | undefined;
 }
 /**
  An [`EventStream`](eventstream.html) that allows you to [`push`](#push) values into the stream.

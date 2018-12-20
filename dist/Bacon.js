@@ -1044,7 +1044,6 @@ function last(src) {
     }).withDesc(new Desc(src, "last", []));
 }
 
-// TODO: types here are most likely messed up.
 /** @hidden */
 var CompositeUnsubscribe = /** @class */ (function () {
     function CompositeUnsubscribe(ss) {
@@ -3032,41 +3031,6 @@ function zip(left, right, f) {
     return zipWith(f || Array, left, right).withDesc(new Desc(left, "zip", [right]));
 }
 
-/**
- Combines Properties, EventStreams and constant values using a template
- object. For instance, assuming you've got streams or properties named
- `password`, `username`, `firstname` and `lastname`, you can do
-
- ```js
- var password, username, firstname, lastname; // <- properties or streams
- var loginInfo = Bacon.combineTemplate({
-    magicNumber: 3,
-    userid: username,
-    passwd: password,
-    name: { first: firstname, last: lastname }})
- ```
-
- .. and your new loginInfo property will combine values from all these
- streams using that template, whenever any of the streams/properties
- get a new value. For instance, it could yield a value such as
-
- ```js
- { magicNumber: 3,
-   userid: "juha",
-   passwd: "easy",
-   name : { first: "juha", last: "paananen" }}
- ```
-
- In addition to combining data from streams, you can include constant
- values in your templates.
-
- Note that all Bacon.combine* methods produce a Property instead of an EventStream.
- If you need the result as an [`EventStream`](classes/eventstream.html) you might want to use [`property.changes()`](classes/property.html#changes)
-
- ```js
- Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
- ```
- */
 function combineTemplate(template) {
     function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
     function setValue(ctxStack, key, value) {
@@ -4113,13 +4077,15 @@ function newEventStreamAllowSync(description, subscribe) {
 }
 
 function symbol(key) {
-  if (typeof Symbol !== "undefined" && Symbol[key]) {
-    return Symbol[key];
-  } else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
-    return Symbol[key] = Symbol["for"](key);
-  } else {
-    return "@@" + key;
-  }
+    if (typeof Symbol !== "undefined" && Symbol[key]) {
+        return Symbol[key];
+    }
+    else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
+        return Symbol[key] = Symbol["for"](key);
+    }
+    else {
+        return "@@" + key;
+    }
 }
 
 function ESObservable(observable) {
@@ -4278,6 +4244,9 @@ function fromArray(values) {
     }
 }
 
+function isEventSourceFn(x) {
+    return _.isFunction(x);
+}
 // Wrap DOM EventTarget, Node EventEmitter, or
 // [un]bind: (Any, (Any) -> None) -> None interfaces
 // common in MVCs as EventStream
@@ -4351,7 +4320,7 @@ function fromEvent(target, eventSource, eventTransformer) {
     var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
     var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
     return fromBinder(function (handler) {
-        if (_.isFunction(eventSource)) {
+        if (isEventSourceFn(eventSource)) {
             eventSource(sub.bind(target), handler);
             return function () {
                 return eventSource(unsub.bind(target), handler);
@@ -4817,7 +4786,7 @@ var Bus = /** @class */ (function (_super) {
         if (this.ended) {
             return;
         }
-        var sub = { input: input };
+        var sub = { input: input, unsub: undefined };
         this.subscriptions.push(sub);
         if (typeof this.sink !== "undefined") {
             this.subscribeInput(sub);

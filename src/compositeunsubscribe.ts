@@ -2,11 +2,7 @@ import { nop } from "./helpers";
 import _ from "./_";
 import { Unsub } from "./types";
 
-interface Subscription {
-  (unsubAll: Unsub, unsubMe: Unsub): Unsub
-}
-
-// TODO: types here are most likely messed up.
+type Subscription = (unsubAll: Unsub, unsubMe: Unsub) => Unsub
 
 /** @hidden */
 export default class CompositeUnsubscribe {
@@ -14,7 +10,7 @@ export default class CompositeUnsubscribe {
   subscriptions: Unsub[]
   starting: Subscription[]
 
-  constructor(ss: Unsub[] = []) {
+  constructor(ss: Subscription[] = []) {
     this.unsubscribe = _.bind(this.unsubscribe, this);
     this.unsubscribed = false;
     this.subscriptions = [];

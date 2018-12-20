@@ -4,7 +4,6 @@ import { symbol } from "./symbol";
 import { EventSink } from "./types";
 import { End, Error, Next } from "./event";
 
-// TODO: typings missing
 /**
  * Creates an EventStream from an
  [ES Observable](https://github.com/tc39/proposal-observable). Input can be any

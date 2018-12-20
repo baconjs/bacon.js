@@ -40,36 +40,38 @@ import constant from "./constant";
  Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
  ```
  */
-export default function combineTemplate(template): Property<any> {
-  function current(ctxStack) { return ctxStack[ctxStack.length - 1]; }
-  function setValue(ctxStack, key, value) {
-    current(ctxStack)[key] = value;
+
+type Ctx = any
+export default function combineTemplate(template: any): Property<any> {
+  function current(ctxStack: Ctx[]) { return ctxStack[ctxStack.length - 1]; }
+  function setValue(ctxStack: Ctx[], key: any, value: any) {
+    (<any>current(ctxStack))[key] = value;
     return value;
   }
-  function applyStreamValue(key, index) {
-    return function(ctxStack, values) {
+  function applyStreamValue(key: any, index: number) {
+    return function(ctxStack: Ctx[], values: any[]) {
       setValue(ctxStack, key, values[index]);
     };
   }
-  function constantValue(key, value) {
-    return function(ctxStack) {
+  function constantValue(key: any, value: any) {
+    return function(ctxStack: Ctx[]) {
       setValue(ctxStack, key, value);
     };
   }
 
-  function mkContext(template) {
+  function mkContext(template: any): any {
     return isArray(template) ? [] : {};
   }
 
-  function pushContext(key, value) {
-    return function(ctxStack) {
+  function pushContext(key: any, value: any) {
+    return function(ctxStack: Ctx[]) {
       const newContext = mkContext(value);
       setValue(ctxStack, key, newContext);
       ctxStack.push(newContext);
     };
   }
 
-  function containsObservables(value) {
+  function containsObservables(value: any) {
     if (isObservable(value)) {
       return true
     } else if (value && (value.constructor == Object || value.constructor == Array)) {
@@ -83,12 +85,12 @@ export default function combineTemplate(template): Property<any> {
     }
   }
 
-  function compile(key, value) {
+  function compile(key: any, value: any) {
     if (isObservable(value)) {
       streams.push(value);
       funcs.push(applyStreamValue(key, streams.length - 1));
     } else if (containsObservables(value)) {
-      const popContext = function(ctxStack) { ctxStack.pop(); };
+      const popContext = function(ctxStack: Ctx[]) { ctxStack.pop(); };
       funcs.push(pushContext(key, value));
       compileTemplate(value);
       funcs.push(popContext);
@@ -97,7 +99,7 @@ export default function combineTemplate(template): Property<any> {
     }
   }
 
-  function combinator(values) {
+  function combinator(values: any[]) {
     const rootContext = mkContext(template);
     const ctxStack = [rootContext];
     for (var i = 0, f; i < funcs.length; i++) {
@@ -107,7 +109,7 @@ export default function combineTemplate(template): Property<any> {
     return rootContext;
   }
 
-  function compileTemplate(template) { _.each(template, compile); }
+  function compileTemplate(template: any) { _.each(template, compile); }
 
   const funcs: Function[] = [];
   const streams: Observable<any>[] = [];

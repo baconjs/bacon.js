@@ -27,7 +27,7 @@ import { EventStream } from "./observable";
  * @param args
  * @returns {EventStream<V>}
  */
-export declare function fromCallback<V>(f: any, ...args: any[]): EventStream<V>;
+export declare function fromCallback<V>(f: Function, ...args: any[]): EventStream<V>;
 /**
 Behaves the same way as `Bacon.fromCallback`,
 except that it expects the callback to be called in the Node.js convention:
@@ -42,4 +42,4 @@ read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 
  */
-export declare function fromNodeCallback<V>(f: any, ...args: any[]): EventStream<V>;
+export declare function fromNodeCallback<V>(f: Function, ...args: any[]): EventStream<V>;
