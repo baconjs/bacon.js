@@ -307,12 +307,8 @@
         };
     }
     var recursionDepth = 0;
-    (function (Reply) {
-        Reply['more'] = '<more>';
-        Reply['noMore'] = '<no-more>';
-    }(exports.Reply || (exports.Reply = {})));
-    var more = exports.Reply.more;
-    var noMore = exports.Reply.noMore;
+    var more = undefined;
+    var noMore = '<no-more>';
     var defaultScheduler = {
         setTimeout: function (f, d) {
             return setTimeout(f, d);
@@ -613,11 +609,11 @@
             var fromF = f(state, event);
             var newState = fromF[0], outputs = fromF[1];
             state = newState;
-            var reply = exports.Reply.more;
+            var reply = more;
             for (var i = 0; i < outputs.length; i++) {
                 var output = outputs[i];
                 reply = sink(output);
-                if (reply === exports.Reply.noMore) {
+                if (reply === noMore) {
                     return reply;
                 }
             }
@@ -1392,7 +1388,7 @@
                     function flushWhileTriggers() {
                         var trigger;
                         if ((trigger = triggers.pop()) !== undefined) {
-                            var reply = exports.Reply.more;
+                            var reply = more;
                             for (var i = 0, p; i < ixPats.length; i++) {
                                 p = ixPats[i];
                                 if (match(p)) {
@@ -1408,7 +1404,7 @@
                                     if (triggers.length) {
                                         triggers = _.filter(nonFlattened, triggers);
                                     }
-                                    if (reply === exports.Reply.noMore) {
+                                    if (reply === noMore) {
                                         return reply;
                                     } else {
                                         return flushWhileTriggers();
@@ -1416,17 +1412,17 @@
                                 }
                             }
                         }
-                        return exports.Reply.more;
+                        return more;
                     }
                     function flush() {
                         var reply = flushWhileTriggers();
                         if (ends) {
                             if (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
-                                reply = exports.Reply.noMore;
+                                reply = noMore;
                                 sink(endEvent());
                             }
                         }
-                        if (reply === exports.Reply.noMore) {
+                        if (reply === noMore) {
                             unsubAll();
                         }
                     }
@@ -3777,11 +3773,13 @@
                     return noMore;
                 } else if (_this.sink) {
                     return _this.sink(event);
+                } else {
+                    return more;
                 }
             };
         };
         Bus.prototype.subscribeInput = function (subscription) {
-            subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+            subscription.unsub = subscription.input.subscribeInternal(this.guardedSink(subscription.input));
             return subscription.unsub;
         };
         Bus.prototype.unsubscribeInput = function (input) {

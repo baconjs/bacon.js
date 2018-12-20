@@ -136,20 +136,22 @@ export default class Bus<V> extends EventStream<V> {
   }
 
   /** @hidden */
-  guardedSink(input: Observable<V>) {
-    return (event) => {
+  guardedSink(input: Observable<V>): EventSink<V> {
+    return (event: Event<V>) => {
       if (event.isEnd) {
         this.unsubscribeInput(input);
         return noMore;
       } else if (this.sink) {
         return this.sink(event);
+      } else {
+        return more;
       }
     };
   }
 
   /** @hidden */
-  subscribeInput(subscription) {
-    subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+  subscribeInput(subscription: Subscription<V>) {
+    subscription.unsub = subscription.input.subscribeInternal(this.guardedSink(subscription.input));
     return subscription.unsub;
   }
 

@@ -40,23 +40,23 @@ export default class Bus<V> extends EventStream<V> {
      After this call, there'll be no more events to the subscribers.
      Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
      */
-    end(): Reply | undefined;
+    end(): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
     /**
      * Pushes a new value to the stream.
      */
-    push(value: V): Reply | undefined;
+    push(value: V): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
     /**
      * Pushes an error to this stream.
      */
-    error(error: any): Reply | undefined;
+    error(error: any): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
     /** @hidden */
     unsubAll(): void;
     /** @hidden */
     subscribeAll(newSink: EventSink<V>): () => void;
     /** @hidden */
-    guardedSink(input: Observable<V>): (event: any) => Reply | undefined;
+    guardedSink(input: Observable<V>): EventSink<V>;
     /** @hidden */
-    subscribeInput(subscription: any): any;
+    subscribeInput(subscription: Subscription<V>): Unsub;
     /** @hidden */
     unsubscribeInput(input: Observable<V>): void;
 }

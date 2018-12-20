@@ -277,22 +277,13 @@ function flip(f) {
 var recursionDepth = 0;
 
 /**
- * Return type for various [Sink](#sink) functions. Indicates whether or not the sink
- * desires more input from its source. See [`Bacon.fromBinder`](#frombinder) for example.
- */
-
-(function (Reply) {
-    Reply["more"] = "<more>";
-    Reply["noMore"] = "<no-more>";
-})(exports.Reply || (exports.Reply = {}));
-/**
  * Reply for "more data, please".
  */
-var more = exports.Reply.more;
+var more = undefined;
 /**
  * Reply for "no more data, please".
  */
-var noMore = exports.Reply.noMore;
+var noMore = "<no-more>";
 
 /** @hidden */
 function assert(message, condition) {
@@ -623,11 +614,11 @@ function withStateMachineT(initState, f) {
         var fromF = f(state, event);
         var newState = fromF[0], outputs = fromF[1];
         state = newState;
-        var reply = exports.Reply.more;
+        var reply = more;
         for (var i = 0; i < outputs.length; i++) {
             var output = outputs[i];
             reply = sink(output);
-            if (reply === exports.Reply.noMore) {
+            if (reply === noMore) {
                 return reply;
             }
         }
@@ -1551,7 +1542,7 @@ function when_(ctor, patterns) {
                 function flushWhileTriggers() {
                     var trigger;
                     if ((trigger = triggers.pop()) !== undefined) {
-                        var reply = exports.Reply.more;
+                        var reply = more;
                         for (var i = 0, p; i < ixPats.length; i++) {
                             p = ixPats[i];
                             if (match(p)) {
@@ -1569,7 +1560,7 @@ function when_(ctor, patterns) {
                                 if (triggers.length) {
                                     triggers = _.filter(nonFlattened, triggers);
                                 }
-                                if (reply === exports.Reply.noMore) {
+                                if (reply === noMore) {
                                     return reply;
                                 }
                                 else {
@@ -1578,7 +1569,7 @@ function when_(ctor, patterns) {
                             }
                         }
                     }
-                    return exports.Reply.more;
+                    return more;
                 }
                 function flush() {
                     //console.log "flushing", _.toString(resultStream)
@@ -1587,11 +1578,11 @@ function when_(ctor, patterns) {
                         //console.log "ends detected"
                         if (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
                             //console.log "actually ending"
-                            reply = exports.Reply.noMore;
+                            reply = noMore;
                             sink(endEvent());
                         }
                     }
-                    if (reply === exports.Reply.noMore) {
+                    if (reply === noMore) {
                         unsubAll();
                     }
                 }
@@ -4883,11 +4874,14 @@ var Bus = /** @class */ (function (_super) {
             else if (_this.sink) {
                 return _this.sink(event);
             }
+            else {
+                return more;
+            }
         };
     };
     /** @hidden */
     Bus.prototype.subscribeInput = function (subscription) {
-        subscription.unsub = subscription.input.dispatcher.subscribe(this.guardedSink(subscription.input));
+        subscription.unsub = subscription.input.subscribeInternal(this.guardedSink(subscription.input));
         return subscription.unsub;
     };
     /** @hidden */
