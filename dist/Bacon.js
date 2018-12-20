@@ -43,77 +43,113 @@ function isObservable(x) {
 }
 
 /** @hidden */
-var Some = /** @class */ (function () {
-    function Some(value) {
-        this._isSome = true;
-        this.isDefined = true;
-        this.value = value;
-    }
-    Some.prototype.getOrElse = function (arg) { return this.value; };
-    Some.prototype.get = function () { return this.value; };
-    Some.prototype.filter = function (f) {
-        if (f(this.value)) {
-            return new Some(this.value);
-        }
-        else {
-            return None;
-        }
-    };
-    Some.prototype.map = function (f) {
-        return new Some(f(this.value));
-    };
-    Some.prototype.forEach = function (f) {
-        f(this.value);
-    };
-    Some.prototype.toArray = function () { return [this.value]; };
-    Some.prototype.inspect = function () { return "Some(" + this.value + ")"; };
-    Some.prototype.toString = function () { return this.inspect(); };
-    return Some;
-}());
+function indexOfDefault(xs, x) { return xs.indexOf(x); }
 /** @hidden */
-var None = {
-    _isNone: true,
-    getOrElse: function (value) { return value; },
-    get: function () { throw new Error("None.get()"); },
-    filter: function () { return None; },
-    map: function () { return None; },
-    forEach: function () { },
-    isDefined: false,
-    toArray: function () { return []; },
-    inspect: function () { return "None"; },
-    toString: function () { return this.inspect(); }
-};
-function none() { return None; }
-function toOption(v) {
-    if (v && (v._isSome || v._isNone)) {
-        return v;
+function indexOfFallback(xs, x) {
+    for (var i = 0, y; i < xs.length; i++) {
+        y = xs[i];
+        if (x === y) {
+            return i;
+        }
     }
-    else {
-        return new Some(v);
+    return -1;
+}
+/** @hidden */
+var indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
+/** @hidden */
+function id(x) { return x; }
+// TODO: move the rest of the functions as separate exports
+function filter(f, xs) {
+    var filtered = [];
+    for (var i = 0, x; i < xs.length; i++) {
+        x = xs[i];
+        if (f(x)) {
+            filtered.push(x);
+        }
     }
+    return filtered;
 }
-
-function isNone(object) {
-    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
+/** @hidden */
+function flip(f) {
+    return function (a, b) { return f(b, a); };
 }
-
-var _ = {
-    indexOf: (function () {
-        if (Array.prototype.indexOf) {
-            return (function (xs, x) { return xs.indexOf(x); });
+/** @hidden */
+function fold(xs, seed, f) {
+    for (var i = 0, x; i < xs.length; i++) {
+        x = xs[i];
+        seed = f(seed, x);
+    }
+    return seed;
+}
+/** @hidden */
+function head(xs) {
+    return xs[0];
+}
+/** @hidden */
+function isFunction(f) { return typeof f === "function"; }
+/** @hidden */
+function map(f, xs) {
+    var result = [];
+    for (var i = 0, x; i < xs.length; i++) {
+        x = xs[i];
+        result.push(f(x));
+    }
+    return result;
+}
+/** @hidden */
+function tail(xs) {
+    return xs.slice(1, xs.length);
+}
+/** @hidden */
+function toString(obj) {
+    var hasProp = {}.hasOwnProperty;
+    try {
+        recursionDepth++;
+        if (obj == null) {
+            return "undefined";
+        }
+        else if (isFunction(obj)) {
+            return "function";
+        }
+        else if (isArray(obj)) {
+            if (recursionDepth > 5) {
+                return "[..]";
+            }
+            return "[" + map(toString, obj).toString() + "]";
+        }
+        else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
+            return obj.toString();
+        }
+        else if (typeof obj === "object") {
+            if (recursionDepth > 5) {
+                return "{..}";
+            }
+            var results = [];
+            for (var key in obj) {
+                if (!hasProp.call(obj, key))
+                    continue;
+                var value = (function () {
+                    try {
+                        return obj[key];
+                    }
+                    catch (error) {
+                        return error;
+                    }
+                })();
+                results.push(toString(key) + ":" + toString(value));
+            }
+            return "{" + results + "}";
         }
         else {
-            return (function (xs, x) {
-                for (var i = 0, y; i < xs.length; i++) {
-                    y = xs[i];
-                    if (x === y) {
-                        return i;
-                    }
-                }
-                return -1;
-            });
+            return obj;
         }
-    })(),
+    }
+    finally {
+        recursionDepth--;
+    }
+}
+var _ = {
+    indexOf: indexOf,
     indexWhere: function (xs, f) {
         for (var i = 0, y; i < xs.length; i++) {
             y = xs[i];
@@ -123,29 +159,13 @@ var _ = {
         }
         return -1;
     },
-    head: function (xs) { return xs[0]; },
+    head: head,
     always: function (x) { return function () { return x; }; },
     negate: function (f) { return function (x) { return !f(x); }; },
     empty: function (xs) { return xs.length === 0; },
-    tail: function (xs) { return xs.slice(1, xs.length); },
-    filter: function (f, xs) {
-        var filtered = [];
-        for (var i = 0, x; i < xs.length; i++) {
-            x = xs[i];
-            if (f(x)) {
-                filtered.push(x);
-            }
-        }
-        return filtered;
-    },
-    map: function (f, xs) {
-        var result = [];
-        for (var i = 0, x; i < xs.length; i++) {
-            x = xs[i];
-            result.push(f(x));
-        }
-        return result;
-    },
+    tail: tail,
+    filter: filter,
+    map: map,
     each: function (xs, f) {
         for (var key in xs) {
             if (Object.prototype.hasOwnProperty.call(xs, key)) {
@@ -154,12 +174,11 @@ var _ = {
             }
         }
     },
-    toArray: function (xs) { return isArray(xs) ? xs : [xs]; },
-    contains: function (xs, x) { return _.indexOf(xs, x) !== -1; },
-    id: function (x) { return x; },
+    toArray: function (xs) { return (isArray(xs) ? xs : [xs]); },
+    contains: function (xs, x) { return indexOf(xs, x) !== -1; },
+    id: id,
     last: function (xs) { return xs[xs.length - 1]; },
     all: function (xs, f) {
-        if (f === void 0) { f = _.id; }
         for (var i = 0, x; i < xs.length; i++) {
             x = xs[i];
             if (!f(x)) {
@@ -169,7 +188,6 @@ var _ = {
         return true;
     },
     any: function (xs, f) {
-        if (f === void 0) { f = _.id; }
         for (var i = 0, x; i < xs.length; i++) {
             x = xs[i];
             if (f(x)) {
@@ -179,101 +197,32 @@ var _ = {
         return false;
     },
     without: function (x, xs) {
-        return _.filter((function (y) { return y !== x; }), xs);
+        return filter((function (y) { return y !== x; }), xs);
     },
     remove: function (x, xs) {
-        var i = _.indexOf(xs, x);
+        var i = indexOf(xs, x);
         if (i >= 0) {
             return xs.splice(i, 1);
         }
     },
-    fold: function (xs, seed, f) {
-        for (var i = 0, x; i < xs.length; i++) {
-            x = xs[i];
-            seed = f(seed, x);
-        }
-        return seed;
-    },
+    fold: fold,
     flatMap: function (f, xs) {
-        return _.fold(xs, [], (function (ys, x) {
+        return fold(xs, [], (function (ys, x) {
             return ys.concat(f(x));
         }));
-    },
-    cached: function (f) {
-        var value = None;
-        return function () {
-            if ((typeof value !== "undefined" && value !== null) ? value._isNone : undefined) {
-                value = f();
-                f = undefined;
-            }
-            return value;
-        };
     },
     bind: function (fn, me) {
         return function () { return fn.apply(me, arguments); };
     },
-    isFunction: function (f) { return typeof f === "function"; },
+    isFunction: isFunction,
     toFunction: function (f) {
         if (typeof f == "function") {
             return f;
         }
         return function (x) { return f; };
     },
-    toString: function (obj) {
-        var hasProp = {}.hasOwnProperty;
-        try {
-            recursionDepth++;
-            if (obj == null) {
-                return "undefined";
-            }
-            else if (_.isFunction(obj)) {
-                return "function";
-            }
-            else if (isArray(obj)) {
-                if (recursionDepth > 5) {
-                    return "[..]";
-                }
-                return "[" + _.map(_.toString, obj).toString() + "]";
-            }
-            else if (((obj != null ? obj.toString : void 0) != null) && obj.toString !== Object.prototype.toString) {
-                return obj.toString();
-            }
-            else if (typeof obj === "object") {
-                if (recursionDepth > 5) {
-                    return "{..}";
-                }
-                var results = [];
-                for (var key in obj) {
-                    if (!hasProp.call(obj, key))
-                        continue;
-                    var value = (function () {
-                        try {
-                            return obj[key];
-                        }
-                        catch (error) {
-                            return error;
-                        }
-                    })();
-                    results.push(_.toString(key) + ":" + _.toString(value));
-                }
-                return "{" + results + "}";
-            }
-            else {
-                return obj;
-            }
-        }
-        finally {
-            recursionDepth--;
-        }
-    }
+    toString: toString
 };
-// TODO: move the rest of the functions as separate exports
-/** @hidden */
-function flip(f) {
-    return function (a, b) { return f(b, a); };
-}
-/** @hidden */
-
 var recursionDepth = 0;
 
 /**
@@ -345,7 +294,7 @@ var aftersStack = [];
 var aftersStackHeight = 0;
 var flushed = {};
 var processingAfters = false;
-function toString() {
+function toString$1() {
     return _.toString({ rootEvent: rootEvent, processingAfters: processingAfters, waiterObs: waiterObs, waiters: waiters, aftersStack: aftersStack, aftersStackHeight: aftersStackHeight, flushed: flushed });
 }
 function ensureStackHeight(h) {
@@ -542,7 +491,7 @@ function wrappedSubscribe(obs, subscribe, sink) {
     return unsub;
 }
 function hasWaiters() { return waiterObs.length > 0; }
-var UpdateBarrier = { toString: toString, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
+var UpdateBarrier = { toString: toString$1, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
 
 var Desc = /** @class */ (function () {
     function Desc(context, method, args) {
@@ -624,6 +573,61 @@ function withStateMachineT(initState, f) {
         }
         return reply;
     };
+}
+
+/** @hidden */
+var Some = /** @class */ (function () {
+    function Some(value) {
+        this._isSome = true;
+        this.isDefined = true;
+        this.value = value;
+    }
+    Some.prototype.getOrElse = function (arg) { return this.value; };
+    Some.prototype.get = function () { return this.value; };
+    Some.prototype.filter = function (f) {
+        if (f(this.value)) {
+            return new Some(this.value);
+        }
+        else {
+            return None;
+        }
+    };
+    Some.prototype.map = function (f) {
+        return new Some(f(this.value));
+    };
+    Some.prototype.forEach = function (f) {
+        f(this.value);
+    };
+    Some.prototype.toArray = function () { return [this.value]; };
+    Some.prototype.inspect = function () { return "Some(" + this.value + ")"; };
+    Some.prototype.toString = function () { return this.inspect(); };
+    return Some;
+}());
+/** @hidden */
+var None = {
+    _isNone: true,
+    getOrElse: function (value) { return value; },
+    get: function () { throw new Error("None.get()"); },
+    filter: function () { return None; },
+    map: function () { return None; },
+    forEach: function () { },
+    isDefined: false,
+    toArray: function () { return []; },
+    inspect: function () { return "None"; },
+    toString: function () { return this.inspect(); }
+};
+function none() { return None; }
+function toOption(v) {
+    if (v && (v._isSome || v._isNone)) {
+        return v;
+    }
+    else {
+        return new Some(v);
+    }
+}
+
+function isNone(object) {
+    return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
 }
 
 /** @hidden */
@@ -1744,7 +1748,7 @@ function withLatestFrom(sampler, samplee, f) {
 }
 
 /** @hidden */
-function map(src, f) {
+function map$1(src, f) {
     if (f instanceof Property) {
         return withLatestFrom(src, f, function (a, b) { return b; });
     }
@@ -1771,7 +1775,7 @@ function constant(x) {
 
 /** @hidden */
 function argumentsToObservables(args) {
-    args = Array.prototype.slice.call(args);
+    args = (Array.prototype.slice.call(args));
     return _.flatMap(singleToObservables, args);
 }
 function singleToObservables(x) {
@@ -2056,7 +2060,7 @@ function interval(delay, value) {
 }
 
 function makeCombinator(combinator) {
-    if ((typeof combinator !== "undefined" && combinator !== null)) {
+    if (typeof combinator == "function") {
         return combinator;
     }
     else {
@@ -2129,7 +2133,7 @@ function withPredicate(src, f, predicateTransformer, desc) {
 }
 
 /** @hidden */
-function filter(src, f) {
+function filter$1(src, f) {
     return withPredicate(src, f, filterT, new Desc(src, "filter", [f]));
 }
 /** @hidden */
@@ -2202,7 +2206,7 @@ function concatAll() {
     }
     var streams = argumentsToObservables(streams_);
     return (streams.length
-        ? _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) { return a.concat(b); })
+        ? fold(tail(streams), head(streams).toEventStream(), function (a, b) { return a.concat(b); })
         : never()).withDesc(new Desc("Bacon", "concatAll", streams));
 }
 
@@ -2228,7 +2232,7 @@ function addPropertyInitValueToStream(property, stream) {
 }
 
 /** @hidden */
-function fold(src, seed, f) {
+function fold$1(src, seed, f) {
     return src.scan(seed, f)
         .last()
         .withDesc(new Desc(src, "fold", [seed, f]));
@@ -3362,7 +3366,7 @@ var Observable = /** @class */ (function () {
   at the time of the event.
      */
     Observable.prototype.filter = function (f) {
-        return filter(this, f);
+        return filter$1(this, f);
     };
     /**
   Takes the first element from the stream. Essentially `observable.take(1)`.
@@ -3397,7 +3401,7 @@ var Observable = /** @class */ (function () {
   [`Property`](property.html).
      */
     Observable.prototype.fold = function (seed, f) {
-        return fold(this, seed, f);
+        return fold$1(this, seed, f);
     };
     /**
      An alias for [onValue](#onvalue).
@@ -3540,7 +3544,7 @@ var Observable = /** @class */ (function () {
     /** A synonym for [scan](#scan).
      */
     Observable.prototype.reduce = function (seed, f) {
-        return fold(this, seed, f);
+        return fold$1(this, seed, f);
     };
     /**
   Scans stream/property with given seed value and
@@ -3846,7 +3850,7 @@ var Property = /** @class */ (function (_super) {
         return groupBy(this, keyF, limitF);
     };
     Property.prototype.map = function (f) {
-        return map(this, f);
+        return map$1(this, f);
     };
     Property.prototype.not = function () {
         return not(this);
@@ -4005,7 +4009,7 @@ var EventStream = /** @class */ (function (_super) {
         if (limitF === void 0) { limitF = _.id; }
         return groupBy(this, keyF, limitF);
     };
-    EventStream.prototype.map = function (f) { return map(this, f); };
+    EventStream.prototype.map = function (f) { return map$1(this, f); };
     /**
      Merges two streams into one stream that delivers events from both
      */

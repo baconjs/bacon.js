@@ -6,7 +6,7 @@ export declare type VoidFunction = () => void;
  *  Delay function used by `bufferWithTime` and `bufferWithTimeOrCount`. Your implementation should
  *  call the given void function to cause a buffer flush.
  */
-export declare type DelayFunction = (VoidFunc: any) => any;
+export declare type DelayFunction = (f: VoidFunction) => any;
 /** @hidden */
 export declare function bufferWithTime<V>(src: EventStream<V>, delay: number | DelayFunction): EventStream<V[]>;
 /** @hidden */
@@ -14,7 +14,7 @@ export declare function bufferWithCount<V>(src: EventStream<V>, count: number): 
 /** @hidden */
 export declare function bufferWithTimeOrCount<V>(src: EventStream<V>, delay?: number | DelayFunction, count?: number): EventStream<V[]>;
 declare class Buffer<V> {
-    constructor(onFlush: any, onInput: any);
+    constructor(onFlush: BufferHandler<V>, onInput: BufferHandler<V>);
     delay?: DelayFunction;
     onInput: BufferHandler<V>;
     onFlush: BufferHandler<V>;

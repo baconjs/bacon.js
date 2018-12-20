@@ -20,7 +20,7 @@ export function groupSimultaneous_<V>(streams: Observable<V>[], options?: EventS
   let sources = _.map((stream: Observable<V>) => new BufferingSource<V>(stream), streams)
 
   let ctor = (desc: Desc, subscribe: Subscribe<V>) => new EventStream(desc, subscribe, undefined, options)
-  return <any>when_(ctor, [sources, (function (...xs: any[]) {
+  return <any>when_(ctor, <any>[sources, (function (...xs: any[]) {
     return xs;
   })]).withDesc(new Desc("Bacon", "groupSimultaneous", streams));
 }

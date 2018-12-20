@@ -2,7 +2,7 @@ import Observable from "./observable";
 export declare class Desc {
     context: any;
     method?: string;
-    args?: any[];
+    args: any[];
     /** @hidden */
     cachedDeps?: Observable<any>[];
     /** @hidden */

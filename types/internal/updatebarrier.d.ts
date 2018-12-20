@@ -7,7 +7,7 @@ interface Observable {
 declare type Call = () => any;
 declare type Sink<V> = (value: V) => any;
 declare type EventSink<V> = Sink<Event<V>>;
-declare function toString(): any;
+declare function toString(): string;
 declare function isInTransaction(): boolean;
 declare function soonButNotYet(obs: Observable, f: Call): void;
 declare function afterTransaction(obs: Observable, f: Call): void;

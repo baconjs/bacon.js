@@ -6,11 +6,11 @@ import interval from "./interval";
 
 type Combinator<V, V2, R> = (x: V, y: V2) => R;
 
-function makeCombinator<V, V2, R>(combinator: Combinator<V, V2, R> | undefined) {
-  if ((typeof combinator !== "undefined" && combinator !== null)) {
+function makeCombinator<V, V2, R>(combinator: Combinator<V, V2, R> | undefined): Combinator<V, V2, R> {
+  if (typeof combinator == "function") {
     return combinator;
   } else {
-    return _.id
+    return <any>_.id
   }
 }
 

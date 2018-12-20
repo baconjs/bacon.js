@@ -69,17 +69,10 @@ describe "Bacon._", ->
     it "works", ->
       expect(_.all([ [false,true], [true,true] ], _.head)).to.be.false
       expect(_.all([ [true,false], [true,true] ], _.head)).to.be.true
-    it "should test truthiness if no function given", ->
-      expect(_.all([true, false, true])).to.be.false
-      expect(_.all([true, true, true])).to.be.true
-      expect(_.all([1, true, 1])).to.be.true
   describe "any", ->
     it "works", ->
       expect(_.any([ [false,true], [true,true] ], _.head)).to.be.true
       expect(_.any([ [false,false], [false,true] ], _.head)).to.be.false
-    it "should test truthiness if no function given", ->
-      expect(_.any([false, false, false])).to.be.false
-      expect(_.any([true, false, true])).to.be.true
   it "without", ->
     expect(_.without("apple", ["bacon","apple","apple","omelette"]))
       .to.deep.equal(["bacon","omelette"])

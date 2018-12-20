@@ -298,7 +298,7 @@ export function extractRawPatterns<O>(patterns: Pattern<O>[]): RawPattern[] {
       rawPatterns.push([pattern[0], _.toFunction(pattern[1])])
     } else { // typed pattern, then
       let sources: AnySource[] = <any>pattern.slice(0, pattern.length - 1)
-      let f: AnyFunction = <any>_.toFunction(pattern[pattern.length - 1])
+      let f: AnyFunction = <any>_.toFunction(<any>pattern[pattern.length - 1])
       rawPatterns.push([sources, f])
     }
   }
@@ -311,7 +311,7 @@ interface Trigger {
 }
 
 function containsDuplicateDeps(observables: AnyObservable[], state: AnyObservable[] = []) {
-  function checkObservable(obs: AnyObservable) {
+  function checkObservable(obs: AnyObservable): boolean {
     if (_.contains(state, obs)) {
       return true;
     } else {

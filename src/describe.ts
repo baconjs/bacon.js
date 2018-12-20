@@ -5,7 +5,7 @@ import _ from "./_"
 export class Desc {
   context: any
   method?: string
-  args?: any[]
+  args: any[]
   /** @hidden */
   cachedDeps?: Observable<any>[]
   /** @hidden */

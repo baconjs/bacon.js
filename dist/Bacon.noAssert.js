@@ -27,100 +27,103 @@
     function isObservable(x) {
         return x && x._isObservable;
     }
-    var Some = function () {
-        function Some(value) {
-            this._isSome = true;
-            this.isDefined = true;
-            this.value = value;
-        }
-        Some.prototype.getOrElse = function (arg) {
-            return this.value;
-        };
-        Some.prototype.get = function () {
-            return this.value;
-        };
-        Some.prototype.filter = function (f) {
-            if (f(this.value)) {
-                return new Some(this.value);
-            } else {
-                return None;
+    function indexOfDefault(xs, x) {
+        return xs.indexOf(x);
+    }
+    function indexOfFallback(xs, x) {
+        for (var i = 0, y; i < xs.length; i++) {
+            y = xs[i];
+            if (x === y) {
+                return i;
             }
-        };
-        Some.prototype.map = function (f) {
-            return new Some(f(this.value));
-        };
-        Some.prototype.forEach = function (f) {
-            f(this.value);
-        };
-        Some.prototype.toArray = function () {
-            return [this.value];
-        };
-        Some.prototype.inspect = function () {
-            return 'Some(' + this.value + ')';
-        };
-        Some.prototype.toString = function () {
-            return this.inspect();
-        };
-        return Some;
-    }();
-    var None = {
-        _isNone: true,
-        getOrElse: function (value) {
-            return value;
-        },
-        get: function () {
-            throw new Error('None.get()');
-        },
-        filter: function () {
-            return None;
-        },
-        map: function () {
-            return None;
-        },
-        forEach: function () {
-        },
-        isDefined: false,
-        toArray: function () {
-            return [];
-        },
-        inspect: function () {
-            return 'None';
-        },
-        toString: function () {
-            return this.inspect();
         }
-    };
-    function none() {
-        return None;
+        return -1;
     }
-    function toOption(v) {
-        if (v && (v._isSome || v._isNone)) {
-            return v;
-        } else {
-            return new Some(v);
+    var indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
+    function id(x) {
+        return x;
+    }
+    function filter(f, xs) {
+        var filtered = [];
+        for (var i = 0, x; i < xs.length; i++) {
+            x = xs[i];
+            if (f(x)) {
+                filtered.push(x);
+            }
         }
+        return filtered;
     }
-    function isNone(object) {
-        return typeof object !== 'undefined' && object !== null ? object._isNone : false;
+    function flip(f) {
+        return function (a, b) {
+            return f(b, a);
+        };
+    }
+    function fold(xs, seed, f) {
+        for (var i = 0, x; i < xs.length; i++) {
+            x = xs[i];
+            seed = f(seed, x);
+        }
+        return seed;
+    }
+    function head(xs) {
+        return xs[0];
+    }
+    function isFunction(f) {
+        return typeof f === 'function';
+    }
+    function map(f, xs) {
+        var result = [];
+        for (var i = 0, x; i < xs.length; i++) {
+            x = xs[i];
+            result.push(f(x));
+        }
+        return result;
+    }
+    function tail(xs) {
+        return xs.slice(1, xs.length);
+    }
+    function toString(obj) {
+        var hasProp = {}.hasOwnProperty;
+        try {
+            recursionDepth++;
+            if (obj == null) {
+                return 'undefined';
+            } else if (isFunction(obj)) {
+                return 'function';
+            } else if (isArray(obj)) {
+                if (recursionDepth > 5) {
+                    return '[..]';
+                }
+                return '[' + map(toString, obj).toString() + ']';
+            } else if ((obj != null ? obj.toString : void 0) != null && obj.toString !== Object.prototype.toString) {
+                return obj.toString();
+            } else if (typeof obj === 'object') {
+                if (recursionDepth > 5) {
+                    return '{..}';
+                }
+                var results = [];
+                for (var key in obj) {
+                    if (!hasProp.call(obj, key))
+                        continue;
+                    var value = function () {
+                        try {
+                            return obj[key];
+                        } catch (error) {
+                            return error;
+                        }
+                    }();
+                    results.push(toString(key) + ':' + toString(value));
+                }
+                return '{' + results + '}';
+            } else {
+                return obj;
+            }
+        } finally {
+            recursionDepth--;
+        }
     }
     var _ = {
-        indexOf: function () {
-            if (Array.prototype.indexOf) {
-                return function (xs, x) {
-                    return xs.indexOf(x);
-                };
-            } else {
-                return function (xs, x) {
-                    for (var i = 0, y; i < xs.length; i++) {
-                        y = xs[i];
-                        if (x === y) {
-                            return i;
-                        }
-                    }
-                    return -1;
-                };
-            }
-        }(),
+        indexOf: indexOf,
         indexWhere: function (xs, f) {
             for (var i = 0, y; i < xs.length; i++) {
                 y = xs[i];
@@ -130,9 +133,7 @@
             }
             return -1;
         },
-        head: function (xs) {
-            return xs[0];
-        },
+        head: head,
         always: function (x) {
             return function () {
                 return x;
@@ -146,27 +147,9 @@
         empty: function (xs) {
             return xs.length === 0;
         },
-        tail: function (xs) {
-            return xs.slice(1, xs.length);
-        },
-        filter: function (f, xs) {
-            var filtered = [];
-            for (var i = 0, x; i < xs.length; i++) {
-                x = xs[i];
-                if (f(x)) {
-                    filtered.push(x);
-                }
-            }
-            return filtered;
-        },
-        map: function (f, xs) {
-            var result = [];
-            for (var i = 0, x; i < xs.length; i++) {
-                x = xs[i];
-                result.push(f(x));
-            }
-            return result;
-        },
+        tail: tail,
+        filter: filter,
+        map: map,
         each: function (xs, f) {
             for (var key in xs) {
                 if (Object.prototype.hasOwnProperty.call(xs, key)) {
@@ -179,18 +162,13 @@
             return isArray(xs) ? xs : [xs];
         },
         contains: function (xs, x) {
-            return _.indexOf(xs, x) !== -1;
+            return indexOf(xs, x) !== -1;
         },
-        id: function (x) {
-            return x;
-        },
+        id: id,
         last: function (xs) {
             return xs[xs.length - 1];
         },
         all: function (xs, f) {
-            if (f === void 0) {
-                f = _.id;
-            }
             for (var i = 0, x; i < xs.length; i++) {
                 x = xs[i];
                 if (!f(x)) {
@@ -200,9 +178,6 @@
             return true;
         },
         any: function (xs, f) {
-            if (f === void 0) {
-                f = _.id;
-            }
             for (var i = 0, x; i < xs.length; i++) {
                 x = xs[i];
                 if (f(x)) {
@@ -212,46 +187,28 @@
             return false;
         },
         without: function (x, xs) {
-            return _.filter(function (y) {
+            return filter(function (y) {
                 return y !== x;
             }, xs);
         },
         remove: function (x, xs) {
-            var i = _.indexOf(xs, x);
+            var i = indexOf(xs, x);
             if (i >= 0) {
                 return xs.splice(i, 1);
             }
         },
-        fold: function (xs, seed, f) {
-            for (var i = 0, x; i < xs.length; i++) {
-                x = xs[i];
-                seed = f(seed, x);
-            }
-            return seed;
-        },
+        fold: fold,
         flatMap: function (f, xs) {
-            return _.fold(xs, [], function (ys, x) {
+            return fold(xs, [], function (ys, x) {
                 return ys.concat(f(x));
             });
-        },
-        cached: function (f) {
-            var value = None;
-            return function () {
-                if (typeof value !== 'undefined' && value !== null ? value._isNone : undefined) {
-                    value = f();
-                    f = undefined;
-                }
-                return value;
-            };
         },
         bind: function (fn, me) {
             return function () {
                 return fn.apply(me, arguments);
             };
         },
-        isFunction: function (f) {
-            return typeof f === 'function';
-        },
+        isFunction: isFunction,
         toFunction: function (f) {
             if (typeof f == 'function') {
                 return f;
@@ -260,52 +217,8 @@
                 return f;
             };
         },
-        toString: function (obj) {
-            var hasProp = {}.hasOwnProperty;
-            try {
-                recursionDepth++;
-                if (obj == null) {
-                    return 'undefined';
-                } else if (_.isFunction(obj)) {
-                    return 'function';
-                } else if (isArray(obj)) {
-                    if (recursionDepth > 5) {
-                        return '[..]';
-                    }
-                    return '[' + _.map(_.toString, obj).toString() + ']';
-                } else if ((obj != null ? obj.toString : void 0) != null && obj.toString !== Object.prototype.toString) {
-                    return obj.toString();
-                } else if (typeof obj === 'object') {
-                    if (recursionDepth > 5) {
-                        return '{..}';
-                    }
-                    var results = [];
-                    for (var key in obj) {
-                        if (!hasProp.call(obj, key))
-                            continue;
-                        var value = function () {
-                            try {
-                                return obj[key];
-                            } catch (error) {
-                                return error;
-                            }
-                        }();
-                        results.push(_.toString(key) + ':' + _.toString(value));
-                    }
-                    return '{' + results + '}';
-                } else {
-                    return obj;
-                }
-            } finally {
-                recursionDepth--;
-            }
-        }
+        toString: toString
     };
-    function flip(f) {
-        return function (a, b) {
-            return f(b, a);
-        };
-    }
     var recursionDepth = 0;
     var more = undefined;
     var noMore = '<no-more>';
@@ -340,7 +253,7 @@
     var aftersStackHeight = 0;
     var flushed = {};
     var processingAfters = false;
-    function toString() {
+    function toString$1() {
         return _.toString({
             rootEvent: rootEvent,
             processingAfters: processingAfters,
@@ -536,7 +449,7 @@
         return waiterObs.length > 0;
     }
     var UpdateBarrier = {
-        toString: toString,
+        toString: toString$1,
         whenDoneWith: whenDoneWith,
         hasWaiters: hasWaiters,
         inTransaction: inTransaction,
@@ -619,6 +532,82 @@
             }
             return reply;
         };
+    }
+    var Some = function () {
+        function Some(value) {
+            this._isSome = true;
+            this.isDefined = true;
+            this.value = value;
+        }
+        Some.prototype.getOrElse = function (arg) {
+            return this.value;
+        };
+        Some.prototype.get = function () {
+            return this.value;
+        };
+        Some.prototype.filter = function (f) {
+            if (f(this.value)) {
+                return new Some(this.value);
+            } else {
+                return None;
+            }
+        };
+        Some.prototype.map = function (f) {
+            return new Some(f(this.value));
+        };
+        Some.prototype.forEach = function (f) {
+            f(this.value);
+        };
+        Some.prototype.toArray = function () {
+            return [this.value];
+        };
+        Some.prototype.inspect = function () {
+            return 'Some(' + this.value + ')';
+        };
+        Some.prototype.toString = function () {
+            return this.inspect();
+        };
+        return Some;
+    }();
+    var None = {
+        _isNone: true,
+        getOrElse: function (value) {
+            return value;
+        },
+        get: function () {
+            throw new Error('None.get()');
+        },
+        filter: function () {
+            return None;
+        },
+        map: function () {
+            return None;
+        },
+        forEach: function () {
+        },
+        isDefined: false,
+        toArray: function () {
+            return [];
+        },
+        inspect: function () {
+            return 'None';
+        },
+        toString: function () {
+            return this.inspect();
+        }
+    };
+    function none() {
+        return None;
+    }
+    function toOption(v) {
+        if (v && (v._isSome || v._isNone)) {
+            return v;
+        } else {
+            return new Some(v);
+        }
+    }
+    function isNone(object) {
+        return typeof object !== 'undefined' && object !== null ? object._isNone : false;
     }
     var eventIdCounter = 0;
     var Event = function () {
@@ -1601,7 +1590,7 @@
             throw new Error('Unknown observable: ' + sampler);
         }
     }
-    function map(src, f) {
+    function map$1(src, f) {
         if (f instanceof Property) {
             return withLatestFrom(src, f, function (a, b) {
                 return b;
@@ -1817,7 +1806,7 @@
         ]));
     }
     function makeCombinator(combinator) {
-        if (typeof combinator !== 'undefined' && combinator !== null) {
+        if (typeof combinator == 'function') {
             return combinator;
         } else {
             return _.id;
@@ -1890,7 +1879,7 @@
         }
         return src.transform(predicateTransformer(toPredicate(f)), desc);
     }
-    function filter(src, f) {
+    function filter$1(src, f) {
         return withPredicate(src, f, filterT, new Desc(src, 'filter', [f]));
     }
     function filterT(f) {
@@ -1951,7 +1940,7 @@
             streams_[_i] = arguments[_i];
         }
         var streams = argumentsToObservables(streams_);
-        return (streams.length ? _.fold(_.tail(streams), _.head(streams).toEventStream(), function (a, b) {
+        return (streams.length ? fold(tail(streams), head(streams).toEventStream(), function (a, b) {
             return a.concat(b);
         }) : never()).withDesc(new Desc('Bacon', 'concatAll', streams));
     }
@@ -1974,7 +1963,7 @@
         }, undefined, allowSync);
         return justInitValue.concat(stream, allowSync).toProperty();
     }
-    function fold(src, seed, f) {
+    function fold$1(src, seed, f) {
         return src.scan(seed, f).last().withDesc(new Desc(src, 'fold', [
             seed,
             f
@@ -2832,7 +2821,7 @@
             }).withDesc(new Desc(this, 'errors'));
         };
         Observable.prototype.filter = function (f) {
-            return filter(this, f);
+            return filter$1(this, f);
         };
         Observable.prototype.first = function () {
             return take(1, this, new Desc(this, 'first'));
@@ -2844,7 +2833,7 @@
             return flatScan(this, seed, f);
         };
         Observable.prototype.fold = function (seed, f) {
-            return fold(this, seed, f);
+            return fold$1(this, seed, f);
         };
         Observable.prototype.forEach = function (f) {
             if (f === void 0) {
@@ -2921,7 +2910,7 @@
             });
         };
         Observable.prototype.reduce = function (seed, f) {
-            return fold(this, seed, f);
+            return fold$1(this, seed, f);
         };
         Observable.prototype.scan = function (seed, f) {
             return scan(this, seed, f);
@@ -3056,7 +3045,7 @@
             return groupBy(this, keyF, limitF);
         };
         Property.prototype.map = function (f) {
-            return map(this, f);
+            return map$1(this, f);
         };
         Property.prototype.not = function () {
             return not(this);
@@ -3168,7 +3157,7 @@
             return groupBy(this, keyF, limitF);
         };
         EventStream.prototype.map = function (f) {
-            return map(this, f);
+            return map$1(this, f);
         };
         EventStream.prototype.merge = function (other) {
             return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
