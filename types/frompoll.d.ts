@@ -1,4 +1,5 @@
 import { EventLike } from "./frombinder";
+import { EventStream } from "./observable";
 /**
  * A polled function used by [fromPoll](../globals.html#frompoll)
  */
@@ -14,4 +15,4 @@ export interface PollFunction<V> {
  * @param poll function to be polled
  * @typeparam V Type of stream elements
  */
-export default function fromPoll<V>(delay: number, poll: PollFunction<V>): import("../../../../../Users/juha/code/bacon.js/src/observable").EventStream<V>;
+export default function fromPoll<V>(delay: number, poll: PollFunction<V>): EventStream<V>;

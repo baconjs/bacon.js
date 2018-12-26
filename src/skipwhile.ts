@@ -1,6 +1,6 @@
 import { Desc } from "./describe";
 import { default as Observable } from "./observable";
-import { more } from "./reply";
+import { Reply, more } from "./reply";
 import { Event, hasValue } from "./event"
 import { EventSink } from "./types";
 import { Predicate, PredicateOrProperty, withPredicate } from "./predicate";
@@ -11,9 +11,9 @@ export function skipWhile<V>(src: Observable<V>, f: PredicateOrProperty<V>) {
 }
 
 /** @hidden */
-export function skipWhileT<V>(f: Predicate<V>) {
+export function skipWhileT<V>(f: Predicate<V>): (event: Event<V>, sink: EventSink<V>) => Reply {
   var started = false;
-  return function(event: Event<V>, sink: EventSink<V>) {
+  return function(event, sink) {
     if (started || !hasValue(event) || !f(event.value)) {
       if (event.hasValue) {
         started = true;

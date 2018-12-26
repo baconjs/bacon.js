@@ -1,6 +1,7 @@
 import { EventStream } from "./observable";
 import Observable from "./observable";
 import { EventSink, Unsub } from "./types";
+import { Reply } from "./reply";
 interface Subscription<V> {
     input: Observable<V>;
     unsub: Unsub | undefined;
@@ -40,15 +41,15 @@ export default class Bus<V> extends EventStream<V> {
      After this call, there'll be no more events to the subscribers.
      Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
      */
-    end(): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
+    end(): Reply;
     /**
      * Pushes a new value to the stream.
      */
-    push(value: V): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
+    push(value: V): Reply;
     /**
      * Pushes an error to this stream.
      */
-    error(error: any): import("../../../../../Users/juha/code/bacon.js/src/reply").Reply;
+    error(error: any): Reply;
     /** @hidden */
     unsubAll(): void;
     /** @hidden */

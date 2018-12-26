@@ -1,4 +1,4 @@
-import { noMore } from "./reply";
+import { Reply, noMore } from "./reply";
 import { endEvent, Event } from "./event";
 import { EventSink } from "./types"
 import { Desc } from "./describe"
@@ -10,7 +10,8 @@ export function take<V>(count: number, src: Observable<V>, desc?: Desc): Observa
 }
 
 /** @hidden */
-export function takeT<V>(count: number) { return (e: Event<V>, sink: EventSink<V>) => {
+export function takeT<V>(count: number): (e: Event<V>, sink: EventSink<V>) => Reply {
+  return (e, sink) => {
     if (!e.hasValue) {
       return sink(e);
     } else {

@@ -1,4 +1,5 @@
 import fromBinder, { EventLike } from "./frombinder";
+import { EventStream } from "./observable";
 import { Desc } from "./describe";
 import GlobalScheduler from "./scheduler";
 
@@ -16,7 +17,7 @@ export type PollFunction<V> = () => EventLike<V>
  * @param poll function to be polled
  * @typeparam V Type of stream elements
  */
-export default function fromPoll<V>(delay: number, poll: PollFunction<V>) {
+export default function fromPoll<V>(delay: number, poll: PollFunction<V>): EventStream<V> {
   var desc = new Desc("Bacon", "fromPoll", [delay, poll]);
   return fromBinder((function (handler) {
     var id = GlobalScheduler.scheduler.setInterval(handler, delay);

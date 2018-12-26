@@ -5,7 +5,7 @@ import { Event, endEvent, Error, nextEvent } from "./event";
 import { Desc } from "./describe";
 import { EventSink, Unsub } from "./types"
 import { assertObservable } from "./internal/assert";
-import { noMore, more } from "./reply";
+import { Reply, noMore, more } from "./reply";
 
 interface Subscription<V> {
   input: Observable<V>
@@ -65,7 +65,7 @@ export default class Bus<V> extends EventStream<V> {
    After this call, there'll be no more events to the subscribers.
    Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
    */
-  end() {
+  end(): Reply {
     this.ended = true;
     this.unsubAll();
     if (typeof this.sink === "function") { return this.sink(endEvent()); }
@@ -74,7 +74,7 @@ export default class Bus<V> extends EventStream<V> {
   /**
    * Pushes a new value to the stream.
    */
-  push(value: V) {
+  push(value: V): Reply {
     if (!this.ended && typeof this.sink === "function") {
       var rootPush = !this.pushing
       if (!rootPush) {
@@ -107,7 +107,7 @@ export default class Bus<V> extends EventStream<V> {
   /**
    * Pushes an error to this stream.
    */
-  error(error: any) {
+  error(error: any): Reply {
     if (typeof this.sink === "function") { return this.sink(new Error(error)); }
   }
 

@@ -5,9 +5,9 @@ import { Event, Initial, Value } from "../event";
 import { EventSink, Subscribe, Unsub } from "../types"
 
 /** @hidden */
-export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<V>, streamSubscribe: Subscribe<V>) {
+export default function streamSubscribeToPropertySubscribe<V>(initValue: Option<V>, streamSubscribe: Subscribe<V>): (sink: EventSink<V>) => Unsub {
   //assertFunction(streamSubscribe)
-  return function(sink: EventSink<V>) {
+  return function(sink) {
     var initSent = false;
     var subbed = false;
     var unsub: Unsub = nop;

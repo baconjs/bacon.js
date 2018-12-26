@@ -1,3 +1,4 @@
+import { Unsub } from "./types";
 /**
  A shorthand for combining multiple
  sources (streams, properties, constants) as array and assigning the
@@ -9,4 +10,4 @@
  Bacon.onValues(Bacon.constant(1), Bacon.constant(2), f)
  ```
  */
-export default function onValues(...args: any[]): import("../../../../../Users/juha/code/bacon.js/src/types").Unsub;
+export default function onValues(...args: any[]): Unsub;

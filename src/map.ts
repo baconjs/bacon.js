@@ -3,6 +3,7 @@ import Observable from "./observable"
 import { Property } from "./observable";
 import { Event } from "./event"
 import { EventSink } from "./types"
+import { Reply } from "./reply";
 import withLatestFrom from "./withlatestfrom"
 import _ from "./_"
 
@@ -15,9 +16,9 @@ export function map<V, V2>(src: Observable<V>, f: ((value: V) => V2) | Property<
 }
 
 /** @hidden */
-export function mapT<V, V2>(f: ((value: V) => V2) | V2) {
+export function mapT<V, V2>(f: ((value: V) => V2) | V2): (e: Event<V>, sink: EventSink<V2>) => Reply {
   let theF = _.toFunction(f)
-  return (e: Event<V>, sink: EventSink<V2>) => {
+  return (e, sink) => {
     return sink(e.fmap(theF))
   }
 }

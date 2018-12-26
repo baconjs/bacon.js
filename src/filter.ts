@@ -1,5 +1,5 @@
 import { Desc } from "./describe";
-import { more } from "./reply";
+import { Reply, more } from "./reply";
 import Observable from "./observable";
 import { Event } from "./event"
 import { EventSink } from "./types"
@@ -11,8 +11,8 @@ export function filter<V>(src: Observable<V>, f: PredicateOrProperty<V>): Observ
 }
 
 /** @hidden */
-export function filterT<V>(f: Predicate<V>) {
-  return (e:Event<V>, sink: EventSink<V>) => {
+export function filterT<V>(f: Predicate<V>): (e: Event<V>, sink: EventSink<V>) => Reply {
+  return (e, sink) => {
     if (e.filter(f)) {
       return sink(e);
     } else {
