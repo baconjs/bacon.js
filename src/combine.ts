@@ -7,6 +7,7 @@ import { isObservable } from "./helpers";
 import { DefaultSource, Source } from "./internal/source";
 import Observable from "./observable";
 import { Property } from "./observable";
+import { Function2 } from "./types";
 
 /**
  Combines Properties, EventStreams and constant values so that the result Property will have an array of the latest
@@ -60,7 +61,7 @@ export function combineWith<Out>(f: (...args: any[]) => Out, ...streams: Observa
 };
 
 /** @hidden */
-export function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (left: V, right: V2) => R): Property<R> {
+export function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: Function2<V, V2, R>): Property<R> {
   return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 };
 

@@ -18,7 +18,7 @@ function isEventSourceFn(x: any): x is EventSourceFn {
 // eventSource - event name to bind or a function that performs custom binding
 // eventTransformer - defaults to returning the first argument to handler
 //
-// Examples
+// Example 1:
 //
 //   Bacon.fromEventTarget(document.body, "click")
 //   # => EventStream
@@ -59,8 +59,15 @@ var findHandlerMethods = function(target: any): [Function, Function] {
  You can also pass an optional function that transforms the emitted
  events' parameters.
 
+ The simple form:
+
  ```js
  Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
+ ```
+
+ Using a binder function:
+
+ ```js
  Bacon.fromEvent(
  window,
  function(binder, listener) {

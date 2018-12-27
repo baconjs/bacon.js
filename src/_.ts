@@ -190,6 +190,7 @@ export function toString(obj: any): string {
   }
 }
 
+/** @hidden */
 export function without<A>(x: A, xs: A[]) {
   return filter((function(y: A) { return y !== x; }), xs);
 }

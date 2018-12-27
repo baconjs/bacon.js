@@ -3,10 +3,10 @@ import { Event, isEvent, toEvent } from './event';
 import { isArray } from './helpers';
 import { Desc } from "./describe";
 import { EventStream } from "./observable";
-import { EventSink, Sink, Unsub } from "./types";
-import { more, noMore } from "./reply";
+import { EventSink, Unsub } from "./types";
+import { more, noMore, Reply } from "./reply";
 
-export type FlexibleSink<V> = Sink<EventLike<V>>
+export type FlexibleSink<V> = (event: EventLike<V>) => Reply
 
 export type EventLike<V> = V | Event<V> | Event<V>[]
 
