@@ -1,6 +1,17 @@
 import UpdateBarrier from "./internal/updatebarrier";
 import { Desc, describe } from "./describe";
-import { EventSink, EventStreamDelay, nullSink, nullVoidSink, Sink, Subscribe, Unsub, VoidSink } from "./types"
+import {
+  EventSink,
+  EventStreamDelay,
+  nullSink,
+  nullVoidSink,
+  Sink,
+  Subscribe,
+  Unsub,
+  VoidSink,
+  Function1,
+  Function2, Function0
+} from "./types"
 import { default as withStateMachine, StateF } from "./withstatemachine";
 import { default as skipDuplicates, Equals } from "./skipduplicates";
 import { take } from "./take";
@@ -53,7 +64,7 @@ import bufferingThrottle from "./bufferingthrottle";
 import { transformE, Transformer, transformP } from "./transform";
 import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
-import { PredicateOrProperty } from "./predicate";
+import { Predicate, PredicateOrProperty } from "./predicate";
 import skipWhile from "./skipwhile";
 import _ from "./_";
 import { groupBy, GroupLimiter } from "./groupby";
@@ -143,7 +154,7 @@ streams or properties using a two-arg function. Similarly to [`scan`](#scan), yo
 method name instead, so you could do `a.combine(b, ".concat")` for two
 properties with array value. The result is a [Property](property.html).
    */
-  combine<V2, R>(right: Observable<V2>, f: (left: V, right: V2) => R): Property<R> {
+  combine<V2, R>(right: Observable<V2>, f: Function2<V, V2, R>): Property<R> {
     return combine(this, right, f)
   }
   /**
@@ -274,10 +285,10 @@ Please note that for Properties, it's not guaranteed that the function will be c
 per event; when a Property loses all of its subscribers it will re-emit its current value when a 
 new subscriber is added.
    */
-  doAction(f: (value: V) => any): this {
+  doAction(f: Function1<V, any>): this {
     return <any>this.transform(doActionT(f), new Desc(this, "doAction", [f]))
   }
-  doEnd(f: Function): this {
+  doEnd(f: Function0<any>): this {
     return <any>this.transform(doEndT(f), new Desc(this, "doEnd", [f]))
   }
   /**
@@ -285,7 +296,7 @@ Returns a stream/property where the function f
 is executed for each error, before dispatching to subscribers.
 That is, same as [`doAction`](#observable-doaction) but for errors.
    */
-  doError(f: Function): this {
+  doError(f: Function1<any, any>): this {
     return <any>this.transform(doErrorT(f), new Desc(this, "doError", [f]))
   }
   /**
@@ -307,7 +318,7 @@ error is included in the output of the returned Observable.
 
 @param  predicate   optional predicate function to determine whether to end on a given error
  */
-  endOnError(predicate: (error: any) => boolean = x => true): this {
+  endOnError(predicate: Predicate<any> = x => true): this {
     return <any>endOnError(this, predicate)
   }
   /**
@@ -325,7 +336,7 @@ You can also filter values based on the value of a
 property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
 at the time of the event.
    */
-  filter(f: ((value: V) => boolean) | boolean | Property<boolean>): this {
+  filter(f: Predicate<V> | boolean | Property<boolean>): this {
     return <any>filter(this, f)
   }
   /**
@@ -370,7 +381,7 @@ Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events.
 value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
 passed through, which can be implemented using flatMapError.
    */
-  abstract flatMapError(f: (error: any) => Observable<V>): Observable<V>
+  abstract flatMapError(f: Function1<any, Observable<V>>): Observable<V>
   abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
   /**
 Like [`flatMap`](#observable-flatmap), but only spawns a new
@@ -401,7 +412,7 @@ and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are p
    * @param f transition function from previous state and new value to next state
    * @typeparam V2 state and result type
    */
-  flatScan<V2>(seed: V2, f: (acc: V2, value: V) => Observable<V2>): Property<V2> {
+  flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2> {
     return <any>flatScan(this, seed, f)
   }
   /**
@@ -464,7 +475,7 @@ Bacon.sequentially(2, events)
 ```
 
    */
-  abstract groupBy(keyF: (value: V) => string, limitF?: GroupLimiter<V>): Observable<EventStream<V>>  
+  abstract groupBy(keyF: Function1<V, string>, limitF?: GroupLimiter<V>): Observable<EventStream<V>>
   /**
 Pauses and buffers the event stream if last event in valve is truthy.
 All buffered events are released when valve becomes falsy.
@@ -520,13 +531,13 @@ stream/property. Instead of a function, you can also provide a [Property](proper
 in which case each element in the source stream will be mapped to the current value of
 the given property.
   */
-  abstract map<V2>(f: ((value: V) => V2) | Property<V2> | V2): Observable<V2>
+  abstract map<V2>(f: (Function1<V, V2> | Property<V2> | V2)): Observable<V2>
   /**
 Adds an extra [`Next`](next.html) event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used.
    */
-  mapEnd(f: (() => V) | V): this {
+  mapEnd(f: Function0<V> | V): this {
     return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
   }
   /**
@@ -534,7 +545,7 @@ Maps errors using given function. More
 specifically, feeds the "error" field of the error event to the function
 and produces a [`Next`](next.html) event based on the return value.
    */
-  mapError(f: ((error: any) => V) | V): this {
+  mapError(f: Function1<any, V> | V): this {
     return <any>this.transform(mapErrorT(f), new Desc(this, "mapError", [f]))
   }
   /**
@@ -610,7 +621,7 @@ Only applicable for observables with arrays as values.
    @typeparam V2  type of values in the sampler stream
    @typeparam R   type of values in the result stream
    */
-  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: (value: V, samplerValue: V2) => R): Observable<R>
+  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R>): Observable<R>
   /**
 Scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -855,7 +866,7 @@ The method returns the same observable with mutated description.
    @typeparam V2  type of values in the samplee
    @typeparam R   type of values in the result
    */
-  abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, otherValue: V2) => R): Observable<R>
+  abstract withLatestFrom<V2, R>(samplee: Observable<V2>, f: Function2<V, V2, R>): Observable<R>
   /**
 Lets you run a state machine
 on an observable. Give it an initial state object and a state
@@ -908,7 +919,7 @@ x.zip(y, function(x, y) { return x + y })
 See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html/zipasarray) for zipping more than 2 sources.
 
    */
-  zip<V2, Out>(other: Observable<V2>, f: (value: V, otherValue: V2) => Out): EventStream<Out> {
+  zip<V2, R>(other: Observable<V2>, f: Function2<V, V2, R>): EventStream<R> {
     return zip(this, other, f)
   }
 }
@@ -978,7 +989,7 @@ export class Property<V> extends Observable<V> {
     return <any>flatMapConcat(this, f)
   }
 
-  flatMapError(f: (error: any) => Observable<V>): EventStream<V> {
+  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {
     return <any>flatMapError(this, f)
   }
 
@@ -998,11 +1009,11 @@ export class Property<V> extends Observable<V> {
     return <any>flatMapWithConcurrencyLimit(this, limit, f)
   }
 
-  groupBy(keyF: (value: V) => string, limitF: GroupLimiter<V> = _.id): Property<EventStream<V>> {
+  groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): Property<EventStream<V>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
-  map<V2>(f: ((value: V) => V2) | Property<V2>): Property<V2> {
+  map<V2>(f: Function1<V, V2> | Property<V2>): Property<V2> {
     return <any>map<V, V2>(this, f)
   }
 
@@ -1026,7 +1037,7 @@ export class Property<V> extends Observable<V> {
     return sampleP(this, interval)
   }
 
-  sampledBy<V2, R>(sampler: Observable<V2>, f: (value: V, samplerValue: V2) => R = (a, b) => <any>a): Observable<R> {
+  sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
     return sampledByP(this, sampler, f)
   }
 
@@ -1073,7 +1084,7 @@ export class Property<V> extends Observable<V> {
     return transformP(this, transformer, desc)
   }
 
-  withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, otherValue: V2) => R): Property<R> {
+  withLatestFrom<V2, R>(samplee: Observable<V2>, f: Function2<V, V2, R>): Property<R> {
     return withLatestFromP(this, samplee, f)
   }
 
@@ -1178,14 +1189,14 @@ export class EventStream<V> extends Observable<V> {
   flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
   flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
   flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
-  flatMapError(f: (error: any) => Observable<V>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {return <any>flatMapError(this, f)}
   flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
 
-  groupBy(keyF: (value: V) => string, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
+  groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
-  map<V2>(f: ((value: V) => V2) | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
+  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
 
   /**
    Merges two streams into one stream that delivers events from both
@@ -1197,7 +1208,7 @@ export class EventStream<V> extends Observable<V> {
 
   not(): EventStream<boolean> {return <any>not(this) }
 
-  sampledBy<V2, R>(sampler: Observable<V2>, f: (value: V, samplerValue: V2) => R = (a, b) => <any>a): Observable<R> {
+  sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
     return sampledByE(this, sampler, f)
   }
 
@@ -1235,7 +1246,7 @@ export class EventStream<V> extends Observable<V> {
     return transformE(this, transformer, desc)
   }
 
-  withLatestFrom<V2, R>(samplee: Observable<V2>, f: (value: V, othervalue: V2) => R): EventStream<R> {
+  withLatestFrom<V2, R>(samplee: Observable<V2>, f: Function2<V, V2, R>): EventStream<R> {
     return withLatestFromE(this, samplee, f)
   }
 

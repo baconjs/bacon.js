@@ -5,8 +5,9 @@ import { Desc } from "./describe";
 import Observable from "./observable";
 import withLatestFrom from "./withlatestfrom";
 import { composeT, Transformer } from "./transform";
+import { Function1 } from "./types";
 
-export type Predicate<V> = (value: V) => boolean
+export type Predicate<V> = Function1<V, boolean>
 /** @hidden */
 export type PredicateOrBoolean<V> = Predicate<V> | boolean
 export type PredicateOrProperty<V> = Predicate<V> | boolean | Property<boolean>
