@@ -3,9 +3,7 @@ import Observable from "./observable";
 var spies: Spy[] = []
 var running = false
 
-export interface Spy {
-  (obs: Observable<any>): any
-}
+export type Spy = (obs: Observable<any>) => any
 
 /** @hidden */
 export function registerObs(obs: Observable<any>) {

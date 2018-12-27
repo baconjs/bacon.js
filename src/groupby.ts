@@ -8,9 +8,7 @@ import { Event } from "./event"
 import { EventSink } from "./types";
 import { composeT } from "./transform";
 
-export interface GroupLimiter<V> {
-  (data: EventStream<V>, firstValue: V): EventStream<V>
-}
+export type GroupLimiter<V> = (data: EventStream<V>, firstValue: V) => EventStream<V>
 
 /** @hidden */
 interface StreamMap<V> {

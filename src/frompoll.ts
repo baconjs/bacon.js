@@ -5,9 +5,7 @@ import GlobalScheduler from "./scheduler";
 /**
  * A polled function used by [fromPoll](../globals.html#frompoll)
  */
-export interface PollFunction<V> {
-  (): EventLike<V>
-}
+export type PollFunction<V> = () => EventLike<V>
 
 /**
  Polls given function with given interval.

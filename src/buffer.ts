@@ -94,9 +94,7 @@ function toDelayFunction(delay: number | DelayFunction | undefined): DelayFuncti
   return delay
 }
 
-interface BufferHandler<V> {
-  (buffer: Buffer<V>): any
-}
+type BufferHandler<V> = (buffer: Buffer<V>) => any
 
 /** @hidden */
 export function buffer<V>(src: EventStream<V>, onInput: BufferHandler<V> = nop, onFlush: BufferHandler<V> = nop): EventStream<V[]> {

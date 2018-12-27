@@ -11,9 +11,7 @@ import {EventSink, Unsub} from "./types";
 
 export type ValueSpawner<V, V2> = (value: V) => (Observable<V2> | EventOrValue<V2>)
 export type SpawnerOrObservable<V, V2> = ValueSpawner<V, V2> | Observable<V2>
-export interface EventSpawner<V, V2> {
-  (e: Event<V>): Observable<V2> | EventOrValue<V2>
-}
+export type EventSpawner<V, V2> = (e: Event<V>) => Observable<V2> | EventOrValue<V2>
 
 /** @hidden */
 type EventOrValue<V> = Event<V> | V

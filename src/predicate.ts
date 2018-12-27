@@ -22,9 +22,7 @@ export function toPredicate<V>(f: PredicateOrBoolean<V>): Predicate<V> {
   }
 }
 
-interface Predicate2Transformer<V> {
-  (p: Predicate<V>): Transformer<V, V>
-}
+type Predicate2Transformer<V> = (p: Predicate<V>) => Transformer<V, V>
 
 type BoolTuple<T> = [T, boolean]
 

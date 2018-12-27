@@ -7,9 +7,7 @@ import { Desc } from "./describe";
 import UpdateBarrier from "./internal/updatebarrier";
 import { EventSink, Subscribe } from "./types";
 
-export interface Accumulator<In, Out> {
-  (acc: Out, next: In): Out
-}
+export type Accumulator<In, Out> = (acc: Out, value: In) => Out
 
 /** @hidden */
 export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumulator<In, Out>): Property<Out> {

@@ -4,9 +4,7 @@ import { Desc } from "./describe";
 import Observable from "./observable";
 import Event, { hasValue } from "./event"
 
-export interface Equals<A> {
-  (left: A, right: A): boolean
-}
+export type Equals<A> = (left: A, right: A) => boolean
 
 /** @hidden */
 export function equals<A>(a: A, b: A) { return a === b; }

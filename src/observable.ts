@@ -914,9 +914,7 @@ See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html
 }
 
 /** @hidden */
-export interface ObservableConstructor {
-  (description: Desc, subscribe: Subscribe<any>): Observable<any>
-}
+export type ObservableConstructor = (description: Desc, subscribe: Subscribe<any>) => Observable<any>
 
 /**
  A reactive property. Has the concept of "current value".

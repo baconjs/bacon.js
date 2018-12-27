@@ -14,14 +14,9 @@ export type EventLike<V> = V | Event<V> | Event<V>[]
 Binder function used in [fromBinder](../globals.html#frombinder)
 @typeparam V Type of stream elements
  */
-export interface Binder<V> {
-  (sink: FlexibleSink<V>): Unsub
-}
+export type Binder<V>= (sink: FlexibleSink<V>) => Unsub
 
-export interface EventTransformer<V> {
-  (...args: any[]): EventLike<V>
-}
-
+export type EventTransformer<V> = (...args: any[]) => EventLike<V>
 
 /**
  If none of the other factory methods above apply, you may of course roll your own EventStream by using `fromBinder`.
