@@ -93,9 +93,9 @@ export default function fromBinder<V>(binder: Binder<V>, eventTransformer: Event
     };
     var unbinder = binder(function(...args: any[]) {
       var value_: EventLike<V> = eventTransformer(...args);
-      let valueArray: (V | Event<V>)[] = isArray(value_) && isEvent(_.last(<any>value_))
-        ? <any>value_
-        : <any>[value_]
+      let valueArray: (V | Event<V>)[] = isArray(value_) && isEvent(_.last(value_ as any[]))
+        ? value_ as Event<V>[]
+        : [value_ as V|Event<V>]
       var reply = more;
       for (var i = 0; i < valueArray.length; i++) {
         let event = toEvent(valueArray[i])
