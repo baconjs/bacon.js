@@ -31,6 +31,7 @@ import "./flatmapevent";
 import "./flatmapfirst";
 import "./flatmaplatest";
 import "./flatmapwithconcurrencylimit";
+import "./flatmapwithconcurrencylimitandpriority";
 import "./flatmaperror";
 import "./flatmapconcat";
 import "./flatscan";

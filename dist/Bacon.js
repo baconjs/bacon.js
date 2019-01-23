@@ -1434,7 +1434,7 @@ var Bacon = {
   CompositeUnsubscribe: CompositeUnsubscribe,
   never: never,
   constant: constant,
-  version: '2.0.10'
+  version: '2.0.11'
 };
 
 Bacon.Bacon = Bacon;
@@ -2067,6 +2067,13 @@ Observable.prototype.flatMap_ = function (f) {
   var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function (sink) {
     var composite = new CompositeUnsubscribe();
     var queue = [];
+    var pushEventIntoQueue = params.compareFn ? function (event) {
+      queue.push(event);
+      queue.sort(function (a, b) {
+        return a.hasValue && b.hasValue ? params.compareFn(a.value, b.value) : 0;
+      });
+      return queue.length;
+    } : queue.push.bind(queue);
     var spawn = function (event) {
       if (isProperty && event.isInitial) {
         if (initialSpawned) {
@@ -2119,7 +2126,7 @@ Observable.prototype.flatMap_ = function (f) {
             return noMore;
           }
           if (params.limit && composite.count() > params.limit) {
-            return queue.push(event);
+            return pushEventIntoQueue(event);
           } else {
             return spawn(event);
           }
@@ -2871,6 +2878,18 @@ Observable.prototype.flatMapFirst = function () {
   return this.flatMap_(handleEventValueWith(makeSpawner(arguments)), {
     firstOnly: true,
     desc: new Desc(this, "flatMapFirst", arguments)
+  });
+};
+
+Observable.prototype.flatMapWithConcurrencyLimitAndPriority = function (limit, compareFn) {
+  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args[_key - 2] = arguments[_key];
+  }
+
+  return this.flatMap_(handleEventValueWith(makeSpawner(args)), {
+    limit: limit,
+    compareFn: compareFn,
+    desc: new Desc(this, "flatMapWithConcurrencyLimitAndPriority", [limit, compareFn].concat(args))
   });
 };
 

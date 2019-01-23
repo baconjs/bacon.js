@@ -25,6 +25,13 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
     var result = ctor(params.desc || new Desc(this, "flatMap_", arguments), function(sink) {
       var composite = new CompositeUnsubscribe();
       var queue = [];
+      var pushEventIntoQueue =
+         params.compareFn ? function(event) {
+          queue.push(event);
+          queue.sort((a, b) => (a.hasValue && b.hasValue) ? params.compareFn(a.value, b.value) : 0);
+          return queue.length;
+         }
+                          : queue.push.bind(queue);
       var spawn = function(event) {
         if (isProperty && event.isInitial) {
           if (initialSpawned) {
@@ -68,7 +75,7 @@ Observable.prototype.flatMap_ = function(f, params = { }) {
         } else {
           if (composite.unsubscribed) { return noMore; }
           if (params.limit && composite.count() > params.limit) {
-            return queue.push(event);
+            return pushEventIntoQueue(event);
           } else {
             return spawn(event);
           }
