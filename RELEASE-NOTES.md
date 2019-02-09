@@ -1,3 +1,7 @@
+## 2.0.11
+
+- Flatscan only defined for EventStreams (as per docs, fix #733)
+
 ## 2.0.10
 
 - Fix Bacon.fromArray bug (#724)
