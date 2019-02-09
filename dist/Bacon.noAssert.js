@@ -1307,7 +1307,7 @@
         CompositeUnsubscribe: CompositeUnsubscribe,
         never: never,
         constant: constant,
-        version: '2.0.10'
+        version: '<version>'
     };
     Bacon.Bacon = Bacon;
     function map(p) {
@@ -2681,7 +2681,7 @@
             desc: new Desc(this, 'flatMapError', [fn])
         });
     };
-    Observable.prototype.flatScan = function (seed, f) {
+    EventStream.prototype.flatScan = function (seed, f) {
         var current = seed;
         return this.flatMapConcat(function (next) {
             return makeObservable(f(current, next)).doAction(function (updated) {

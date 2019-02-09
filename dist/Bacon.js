@@ -1434,7 +1434,7 @@ var Bacon = {
   CompositeUnsubscribe: CompositeUnsubscribe,
   never: never,
   constant: constant,
-  version: '2.0.10'
+  version: '<version>'
 };
 
 Bacon.Bacon = Bacon;
@@ -2898,7 +2898,7 @@ Observable.prototype.flatMapError = function (fn) {
   });
 };
 
-Observable.prototype.flatScan = function (seed, f) {
+EventStream.prototype.flatScan = function (seed, f) {
   var current = seed;
   return this.flatMapConcat(function (next) {
     return makeObservable(f(current, next)).doAction(function (updated) {
