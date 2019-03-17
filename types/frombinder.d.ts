@@ -1,18 +1,15 @@
 import { Event } from './event';
 import { EventStream } from "./observable";
-import { Sink, Unsub } from "./types";
-export declare type FlexibleSink<V> = Sink<EventLike<V>>;
+import { Unsub } from "./types";
+import { Reply } from "./reply";
+export declare type FlexibleSink<V> = (event: EventLike<V>) => Reply;
 export declare type EventLike<V> = V | Event<V> | Event<V>[];
 /**
 Binder function used in [fromBinder](../globals.html#frombinder)
 @typeparam V Type of stream elements
  */
-export interface Binder<V> {
-    (sink: FlexibleSink<V>): Unsub;
-}
-export interface EventTransformer<V> {
-    (...args: any[]): EventLike<V>;
-}
+export declare type Binder<V> = (sink: FlexibleSink<V>) => Unsub;
+export declare type EventTransformer<V> = (...args: any[]) => EventLike<V>;
 /**
  If none of the other factory methods above apply, you may of course roll your own EventStream by using `fromBinder`.
 

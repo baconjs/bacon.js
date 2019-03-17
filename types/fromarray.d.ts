@@ -10,4 +10,4 @@ import { Event } from "./event";
  @param   values    Array of values or events to repeat
  @typeparam V Type of stream elements
  */
-export default function fromArray<T>(values: (T | Event<T>)[]): EventStream<{}>;
+export default function fromArray<T>(values: (T | Event<T>)[]): EventStream<T>;

@@ -27,21 +27,47 @@
     function isObservable(x) {
         return x && x._isObservable;
     }
-    function indexOfDefault(xs, x) {
-        return xs.indexOf(x);
-    }
-    function indexOfFallback(xs, x) {
-        for (var i = 0, y; i < xs.length; i++) {
-            y = xs[i];
-            if (x === y) {
-                return i;
+    function all(xs, f) {
+        for (var i = 0, x; i < xs.length; i++) {
+            x = xs[i];
+            if (!f(x)) {
+                return false;
             }
         }
-        return -1;
+        return true;
     }
-    var indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
-    function id(x) {
-        return x;
+    function always(x) {
+        return function () {
+            return x;
+        };
+    }
+    function any(xs, f) {
+        for (var i = 0, x; i < xs.length; i++) {
+            x = xs[i];
+            if (f(x)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    function bind(fn, me) {
+        return function () {
+            return fn.apply(me, arguments);
+        };
+    }
+    function contains(xs, x) {
+        return indexOf(xs, x) !== -1;
+    }
+    function each(xs, f) {
+        for (var key in xs) {
+            if (Object.prototype.hasOwnProperty.call(xs, key)) {
+                var value = xs[key];
+                f(key, value);
+            }
+        }
+    }
+    function empty(xs) {
+        return xs.length === 0;
     }
     function filter(f, xs) {
         var filtered = [];
@@ -52,6 +78,11 @@
             }
         }
         return filtered;
+    }
+    function flatMap(f, xs) {
+        return fold(xs, [], function (ys, x) {
+            return ys.concat(f(x));
+        });
     }
     function flip(f) {
         return function (a, b) {
@@ -68,8 +99,36 @@
     function head(xs) {
         return xs[0];
     }
+    function id(x) {
+        return x;
+    }
+    function indexOfDefault(xs, x) {
+        return xs.indexOf(x);
+    }
+    function indexOfFallback(xs, x) {
+        for (var i = 0, y; i < xs.length; i++) {
+            y = xs[i];
+            if (x === y) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    var indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
+    function indexWhere(xs, f) {
+        for (var i = 0, y; i < xs.length; i++) {
+            y = xs[i];
+            if (f(y)) {
+                return i;
+            }
+        }
+        return -1;
+    }
     function isFunction(f) {
         return typeof f === 'function';
+    }
+    function last(xs) {
+        return xs[xs.length - 1];
     }
     function map(f, xs) {
         var result = [];
@@ -79,8 +138,30 @@
         }
         return result;
     }
+    function negate(f) {
+        return function (x) {
+            return !f(x);
+        };
+    }
+    function remove(x, xs) {
+        var i = indexOf(xs, x);
+        if (i >= 0) {
+            return xs.splice(i, 1);
+        }
+    }
     function tail(xs) {
         return xs.slice(1, xs.length);
+    }
+    function toArray(xs) {
+        return isArray(xs) ? xs : [xs];
+    }
+    function toFunction(f) {
+        if (typeof f == 'function') {
+            return f;
+        }
+        return function (x) {
+            return f;
+        };
     }
     function toString(obj) {
         var hasProp = {}.hasOwnProperty;
@@ -122,101 +203,35 @@
             recursionDepth--;
         }
     }
+    function without(x, xs) {
+        return filter(function (y) {
+            return y !== x;
+        }, xs);
+    }
     var _ = {
         indexOf: indexOf,
-        indexWhere: function (xs, f) {
-            for (var i = 0, y; i < xs.length; i++) {
-                y = xs[i];
-                if (f(y)) {
-                    return i;
-                }
-            }
-            return -1;
-        },
+        indexWhere: indexWhere,
         head: head,
-        always: function (x) {
-            return function () {
-                return x;
-            };
-        },
-        negate: function (f) {
-            return function (x) {
-                return !f(x);
-            };
-        },
-        empty: function (xs) {
-            return xs.length === 0;
-        },
+        always: always,
+        negate: negate,
+        empty: empty,
         tail: tail,
         filter: filter,
         map: map,
-        each: function (xs, f) {
-            for (var key in xs) {
-                if (Object.prototype.hasOwnProperty.call(xs, key)) {
-                    var value = xs[key];
-                    f(key, value);
-                }
-            }
-        },
-        toArray: function (xs) {
-            return isArray(xs) ? xs : [xs];
-        },
-        contains: function (xs, x) {
-            return indexOf(xs, x) !== -1;
-        },
+        each: each,
+        toArray: toArray,
+        contains: contains,
         id: id,
-        last: function (xs) {
-            return xs[xs.length - 1];
-        },
-        all: function (xs, f) {
-            for (var i = 0, x; i < xs.length; i++) {
-                x = xs[i];
-                if (!f(x)) {
-                    return false;
-                }
-            }
-            return true;
-        },
-        any: function (xs, f) {
-            for (var i = 0, x; i < xs.length; i++) {
-                x = xs[i];
-                if (f(x)) {
-                    return true;
-                }
-            }
-            return false;
-        },
-        without: function (x, xs) {
-            return filter(function (y) {
-                return y !== x;
-            }, xs);
-        },
-        remove: function (x, xs) {
-            var i = indexOf(xs, x);
-            if (i >= 0) {
-                return xs.splice(i, 1);
-            }
-        },
+        last: last,
+        all: all,
+        any: any,
+        without: without,
+        remove: remove,
         fold: fold,
-        flatMap: function (f, xs) {
-            return fold(xs, [], function (ys, x) {
-                return ys.concat(f(x));
-            });
-        },
-        bind: function (fn, me) {
-            return function () {
-                return fn.apply(me, arguments);
-            };
-        },
+        flatMap: flatMap,
+        bind: bind,
         isFunction: isFunction,
-        toFunction: function (f) {
-            if (typeof f == 'function') {
-                return f;
-            }
-            return function (x) {
-                return f;
-            };
-        },
+        toFunction: toFunction,
         toString: toString
     };
     var recursionDepth = 0;
@@ -930,7 +945,7 @@
             }
         }, new Desc(src, 'skipErrors', []));
     }
-    function last(src) {
+    function last$1(src) {
         var lastEvent;
         return src.transform(function (event, sink) {
             if (isEnd(event)) {
@@ -1339,9 +1354,9 @@
         if (!sources.length) {
             return never();
         }
-        var needsBarrier = _.any(sources, function (s) {
+        var needsBarrier = any(sources, function (s) {
             return s.flatten;
-        }) && containsDuplicateDeps(_.map(function (s) {
+        }) && containsDuplicateDeps(map(function (s) {
             return s.obs;
         }, sources));
         var desc = new Desc('Bacon', 'when', Array.prototype.slice.call(patterns));
@@ -1391,7 +1406,7 @@
                                     var applied = p.f.apply(null, values);
                                     reply = sink(trigger.e.apply(applied));
                                     if (triggers.length) {
-                                        triggers = _.filter(nonFlattened, triggers);
+                                        triggers = filter(nonFlattened, triggers);
                                     }
                                     if (reply === noMore) {
                                         return reply;
@@ -1406,7 +1421,7 @@
                     function flush() {
                         var reply = flushWhileTriggers();
                         if (ends) {
-                            if (_.all(sources, cannotSync) || _.all(ixPats, cannotMatch)) {
+                            if (all(sources, cannotSync) || all(ixPats, cannotMatch)) {
                                 reply = noMore;
                                 sink(endEvent());
                             }
@@ -1445,7 +1460,7 @@
                     });
                 };
             }
-            return new CompositeUnsubscribe(_.map(part, sources)).unsubscribe;
+            return new CompositeUnsubscribe(map(part, sources)).unsubscribe;
         });
         return resultStream;
     }
@@ -1461,7 +1476,7 @@
             var triggerFound = false;
             for (var j = 0, s; j < patSources.length; j++) {
                 s = patSources[j];
-                var index = _.indexOf(sources, s);
+                var index = indexOf(sources, s);
                 if (!triggerFound) {
                     triggerFound = isTrigger(s);
                 }
@@ -1488,7 +1503,7 @@
             }
         }
         return [
-            _.map(fromObservable, sources),
+            map(fromObservable, sources),
             pats
         ];
     }
@@ -1497,8 +1512,8 @@
         var len = sourceArgs.length;
         var rawPatterns = [];
         while (i < len) {
-            var patSources = _.toArray(sourceArgs[i++]);
-            var f = _.toFunction(sourceArgs[i++]);
+            var patSources = toArray(sourceArgs[i++]);
+            var f = toFunction(sourceArgs[i++]);
             rawPatterns.push([
                 patSources,
                 f
@@ -1523,11 +1538,11 @@
             if (isRawPattern(pattern)) {
                 rawPatterns.push([
                     pattern[0],
-                    _.toFunction(pattern[1])
+                    toFunction(pattern[1])
                 ]);
             } else {
                 var sources = pattern.slice(0, pattern.length - 1);
-                var f = _.toFunction(pattern[pattern.length - 1]);
+                var f = toFunction(pattern[pattern.length - 1]);
                 rawPatterns.push([
                     sources,
                     f
@@ -1541,20 +1556,20 @@
             state = [];
         }
         function checkObservable(obs) {
-            if (_.contains(state, obs)) {
+            if (contains(state, obs)) {
                 return true;
             } else {
                 var deps = obs.internalDeps();
                 if (deps.length) {
                     state.push(obs);
-                    return _.any(deps, checkObservable);
+                    return any(deps, checkObservable);
                 } else {
                     state.push(obs);
                     return false;
                 }
             }
         }
-        return _.any(observables, checkObservable);
+        return any(observables, checkObservable);
     }
     function cannotSync(source) {
         return !source.sync || source.ended;
@@ -2008,7 +2023,7 @@
             }
         }, new Desc(src, 'takeUntil', [stopper]));
     }
-    function flatMap(src, f) {
+    function flatMap$1(src, f) {
         return flatMap_(handleEventValueWith(f), src, { desc: new Desc(src, 'flatMap', [f]) });
     }
     function flatMapError(src, f) {
@@ -2046,7 +2061,7 @@
     function flatMapLatest(src, f_) {
         var f = _.toFunction(f_);
         var stream = isProperty(src) ? src.toEventStream(allowSync) : src;
-        var flatMapped = flatMap(stream, function (value) {
+        var flatMapped = flatMap$1(stream, function (value) {
             return makeObservable(f(value)).takeUntil(stream);
         });
         if (isProperty(src))
@@ -2399,7 +2414,7 @@
                         });
                     };
                 };
-                var sinks = _.map(smartSink, streams);
+                var sinks = map(smartSink, streams);
                 return new CompositeUnsubscribe(sinks).unsubscribe;
             });
         } else {
@@ -2851,7 +2866,7 @@
             return this.initialDesc.deps();
         };
         Observable.prototype.last = function () {
-            return last(this);
+            return last$1(this);
         };
         Observable.prototype.log = function () {
             var args = [];
@@ -3018,7 +3033,7 @@
             return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
         };
         Property.prototype.flatMap = function (f) {
-            return flatMap(this, f);
+            return flatMap$1(this, f);
         };
         Property.prototype.flatMapConcat = function (f) {
             return flatMapConcat(this, f);
@@ -3130,10 +3145,13 @@
             return f(this).withDesc(desc);
         };
         EventStream.prototype.flatMap = function (f) {
-            return flatMap(this, f);
+            return flatMap$1(this, f);
         };
         EventStream.prototype.flatMapConcat = function (f) {
             return flatMapConcat(this, f);
+        };
+        EventStream.prototype.flatMapError = function (f) {
+            return flatMapError(this, f);
         };
         EventStream.prototype.flatMapFirst = function (f) {
             return flatMapFirst(this, f);
@@ -3143,9 +3161,6 @@
         };
         EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
             return flatMapWithConcurrencyLimit(this, limit, f);
-        };
-        EventStream.prototype.flatMapError = function (f) {
-            return flatMapError(this, f);
         };
         EventStream.prototype.flatMapEvent = function (f) {
             return flatMapEvent(this, f);

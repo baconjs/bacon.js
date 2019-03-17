@@ -7,8 +7,15 @@ export declare type EventSourceFn = (binder: Function, listener: Function) => an
  You can also pass an optional function that transforms the emitted
  events' parameters.
 
+ The simple form:
+
  ```js
  Bacon.fromEvent(document.body, "click").onValue(function() { alert("Bacon!") })
+ ```
+
+ Using a binder function:
+
+ ```js
  Bacon.fromEvent(
  window,
  function(binder, listener) {

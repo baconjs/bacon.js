@@ -1,6 +1,7 @@
 import "./map";
 import Observable from "./observable";
 import { Property } from "./observable";
+import { Function2 } from "./types";
 /**
  Combines Properties, EventStreams and constant values so that the result Property will have an array of the latest
  values from all sources as its value. The inputs may contain both Properties and EventStreams.
@@ -30,4 +31,4 @@ Bacon.combineWith(sum3, p1, p2, p3)
 */
 export declare function combineWith<Out>(f: (...args: any[]) => Out, ...streams: Observable<any>[]): Property<Out>;
 /** @hidden */
-export declare function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: (left: V, right: V2) => R): Property<R>;
+export declare function combine<V, V2, R>(left: Observable<V>, right: Observable<V2>, f: Function2<V, V2, R>): Property<R>;

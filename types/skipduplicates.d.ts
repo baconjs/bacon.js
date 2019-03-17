@@ -1,7 +1,5 @@
 import Observable from "./observable";
-export interface Equals<A> {
-    (left: A, right: A): boolean;
-}
+export declare type Equals<A> = (left: A, right: A) => boolean;
 /** @hidden */
 export declare function equals<A>(a: A, b: A): boolean;
 /** @hidden */

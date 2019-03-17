@@ -25,9 +25,7 @@ declare class Buffer<V> {
     flush(): any;
     schedule(delay: DelayFunction): any;
 }
-interface BufferHandler<V> {
-    (buffer: Buffer<V>): any;
-}
+declare type BufferHandler<V> = (buffer: Buffer<V>) => any;
 /** @hidden */
 export declare function buffer<V>(src: EventStream<V>, onInput?: BufferHandler<V>, onFlush?: BufferHandler<V>): EventStream<V[]>;
 export {};

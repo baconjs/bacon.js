@@ -3,9 +3,7 @@ import { EventStream } from "./observable";
 /**
  * A polled function used by [fromPoll](../globals.html#frompoll)
  */
-export interface PollFunction<V> {
-    (): EventLike<V>;
-}
+export declare type PollFunction<V> = () => EventLike<V>;
 /**
  Polls given function with given interval.
  Function should return Events: either [`Bacon.Next`](classes/next.html) or [`Bacon.End`](classes/end.html). Polling occurs only
