@@ -17,10 +17,10 @@ import { EventSink } from "./types";
  @param   values    Array of values or events to repeat
  @typeparam V Type of stream elements
  */
-export default function fromArray<T>(values: (T | Event<T>)[]) {
+export default function fromArray<T>(values: (T | Event<T>)[]): EventStream<T> {
   assertArray(values);
   if (!values.length) {
-    return never().withDesc(new Desc("Bacon", "fromArray", values));
+    return never<T>().withDesc(new Desc("Bacon", "fromArray", values));
   } else {
     var i = 0;
     var stream = new EventStream(new Desc("Bacon", "fromArray", [values]), function(sink: EventSink<T>) {
