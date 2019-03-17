@@ -159,9 +159,9 @@ properties with array value. The result is a [Property](property.html).
   }
   /**
 Concatenates two streams/properties into one stream/property so that
-it will deliver events from `observable` until it ends and then deliver
+it will deliver events from this observable until it ends and then deliver
 events from `other`. This means too that events from `other`,
-occurring before the end of `observable` will not be included in the result
+occurring before the end of this observable will not be included in the result
 stream/property.
    */
   abstract concat(other: Observable<V>): Observable<V>
@@ -355,7 +355,7 @@ constructor is given.
   }
   /**
 For each element in the source stream, spawn a new
-stream using the function `f`. Collect events from each of the spawned
+stream/property using the function `f`. Collect events from each of the spawned
 streams into the result stream/property. Note that instead of a function, you can provide a
 stream/property too. Also, the return value of function `f` can be either an
 `Observable` (stream/property) or a constant value.
@@ -558,7 +558,7 @@ Returns the same observable, with mutated name.
     return this;
   }
   /**
-Returns a stream/property that inverts boolean values
+Returns a stream/property that inverts boolean values (using `!`)
    */
   abstract not(): Observable<boolean>
   /**
@@ -809,6 +809,7 @@ See also [firstToPromise](#firsttopromise).
   }
 
   /**
+   * TODO: proper documentation missing
 Lets you do more custom event handling: you
 get all events to your function and you can output any number of events
 and end the stream if you choose. For example, to send an error and end
@@ -857,7 +858,7 @@ The method returns the same observable with mutated description.
   }
 
   /**
-   Creates an EventStream by sampling a given `samplee`
+   Creates an EventStream/Property by sampling a given `samplee`
    stream/property value at each event from the this stream/property.
 
    @param {Observable<V2>} samplee
@@ -891,7 +892,6 @@ Bacon.fromArray([1,2,3])
 @typeparam  State   type of machine state
 @typeparam  Out     type of values to be emitted
    */
-
   abstract withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): Observable<Out>
   /**
 Returns an EventStream with elements
@@ -972,6 +972,13 @@ export class Property<V> extends Observable<V> {
     )
   }
 
+  /**
+   Concatenates this property with another stream/properties into one property so that
+   it will deliver events from this property it ends and then deliver
+   events from `other`. This means too that events from `other`,
+   occurring before the end of this property will not be included in the result
+   stream/property.
+   */
   concat(other: Observable<V>): Property<V> {
     return addPropertyInitValueToStream<V>(this, this.changes().concat(other))
   }
@@ -980,15 +987,39 @@ export class Property<V> extends Observable<V> {
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
+  /**
+   For each element in the source stream, spawn a new
+   stream/property using the function `f`. Collect events from each of the spawned
+   streams into the result property. Note that instead of a function, you can provide a
+   stream/property too. Also, the return value of function `f` can be either an
+   `Observable` (stream/property) or a constant value.
 
+   `stream.flatMap()` can be used conveniently with [`Bacon.once()`](../globals.html#once) and [`Bacon.never()`](../globals.html#never)
+   for converting and filtering at the same time, including only some of the results.
+
+   Example - converting strings to integers, skipping empty values:
+
+   ```js
+   stream.flatMap(function(text) {
+    return (text != "") ? parseInt(text) : Bacon.never()
+})
+   ```
+   */
   flatMap<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
     return <any>flatMap(this, f)
   }
 
+  /**
+   A [`flatMapWithConcurrencyLimit`](#flatmapwithconcurrencylimit) with limit of 1.
+   */
   flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
     return <any>flatMapConcat(this, f)
   }
-
+  /**
+   Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events. Returned values go into the
+   value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
+   passed through, which can be implemented using flatMapError.
+   */
   flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {
     return <any>flatMapError(this, f)
   }
@@ -997,26 +1028,90 @@ export class Property<V> extends Observable<V> {
     return <any>flatMapEvent(this, f)
   }
 
+  /**
+   Like [`flatMap`](#observable-flatmap), but only spawns a new
+   stream if the previously spawned stream has ended.
+   */
   flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
     return <any>flatMapFirst(this, f)
   }
 
+  /**
+   Like [`flatMap`](#flatmap), but instead of including events from
+   all spawned streams, only includes them from the latest spawned stream.
+   You can think this as switching from stream to stream.
+   Note that instead of a function, you can provide a stream/property too.
+   */
   flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): Property<V2> {
     return <any>flatMapLatest(this, f)
   }
 
+  /**
+   A super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
+   [`flatMapConcat`](#flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
+   and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
+   */
   flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Property<V2> {
     return <any>flatMapWithConcurrencyLimit(this, limit, f)
   }
 
+  /**
+   Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
+   stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
+   and the original event causing the stream to start as parameters.
+
+   Calculator for grouped consecutive values until group is cancelled:
+
+   ```
+   var events = [
+   {id: 1, type: "add", val: 3 },
+   {id: 2, type: "add", val: -1 },
+   {id: 1, type: "add", val: 2 },
+   {id: 2, type: "cancel"},
+   {id: 3, type: "add", val: 2 },
+   {id: 3, type: "cancel"},
+   {id: 1, type: "add", val: 1 },
+   {id: 1, type: "add", val: 2 },
+   {id: 1, type: "cancel"}
+   ]
+
+   function keyF(event) {
+  return event.id
+}
+
+   function limitF(groupedStream, groupStartingEvent) {
+  var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
+  var adds = groupedStream.filter(function(x) { return x.type === "add" })
+  return adds.takeUntil(cancel).map(".val")
+}
+
+   Bacon.sequentially(2, events)
+   .groupBy(keyF, limitF)
+   .flatMap(function(groupedStream) {
+    return groupedStream.fold(0, function(acc, x) { return acc + x })
+  })
+   .onValue(function(sum) {
+    console.log(sum)
+    // returns [-1, 2, 8] in an order
+  })
+   ```
+
+   */
   groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): Property<EventStream<V>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
+  /**
+   Maps values using given function, returning a new
+   stream/property. Instead of a function, you can also provide a [Property](property.html),
+   in which case each element in the source stream will be mapped to the current value of
+   the given property.
+   */
   map<V2>(f: Function1<V, V2> | Property<V2>): Property<V2> {
     return <any>map<V, V2>(this, f)
   }
 
+  /** Returns a Property that inverts the value of this one (using the `!` operator). **/
   not(): Property<boolean> {
     return <any>not(this)
   }
@@ -1037,6 +1132,18 @@ export class Property<V> extends Observable<V> {
     return sampleP(this, interval)
   }
 
+  /**
+   Creates an EventStream by sampling this
+   stream/property value at each event from the `sampler` stream. The result
+   `EventStream` will contain the sampled value at each event in the source
+   stream.
+
+   @param {Observable<V2>} sampler
+   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
+
+   @typeparam V2  type of values in the sampler stream
+   @typeparam R   type of values in the result stream
+   */
   sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
     return sampledByP(this, sampler, f)
   }
@@ -1084,10 +1191,44 @@ export class Property<V> extends Observable<V> {
     return transformP(this, transformer, desc)
   }
 
+  /**
+   Creates an EventStream/Property by sampling a given `samplee`
+   stream/property value at each event from the this stream/property.
+
+   @param {Observable<V2>} samplee
+   @param f function to select/calculate the result value based on the value in the source stream and the samplee
+
+   @typeparam V2  type of values in the samplee
+   @typeparam R   type of values in the result
+   */
   withLatestFrom<V2, R>(samplee: Observable<V2>, f: Function2<V, V2, R>): Property<R> {
     return withLatestFromP(this, samplee, f)
   }
 
+  /**
+   Lets you run a state machine
+   on an observable. Give it an initial state object and a state
+   transformation function that processes each incoming event and
+   returns an array containing the next state and an array of output
+   events. Here's an example where we calculate the total sum of all
+   numbers in the stream and output the value on stream end:
+
+   ```js
+   Bacon.fromArray([1,2,3])
+   .withStateMachine(0, function(sum, event) {
+    if (event.hasValue)
+      return [sum + event.value, []]
+    else if (event.isEnd)
+      return [undefined, [new Bacon.Next(sum), event]]
+    else
+      return [sum, [event]]
+  })
+   ```
+   @param initState  initial state for the state machine
+   @param f          the function that defines the state machine
+   @typeparam  State   type of machine state
+   @typeparam  Out     type of values to be emitted
+   */
   withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
@@ -1173,9 +1314,18 @@ export class EventStream<V> extends Observable<V> {
   bufferWithTimeOrCount(delay?: number | DelayFunction, count?: number): EventStream<V[]> {
     return bufferWithTimeOrCount(this, delay, count)
   }
+
   changes(): EventStream<V> {
     return this
   }
+
+  /**
+   Concatenates two streams/properties into one stream/property so that
+   it will deliver events from this observable until it ends and then deliver
+   events from `other`. This means too that events from `other`,
+   occurring before the end of this observable will not be included in the result
+   stream/property.
+   */
   concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
     return concatE(this, other, options)
   }
@@ -1184,18 +1334,106 @@ export class EventStream<V> extends Observable<V> {
     return <any>f(this).withDesc(desc)
   }
 
-  flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
-  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
-  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
-  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
-  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
-  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {return <any>flatMapError(this, f)}
-  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+  /**
+   For each element in the source stream, spawn a new
+   stream/property using the function `f`. Collect events from each of the spawned
+   streams into the result stream/property. Note that instead of a function, you can provide a
+   stream/property too. Also, the return value of function `f` can be either an
+   `Observable` (stream/property) or a constant value.
 
+   `stream.flatMap()` can be used conveniently with [`Bacon.once()`](../globals.html#once) and [`Bacon.never()`](../globals.html#never)
+   for converting and filtering at the same time, including only some of the results.
+
+   Example - converting strings to integers, skipping empty values:
+
+   ```js
+   stream.flatMap(function(text) {
+    return (text != "") ? parseInt(text) : Bacon.never()
+})
+   ```
+   */
+  flatMap<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMap(this, f) }
+  /**
+   A [`flatMapWithConcurrencyLimit`](#flatmapwithconcurrencylimit) with limit of 1.
+   */
+  flatMapConcat<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapConcat(this, f) }
+  /**
+   Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events. Returned values go into the
+   value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
+   passed through, which can be implemented using flatMapError.
+   */
+  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {return <any>flatMapError(this, f)}
+  /**
+   Like [`flatMap`](#observable-flatmap), but only spawns a new
+   stream if the previously spawned stream has ended.
+   */
+  flatMapFirst<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapFirst(this, f) }
+  /**
+   Like [`flatMap`](#flatmap), but instead of including events from
+   all spawned streams, only includes them from the latest spawned stream.
+   You can think this as switching from stream to stream.
+   Note that instead of a function, you can provide a stream/property too.
+   */
+  flatMapLatest<V2>(f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapLatest(this, f) }
+  /**
+   A super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
+   [`flatMapConcat`](#flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
+   and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
+   */
+  flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+  /**
+   Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
+   stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
+   and the original event causing the stream to start as parameters.
+
+   Calculator for grouped consecutive values until group is cancelled:
+
+   ```
+   var events = [
+   {id: 1, type: "add", val: 3 },
+   {id: 2, type: "add", val: -1 },
+   {id: 1, type: "add", val: 2 },
+   {id: 2, type: "cancel"},
+   {id: 3, type: "add", val: 2 },
+   {id: 3, type: "cancel"},
+   {id: 1, type: "add", val: 1 },
+   {id: 1, type: "add", val: 2 },
+   {id: 1, type: "cancel"}
+   ]
+
+   function keyF(event) {
+  return event.id
+}
+
+   function limitF(groupedStream, groupStartingEvent) {
+  var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
+  var adds = groupedStream.filter(function(x) { return x.type === "add" })
+  return adds.takeUntil(cancel).map(".val")
+}
+
+   Bacon.sequentially(2, events)
+   .groupBy(keyF, limitF)
+   .flatMap(function(groupedStream) {
+    return groupedStream.fold(0, function(acc, x) { return acc + x })
+  })
+   .onValue(function(sum) {
+    console.log(sum)
+    // returns [-1, 2, 8] in an order
+  })
+   ```
+
+   */
   groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
+  /**
+   Maps values using given function, returning a new
+   stream/property. Instead of a function, you can also provide a [Property](property.html),
+   in which case each element in the source stream will be mapped to the current value of
+   the given property.
+   */
   map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
 
   /**
@@ -1206,12 +1444,31 @@ export class EventStream<V> extends Observable<V> {
     return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
   }
 
+  /**
+   Returns a stream/property that inverts boolean values (using `!`)
+   */
   not(): EventStream<boolean> {return <any>not(this) }
 
+  /**
+   Creates an EventStream by sampling this
+   stream/property value at each event from the `sampler` stream. The result
+   `EventStream` will contain the sampled value at each event in the source
+   stream.
+
+   @param {Observable<V2>} sampler
+   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
+
+   @typeparam V2  type of values in the sampler stream
+   @typeparam R   type of values in the result stream
+   */
   sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
     return sampledByE(this, sampler, f)
   }
 
+  /**
+   Adds a starting value to the stream/property, i.e. concats a
+   single-element stream containing the single seed value  with this stream.
+   */
   startWith(seed: V): EventStream<V> {
     return startWithE(this,seed)
   }
@@ -1220,6 +1477,9 @@ export class EventStream<V> extends Observable<V> {
     return this.dispatcher.subscribe(sink)
   }
 
+  /**
+   * Returns this stream.
+   */
   toEventStream() { return this }
   /**
    Creates a Property based on the
@@ -1246,10 +1506,44 @@ export class EventStream<V> extends Observable<V> {
     return transformE(this, transformer, desc)
   }
 
+  /**
+   Creates an EventStream/Property by sampling a given `samplee`
+   stream/property value at each event from the this stream/property.
+
+   @param {Observable<V2>} samplee
+   @param f function to select/calculate the result value based on the value in the source stream and the samplee
+
+   @typeparam V2  type of values in the samplee
+   @typeparam R   type of values in the result
+   */
   withLatestFrom<V2, R>(samplee: Observable<V2>, f: Function2<V, V2, R>): EventStream<R> {
     return withLatestFromE(this, samplee, f)
   }
 
+  /**
+   Lets you run a state machine
+   on an observable. Give it an initial state object and a state
+   transformation function that processes each incoming event and
+   returns an array containing the next state and an array of output
+   events. Here's an example where we calculate the total sum of all
+   numbers in the stream and output the value on stream end:
+
+   ```js
+   Bacon.fromArray([1,2,3])
+   .withStateMachine(0, function(sum, event) {
+    if (event.hasValue)
+      return [sum + event.value, []]
+    else if (event.isEnd)
+      return [undefined, [new Bacon.Next(sum), event]]
+    else
+      return [sum, [event]]
+  })
+   ```
+   @param initState  initial state for the state machine
+   @param f          the function that defines the state machine
+   @typeparam  State   type of machine state
+   @typeparam  Out     type of values to be emitted
+   */
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
