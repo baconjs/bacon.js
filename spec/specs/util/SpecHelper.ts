@@ -380,3 +380,13 @@ export const onUnsub: (stream: Bacon.EventStream<any>, f: () => any) => Bacon.Ev
   });
   return stream;
 };
+
+export function range(left: number, right: number, inclusive: boolean) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}
