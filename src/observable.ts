@@ -1024,7 +1024,7 @@ export class Property<V> extends Observable<V> {
     return <any>flatMapError(this, f)
   }
 
-  flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> {
+  flatMapEvent<V2>(f: EventSpawner<V, V2>): Property<V2> {
     return <any>flatMapEvent(this, f)
   }
 
