@@ -8,7 +8,7 @@ import { Event } from "./event"
 import { EventSink } from "./types";
 import { composeT } from "./transform";
 
-export type GroupLimiter<V> = (data: EventStream<V>, firstValue: V) => Observable<V>
+export type GroupTransformer<V, V2> = (data: EventStream<V>, firstValue: V) => Observable<V2>
 
 /** @hidden */
 interface StreamMap<V> {
@@ -16,15 +16,15 @@ interface StreamMap<V> {
 }
 
 /** @hidden */
-export function groupBy<V>(src: Observable<V>, keyF: (value: V) => string, limitF: GroupLimiter<V> = _.id): Observable<EventStream<V>> {
-  var streams: StreamMap<V> = {};
+export function groupBy<V, V2>(src: Observable<V>, keyF: (value: V) => string, limitF: GroupTransformer<V, V2> = <any>_.id): Observable<EventStream<V2>> {
+  var streams: StreamMap<V2> = {};
   return src.transform(composeT(
     filterT((x: V) => !streams[keyF(x)]),
     mapT(function(firstValue: V) {
       var key: string = keyF(firstValue)
       var similarValues: Observable<V> = src.changes().filter(x => keyF(x) === key )
       var data: EventStream<V> = once(firstValue).concat(similarValues)
-      var limited = limitF(data, firstValue).toEventStream().transform((event: Event<V>, sink: EventSink<V>) => {
+      var limited = limitF(data, firstValue).toEventStream().transform((event: Event<V2>, sink: EventSink<V2>) => {
         let reply = sink(event)
         if (event.isEnd) {
           delete streams[key];

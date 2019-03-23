@@ -1,6 +1,7 @@
 import { Desc } from "./describe";
 import fromPoll from "./frompoll";
 import { EventStream } from "./observable";
+import { Event } from "./event";
 
 /**
  Repeats given elements indefinitely
@@ -12,7 +13,7 @@ import { EventStream } from "./observable";
  @typeparam V Type of stream elements
 
  */
-export default function repeatedly<V>(delay: number, values: V[]): EventStream<V> {
+export default function repeatedly<V>(delay: number, values: (V | Event<V>)[]): EventStream<V> {
   var index = 0;
   return fromPoll(delay, function () {
     return values[index++ % values.length];

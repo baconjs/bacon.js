@@ -66,8 +66,7 @@ import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
 import { Predicate, PredicateOrProperty } from "./predicate";
 import skipWhile from "./skipwhile";
-import _ from "./_";
-import { groupBy, GroupLimiter } from "./groupby";
+import { groupBy, GroupTransformer } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
@@ -475,7 +474,7 @@ Bacon.sequentially(2, events)
 ```
 
    */
-  abstract groupBy(keyF: Function1<V, string>, limitF?: GroupLimiter<V>): Observable<EventStream<V>>
+  abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>
   /**
 Pauses and buffers the event stream if last event in valve is truthy.
 All buffered events are released when valve becomes falsy.
@@ -1097,7 +1096,7 @@ export class Property<V> extends Observable<V> {
    ```
 
    */
-  groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): Property<EventStream<V>> {
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
@@ -1424,7 +1423,7 @@ export class EventStream<V> extends Observable<V> {
    ```
 
    */
-  groupBy(keyF: Function1<V, string>, limitF: GroupLimiter<V> = _.id): EventStream<EventStream<V>> {
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
