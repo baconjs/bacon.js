@@ -15,3 +15,4 @@ performance/performance.js
 browserstack-run.pid
 .rpt2_cache
 docs
+.vscode

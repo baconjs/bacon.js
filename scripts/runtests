@@ -10,7 +10,6 @@ if [ "${TEST_SUITE}" = "browserstack" ]; then
   echo "running on browserstack"
   npm run browserstack
 else
-  BABEL_ENV=test ./node_modules/.bin/mocha $DEBUG --compilers coffee:coffee-script/register,js:babel-register spec/specs/*.coffee
-  BABEL_ENV=test ./node_modules/.bin/mocha $DEBUG --compilers ts:ts-node/register,js:babel-register spec/specs/*.ts
+  BABEL_ENV=test ./node_modules/.bin/mocha $DEBUG -r coffee-script/register spec/specs/*.coffee
+  BABEL_ENV=test ./node_modules/.bin/mocha $DEBUG -r ts-node/register spec/specs/*.ts
 fi
-
