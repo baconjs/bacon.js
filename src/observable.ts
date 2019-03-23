@@ -23,7 +23,7 @@ import doEndT from "./doend";
 import { Accumulator, default as scan } from "./scan";
 import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
-import { SpawnerOrObservable, EventSpawner } from "./flatmap_";
+import { SpawnerOrObservable, EventSpawner, EventOrValue } from "./flatmap_";
 import skipErrors from "./skiperrors";
 import last from "./last";
 import { default as flatMapEvent } from "./flatmapevent";
@@ -381,7 +381,7 @@ Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events.
 value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
 passed through, which can be implemented using flatMapError.
    */
-  abstract flatMapError(f: Function1<any, Observable<V>>): Observable<V>
+  abstract flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): Observable<V | V2>
   abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>
   /**
 Like [`flatMap`](#observable-flatmap), but only spawns a new
@@ -1020,7 +1020,7 @@ export class Property<V> extends Observable<V> {
    value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
    passed through, which can be implemented using flatMapError.
    */
-  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {
+  flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): Property<V | V2> {
     return <any>flatMapError(this, f)
   }
 
@@ -1362,7 +1362,7 @@ export class EventStream<V> extends Observable<V> {
    value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
    passed through, which can be implemented using flatMapError.
    */
-  flatMapError(f: Function1<any, Observable<V>>): EventStream<V> {return <any>flatMapError(this, f)}
+  flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): EventStream<V | V2> {return <any>flatMapError(this, f)}
   /**
    Like [`flatMap`](#observable-flatmap), but only spawns a new
    stream if the previously spawned stream has ended.
