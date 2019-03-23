@@ -48,15 +48,15 @@ const verifyCleanup_ = () => {
   seqs = [];
 };
 
-const regSrc = (source: Bacon.EventStream<any>) => {
+function regSrc<V>(source: Bacon.EventStream<V>) {
   seqs.push({ source });
   return source;
 };
 
-export const series = (interval: number, values: any[]) => regSrc(sequentially(t(interval), values));
-export const repeat = (interval: number, values: any[]) => regSrc(repeatedly(t(interval), values));
-export const error = (msg: string = "") => new Bacon.Error(msg);
-export const soon = (f: any) => setTimeout(f, t(1));
+export function series<V>(interval: number, values: V[]) { return regSrc(sequentially<V>(t(interval), values)) }
+export function repeat<V>(interval: number, values: V[]) { return regSrc(repeatedly<V>(t(interval), values)) }
+export function error(msg: string = "") { return new Bacon.Error(msg) }
+export function soon(f: any) { setTimeout(f, t(1)) };
 
 declare global {
   interface Array<T> {
