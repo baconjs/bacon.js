@@ -6,27 +6,27 @@ import Observable, { Property } from "./observable";
 /**
  *  [Update](#update) pattern consisting of a single EventStream and a accumulator function.
  */
-export type UpdatePattern1<I1,O> = [Observable<I1>, (acc: O, a: I1) => O]
+export type UpdatePattern1<I1,O> = [Observable<I1>, O | ((acc: O, a: I1) => O)]
 /**
  *  [Update](#update) pattern consisting of 2 Observables and an accumulrator function. At least one of the Observables must be an EventStream.
  */
-export type UpdatePattern2<I1,I2,O> = [Observable<I1>, Observable<I1>, (acc: O, a: I1, b: I2) => O]
+export type UpdatePattern2<I1,I2,O> = [Observable<I1>, Observable<I1>, O | ((acc: O, a: I1, b: I2) => O)]
 /**
  *  [Update](#update) pattern consisting of 3 Observables and an accumulrator function. At least one of the Observables must be an EventStream.
  */
-export type UpdatePattern3<I1,I2,I3,O> = [Observable<I1>, Observable<I1>, Observable<I3>, (acc: O, a: I1, b: I2, c: I3) => O]
+export type UpdatePattern3<I1,I2,I3,O> = [Observable<I1>, Observable<I1>, Observable<I3>, O | ((acc: O, a: I1, b: I2, c: I3) => O)]
 /**
  *  [Update](#update) pattern consisting of 4 Observables and an accumulrator function. At least one of the Observables must be an EventStream.
  */
-export type UpdatePattern4<I1,I2,I3,I4,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, (acc: O, a: I1, b: I2, c: I3, d: I4) => O]
+export type UpdatePattern4<I1,I2,I3,I4,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, O | ((acc: O, a: I1, b: I2, c: I3, d: I4) => O)]
 /**
  *  [Update](#update) pattern consisting of 5 Observables and an accumulrator function. At least one of the Observables must be an EventStream.
  */
-export type UpdatePattern5<I1,I2,I3,I4,I5,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, (add: O, a: I1, b: I2, c: I3, d: I4, e: I5) => O]
+export type UpdatePattern5<I1,I2,I3,I4,I5,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, O | ((acc: O, a: I1, b: I2, c: I3, d: I4, e: I5) => O)]
 /**
  *  [Update](#update) pattern consisting of 6 Observables and an accumulrator function. At least one of the Observables must be an EventStream.
  */
-export type UpdatePattern6<I1,I2,I3,I4,I5,I6,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, Observable<I6>, (acc: O, a: I1, b: I2, c: I3, d: I4, e: I5, f: I6) => O]
+export type UpdatePattern6<I1,I2,I3,I4,I5,I6,O> = [Observable<I1>, Observable<I1>, Observable<I3>, Observable<I4>, Observable<I5>, Observable<I6>, O | ((acc: O, a: I1, b: I2, c: I3, d: I4, e: I5, f: I6) => O)]
 
 /**
  *  [Update](#update) pattern type, allowing up to 6 sources per pattern.
