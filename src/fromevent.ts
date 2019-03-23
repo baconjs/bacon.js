@@ -84,7 +84,7 @@ var findHandlerMethods = function(target: any): [Function, Function] {
  @typeparam V Type of stream elements
 
  */
-export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer: EventTransformer<V>): EventStream<V> {
+export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer?: EventTransformer<V>): EventStream<V> {
   var [sub, unsub] = findHandlerMethods(target);
   var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
   return fromBinder<V>(function (handler) {
