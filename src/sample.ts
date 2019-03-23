@@ -18,12 +18,12 @@ function makeCombinator<V, V2, R>(combinator: Combinator<V, V2, R> | undefined):
 export function sampledByP<V, V2, R>(samplee: Property<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
   let combinator: (x: V, y: V2) => R = makeCombinator(f)
   var result = withLatestFrom(sampler, samplee, flip(combinator))
-  return result.withDesc(new Desc(samplee, "sampledBy", [sampler, combinator]));
+  return result.withDesc(new Desc(samplee, "sampledBy", [sampler]));
 }
 
 /** @hidden */
 export function sampledByE<V, V2, R>(samplee: EventStream<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
-  return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
+  return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler]));
 }
 
 /** @hidden */

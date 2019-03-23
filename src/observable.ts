@@ -616,12 +616,8 @@ Only applicable for observables with arrays as values.
   stream.
 
    @param {Observable<V2>} sampler
-   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-
-   @typeparam V2  type of values in the sampler stream
-   @typeparam R   type of values in the result stream
    */
-  abstract sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R>): Observable<R>
+  abstract sampledBy(sampler: Observable<any>): Observable<V>
   /**
 Scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -1107,7 +1103,7 @@ export class Property<V> extends Observable<V> {
    in which case each element in the source stream will be mapped to the current value of
    the given property.
    */
-  map<V2>(f: Function1<V, V2> | Property<V2>): Property<V2> {
+  map<V2>(f: Function1<V, V2> | Property<V2> | V2): Property<V2> {
     return <any>map<V, V2>(this, f)
   }
 
@@ -1139,13 +1135,9 @@ export class Property<V> extends Observable<V> {
    stream.
 
    @param {Observable<V2>} sampler
-   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-
-   @typeparam V2  type of values in the sampler stream
-   @typeparam R   type of values in the result stream
    */
-  sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
-    return sampledByP(this, sampler, f)
+  sampledBy(sampler: Observable<any>): Observable<V> {
+    return sampledByP(this, sampler, arguments[1])
   }
 
   /**
@@ -1456,13 +1448,9 @@ export class EventStream<V> extends Observable<V> {
    stream.
 
    @param {Observable<V2>} sampler
-   @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-
-   @typeparam V2  type of values in the sampler stream
-   @typeparam R   type of values in the result stream
    */
-  sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R> = (a, b) => <any>a): Observable<R> {
-    return sampledByE(this, sampler, f)
+  sampledBy(sampler: Observable<any>): Observable<V> {
+    return sampledByE(this, sampler, arguments[1])
   }
 
   /**
