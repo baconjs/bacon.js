@@ -4288,6 +4288,7 @@ var EventStream = /** @class */ (function (_super) {
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.
      */
+    // TODO: should allow V|V2 signature
     EventStream.prototype.startWith = function (seed) {
         return startWithE(this, seed);
     };

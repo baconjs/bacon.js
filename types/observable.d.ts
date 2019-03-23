@@ -238,7 +238,7 @@ export declare abstract class Observable<V> {
   Like [`toPromise`](#topromise), the global ES6 promise implementation will be used unless a promise
   constructor is given.
      */
-    firstToPromise(PromiseCtr: Function | undefined): Promise<V>;
+    firstToPromise(PromiseCtr?: Function): Promise<V>;
     /**
   For each element in the source stream, spawn a new
   stream/property using the function `f`. Collect events from each of the spawned
@@ -595,7 +595,7 @@ export declare abstract class Observable<V> {
   
   See also [firstToPromise](#firsttopromise).
      */
-    toPromise(PromiseCtr: Function | undefined): Promise<V>;
+    toPromise(PromiseCtr?: Function): Promise<V>;
     /**
      In case of EventStream, creates a Property based on the EventStream.
   
