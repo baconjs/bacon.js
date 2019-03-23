@@ -1,7 +1,7 @@
 import * as Bacon from "../..";
 import { expect } from "chai";
 
-import { expectStreamEvents, error, fromArray } from "./util/SpecHelper";
+import { expectStreamEvents, expectPropertyEvents, error, fromArray } from "./util/SpecHelper";
 
 describe("EventStream.flatMapError", function() {
   describe("allows spawning a new stream from an error", () =>
@@ -13,13 +13,7 @@ describe("EventStream.flatMapError", function() {
           error(),
           error("2")
         ]);
-        return source.flatMapError(function(err) {
-          if (err != error().error) { // map all non-default errors to values
-            return Bacon.once(err);
-          } else {
-            return error();
-          }
-        });
+        return source.flatMapError(mapNonDefaultErrors);
       },
 
       [error(), "1", error(), "2"]
@@ -33,3 +27,28 @@ describe("EventStream.flatMapError", function() {
   );
   return it("toString", () => expect(Bacon.once(1).flatMapError(function() {}).toString()).to.equal("Bacon.once(1).flatMapError(function)"));
 });
+
+describe("Property.flatMapError", function() {
+  describe("allows spawning a new stream from an error", () =>
+    expectPropertyEvents(
+      function() {
+        const source = fromArray([
+          error(),
+          error("1")
+        ]);
+        return source.toProperty().flatMapError(mapNonDefaultErrors);
+      },
+
+      [error(), "1"]
+    )
+  );
+  return it("toString", () => expect(Bacon.constant("").flatMapError(function() {}).toString()).to.equal("Bacon.constant().flatMapError(function)"));
+});
+
+function mapNonDefaultErrors(err: string) {
+  if (err != error().error) { // map all non-default errors to values
+    return Bacon.once(err);
+  } else {
+    return error();
+  }
+}
