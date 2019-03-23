@@ -4814,7 +4814,7 @@ function retry(options) {
             });
         }
         if (finished) {
-            return null;
+            return undefined;
         }
         else if (errorEvent) {
             var context = {

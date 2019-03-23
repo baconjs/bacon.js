@@ -29,4 +29,4 @@ if (i < 3) {
  @typeparam V Type of stream elements
 
  */
-export default function repeat<V>(generator: (iteration: number) => (Observable<V> | null)): EventStream<V>;
+export default function repeat<V>(generator: (iteration: number) => (Observable<V> | undefined)): EventStream<V>;
