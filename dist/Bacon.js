@@ -2898,7 +2898,7 @@ function groupBy(src, keyF, limitF) {
         var key = keyF(firstValue);
         var similarValues = src.changes().filter(function (x) { return keyF(x) === key; });
         var data = once(firstValue).concat(similarValues);
-        var limited = limitF(data, firstValue).transform(function (event, sink) {
+        var limited = limitF(data, firstValue).toEventStream().transform(function (event, sink) {
             var reply = sink(event);
             if (event.isEnd) {
                 delete streams[key];

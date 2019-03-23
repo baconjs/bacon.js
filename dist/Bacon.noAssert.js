@@ -2520,7 +2520,7 @@
                 return keyF(x) === key;
             });
             var data = once(firstValue).concat(similarValues);
-            var limited = limitF(data, firstValue).transform(function (event, sink) {
+            var limited = limitF(data, firstValue).toEventStream().transform(function (event, sink) {
                 var reply = sink(event);
                 if (event.isEnd) {
                     delete streams[key];
