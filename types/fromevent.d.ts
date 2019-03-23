@@ -32,4 +32,4 @@ export declare type EventSourceFn = (binder: Function, listener: Function) => an
  @typeparam V Type of stream elements
 
  */
-export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer: EventTransformer<V>): EventStream<V>;
+export default function fromEvent<V>(target: any, eventSource: string | EventSourceFn, eventTransformer?: EventTransformer<V>): EventStream<V>;
