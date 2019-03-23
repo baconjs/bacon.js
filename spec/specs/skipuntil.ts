@@ -34,5 +34,5 @@ describe("EventStream.skipUntil", function() {
       },
       [3])
   );
-  return it("toString", () => expect(Bacon.never().skipUntil(Bacon.once(1)).toString()).to.equal("Bacon.never().skipUntil(Bacon.once(1))"));
+  it("toString", () => expect(Bacon.never().skipUntil(Bacon.once(1)).toString()).to.equal("Bacon.never().skipUntil(Bacon.once(1))"));
 });

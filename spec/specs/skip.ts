@@ -19,5 +19,5 @@ describe("EventStream.skip", function() {
       () => fromArray([1, 2, 3]).skip(1),
     [2, 3])
   );
-  return it("toString", () => expect(Bacon.never().skip(1).toString()).to.equal("Bacon.never().skip(1)"));
+  it("toString", () => expect(Bacon.never().skip(1).toString()).to.equal("Bacon.never().skip(1)"));
 });

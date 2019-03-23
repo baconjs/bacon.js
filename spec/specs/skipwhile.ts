@@ -25,5 +25,5 @@ describe("EventStream.skipWhile", function() {
         [3, 2])
     )
   );
-  return it("toString", () => expect(Bacon.never().skipWhile(true).toString()).to.equal("Bacon.never().skipWhile(true)"));
+  it("toString", () => expect(Bacon.never().skipWhile(true).toString()).to.equal("Bacon.never().skipWhile(true)"));
 });

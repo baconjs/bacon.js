@@ -31,7 +31,7 @@ describe("EventStream.skipDuplicates", function() {
     [1, 2, 3, 1], semiunstable)
   );
 
-  return it("toString", () => expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()"));
+  it("toString", () => expect(Bacon.never().skipDuplicates().toString()).to.equal("Bacon.never().skipDuplicates()"));
 });
 
 

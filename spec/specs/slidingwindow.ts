@@ -18,9 +18,9 @@ describe("Observable.slidingWindow", function() {
     expectPropertyEvents(
       () => series(1, [1,2,3,4]).slidingWindow(3, 2),
       [[1,2], [1,2,3], [2,3,4]]);
-    return expectPropertyEvents(
+    expectPropertyEvents(
       () => series(1, [1,2,3,4]).toProperty(0).slidingWindow(3, 2),
       [[0,1], [0, 1, 2], [1,2,3], [2,3,4]]);
   });
-  return it("toString", () => expect(Bacon.never().slidingWindow(2).toString()).to.equal("Bacon.never().slidingWindow(2,0)"));
+  it("toString", () => expect(Bacon.never().slidingWindow(2).toString()).to.equal("Bacon.never().slidingWindow(2,0)"));
 });
