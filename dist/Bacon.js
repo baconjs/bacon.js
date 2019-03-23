@@ -2095,11 +2095,11 @@ function makeCombinator(combinator) {
 function sampledByP(samplee, sampler, f) {
     var combinator = makeCombinator(f);
     var result = withLatestFrom(sampler, samplee, flip(combinator));
-    return result.withDesc(new Desc(samplee, "sampledBy", [sampler, combinator]));
+    return result.withDesc(new Desc(samplee, "sampledBy", [sampler]));
 }
 /** @hidden */
 function sampledByE(samplee, sampler, f) {
-    return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler, f]));
+    return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, "sampledBy", [sampler]));
 }
 /** @hidden */
 function sampleP(samplee, samplingInterval) {
@@ -3489,6 +3489,7 @@ var Observable = /** @class */ (function () {
   by calling the given function when the source stream ends. Instead of a
   function, a static value can be used.
      */
+    // TODO: mapEnd and mapError signatures should allow V|V2
     Observable.prototype.mapEnd = function (f) {
         return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
     };
@@ -3991,14 +3992,9 @@ var Property = /** @class */ (function (_super) {
      stream.
   
      @param {Observable<V2>} sampler
-     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-  
-     @typeparam V2  type of values in the sampler stream
-     @typeparam R   type of values in the result stream
      */
-    Property.prototype.sampledBy = function (sampler, f) {
-        if (f === void 0) { f = function (a, b) { return a; }; }
-        return sampledByP(this, sampler, f);
+    Property.prototype.sampledBy = function (sampler) {
+        return sampledByP(this, sampler, arguments[1]);
     };
     /**
     Adds an initial "default" value for the
@@ -4284,14 +4280,9 @@ var EventStream = /** @class */ (function (_super) {
      stream.
   
      @param {Observable<V2>} sampler
-     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-  
-     @typeparam V2  type of values in the sampler stream
-     @typeparam R   type of values in the result stream
      */
-    EventStream.prototype.sampledBy = function (sampler, f) {
-        if (f === void 0) { f = function (a, b) { return a; }; }
-        return sampledByE(this, sampler, f);
+    EventStream.prototype.sampledBy = function (sampler) {
+        return sampledByE(this, sampler, arguments[1]);
     };
     /**
      Adds a starting value to the stream/property, i.e. concats a

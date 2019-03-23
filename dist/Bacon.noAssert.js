@@ -1830,16 +1830,10 @@
     function sampledByP(samplee, sampler, f) {
         var combinator = makeCombinator(f);
         var result = withLatestFrom(sampler, samplee, flip(combinator));
-        return result.withDesc(new Desc(samplee, 'sampledBy', [
-            sampler,
-            combinator
-        ]));
+        return result.withDesc(new Desc(samplee, 'sampledBy', [sampler]));
     }
     function sampledByE(samplee, sampler, f) {
-        return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, 'sampledBy', [
-            sampler,
-            f
-        ]));
+        return sampledByP(samplee.toProperty(), sampler, f).withDesc(new Desc(samplee, 'sampledBy', [sampler]));
     }
     function sampleP(samplee, samplingInterval) {
         return sampledByP(samplee, interval(samplingInterval, {}), function (a, b) {
@@ -3068,13 +3062,8 @@
         Property.prototype.sample = function (interval) {
             return sampleP(this, interval);
         };
-        Property.prototype.sampledBy = function (sampler, f) {
-            if (f === void 0) {
-                f = function (a, b) {
-                    return a;
-                };
-            }
-            return sampledByP(this, sampler, f);
+        Property.prototype.sampledBy = function (sampler) {
+            return sampledByP(this, sampler, arguments[1]);
         };
         Property.prototype.startWith = function (seed) {
             return startWithP(this, seed);
@@ -3174,13 +3163,8 @@
         EventStream.prototype.not = function () {
             return not(this);
         };
-        EventStream.prototype.sampledBy = function (sampler, f) {
-            if (f === void 0) {
-                f = function (a, b) {
-                    return a;
-                };
-            }
-            return sampledByE(this, sampler, f);
+        EventStream.prototype.sampledBy = function (sampler) {
+            return sampledByE(this, sampler, arguments[1]);
         };
         EventStream.prototype.startWith = function (seed) {
             return startWithE(this, seed);

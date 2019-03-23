@@ -456,12 +456,8 @@ export declare abstract class Observable<V> {
     stream.
   
      @param {Observable<V2>} sampler
-     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-  
-     @typeparam V2  type of values in the sampler stream
-     @typeparam R   type of values in the result stream
      */
-    abstract sampledBy<V2, R>(sampler: Observable<V2>, f: Function2<V, V2, R>): Observable<R>;
+    abstract sampledBy(sampler: Observable<any>): Observable<V>;
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -848,7 +844,7 @@ export declare class Property<V> extends Observable<V> {
      in which case each element in the source stream will be mapped to the current value of
      the given property.
      */
-    map<V2>(f: Function1<V, V2> | Property<V2>): Property<V2>;
+    map<V2>(f: Function1<V, V2> | Property<V2> | V2): Property<V2>;
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
     not(): Property<boolean>;
     /**
@@ -868,12 +864,8 @@ export declare class Property<V> extends Observable<V> {
      stream.
   
      @param {Observable<V2>} sampler
-     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-  
-     @typeparam V2  type of values in the sampler stream
-     @typeparam R   type of values in the result stream
      */
-    sampledBy<V2, R>(sampler: Observable<V2>, f?: Function2<V, V2, R>): Observable<R>;
+    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
@@ -1114,12 +1106,8 @@ export declare class EventStream<V> extends Observable<V> {
      stream.
   
      @param {Observable<V2>} sampler
-     @param f function to select/calculate the result value based on the value in the source stream and the sampler stream
-  
-     @typeparam V2  type of values in the sampler stream
-     @typeparam R   type of values in the result stream
      */
-    sampledBy<V2, R>(sampler: Observable<V2>, f?: Function2<V, V2, R>): Observable<R>;
+    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.
