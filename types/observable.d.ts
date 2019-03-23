@@ -9,7 +9,7 @@ import Dispatcher from "./internal/dispatcher";
 import { DelayFunction } from "./buffer";
 import { Transformer } from "./transform";
 import { Predicate, PredicateOrProperty } from "./predicate";
-import { GroupLimiter } from "./groupby";
+import { GroupTransformer } from "./groupby";
 import { Differ } from "./diff";
 /**
  Observable is the base class for [EventsStream](eventstream.html) and [Property](property.html)
@@ -352,7 +352,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
-    abstract groupBy(keyF: Function1<V, string>, limitF?: GroupLimiter<V>): Observable<EventStream<V>>;
+    abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
   All buffered events are released when valve becomes falsy.
@@ -841,7 +841,7 @@ export declare class Property<V> extends Observable<V> {
      ```
   
      */
-    groupBy(keyF: Function1<V, string>, limitF?: GroupLimiter<V>): Property<EventStream<V>>;
+    groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
      stream/property. Instead of a function, you can also provide a [Property](property.html),
@@ -1091,7 +1091,7 @@ export declare class EventStream<V> extends Observable<V> {
      ```
   
      */
-    groupBy(keyF: Function1<V, string>, limitF?: GroupLimiter<V>): EventStream<EventStream<V>>;
+    groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
      stream/property. Instead of a function, you can also provide a [Property](property.html),

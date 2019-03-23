@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.Bacon = {})));
-}(this, (function (exports) { 'use strict';
+typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+typeof define === 'function' && define.amd ? define(['exports'], factory) :
+(global = global || self, factory(global.Bacon = {}));
+}(this, function (exports) { 'use strict';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -270,8 +270,6 @@ function assert(message, condition) {
         throw new Error(message);
     }
 }
-/** @hidden */
-
 /** @hidden */
 function assertEventStream(event) {
     if (!(event != null ? event._isEventStream : void 0)) {
@@ -547,7 +545,6 @@ var Desc = /** @class */ (function () {
     };
     return Desc;
 }());
-
 /** @hidden */
 function describe(context, method) {
     var args = [];
@@ -655,7 +652,6 @@ function toOption(v) {
         return new Some(v);
     }
 }
-
 function isNone(object) {
     return ((typeof object !== "undefined" && object !== null) ? object._isNone : false);
 }
@@ -1223,15 +1219,15 @@ function flatMap_(spawner, src, params) {
     var root = src;
     var rootDep = [root];
     var childDeps = [];
-    var isProperty$$1 = src._isProperty;
-    var ctor = (isProperty$$1 ? propertyFromStreamSubscribe : newEventStreamAllowSync);
+    var isProperty = src._isProperty;
+    var ctor = (isProperty ? propertyFromStreamSubscribe : newEventStreamAllowSync);
     var initialSpawned = false;
     var desc = params.desc || new Desc(src, "flatMap_", [spawner]);
     var result = ctor(desc, function (sink) {
         var composite = new CompositeUnsubscribe();
         var queue = [];
         function spawn(event) {
-            if (isProperty$$1 && event.isInitial) {
+            if (isProperty && event.isInitial) {
                 if (initialSpawned) {
                     return more;
                 }
@@ -1925,12 +1921,10 @@ function combineWith(f) {
         return f.apply(void 0, values);
     }).withDesc(desc);
 }
-
 /** @hidden */
 function combine(left, right, f) {
     return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 }
-
 function wrap(obs) {
     return new DefaultSource(obs, true);
 }
@@ -2454,7 +2448,6 @@ var Dispatcher = /** @class */ (function () {
             return this.push(event);
         }
     };
-    
     Dispatcher.prototype.unsubscribeFromSource = function () {
         if (this.unsubSrc) {
             this.unsubSrc();
@@ -2584,12 +2577,10 @@ function flatMapWithConcurrencyLimit(src, limit, f) {
 function bufferWithTime(src, delay) {
     return bufferWithTimeOrCount(src, delay, Number.MAX_VALUE).withDesc(new Desc(src, "bufferWithTime", [delay]));
 }
-
 /** @hidden */
 function bufferWithCount(src, count) {
     return bufferWithTimeOrCount(src, undefined, count).withDesc(new Desc(src, "bufferWithCount", [count]));
 }
-
 /** @hidden */
 function bufferWithTimeOrCount(src, delay, count) {
     var delayFunc = toDelayFunction(delay);
@@ -3050,7 +3041,6 @@ function zipWith(f) {
     streams = _.map((function (s) { return s.toEventStream(); }), streams);
     return when([streams, f]).withDesc(new Desc("Bacon", "zipWith", [f].concat(streams)));
 }
-
 /** @hidden */
 function zip(left, right, f) {
     return zipWith(f || Array, left, right).withDesc(new Desc(left, "zip", [right]));
@@ -3159,7 +3149,6 @@ function firstToPromise(src, PromiseCtr) {
         });
     });
 }
-
 /** @hidden */
 function toPromise(src, PromiseCtr) {
     return src.last().firstToPromise(PromiseCtr);
@@ -3966,7 +3955,6 @@ var Property = /** @class */ (function (_super) {
   
      */
     Property.prototype.groupBy = function (keyF, limitF) {
-        if (limitF === void 0) { limitF = _.id; }
         return groupBy(this, keyF, limitF);
     };
     /**
@@ -4135,8 +4123,8 @@ var EventStream = /** @class */ (function (_super) {
   
      * @param delay buffer duration in milliseconds
      */
-    EventStream.prototype.bufferWithTime = function (delay$$1) {
-        return bufferWithTime(this, delay$$1);
+    EventStream.prototype.bufferWithTime = function (delay) {
+        return bufferWithTime(this, delay);
     };
     /**
      Buffers stream events with given count.
@@ -4158,8 +4146,8 @@ var EventStream = /** @class */ (function (_super) {
      * @param {number | DelayFunction} delay in milliseconds or as a function
      * @param {number} count  maximum buffer size
      */
-    EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
-        return bufferWithTimeOrCount(this, delay$$1, count);
+    EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
+        return bufferWithTimeOrCount(this, delay, count);
     };
     EventStream.prototype.changes = function () {
         return this;
@@ -4269,7 +4257,6 @@ var EventStream = /** @class */ (function (_super) {
   
      */
     EventStream.prototype.groupBy = function (keyF, limitF) {
-        if (limitF === void 0) { limitF = _.id; }
         return groupBy(this, keyF, limitF);
     };
     /**
@@ -4413,7 +4400,11 @@ function ESObservable(observable) {
 }
 
 ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
-  var observer = typeof observerOrOnNext === 'function' ? { next: observerOrOnNext, error: onError, complete: onComplete } : observerOrOnNext;
+  var observer = typeof observerOrOnNext === 'function' ? {
+    next: observerOrOnNext,
+    error: onError,
+    complete: onComplete
+  } : observerOrOnNext;
   var subscription = {
     closed: false,
     unsubscribe: function () {
@@ -4421,7 +4412,6 @@ ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComple
       cancel();
     }
   };
-
   var cancel = this.observable.subscribe(function (event) {
     if (event.isError) {
       if (observer.error) observer.error(event.error);
@@ -5292,67 +5282,67 @@ var $ = {
  */
 var version = '<version>';
 
-exports.version = version;
-exports.when = when;
+exports.$ = $;
+exports.Bus = Bus;
+exports.CompositeUnsubscribe = CompositeUnsubscribe;
+exports.Desc = Desc;
+exports.End = End;
+exports.Error = Error$1;
+exports.Event = Event;
+exports.EventStream = EventStream;
+exports.Initial = Initial;
+exports.Next = Next;
+exports.Observable = Observable;
+exports.Property = Property;
+exports.Value = Value;
+exports._ = _;
+exports.combine = combine;
+exports.combineAsArray = combineAsArray;
 exports.combineTemplate = combineTemplate;
+exports.combineWith = combineWith;
 exports.concatAll = concatAll;
 exports.constant = constant;
 exports.fromArray = fromArray;
 exports.fromBinder = fromBinder;
+exports.fromCallback = fromCallback;
+exports.fromESObservable = fromESObservable;
 exports.fromEvent = fromEvent;
 exports.fromEventTarget = fromEvent;
+exports.fromNodeCallback = fromNodeCallback;
 exports.fromPoll = fromPoll;
+exports.fromPromise = fromPromise;
+exports.getScheduler = getScheduler;
 exports.groupSimultaneous = groupSimultaneous;
+exports.hasValue = hasValue;
 exports.interval = interval;
+exports.isEnd = isEnd;
+exports.isError = isError;
+exports.isEvent = isEvent;
+exports.isInitial = isInitial;
+exports.isNext = isNext;
 exports.later = later;
+exports.mergeAll = mergeAll;
+exports.more = more;
 exports.never = never;
+exports.noMore = noMore;
+exports.nullSink = nullSink;
+exports.nullVoidSink = nullVoidSink;
 exports.onValues = onValues;
 exports.once = once;
 exports.repeat = repeat;
 exports.repeatedly = repeatedly;
 exports.retry = retry;
 exports.sequentially = sequentially;
+exports.setScheduler = setScheduler;
 exports.silence = silence;
-exports.zipAsArray = zipAsArray;
-exports.zipWith = zipWith;
-exports.mergeAll = mergeAll;
-exports.more = more;
-exports.noMore = noMore;
-exports.fromPromise = fromPromise;
-exports.fromCallback = fromCallback;
-exports.fromNodeCallback = fromNodeCallback;
-exports.fromESObservable = fromESObservable;
-exports.EventStream = EventStream;
-exports.Observable = Observable;
-exports.Property = Property;
-exports.Bus = Bus;
-exports.Desc = Desc;
-exports.Event = Event;
-exports.Next = Next;
-exports.Initial = Initial;
-exports.End = End;
-exports.Error = Error$1;
-exports.Value = Value;
-exports.hasValue = hasValue;
-exports.isError = isError;
-exports.isEnd = isEnd;
-exports.isInitial = isInitial;
-exports.isEvent = isEvent;
-exports.isNext = isNext;
-exports.CompositeUnsubscribe = CompositeUnsubscribe;
 exports.spy = spy;
 exports.try = tryF;
-exports.getScheduler = getScheduler;
-exports.setScheduler = setScheduler;
-exports._ = _;
-exports.$ = $;
 exports.update = update;
-exports.combineAsArray = combineAsArray;
-exports.combineWith = combineWith;
-exports.combine = combine;
-exports.nullSink = nullSink;
-exports.nullVoidSink = nullVoidSink;
+exports.version = version;
+exports.when = when;
+exports.zipAsArray = zipAsArray;
+exports.zipWith = zipWith;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

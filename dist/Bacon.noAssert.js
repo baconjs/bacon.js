@@ -1,5 +1,5 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : factory(global.Bacon = {});
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : (global = global || self, factory(global.Bacon = {}));
 }(this, function (exports) {
     'use strict';
     var extendStatics = function (d, b) {
@@ -1098,15 +1098,15 @@
         var root = src;
         var rootDep = [root];
         var childDeps = [];
-        var isProperty$$1 = src._isProperty;
-        var ctor = isProperty$$1 ? propertyFromStreamSubscribe : newEventStreamAllowSync;
+        var isProperty = src._isProperty;
+        var ctor = isProperty ? propertyFromStreamSubscribe : newEventStreamAllowSync;
         var initialSpawned = false;
         var desc = params.desc || new Desc(src, 'flatMap_', [spawner]);
         var result = ctor(desc, function (sink) {
             var composite = new CompositeUnsubscribe();
             var queue = [];
             function spawn(event) {
-                if (isProperty$$1 && event.isInitial) {
+                if (isProperty && event.isInitial) {
                     if (initialSpawned) {
                         return more;
                     }
@@ -3054,9 +3054,6 @@
             return flatMapWithConcurrencyLimit(this, limit, f);
         };
         Property.prototype.groupBy = function (keyF, limitF) {
-            if (limitF === void 0) {
-                limitF = _.id;
-            }
             return groupBy(this, keyF, limitF);
         };
         Property.prototype.map = function (f) {
@@ -3126,14 +3123,14 @@
             registerObs(_this);
             return _this;
         }
-        EventStream.prototype.bufferWithTime = function (delay$$1) {
-            return bufferWithTime(this, delay$$1);
+        EventStream.prototype.bufferWithTime = function (delay) {
+            return bufferWithTime(this, delay);
         };
         EventStream.prototype.bufferWithCount = function (count) {
             return bufferWithCount(this, count);
         };
-        EventStream.prototype.bufferWithTimeOrCount = function (delay$$1, count) {
-            return bufferWithTimeOrCount(this, delay$$1, count);
+        EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
+            return bufferWithTimeOrCount(this, delay, count);
         };
         EventStream.prototype.changes = function () {
             return this;
@@ -3166,9 +3163,6 @@
             return flatMapEvent(this, f);
         };
         EventStream.prototype.groupBy = function (keyF, limitF) {
-            if (limitF === void 0) {
-                limitF = _.id;
-            }
             return groupBy(this, keyF, limitF);
         };
         EventStream.prototype.map = function (f) {
@@ -3829,65 +3823,65 @@
         }
     };
     var version = '<version>';
-    exports.version = version;
-    exports.when = when;
+    exports.$ = $;
+    exports.Bus = Bus;
+    exports.CompositeUnsubscribe = CompositeUnsubscribe;
+    exports.Desc = Desc;
+    exports.End = End;
+    exports.Error = Error$1;
+    exports.Event = Event;
+    exports.EventStream = EventStream;
+    exports.Initial = Initial;
+    exports.Next = Next;
+    exports.Observable = Observable;
+    exports.Property = Property;
+    exports.Value = Value;
+    exports._ = _;
+    exports.combine = combine;
+    exports.combineAsArray = combineAsArray;
     exports.combineTemplate = combineTemplate;
+    exports.combineWith = combineWith;
     exports.concatAll = concatAll;
     exports.constant = constant;
     exports.fromArray = fromArray;
     exports.fromBinder = fromBinder;
+    exports.fromCallback = fromCallback;
+    exports.fromESObservable = fromESObservable;
     exports.fromEvent = fromEvent;
     exports.fromEventTarget = fromEvent;
+    exports.fromNodeCallback = fromNodeCallback;
     exports.fromPoll = fromPoll;
+    exports.fromPromise = fromPromise;
+    exports.getScheduler = getScheduler;
     exports.groupSimultaneous = groupSimultaneous;
+    exports.hasValue = hasValue;
     exports.interval = interval;
+    exports.isEnd = isEnd;
+    exports.isError = isError;
+    exports.isEvent = isEvent;
+    exports.isInitial = isInitial;
+    exports.isNext = isNext;
     exports.later = later;
+    exports.mergeAll = mergeAll;
+    exports.more = more;
     exports.never = never;
+    exports.noMore = noMore;
+    exports.nullSink = nullSink;
+    exports.nullVoidSink = nullVoidSink;
     exports.onValues = onValues;
     exports.once = once;
     exports.repeat = repeat;
     exports.repeatedly = repeatedly;
     exports.retry = retry;
     exports.sequentially = sequentially;
+    exports.setScheduler = setScheduler;
     exports.silence = silence;
-    exports.zipAsArray = zipAsArray;
-    exports.zipWith = zipWith;
-    exports.mergeAll = mergeAll;
-    exports.more = more;
-    exports.noMore = noMore;
-    exports.fromPromise = fromPromise;
-    exports.fromCallback = fromCallback;
-    exports.fromNodeCallback = fromNodeCallback;
-    exports.fromESObservable = fromESObservable;
-    exports.EventStream = EventStream;
-    exports.Observable = Observable;
-    exports.Property = Property;
-    exports.Bus = Bus;
-    exports.Desc = Desc;
-    exports.Event = Event;
-    exports.Next = Next;
-    exports.Initial = Initial;
-    exports.End = End;
-    exports.Error = Error$1;
-    exports.Value = Value;
-    exports.hasValue = hasValue;
-    exports.isError = isError;
-    exports.isEnd = isEnd;
-    exports.isInitial = isInitial;
-    exports.isEvent = isEvent;
-    exports.isNext = isNext;
-    exports.CompositeUnsubscribe = CompositeUnsubscribe;
     exports.spy = spy;
     exports.try = tryF;
-    exports.getScheduler = getScheduler;
-    exports.setScheduler = setScheduler;
-    exports._ = _;
-    exports.$ = $;
     exports.update = update;
-    exports.combineAsArray = combineAsArray;
-    exports.combineWith = combineWith;
-    exports.combine = combine;
-    exports.nullSink = nullSink;
-    exports.nullVoidSink = nullVoidSink;
+    exports.version = version;
+    exports.when = when;
+    exports.zipAsArray = zipAsArray;
+    exports.zipWith = zipWith;
     Object.defineProperty(exports, '__esModule', { value: true });
 }));

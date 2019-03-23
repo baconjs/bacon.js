@@ -1,4 +1,5 @@
 import { EventStream } from "./observable";
+import { Event } from "./event";
 /**
  Repeats given elements indefinitely
  with given interval in milliseconds. For example, `repeatedly(10, [1,2,3])`
@@ -9,4 +10,4 @@ import { EventStream } from "./observable";
  @typeparam V Type of stream elements
 
  */
-export default function repeatedly<V>(delay: number, values: V[]): EventStream<V>;
+export default function repeatedly<V>(delay: number, values: (V | Event<V>)[]): EventStream<V>;
