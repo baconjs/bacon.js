@@ -35,7 +35,7 @@ if (i < 3) {
  @typeparam V Type of stream elements
 
  */
-export default function repeat<V>(generator: (iteration: number) => (Observable<V> | null)): EventStream<V> {
+export default function repeat<V>(generator: (iteration: number) => (Observable<V> | undefined)): EventStream<V> {
   var index = 0;
   return fromBinder<V>(function(sink: EventSink<V>) {
     var flag = false;
@@ -54,7 +54,7 @@ export default function repeat<V>(generator: (iteration: number) => (Observable<
       }
     }
     function subscribeNext() {
-      var next: Observable<V> | null;
+      var next: Observable<V> | undefined;
       flag = true;
       while (flag && reply !== noMore) {
         next = generator(index++);

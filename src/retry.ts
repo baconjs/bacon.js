@@ -97,7 +97,7 @@ export default function retry<V>(options: RetryOptions<V>): EventStream<V> {
     }
 
     if (finished) {
-      return null;
+      return undefined;
     } else if (errorEvent) {
       var context = {
         error: errorEvent.error,
