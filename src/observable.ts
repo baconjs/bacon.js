@@ -349,7 +349,7 @@ Returns a Promise which will be resolved with the first event coming from an Obs
 Like [`toPromise`](#topromise), the global ES6 promise implementation will be used unless a promise
 constructor is given.
    */
-  firstToPromise(PromiseCtr: Function | undefined): Promise<V> {
+  firstToPromise(PromiseCtr?: Function): Promise<V> {
     return firstToPromise(this, PromiseCtr)
   }
   /**
@@ -782,7 +782,7 @@ Use a shim if you need to support legacy browsers or platforms.
 
 See also [firstToPromise](#firsttopromise).
    */
-  toPromise(PromiseCtr: Function | undefined): Promise<V> {
+  toPromise(PromiseCtr?: Function): Promise<V> {
     return toPromise(this, PromiseCtr)
   }
 
@@ -1457,6 +1457,7 @@ export class EventStream<V> extends Observable<V> {
    Adds a starting value to the stream/property, i.e. concats a
    single-element stream containing the single seed value  with this stream.
    */
+  // TODO: should allow V|V2 signature
   startWith(seed: V): EventStream<V> {
     return startWithE(this,seed)
   }
