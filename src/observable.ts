@@ -536,6 +536,7 @@ Adds an extra [`Next`](next.html) event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
 function, a static value can be used.
    */
+  // TODO: mapEnd and mapError signatures should allow V|V2
   mapEnd(f: Function0<V> | V): this {
     return <any>this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]))
   }

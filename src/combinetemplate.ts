@@ -42,7 +42,7 @@ import constant from "./constant";
  */
 
 type Ctx = any
-export default function combineTemplate(template: any): Property<any> {
+export default function combineTemplate<T>(template: any): Property<T> {
   function current(ctxStack: Ctx[]) { return ctxStack[ctxStack.length - 1]; }
   function setValue(ctxStack: Ctx[], key: any, value: any) {
     (<any>current(ctxStack))[key] = value;
