@@ -2,7 +2,7 @@
  * Return type for various [Sink](#sink) functions. Indicates whether or not the sink
  * desires more input from its source. See [`Bacon.fromBinder`](#frombinder) for example.
  */
-export declare type Reply = "<no-more>" | undefined;
+export declare type Reply = "<no-more>" | undefined | void;
 /**
  * Reply for "more data, please".
  */

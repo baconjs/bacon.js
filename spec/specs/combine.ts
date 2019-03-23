@@ -89,7 +89,6 @@ describe("Bacon.combineAsArray", function() {
       const prop = Bacon.constant(1);
       return Bacon.combineAsArray(prop).subscribe(function(x) {
         if (x.hasValue) { event = x; }
-        return Bacon.more
       });
     });
     return it("is output as Initial event", () => expect(event && event.isInitial).to.equal(true));

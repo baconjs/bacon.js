@@ -4,6 +4,8 @@ import { Reply } from "./reply";
 import { allowSync, EventStream, Property } from "./observable";
 import { Event } from "./event";
 
+export type Transformer<V1, V2> = (event: Event<V1>, sink: EventSink<V2>) => Reply;
+
 /** @hidden */
 export function transformP<V, V2>(src: Property<V>, transformer: Transformer<V, V2>, desc? : Desc): Property<V2> {
   return new Property<V2>(
@@ -39,5 +41,3 @@ export function composeT<V, V2, V3>(t1: Transformer<V, V2>, t2: Transformer<V2, 
     return t1(event, sink2)
   }
 }
-
-export type Transformer<V1, V2> = (event: Event<V1>, sink: EventSink<V2>) => Reply;
