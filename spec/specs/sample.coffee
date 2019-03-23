@@ -91,7 +91,7 @@ describe "Property.sampledBy(stream)", ->
       -> later(1, 1).toProperty().sampledBy(fromArray([1,2,3]))
       [])
   it "toString", ->
-    expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never(),function)")
+    expect(Bacon.constant(0).sampledBy(Bacon.never()).toString()).to.equal("Bacon.constant(0).sampledBy(Bacon.never())")
 
 describe "Property.sampledBy(property)", ->
   describe "samples property at events, resulting to a Property", ->

@@ -7,7 +7,6 @@ expect = require("chai").expect
   unstable,
   semiunstable,
   take,
-  endlessly,
   repeatedly
 } = require("../SpecHelper")
 
