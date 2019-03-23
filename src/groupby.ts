@@ -8,7 +8,7 @@ import { Event } from "./event"
 import { EventSink } from "./types";
 import { composeT } from "./transform";
 
-export type GroupLimiter<V> = (data: EventStream<V>, firstValue: V) => EventStream<V>
+export type GroupLimiter<V> = (data: EventStream<V>, firstValue: V) => Observable<V>
 
 /** @hidden */
 interface StreamMap<V> {
@@ -24,7 +24,7 @@ export function groupBy<V>(src: Observable<V>, keyF: (value: V) => string, limit
       var key: string = keyF(firstValue)
       var similarValues: Observable<V> = src.changes().filter(x => keyF(x) === key )
       var data: EventStream<V> = once(firstValue).concat(similarValues)
-      var limited = limitF(data, firstValue).transform((event: Event<V>, sink: EventSink<V>) => {
+      var limited = limitF(data, firstValue).toEventStream().transform((event: Event<V>, sink: EventSink<V>) => {
         let reply = sink(event)
         if (event.isEnd) {
           delete streams[key];
