@@ -96,18 +96,18 @@ describe("Bacon.combineAsArray", function() {
   describe("combines properties and latest values of streams, into a Property having arrays as values", () =>
     expectPropertyEvents(
       function() {
-        const stream = series(1, ["a", "b"]);
+        const stream = series(1, [3, 4]);
         return Bacon.combineAsArray([Bacon.constant(1), Bacon.constant(2), stream]);
       },
-      [[1, 2, "a"], [1, 2, "b"]])
+      [[1, 2, 3], [1, 2, 4]])
   );
   describe("Works with streams provided as a list of arguments as well as with a single array arg", () =>
     expectPropertyEvents(
       function() {
-        const stream = series(1, ["a", "b"]);
+        const stream = series(1, [3, 4]);
         return Bacon.combineAsArray(Bacon.constant(1), Bacon.constant(2), stream);
       },
-      [[1, 2, "a"], [1, 2, "b"]])
+      [[1, 2, 3], [1, 2, 4]])
   );
   describe("works with single property", () =>
     expectPropertyEvents(

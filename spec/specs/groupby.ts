@@ -23,41 +23,45 @@ function takeWhileInclusive<V>(obs: Bacon.EventStream<V>, f: (v: V) => boolean) 
   })
 }
 
+function toString<A>(x: number) {
+  return x.toString()
+}
+
 describe("EventStream.groupBy", function() {
-  describe("without limiting function", function() {
+  describe("without limiting function (legacy support)", function() {
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id)),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, <any>undefined)),
       [[1,1],[2,2,2,2],[3,3]], unstable);
     return expectStreamEvents(
-      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id)),
+      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, <any>undefined)),
       [1,2,2,3,1,2,2,3], semiunstable);
   });
   describe("with limiting function", function() {
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, x => x.take(2))),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, x => x.take(2))),
       [[2,2],[1,1],[2,2],[3,3]], semiunstable);
     return expectStreamEvents(
-      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, x => x.take(2))),
+      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, x => x.take(2))),
       [1,2,2,3,1,2,2,3], semiunstable);
   });
   describe("when mapping all values to same key", () =>
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(x => "")),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(x => "", Bacon._.id)),
       [[1,2,2,3,1,2,2,3]])
   );
   describe("when using accumulator function", function() {
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, x => x.fold(0, (x,y) => x+y))),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, x => x.fold(0, (x,y) => x+y))),
       [[2], [8], [6]], unstable);
     return expectStreamEvents(
-      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(Bacon._.id, x => x.fold(0, (x,y) => x+y))),
+      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, x => x.fold(0, (x,y) => x+y))),
       [2, 8, 6], unstable);
   });
   describe("scenario #402", () =>
     expectStreamEvents(
       () =>
         flattenAndConcat((series(2, [{k:1, t:"start"}, {k:2, t:"start"}, {k: 1, t:"data"}, {k: 1, t: "end"}, {k: 1, t: "start"}])
-          .groupBy((x => x.k), x => takeWhileInclusive(x, x => x.t !== "end")))
+          .groupBy((x => x.k.toString()), x => takeWhileInclusive(x, x => x.t !== "end")))
         )
       ,
       [[{k:1, t:"start"}, {k: 1, t:"data"}, {k: 1, t:"end"}], [{k:2, t:"start"}], [{k:1, t:"start"}]], unstable)
@@ -81,7 +85,7 @@ describe("EventStream.groupBy", function() {
         const limitF = function(stream: Bacon.EventStream<Elem>, origX: Elem) {
           const cancel = stream.filter(x => x.type === "cancel").take(1);
           const adds = stream.filter(x => x.type === "add");
-          return adds.takeUntil(cancel).map(x => x.val);
+          return adds.takeUntil(cancel).map(x => x.val || 0);
         };
 
         return series(2, events)
@@ -111,7 +115,7 @@ describe("EventStream.groupBy", function() {
       return down.merge(upWithKey);
     };
     return expectStreamEvents(
-      () => series(2, events).groupBy(i => i.chan).map(keyPresses).flatMap(s => s).map(i => i.type + i.key),
+      () => series(2, events).groupBy(i => i.chan.toString(), Bacon._.id).map(keyPresses).flatMap(s => s).map(i => i.type + i.key),
       ['keydown4', 'keyup4', 'keydown2', 'keyup2'], semiunstable);
   });
 });
@@ -119,7 +123,7 @@ describe("EventStream.groupBy", function() {
 describe("Property.groupBy", () =>
   describe("without limiting function", () =>
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).toProperty().groupBy(Bacon._.id).toEventStream()),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).toProperty().groupBy(toString, Bacon._.id).toEventStream()),
       [[1,1],[2,2,2,2],[3,3]], unstable)
   )
 );

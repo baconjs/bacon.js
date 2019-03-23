@@ -18,7 +18,7 @@ describe("EventStream.flatScan", function() {
 
   describe("Works also when f returns a constant value instead of an EventStream", () =>
     expectPropertyEvents(
-      () => series(1, [1, 2, error(), 3]).flatScan(0, add),
+      () => series(1, [1, 2, error(), 3]).flatScan(0, <any>add),
       [0, 1, 3, error(), 6], semiunstable)
   );
 
@@ -30,7 +30,7 @@ describe("EventStream.flatScan", function() {
 
   return it("yields the seed value immediately", function() {
     const outputs: number[] = [];
-    new Bacon.Bus().flatScan(0, (a, b) => 1).onValue(value => { outputs.push(value) });
+    new Bacon.Bus().flatScan(0, (a, b) => <any>1).onValue(value => { outputs.push(value) });
     return expect(outputs).to.deep.equal([0]);
   });
 });

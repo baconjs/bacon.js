@@ -34,10 +34,10 @@ describe("Property.diff", function() {
   );
   describe("treats null start value like any other value", function() {
     expectPropertyEvents(
-      () => series(1, [1]).toProperty().diff(null, add),
+      () => series(1, [1]).toProperty().diff(<any>null, add),
       [1]);
     expectPropertyEvents(
-      () => series(1, [2]).toProperty(1).diff(null, add),
+      () => series(1, [2]).toProperty(1).diff(<any>null, add),
       [1, 3]);
   });
 });
