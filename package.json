@@ -31,6 +31,7 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
+    "@types/bluebird": "^3.5.26",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
     "@types/zen-observable": "^0.8.0",
