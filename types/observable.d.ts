@@ -3,7 +3,7 @@ import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink, Function
 import { StateF } from "./withstatemachine";
 import { Equals } from "./skipduplicates";
 import { Accumulator } from "./scan";
-import { SpawnerOrObservable, EventSpawner } from "./flatmap_";
+import { SpawnerOrObservable, EventSpawner, EventOrValue } from "./flatmap_";
 import PropertyDispatcher from "./internal/propertydispatcher";
 import Dispatcher from "./internal/dispatcher";
 import { DelayFunction } from "./buffer";
@@ -267,7 +267,7 @@ export declare abstract class Observable<V> {
   value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
   passed through, which can be implemented using flatMapError.
      */
-    abstract flatMapError(f: Function1<any, Observable<V>>): Observable<V>;
+    abstract flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): Observable<V | V2>;
     abstract flatMapEvent<V2>(f: EventSpawner<V, V2>): Observable<V2>;
     /**
   Like [`flatMap`](#observable-flatmap), but only spawns a new
@@ -779,8 +779,8 @@ export declare class Property<V> extends Observable<V> {
      value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
      passed through, which can be implemented using flatMapError.
      */
-    flatMapError(f: Function1<any, Observable<V>>): EventStream<V>;
-    flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2>;
+    flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): Property<V | V2>;
+    flatMapEvent<V2>(f: EventSpawner<V, V2>): Property<V2>;
     /**
      Like [`flatMap`](#observable-flatmap), but only spawns a new
      stream if the previously spawned stream has ended.
@@ -1029,7 +1029,7 @@ export declare class EventStream<V> extends Observable<V> {
      value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
      passed through, which can be implemented using flatMapError.
      */
-    flatMapError(f: Function1<any, Observable<V>>): EventStream<V>;
+    flatMapError<V2>(f: Function1<any, Observable<V2> | EventOrValue<V2>>): EventStream<V | V2>;
     /**
      Like [`flatMap`](#observable-flatmap), but only spawns a new
      stream if the previously spawned stream has ended.

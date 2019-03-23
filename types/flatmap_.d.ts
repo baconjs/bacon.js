@@ -4,8 +4,7 @@ import Observable from "./observable";
 export declare type ValueSpawner<V, V2> = (value: V) => (Observable<V2> | EventOrValue<V2>);
 export declare type SpawnerOrObservable<V, V2> = ValueSpawner<V, V2> | Observable<V2>;
 export declare type EventSpawner<V, V2> = (e: Event<V>) => Observable<V2> | EventOrValue<V2>;
-/** @hidden */
-declare type EventOrValue<V> = Event<V> | V;
+export declare type EventOrValue<V> = Event<V> | V;
 /** @hidden */
 export interface FlatMapParams {
     desc?: Desc;
