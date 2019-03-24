@@ -5,7 +5,8 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "target": "ES5"
   },
   "files": [
     "src/bacon.ts"
