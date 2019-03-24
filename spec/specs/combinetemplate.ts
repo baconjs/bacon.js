@@ -81,29 +81,29 @@ describe("combineTemplate", function() {
   );
   it("supports arrays", function() {
     let value: any = {key: [{ x: 1 }, { x: 2 }]};
-    Bacon.combineTemplate(value).onValue(function(x) {
+    Bacon.combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x.key instanceof Array).to.deep.equal(true);
     }); // seems that the former passes even if x is not an array
     value = [{ x: 1 }, { x: 2 }];
-    Bacon.combineTemplate(value).onValue(function(x) {
+    Bacon.combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x instanceof Array).to.deep.equal(true);
     });
     value = {key: [{ x: 1 }, { x: 2 }], key2: {}};
-    Bacon.combineTemplate(value).onValue(function(x) {
+    Bacon.combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x.key instanceof Array).to.deep.equal(true);
     });
     value = {key: [{ x: 1 }, { x: Bacon.constant(2) }]};
-    return Bacon.combineTemplate(value).onValue(function(x) {
+    return Bacon.combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal({key: [{ x: 1 }, { x: 2 }]});
       expect(x.key instanceof Array).to.deep.equal(true);
     });
   }); // seems that the former passes even if x is not an array
   it("supports NaNs", function() {
     const value = {key: NaN};
-    return Bacon.combineTemplate(value).onValue(x => {expect(isNaN(x.key)).to.deep.equal(true)});
+    return Bacon.combineTemplate(value).onValue((x : any) => {expect(isNaN(x.key)).to.deep.equal(true)});
   });
   it("supports dates", function() {
     const value = {key: new Date()};
@@ -148,7 +148,7 @@ describe("combineTemplate", function() {
       .onValue(x => { expect(x).to.equal(object) });
     return Bacon
       .combineTemplate({a: object})
-      .map(x => x.a)
+      .map((x: any) => x.a)
       .onValue(x => { expect(x).to.equal(object) });
   });
 });
