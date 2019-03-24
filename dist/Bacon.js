@@ -4379,8 +4379,8 @@ function symbol(key) {
     if (typeof Symbol !== "undefined" && Symbol[key]) {
         return Symbol[key];
     }
-    else if (typeof Symbol !== "undefined" && typeof Symbol["for"] === "function") {
-        return Symbol[key] = Symbol["for"](key);
+    else if (typeof Symbol !== "undefined" && typeof Symbol.for === "function") {
+        return Symbol[key] = Symbol.for(key);
     }
     else {
         return "@@" + key;
@@ -5264,8 +5264,8 @@ var $ = {
     /**
      * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
      */
-    init: function ($) {
-        $.fn.asEventStream = $.asEventStream;
+    init: function (jQuery) {
+        jQuery.fn.asEventStream = $.asEventStream;
     }
 };
 

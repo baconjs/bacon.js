@@ -22,5 +22,5 @@ export declare const $: {
     /**
      * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
      */
-    init($: any): void;
+    init(jQuery: any): void;
 };
