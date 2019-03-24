@@ -3211,37 +3211,40 @@
             return '@@' + key;
         }
     }
-    function ESObservable(observable) {
-        this.observable = observable;
-    }
-    ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
-        var observer = typeof observerOrOnNext === 'function' ? {
-            next: observerOrOnNext,
-            error: onError,
-            complete: onComplete
-        } : observerOrOnNext;
-        var subscription = {
-            closed: false,
-            unsubscribe: function () {
-                subscription.closed = true;
-                cancel();
-            }
+    var ESObservable = function () {
+        function ESObservable(observable) {
+            this.observable = observable;
+        }
+        ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
+            var observer = typeof observerOrOnNext === 'function' ? {
+                next: observerOrOnNext,
+                error: onError,
+                complete: onComplete
+            } : observerOrOnNext;
+            var subscription = {
+                closed: false,
+                unsubscribe: function () {
+                    subscription.closed = true;
+                    cancel();
+                }
+            };
+            var cancel = this.observable.subscribe(function (event) {
+                if (hasValue(event) && observer.next) {
+                    observer.next(event.value);
+                } else if (isError(event)) {
+                    if (observer.error)
+                        observer.error(event.error);
+                    subscription.unsubscribe();
+                } else if (event.isEnd) {
+                    subscription.closed = true;
+                    if (observer.complete)
+                        observer.complete();
+                }
+            });
+            return subscription;
         };
-        var cancel = this.observable.subscribe(function (event) {
-            if (event.isError) {
-                if (observer.error)
-                    observer.error(event.error);
-                subscription.unsubscribe();
-            } else if (event.isEnd) {
-                subscription.closed = true;
-                if (observer.complete)
-                    observer.complete();
-            } else if (observer.next) {
-                observer.next(event.value);
-            }
-        });
-        return subscription;
-    };
+        return ESObservable;
+    }();
     ESObservable.prototype[symbol('observable')] = function () {
         return this;
     };
