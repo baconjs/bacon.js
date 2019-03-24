@@ -14,10 +14,10 @@ describe("Bacon.constant", function() {
   describe("provides same value to all listeners", function() {
     const c = Bacon.constant("lol");
     expectPropertyEvents((() => c), ["lol"]);
-    return it("check check", function() {
+    it("check check", function() {
       const f = mockFunction();
       c.onValue(f);
-      return f.verify("lol");
+      f.verify("lol");
     });
   });
   it("provides same value to all listeners, when mapped (bug fix)", function() {
@@ -26,9 +26,9 @@ describe("Bacon.constant", function() {
     c.onValue(f);
     f.verify("lol");
     c.onValue(f);
-    return f.verify("lol");
+    f.verify("lol");
   });
-  return it("toString", () => expect(Bacon.constant(1).toString()).to.equal("Bacon.constant(1)"));
+  it("toString", () => expect(Bacon.constant(1).toString()).to.equal("Bacon.constant(1)"));
 });
 
 describe("Property.toEventStream", function() {
@@ -37,7 +37,7 @@ describe("Property.toEventStream", function() {
       () => series(1, [1, 2]).toProperty(0).toEventStream(),
       [0, 1, 2], semiunstable)
   );
-  return describe("works with synchronous source", () =>
+  describe("works with synchronous source", () =>
     expectStreamEvents(
       () => fromArray([1, 2]).toProperty(0).toEventStream(),
       [0, 1, 2], unstable)
@@ -60,7 +60,7 @@ describe("Property.toProperty", function() {
 describe("Property.subscribe", () =>
   it("asserts that argument is function", function() {
     const f = () => Bacon.never().toProperty().subscribe(<any>"a string");
-    return expect(f).to.throw(Error);
+    expect(f).to.throw(Error);
   })
 );
 
@@ -68,12 +68,11 @@ describe("Property.changes", function() {
   describe("sends property change events", () =>
     expectStreamEvents(
       function() {
-        let p;
-        return p = series(1, ["b", error()]).toProperty("a").changes();
+        return series(1, ["b", error()]).toProperty("a").changes();
       },
       ["b", error()])
   );
-  return describe("works with synchronous source", () =>
+  describe("works with synchronous source", () =>
     expectStreamEvents(
       () => fromArray([1, 2, 3]).toProperty(0).changes(),
       [1, 2, 3])
@@ -84,7 +83,7 @@ describe("Observable.onValues", () =>
   it("splits value array to callback arguments", function() {
     const f = mockFunction();
     Bacon.constant([1,2,3]).onValues(f);
-    return f.verify(1,2,3);
+    f.verify(1,2,3);
   })
 );
 

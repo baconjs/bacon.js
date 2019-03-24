@@ -49,7 +49,7 @@ describe("Bacon.repeat", function() {
       () => take(3, Bacon.repeat(() => repeatedly(1, [1]))),
       [1,1,1])
   );
-  return describe("Works with endless synchronous generators", () =>
+  describe("Works with endless synchronous generators", () =>
     expectStreamEvents(
       () => take(3, Bacon.repeat(() => Bacon.once(1))),
       [1,1,1], unstable)

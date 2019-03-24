@@ -144,7 +144,7 @@ export function toArray<A>(xs: A[] | A): A[] { return <any>(isArray(xs) ? xs : [
 /** @hidden */
 export function toFunction<V, V2>(f: ((x: V) => V2) | V2): ((x: V) => V2) {
     if (typeof f == "function") {
-      return f
+      return <any>f
     }
     return x => f
   }

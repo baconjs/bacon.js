@@ -523,16 +523,15 @@ describe("Integration tests", function() {
         const a = Bacon.constant("lolbal");
         return a.flatMap(x => Bacon.once(x));}), ["lolbal"]);
     verifyWhileDispatching("with awaiting", (function() {
-        let s;
         const a = Bacon.constant(1);
-        return s = a.awaiting(a.map(function() {}));}), [false]);
+        return a.awaiting(a.map(function() {}));}), [false]);
     verifyWhileDispatching("with concat", (function() {
-        let s;
-        return s = Bacon.once(1).concat(Bacon.once(2));}), [1,2]);
-    return verifyWhileDispatching("with Property.delay", (function() {
+        return Bacon.once(1).concat(Bacon.once(2));}), [1,2]);
+    verifyWhileDispatching("with Property.delay", (function() {
         const c = Bacon.constant(1);
-        return Bacon.combineAsArray([c, c]).delay(1).map(x => x[0]);}), [1]);
-});
+        return Bacon.combineAsArray([c, c]).delay(1).map(x => x[0]);
+      }), [1]);
+  });
 
   return describe("when subscribing while dispatching", function() {
     describe("single subscriber", function() {
