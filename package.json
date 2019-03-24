@@ -59,7 +59,7 @@
     "ts-node": "^7.0.0",
     "tsify": "^4.0.1",
     "typedoc": "^0.13.0",
-    "typescript": "^2.9",
+    "typescript": "~3.3",
     "uglify-js": "^2.6",
     "zen-observable": "^0.4.0"
   },
