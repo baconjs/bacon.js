@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 echo "building dist..."
-node_modules/.bin/babel-node scripts/assemble.js $@
+node scripts/assemble.js $@
 
 if [ ! -z $DIST_VERSION ]; then
   echo "Setting version info to dist/*.js files"

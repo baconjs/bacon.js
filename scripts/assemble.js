@@ -1,26 +1,13 @@
-#!/usr/bin/env babel-node
-
-/**
- * This file is responsible for building Bacon.js, Bacon.noAssert.js and Bacon.min.js
- */
-
 /* eslint no-console: 0 */
 "use strict";
 
 var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
-var babelPlugin = require("rollup-plugin-babel");
 var typescriptPlugin = require("rollup-plugin-typescript2");
 
-var recast = require("recast");
 var uglifyjs = require("uglify-js");
-var esprima = require("esprima");
-var estraverse = require("estraverse");
-var escodegen = require("escodegen");
-var jsstana = require("jsstana");
 var stripAsserts = require("./assemble/stripAsserts")
-var partialBuildPlugin = require("./assemble/partialBuildPlugin")
 
 var argPieceNames = process.argv.slice(2);
 var defaultOutput = path.join(__dirname, "..", "dist", "Bacon.js");
@@ -35,17 +22,10 @@ function main(options) {
   }
 
   var plugins = [
-    babelPlugin({ 
-      include: "**/*.js"
-    }),
     typescriptPlugin({
       typescript: require("typescript")
     })
   ];
-
-  if (process.argv.length > 2) {
-    plugins.push(partialBuildPlugin({ pieces: argPieceNames }));
-  }
 
   rollup({
     input: 'src/bacon.ts',
@@ -63,7 +43,7 @@ function main(options) {
       indent: false
     });
   }).then(function() {
-    var output = fs.readFileSync('dist/Bacon.js');
+    var output = fs.readFileSync('dist/Bacon.js', 'utf-8');
     var noAssertOutput = stripAsserts(output);
     if (options.noAssert) {
       fs.writeFileSync(options.noAssert, noAssertOutput);
