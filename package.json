@@ -58,8 +58,6 @@
     "browserify": "^11.2.0",
     "browserstack-runner": "^0.3.8",
     "chai": "^3.3.0",
-    "coffee-script": "^1.9.1",
-    "coffeeify": "^1.0.0",
     "es6-promise": "^3.0.2",
     "escodegen": "^1.6.1",
     "eslint": "^1.10.3",
@@ -97,7 +95,7 @@
   "homepage": "https://github.com/baconjs/bacon.js",
   "scripts": {
     "test": "./scripts/runtests",
-    "perftest": "performance/PerformanceTest.coffee",
+    "perftest": "performance/PerformanceTest.ts",
     "lint": "eslint src",
     "dist": "./scripts/dist",
     "prepublish": "npm run lint && npm run tsc && npm run dist",
