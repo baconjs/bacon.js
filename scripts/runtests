@@ -10,5 +10,5 @@ if [ "${TEST_SUITE}" = "browserstack" ]; then
   echo "running on browserstack"
   npm run browserstack
 else
-  ./node_modules/.bin/mocha $DEBUG -r ts-node/register spec/specs/*.ts spec/specs/notinbrowser/*.ts
+  ./node_modules/.bin/mocha $DEBUG -r ts-node/register test/*.ts test/notinbrowser/*.ts
 fi

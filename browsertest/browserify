@@ -1,4 +1,4 @@
 # Creates a bundle.js file from node project, so that you can run tests
 # in the browser using mocha.runner.html
 
-node_modules/.bin/browserify -p tsify browsertest/*.ts spec/specs/*.ts > browsertest/bundle.js
+node_modules/.bin/browserify -p tsify browsertest/*.ts test/*.ts > browsertest/bundle.js

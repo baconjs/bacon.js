@@ -18,7 +18,7 @@ Here's the stuff.
 - [Homepage](http://baconjs.github.io/)
 - [Source files](https://github.com/baconjs/bacon.js/tree/master/src)
 - [Generated javascript](https://github.com/baconjs/bacon.js/blob/master/dist/)
-- [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/specs/main.coffee)
+- [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/)
 - [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/baconjs/bacon.js/wiki/) with more docs, related projects and more
 - [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
@@ -443,7 +443,7 @@ Examples
 
 See [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 
-See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/specs/main.coffee)
+See [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/)
 
 See Worzone [demo](http://juhajasatu.com/worzone/) and [source](http://github.com/raimohanska/worzone)
 
@@ -482,7 +482,7 @@ Run all unit tests:
     
 The tests are run against the javascript bundle in the `dist` directory. You can build the bundle using `npm run dist`.
 
-This will loop thru all files under `spec/specs` and build the library with the
+This will loop thru all files under `spec` and build the library with the
 single feature and run the test.
 
 Run browser tests locally:
