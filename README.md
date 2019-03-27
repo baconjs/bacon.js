@@ -49,6 +49,7 @@ s.log()
 
 As you can see, the global methods, such as [`once`](http://baconjs.github.io/api3/globals.html#once) are imported separately.
 
+Check out the new [API Documentation](http://baconjs.github.io/api3/index.html), that's now generated using Typedoc from the Typescript source code.
 
 ### NPM, CommonJS, Node.js
 
