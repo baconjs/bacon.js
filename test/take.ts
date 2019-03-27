@@ -1,7 +1,7 @@
 import * as Bacon from "..";
 import { expect } from "chai";
 
-import { expectStreamEvents, expectPropertyEvents, series, repeat, repeatedly, unstable, fromArray, t, once } from "./util/SpecHelper";
+import { expectStreamEvents, expectPropertyEvents, verifySingleSubscriber, series, repeat, repeatedly, unstable, fromArray, t, once } from "./util/SpecHelper";
 
 describe("EventStream.take", function() {
   describe("takes N first elements", () =>
@@ -25,11 +25,32 @@ describe("EventStream.take", function() {
       },
       ["wut"], unstable)
   ); // the outputs don't really matter - it's just that the stream terminates normally
-  describe("works with synchronous source", () =>
+  describe("works with asynchronous fromArray source", () => {
     expectStreamEvents(
       () => fromArray([1,2,3,4]).take(2),
       [1,2])
-  );
+
+    it("more tests", () => {
+        const stream = fromArray([1,2,3,4])
+        verifySingleSubscriber(
+          () => stream.take(2),
+          [1, 2])
+        verifySingleSubscriber(
+          () => stream.take(2),
+          [3, 4])
+        verifySingleSubscriber(
+          () => stream.take(2),
+          [])
+    
+        const streamToo = fromArray([1,2])
+        verifySingleSubscriber(
+          () => streamToo.take(4),
+          [1, 2])
+        verifySingleSubscriber(
+          () => streamToo.take(2),
+          [])
+    })
+   });
   return it("toString", () => expect(Bacon.never().take(1).toString()).to.equal("Bacon.never().take(1)"));
 });
 

@@ -402,19 +402,6 @@ and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are p
   abstract flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): Observable<V2>
 
   /**
-   Scans stream with given seed value and accumulator function, resulting to a Property.
-   Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
-   of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
-   updates so that that the next update will be queued until the previous one has completed.
-
-   * @param seed initial value to start with
-   * @param f transition function from previous state and new value to next state
-   * @typeparam V2 state and result type
-   */
-  flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2> {
-    return <any>flatScan(this, seed, f)
-  }
-  /**
 Works like [`scan`](#scan) but only emits the final
 value, i.e. the value just before the observable ends. Returns a
 [`Property`](property.html).
@@ -1402,6 +1389,21 @@ export class EventStream<V> extends Observable<V> {
    */
   flatMapWithConcurrencyLimit<V2>(limit: number, f: SpawnerOrObservable<V, V2>): EventStream<V2> { return <any>flatMapWithConcurrencyLimit(this, limit, f) }
   flatMapEvent<V2>(f: EventSpawner<V, V2>): EventStream<V2> { return <any>flatMapEvent(this, f)}
+
+  /**
+   Scans stream with given seed value and accumulator function, resulting to a Property.
+   Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
+   of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
+   updates so that that the next update will be queued until the previous one has completed.
+
+   * @param seed initial value to start with
+   * @param f transition function from previous state and new value to next state
+   * @typeparam V2 state and result type
+   */
+  flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2> {
+    return <any>flatScan(this, seed, f)
+  }
+
   /**
    Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
    stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream

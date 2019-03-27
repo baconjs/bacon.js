@@ -3402,19 +3402,6 @@ var Observable = /** @class */ (function () {
         return firstToPromise(this, PromiseCtr);
     };
     /**
-     Scans stream with given seed value and accumulator function, resulting to a Property.
-     Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
-     of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
-     updates so that that the next update will be queued until the previous one has completed.
-  
-     * @param seed initial value to start with
-     * @param f transition function from previous state and new value to next state
-     * @typeparam V2 state and result type
-     */
-    Observable.prototype.flatScan = function (seed, f) {
-        return flatScan(this, seed, f);
-    };
-    /**
   Works like [`scan`](#scan) but only emits the final
   value, i.e. the value just before the observable ends. Returns a
   [`Property`](property.html).
@@ -3804,6 +3791,13 @@ var Observable = /** @class */ (function () {
  or [`scan`](eventstream.html#scan) method. Note: depending on how a Property is created, it may or may not
  have an initial value. The current value stays as its last value after the stream has ended.
 
+ Here are the most common ways for creating Properties:
+
+ - Create a constant property with [constant](../globals.html#constant)
+ - Create a property based on an EventStream with [toProperty](eventstream.html#toproperty)
+ - Scan an EventStream with an accumulator function with [scan](eventstream.html#scan)
+ - Create a state property based on multiple sources using [update](../globals.html#update)
+
  @typeparam V   Type of the elements/values in the stream/property
  */
 var Property = /** @class */ (function (_super) {
@@ -4087,6 +4081,27 @@ var allowSync = { forceAsync: false };
  that you can listen to events in the stream using, for instance, the [`onValue`](#onvalue) method
  with a callback.
 
+ To create an EventStream, you'll want to use one of the following factory methods:
+
+  - From DOM EventTarget or Node.JS EventEmitter objects using [fromEvent](../globals.html#fromevent)
+  - From a Promise using [fromPromise](../globals.html#frompromise)
+  - From an unary callback using [fromCallback](../globals.html#fromcallback)
+  - From a Node.js style callback using [fromNodeCallback](../globals.html#fromnodecallback)
+  - From RxJs or Kefir observables using [fromESObservable](../globals.html#fromesobservable)
+  - By polling a synchronous function using [fromPoll](../globals.html#fromPoll)
+  - Emit a single event instantly using [once](../globals.html#once)
+  - Emit a single event with a delay [later](../globals.html#later)
+  - Emit the same event indefinitely using [interval](../globals.html#interval)
+  - Emit an array of events instantly [fromArray](../globals.html#fromarray)
+  - Emit an array of events with a delay [sequentially](../globals.html#sequentially)
+  - Emit an array of events repeatedly with a delay [repeatedly](../globals.html#repeatedly)
+  - Use a generator function to be called repeatedly [repeat](../globals.html#repeat)
+  - Create a stream that never emits an event, ending immediately [never](../globals.html#never)
+  - Create a stream that never emits an event, ending with a delay [silence](../globals.html#silence)
+  - Create stream using a custom binder function [fromBinder](../globals.html#frombinder)
+  - Wrap jQuery events using [asEventStream](../globals.html#_)
+
+
  @typeparam V   Type of the elements/values in the stream/property
 
  */
@@ -4210,6 +4225,19 @@ var EventStream = /** @class */ (function (_super) {
      */
     EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
     EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    /**
+     Scans stream with given seed value and accumulator function, resulting to a Property.
+     Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
+     of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
+     updates so that that the next update will be queued until the previous one has completed.
+  
+     * @param seed initial value to start with
+     * @param f transition function from previous state and new value to next state
+     * @typeparam V2 state and result type
+     */
+    EventStream.prototype.flatScan = function (seed, f) {
+        return flatScan(this, seed, f);
+    };
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
@@ -4517,6 +4545,10 @@ function fromArray(values) {
                 pushNeeded = true;
                 if (pushing) {
                     return;
+                }
+                if (i === values.length) {
+                    sink(endEvent());
+                    return false;
                 }
                 pushing = true;
                 while (pushNeeded) {

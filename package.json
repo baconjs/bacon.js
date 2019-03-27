@@ -1,7 +1,7 @@
 {
   "name": "baconjs",
   "description": "A small functional reactive programming lib for JavaScript.",
-  "version": "2.0.7",
+  "version": "3.0.0",
   "keywords": [
     "bacon.js",
     "bacon",
@@ -74,7 +74,7 @@
     "lint": "eslint src",
     "dist": "./scripts/dist",
     "prepublish": "npm run lint && npm run tsc && npm run dist",
-    "version": "2.0.7",
+    "version": "3.0",
     "browsertest-bundle": "browsertest/browserify",
     "browsertest-open": "open browsertest/mocha.runner.html",
     "browserstack": "browsertest/browserstack",

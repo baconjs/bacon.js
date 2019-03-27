@@ -1,3 +1,15 @@
+## 2.0.11
+
+- Flatscan only defined for EventStreams (as per docs, fix #733)
+
+## 2.0.10
+
+- Fix Bacon.fromArray bug (#724)
+
+## 2.0.9
+
+- Fix Property.flatMapLatest (#719)
+
 ## 2.0.5
 
 - Fix force-async behavior in EventStream constructor (#713)

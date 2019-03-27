@@ -33,6 +33,10 @@ export default function fromArray<T>(values: (T | Event<T>)[]): EventStream<T> {
         if (pushing) {
           return;
         }
+        if (i === values.length) {
+          sink(endEvent());
+          return false;
+        }
         pushing = true;
         while (pushNeeded) {
           pushNeeded = false;

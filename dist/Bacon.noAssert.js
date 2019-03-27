@@ -2838,9 +2838,6 @@
         Observable.prototype.firstToPromise = function (PromiseCtr) {
             return firstToPromise(this, PromiseCtr);
         };
-        Observable.prototype.flatScan = function (seed, f) {
-            return flatScan(this, seed, f);
-        };
         Observable.prototype.fold = function (seed, f) {
             return fold$1(this, seed, f);
         };
@@ -3151,6 +3148,9 @@
         EventStream.prototype.flatMapEvent = function (f) {
             return flatMapEvent(this, f);
         };
+        EventStream.prototype.flatScan = function (seed, f) {
+            return flatScan(this, seed, f);
+        };
         EventStream.prototype.groupBy = function (keyF, limitF) {
             return groupBy(this, keyF, limitF);
         };
@@ -3291,6 +3291,10 @@
                     pushNeeded = true;
                     if (pushing) {
                         return;
+                    }
+                    if (i === values.length) {
+                        sink(endEvent());
+                        return false;
                     }
                     pushing = true;
                     while (pushNeeded) {

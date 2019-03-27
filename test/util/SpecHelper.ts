@@ -280,7 +280,7 @@ const verifyPropertyWith = (description: string, srcF: () => Bacon.Observable<an
   })
 ;
 
-const verifySingleSubscriber = (srcF: () => Bacon.Observable<any>, expectedEvents: Bacon.Event<any>[]) => {
+export const verifySingleSubscriber = (srcF: () => Bacon.Observable<any>, expectedEvents: any[]) => {
   return verifyStreamWith("(single subscriber)", srcF, expectedEvents, (src, events, done) =>
     src.subscribe((event: Bacon.Event<any>) => {
       if (event.isEnd) {
