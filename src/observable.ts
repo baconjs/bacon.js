@@ -929,6 +929,13 @@ export type ObservableConstructor = (description: Desc, subscribe: Subscribe<any
  or [`scan`](eventstream.html#scan) method. Note: depending on how a Property is created, it may or may not
  have an initial value. The current value stays as its last value after the stream has ended.
 
+ Here are the most common ways for creating Properties:
+
+ - Create a constant property with [constant](../globals.html#constant)
+ - Create a property based on an EventStream with [toProperty](eventstream.html#toproperty)
+ - Scan an EventStream with an accumulator function with [scan](eventstream.html#scan)
+ - Create a state property based on multiple sources using [update](../globals.html#update)
+
  @typeparam V   Type of the elements/values in the stream/property
  */
 export class Property<V> extends Observable<V> {
@@ -1244,6 +1251,27 @@ export interface EventStreamOptions { forceAsync: boolean }
  * EventStream represents a stream of events. It is an Observable object, meaning
  that you can listen to events in the stream using, for instance, the [`onValue`](#onvalue) method
  with a callback.
+
+ To create an EventStream, you'll want to use one of the following factory methods:
+
+  - From DOM EventTarget or Node.JS EventEmitter objects using [fromEvent](../globals.html#fromevent)
+  - From a Promise using [fromPromise](../globals.html#frompromise)
+  - From an unary callback using [fromCallback](../globals.html#fromcallback)
+  - From a Node.js style callback using [fromNodeCallback](../globals.html#fromnodecallback)
+  - From RxJs or Kefir observables using [fromESObservable](../globals.html#fromesobservable)
+  - By polling a synchronous function using [fromPoll](../globals.html#fromPoll)
+  - Emit a single event instantly using [once](../globals.html#once)
+  - Emit a single event with a delay [later](../globals.html#later)
+  - Emit the same event indefinitely using [interval](../globals.html#interval)
+  - Emit an array of events instantly [fromArray](../globals.html#fromarray)
+  - Emit an array of events with a delay [sequentially](../globals.html#sequentially)
+  - Emit an array of events repeatedly with a delay [repeatedly](../globals.html#repeatedly)
+  - Use a generator function to be called repeatedly [repeat](../globals.html#repeat)
+  - Create a stream that never emits an event, ending immediately [never](../globals.html#never)
+  - Create a stream that never emits an event, ending with a delay [silence](../globals.html#silence)
+  - Create stream using a custom binder function [fromBinder](../globals.html#frombinder)
+  - Wrap jQuery events using [asEventStream](../globals.html#_)
+
 
  @typeparam V   Type of the elements/values in the stream/property
 

@@ -3,7 +3,7 @@ Bacon.js
 
 <img src="https://raw.github.com/baconjs/bacon.js/master/logo.png" align="right" width="300px" />
 
-A small functional reactive programming lib for JavaScript.
+A functional reactive programming lib for TypeScript JavaScript, written in TypeScript.
 
 Turns your event spaghetti into clean and declarative feng shui bacon, by switching
 from imperative to functional. It's like replacing nested for-loops with functional programming
@@ -21,18 +21,8 @@ Here's the stuff.
 - [Specs](https://github.com/baconjs/bacon.js/blob/master/spec/)
 - [Examples](https://github.com/baconjs/bacon.js/blob/master/examples/examples.html)
 - [Wiki](https://github.com/baconjs/bacon.js/wiki/) with more docs, related projects and more
-- [Cheat Sheet](http://www.cheatography.com/proloser/cheat-sheets/bacon-js/)
-- [My Blog](http://nullzzz.blogspot.com) with some baconful and reactive postings along with a Bacon.js tutorial
-- [Bacon.js Blog](http://baconjs.blogspot.com)
-- [Bacon.js Google Group](https://groups.google.com/forum/#!forum/baconjs) for discussion and questions
-- [TodoMVC with Bacon.js and jQuery](https://github.com/raimohanska/todomvc/blob/bacon-jquery/labs/architecture-examples/baconjs/js/app.js)
-- [Stack Overflow](http://stackoverflow.com/questions/tagged/bacon.js) for well-formed questions. Use the "bacon.js" tag.
 - [Gitter](https://gitter.im/baconjs/bacon.js) chat for developers of Bacon.
 - [Migrating to 2.0](https://github.com/baconjs/bacon.js/wiki/Migration-from-version-1.0-to-2.0)
-
-And remember to give me feedback on the bacon! Let me know if you've
-used it. Tell me how it worked for you. What's missing? What's wrong?
-Please contribute!
 
 [![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
 [![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)](https://www.browserstack.com/automate/public-build/RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)
@@ -41,22 +31,6 @@ Please contribute!
 [![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
 
 ## Install and Usage
-
-### NPM, CommonJS, Node.js
-
-If you're on to CommonJS ([node.js](http://nodejs.org/), [webpack](https://webpack.js.org/) or similar) you can install Bacon using npm.
-
-    npm install baconjs
-    
-Try it like this:    
-
-```js
-node
-Bacon=require("baconjs")
-Bacon.once("hello").log()
-```
-    
-The global methods, such as [`once`](globals.html#once) are available in the `Bacon` object.
 
 ### Typescript
 
@@ -75,6 +49,22 @@ s.log()
 ```
 
 As you can see, the global methods, such as [`once`](globals.html#once) are imported separately.
+
+### NPM, CommonJS, Node.js
+
+If you're on to CommonJS ([node.js](http://nodejs.org/), [webpack](https://webpack.js.org/) or similar) you can install Bacon using npm.
+
+    npm install baconjs
+    
+Try it like this:    
+
+```js
+node
+Bacon=require("baconjs")
+Bacon.once("hello").log()
+```
+    
+The global methods, such as [`once`](globals.html#once) are available in the `Bacon` object.
 
 ### Bower
 
@@ -192,32 +182,10 @@ API
 Creating EventStreams and Properties
 ----------------
 
-There's a multitude of methods for creating an [EventStream](classes/eventstream.html) from different sources.
+There's a multitude of methods for creating an EventStream from different sources, including the DOM, node callbacks and promises for example. 
+See [EventStream](classes/eventstream.html) documentation.
 
-- From DOM EventTarget or Node.JS EventEmitter objects using [fromEvent](globals.html#fromevent)
-- From a Promise using [fromPromise](globals.html#frompromise)
-- From an unary callback using [fromCallback](globals.html#fromcallback)
-- From a Node.js style callback using [fromNodeCallback](globals.html#fromnodecallback)
-- From RxJs or Kefir observables using [fromESObservable](globals.html#fromesobservable)
-- By polling a synchronous function using [fromPoll](globals.html#fromPoll)
-- Emit a single event instantly using [once](globals.html#once)
-- Emit a single event with a delay [later](globals.html#later)
-- Emit the same event indefinitely using [interval](globals.html#interval)
-- Emit an array of events instantly [fromArray](globals.html#fromarray)
-- Emit an array of events with a delay [sequentially](globals.html#sequentially)
-- Emit an array of events repeatedly with a delay [repeatedly](globals.html#repeatedly)
-- Use a generator function to be called repeatedly [repeat](globals.html#repeat)
-- Create a stream that never emits an event, ending immediately [never](globals.html#never)
-- Create a stream that never emits an event, ending with a delay [silence](globals.html#silence)
-- Create stream using a custom binder function [fromBinder](globals.html#frombinder)
-- Wrap jQuery events using [asEventStream](globals.html#_)
-
-Properties are usually created based on EventStreams. Here are some ways.
-
-- Create a constant property with [constant](globals.html#constant)
-- Create a property based on an EventStream with [toProperty](classes/eventstream.html#toproperty)
-- Scan an EventStream with an accumulator function with [scan](classes/eventstream.html#scan)
-- Create a state property based on multiple sources using [update](globals.html#update)
+Properties are usually created based on EventStreams. Some common ways are intruduced in [Property](classes/property.html) documentation.
 
 Combining multiple streams and properties
 -----------------------------------------
