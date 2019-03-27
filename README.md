@@ -11,8 +11,6 @@ concepts like [`map`](classes/observable.html#map) and [`filter`](classes/observ
 Combine your data with [`merge`](classes/eventstream.html#merge) and [`combine`](classes/observable.html#combine).
 Then switch to the heavier weapons and wield [`flatMap`](classes/observable.html#flatmap) and [`combineTemplate`](globals.html#combinetemplate) like a boss.
 
-It's the `_` of Events. Too bad the symbol `~` is not allowed in JavaScript.
-
 Here's the stuff.
 
 - [Homepage](http://baconjs.github.io/)
