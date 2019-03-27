@@ -1,3 +1,14 @@
+## 3.0.0
+
+- Fully converted to TypeScript. No need for separate types when using from TypeScript
+- Still works from Javascript, except for some changes listed below
+- Function Construction Rules are gone. No more `stream.map(".fieldName")`
+- observable.last() only stores value events, passes through errors (I think this was a bug)
+- added Bacon.silence(duration)
+- Replaced `withHandler` with `transform`
+- sampledBy typed version doesn't support the optional combinator parameter (works from js though)
+- Observable argument support removed from `fromCallback` and `fromNodeCallback`
+
 ## 2.0.11
 
 - Flatscan only defined for EventStreams (as per docs, fix #733)
