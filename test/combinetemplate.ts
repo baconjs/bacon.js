@@ -49,7 +49,9 @@ describe("combineTemplate", function() {
   );
 
   describe("constant objects supported", function() {
-    const testAsRoot = (value: any) => expectPropertyEvents( (() => combineTemplate(value)), [value]);
+    function testAsRoot<V>(value: V) {
+      expectPropertyEvents( (() => combineTemplate(value)), [value])
+    }
     const testAsObjectValue = (value: any) => testAsRoot({key: value});
     const testAsDynamicObjectValue = (value: any) => expectPropertyEvents( (() => combineTemplate({key: constant(value)})), [{ key: value}]);
     const testAsArrayItem = (value: any) => testAsRoot([1, value, 2]);
@@ -74,30 +76,31 @@ describe("combineTemplate", function() {
       [{}])
   );
   it("supports arrays", function() {
-    let value: any = {key: [{ x: 1 }, { x: 2 }]};
-    combineTemplate(value).onValue(function(x: any) {
+    const value = {key: [{ x: 1 }, { x: 2 }]};
+    (combineTemplate(value) as Property<{key: {x: number}[]}>).onValue(function(x) {
       expect(x).to.deep.equal(value);
       expect(x.key instanceof Array).to.deep.equal(true);
     }); // seems that the former passes even if x is not an array
-    value = [{ x: 1 }, { x: 2 }];
-    combineTemplate(value).onValue(function(x: any) {
-      expect(x).to.deep.equal(value);
+    const value2 = [{ x: 1 }, { x: 2 }];
+    combineTemplate(value2).onValue(function(x) {
+      expect(x).to.deep.equal(value2);
       expect(x instanceof Array).to.deep.equal(true);
     });
-    value = {key: [{ x: 1 }, { x: 2 }], key2: {}};
-    combineTemplate(value).onValue(function(x: any) {
-      expect(x).to.deep.equal(value);
+    const value3 = {key: [{ x: 1 }, { x: 2 }], key2: {}};
+    combineTemplate(value3).onValue(function(x) {
+      expect(x).to.deep.equal(value3);
       expect(x.key instanceof Array).to.deep.equal(true);
     });
-    value = {key: [{ x: 1 }, { x: constant(2) }]};
-    return combineTemplate(value).onValue(function(x: any) {
+    const value4 = {key: [{ x: 1 }, { x: constant(2) }]};
+    let prop = combineTemplate(value4)
+    return prop.onValue(function(x) {
       expect(x).to.deep.equal({key: [{ x: 1 }, { x: 2 }]});
       expect(x.key instanceof Array).to.deep.equal(true);
     });
   }); // seems that the former passes even if x is not an array
   it("supports NaNs", function() {
     const value = {key: NaN};
-    return combineTemplate(value).onValue((x : any) => {expect(isNaN(x.key)).to.deep.equal(true)});
+    return combineTemplate(value).onValue((x) => {expect(isNaN(x.key)).to.deep.equal(true)});
   });
   it("supports dates", function() {
     const value = {key: new Date()};
@@ -142,7 +145,7 @@ describe("combineTemplate", function() {
       .onValue(x => { expect(x).to.equal(object) });
     return Bacon
       .combineTemplate({a: object})
-      .map((x: any) => x.a)
+      .map((x) => x.a)
       .onValue(x => { expect(x).to.equal(object) });
   });
 });
