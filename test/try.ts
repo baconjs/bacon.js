@@ -9,7 +9,7 @@ describe("Bacon.try", () => {
       .onValue(() => Bacon.noMore)
   );
 
-  return it("returns a Bacon.Error if the mapper function throws an exception", () =>
+  it("returns a Bacon.Error if the mapper function throws an exception", () =>
     Bacon
       .once('{"invalid json: true}')
       .flatMap(Bacon.try(JSON.parse))
