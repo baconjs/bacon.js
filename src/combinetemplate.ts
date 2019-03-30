@@ -5,6 +5,16 @@ import _ from "./_";
 import Observable, { Property } from "./observable";
 import constant from "./constant";
 
+
+export type CombinedTemplate<O> = {
+  [K in keyof O]: O[K] extends Observable<infer I>
+    ? I
+    : (O[K] extends Record<any, any>
+      ? CombinedTemplate<O[K]>
+      : O[K])
+}
+
+
 /**
  Combines Properties, EventStreams and constant values using a template
  object. For instance, assuming you've got streams or properties named
@@ -40,9 +50,8 @@ import constant from "./constant";
  Bacon.combineWith(function(v1,v2) { .. }, stream1, stream2).changes()
  ```
  */
-
 type Ctx = any
-export default function combineTemplate<T>(template: any): Property<T> {
+export default function combineTemplate<T>(template: T): Property<CombinedTemplate<T>> {
   function current(ctxStack: Ctx[]) { return ctxStack[ctxStack.length - 1]; }
   function setValue(ctxStack: Ctx[], key: any, value: any) {
     (<any>current(ctxStack))[key] = value;

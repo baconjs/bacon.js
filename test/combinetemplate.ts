@@ -1,10 +1,4 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS201: Simplify complex destructure assignments
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+import { Property, constant, combineTemplate, never } from "..";
 import * as Bacon from "..";
 import { expect } from "chai";
 import { expectPropertyEvents, later, fromArray } from "./util/SpecHelper";
@@ -13,36 +7,36 @@ describe("combineTemplate", function() {
   describe("combines streams and properties according to a template object", () =>
     expectPropertyEvents(
       function() {
-         const name = Bacon.constant({first:"jack", last:"bauer"});
+         const name = constant({first:"jack", last:"bauer"});
          const stuff = later(1, { key: "value" });
-         return Bacon.combineTemplate({ name, stuff });
+         return <Property<{name: { first: string, last: string }, stuff: string}>>combineTemplate({ name, stuff });
        },
       [{ name: { first:"jack", last:"bauer"}, stuff: {key:"value"}}])
   );
   describe("combines properties according to a template object", () =>
     expectPropertyEvents(
       function() {
-         const firstName = Bacon.constant("juha");
-         const lastName = Bacon.constant("paananen");
-         const userName = Bacon.constant("mr.bacon");
-         return Bacon.combineTemplate({ userName, password: "*****", fullName: { firstName, lastName }});
+         const firstName = constant("juha");
+         const lastName = constant("paananen");
+         const userName = constant("mr.bacon");
+         return combineTemplate({ userName, password: "*****", fullName: { firstName, lastName }});
        },
       [{ userName: "mr.bacon", password: "*****", fullName: { firstName: "juha", lastName: "paananen" } }])
   );
   describe("works with a single-stream template", () =>
     expectPropertyEvents(
       function() {
-        const bacon = Bacon.constant("bacon");
-        return Bacon.combineTemplate({ favoriteFood: bacon });
+        const bacon = constant("bacon");
+        return <Property<{ favoriteFood: string }>>combineTemplate({ favoriteFood: bacon });
       },
       [{ favoriteFood: "bacon" }])
   );
   describe("works when dynamic part is not the last part (bug fix)", () =>
     expectPropertyEvents(
       function() {
-        const username = Bacon.constant("raimohanska");
-        const password = Bacon.constant("easy");
-        return Bacon.combineTemplate({url: "/user/login",
+        const username = constant("raimohanska");
+        const password = constant("easy");
+        return combineTemplate({url: "/user/login",
         data: { username, password }, type: "post"});
       },
       [{url: "/user/login", data: {username: "raimohanska", password: "easy"}, type: "post"}])
@@ -50,14 +44,14 @@ describe("combineTemplate", function() {
 
   describe("works with arrays as data (bug fix)", () =>
     expectPropertyEvents(
-      () => Bacon.combineTemplate( { x : Bacon.constant([]), y : Bacon.constant([[]]), z : Bacon.constant(["z"])}),
+      () => combineTemplate( { x : constant([]), y : constant([[]]), z : constant(["z"])}),
       [{ x : [], y : [[]], z : ["z"]}])
   );
 
   describe("constant objects supported", function() {
-    const testAsRoot = (value: any) => expectPropertyEvents( (() => Bacon.combineTemplate(value)), [value]);
+    const testAsRoot = (value: any) => expectPropertyEvents( (() => combineTemplate(value)), [value]);
     const testAsObjectValue = (value: any) => testAsRoot({key: value});
-    const testAsDynamicObjectValue = (value: any) => expectPropertyEvents( (() => Bacon.combineTemplate({key: Bacon.constant(value)})), [{ key: value}]);
+    const testAsDynamicObjectValue = (value: any) => expectPropertyEvents( (() => combineTemplate({key: constant(value)})), [{ key: value}]);
     const testAsArrayItem = (value: any) => testAsRoot([1, value, 2]);
 
     const testConstantTypes = function(testConstant: ((value: any) => any)) {
@@ -76,56 +70,56 @@ describe("combineTemplate", function() {
 
   describe("supports empty object", () =>
     expectPropertyEvents(
-      () => Bacon.combineTemplate({}),
+      () => combineTemplate({}),
       [{}])
   );
   it("supports arrays", function() {
     let value: any = {key: [{ x: 1 }, { x: 2 }]};
-    Bacon.combineTemplate(value).onValue(function(x: any) {
+    combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x.key instanceof Array).to.deep.equal(true);
     }); // seems that the former passes even if x is not an array
     value = [{ x: 1 }, { x: 2 }];
-    Bacon.combineTemplate(value).onValue(function(x: any) {
+    combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x instanceof Array).to.deep.equal(true);
     });
     value = {key: [{ x: 1 }, { x: 2 }], key2: {}};
-    Bacon.combineTemplate(value).onValue(function(x: any) {
+    combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal(value);
       expect(x.key instanceof Array).to.deep.equal(true);
     });
-    value = {key: [{ x: 1 }, { x: Bacon.constant(2) }]};
-    return Bacon.combineTemplate(value).onValue(function(x: any) {
+    value = {key: [{ x: 1 }, { x: constant(2) }]};
+    return combineTemplate(value).onValue(function(x: any) {
       expect(x).to.deep.equal({key: [{ x: 1 }, { x: 2 }]});
       expect(x.key instanceof Array).to.deep.equal(true);
     });
   }); // seems that the former passes even if x is not an array
   it("supports NaNs", function() {
     const value = {key: NaN};
-    return Bacon.combineTemplate(value).onValue((x : any) => {expect(isNaN(x.key)).to.deep.equal(true)});
+    return combineTemplate(value).onValue((x : any) => {expect(isNaN(x.key)).to.deep.equal(true)});
   });
   it("supports dates", function() {
     const value = {key: new Date()};
-    return Bacon.combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
+    return combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
   });
   it("supports regexps", function() {
     const value = {key: /[0-0]/i};
-    return Bacon.combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
+    return combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
   });
   it("supports functions", function() {
     const value = {key() {}};
-    return Bacon.combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
+    return combineTemplate(value).onValue(x => {expect(x).to.deep.equal(value)});
   });
-  it("toString", () => expect(Bacon.combineTemplate({ thing: Bacon.never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})"));
+  it("toString", () => expect(combineTemplate({ thing: never(), const: "a" }).toString()).to.equal("Bacon.combineTemplate({thing:Bacon.never(),const:a})"));
   it("uses original objects as values (bugfix #615)", function() {
     class Foo {
       do() {
       }
     };
     
-    const value = {foo1: new Foo(), foo2: Bacon.constant(new Foo())};
-    return Bacon.combineTemplate(value).onValue(function({foo1, foo2}) {
+    const value = {foo1: new Foo(), foo2: constant(new Foo())};
+    return combineTemplate(value).onValue(function({foo1, foo2}) {
       expect(foo1).to.be.instanceof(Foo);
       expect(foo1).to.have.property('do');
       expect(foo2).to.be.instanceof(Foo);
