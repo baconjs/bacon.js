@@ -5305,7 +5305,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.0';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;
