@@ -108,7 +108,7 @@ describe("Integration tests", function() {
       });
       return it("case 3 (original fiddle)", function() {
         let result: Faq|undefined = undefined;
-        const input = new Bacon.Bus();
+        const input = new Bacon.Bus<string>();
         const prop: Bacon.Property<Faq> = Bacon.combineTemplate({faq: input.toProperty("default value")});
         const events = new Bacon.Bus<number>();
         events.flatMapLatest(function(_) {
