@@ -23,7 +23,8 @@ function main(options) {
 
   var plugins = [
     typescriptPlugin({
-      typescript: require("typescript")
+      typescript: require("typescript"),
+      useTsconfigDeclarationDir: true
     })
   ];
 

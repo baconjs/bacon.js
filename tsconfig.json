@@ -6,7 +6,10 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "noUnusedLocals": true,
-    "target": "ES5"
+    "target": "ES5",
+    "declaration": true,
+    "declarationDir": "types",
+    "newLine": "lf"
   },
   "files": [
     "src/bacon.ts"
