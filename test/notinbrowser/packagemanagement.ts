@@ -9,8 +9,6 @@ describe("Package management", function() {
   it("Component", () =>
       verifyJson("component.json"));
   it("Bower", () => {
-    //const bowerJson = require('bower-json');
-    const json = verifyJson("bower.json");
-    //bowerJson.validate(json);
+    verifyJson("bower.json");
   });
 });
