@@ -7,6 +7,7 @@ expect = require("chai").expect
 
 {
   expectStreamEvents,
+  expectPropertyEvents,
   take,
   series,
   repeat,
@@ -81,5 +82,29 @@ describe "Bacon.mergeAll", ->
     expectStreamEvents(
       -> Bacon.mergeAll()
       [])
+
+  describe("works with properties", ->
+    describe("works with properties", ->
+      expectStreamEvents(
+        -> Bacon.mergeAll(Bacon.constant('1')),
+        ["1"]
+      )  
+      expectPropertyEvents(
+        -> Bacon.mergeAll(Bacon.constant('1')).toProperty(),
+        ["1"]
+      )  
+    )
+    describe("works with properties and debounce (issue #736)", ->
+      expectPropertyEvents(
+        -> Bacon.mergeAll(Bacon.constant('1')).toProperty().debounce(500),
+        ["1"]
+      )  
+      expectStreamEvents(
+        -> Bacon.mergeAll(Bacon.constant('1')).debounce(500),
+        ["1"]
+      )  
+    )      
+  )
+
   it "toString", ->
     expect(Bacon.mergeAll(Bacon.never()).toString()).to.equal("Bacon.mergeAll(Bacon.never())")

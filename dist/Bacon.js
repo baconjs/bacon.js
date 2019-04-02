@@ -1434,7 +1434,7 @@ var Bacon = {
   CompositeUnsubscribe: CompositeUnsubscribe,
   never: never,
   constant: constant,
-  version: '2.0.11'
+  version: '<version>'
 };
 
 Bacon.Bacon = Bacon;
@@ -3283,6 +3283,7 @@ function mergeAll() {
                 return more;
               }
             } else {
+              event = event.toNext();
               var reply = sink(event);
               if (reply === noMore) {
                 unsubBoth();
