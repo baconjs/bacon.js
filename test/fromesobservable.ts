@@ -2,7 +2,7 @@ import * as Bacon from "..";
 import { expectStreamEvents, semiunstable } from "./util/SpecHelper";
 
 import * as Observable from 'zen-observable';
-import * as Rx from 'rxjs';
+import { of as rxJsObservableOf } from 'rxjs';
 
 describe("Bacon.fromESObservable", function() {
   describe("turns an ES observable into an EventStream", () =>
@@ -25,7 +25,7 @@ describe("Bacon.fromESObservable", function() {
 
   return describe("turns an RxJS observable into an EventStream", () =>
     expectStreamEvents(
-      () => Bacon.fromESObservable(Rx.Observable.of('hello world')),
+      () => Bacon.fromESObservable(rxJsObservableOf('hello world')),
       ['hello world'], semiunstable)
   );
 });

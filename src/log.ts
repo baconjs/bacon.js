@@ -1,4 +1,3 @@
-/* eslint no-console: 0 */
 import Observable from "./observable";
 import { Reply, more } from "./reply";
 

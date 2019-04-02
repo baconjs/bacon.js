@@ -16,7 +16,6 @@
     "spec/",
     "src/",
     "build",
-    "coffeelint.json",
     "component.json",
     "package.json",
     "release",

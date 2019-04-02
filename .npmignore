@@ -10,7 +10,6 @@ logo.png
 nuspec
 performance
 readme
-readme-src.coffee
 RELEASE-NOTES.md
 release
 runtests
@@ -21,6 +20,4 @@ testem.json
 update-cdnjs
 version
 node_modules_good
-coffeelint.json
-.eslintrc
 testing
