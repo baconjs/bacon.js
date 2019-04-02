@@ -79,6 +79,7 @@
     "browsertest-open": "open browsertest/mocha.runner.html",
     "browserstack": "browsertest/browserstack",
     "release": "scripts/release",
+    "watch": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'scripts/dist&&npm test'",
     "watch-dist": "node_modules/nodemon/bin/nodemon.js -w src -e js,ts,json --ignore 'dist/*' --exec 'scripts/dist'",
     "watch-doc": "node_modules/nodemon/bin/nodemon.js -w src -w README.md -e js,ts,json,md --ignore 'dist/*' --exec 'npm run typedoc'",
     "watch-ts": "tsc --noEmit --watch",
