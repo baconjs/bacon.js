@@ -32,6 +32,7 @@ export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): Ev
               }
 
             } else {
+              event = event.toNext()
               var reply = sink(event)
               if (reply === noMore) { unsubBoth() }
               return reply
