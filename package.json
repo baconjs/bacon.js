@@ -38,7 +38,6 @@
     "@types/zen-observable": "^0.8.0",
     "benchmark": "^2",
     "bluebird": "^3",
-    "bower-json": "~0.8.0",
     "browserify": "^16.2.3",
     "browserstack-runner": "~0.9",
     "chai": "^4",
