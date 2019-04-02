@@ -1,3 +1,7 @@
+## 3.0.1
+
+- Fix Bacon.mergeAll incorrectly passing through Initial events (#736)
+
 ## 3.0.0
 
 - Fully converted to TypeScript. No need for separate types when using from TypeScript
