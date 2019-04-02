@@ -1,3 +1,11 @@
+## 2.0.12
+
+- Fix Bacon.mergeAll incorrectly passing through Initial events (#736)
+
+## 2.0.11
+
+- Define flatScan for EventStream only, fix #733
+
 ## 2.0.10
 
 - Fix Bacon.fromArray bug (#724)
