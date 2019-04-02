@@ -2756,6 +2756,7 @@ function mergeAll() {
                             }
                         }
                         else {
+                            event = event.toNext();
                             var reply = sink(event);
                             if (reply === noMore) {
                                 unsubBoth();
