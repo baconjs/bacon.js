@@ -1,8 +1,7 @@
 import * as Bacon from "..";
 import { expect } from "chai";
 
-// TODO: causes tests suite exit?!
-describe.skip("Observable.log", function() {
+describe("Observable.log", function() {
   const preservingLog = function(f: any) {
     const originalConsole = console;
     const originalLog = console.log;
