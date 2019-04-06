@@ -15,7 +15,7 @@ echo "1. Pulling from origin"
 git pull --ff-only --no-rebase origin
 
 echo "2. Building and testing"
-npm install
+npm ci
 npm test
 
 echo "3. Setting version info to descriptor files"
@@ -30,7 +30,7 @@ echo "5. Push to origin/master"
 git push
 git push --tags origin
 
-echo "6. Publish to npm"
+echo "6. Publish to npm --tag latest"
 npm publish
 
 echo "DONE! Released version $version"
