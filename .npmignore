@@ -24,3 +24,6 @@ testing
 .rpt2_cache
 docs
 .vscode
+.idea
+.ackrc
+scripts
