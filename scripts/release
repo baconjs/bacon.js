@@ -31,6 +31,6 @@ git push
 git push --tags origin
 
 echo "6. Publish to npm"
-npm publish
+npm publish --tag 2.0
 
 echo "DONE! Released version $version"
