@@ -21,3 +21,6 @@ update-cdnjs
 version
 node_modules_good
 testing
+.rpt2_cache
+docs
+.vscode
