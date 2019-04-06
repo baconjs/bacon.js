@@ -24,3 +24,9 @@ node_modules_good
 coffeelint.json
 .eslintrc
 testing
+.rpt2_cache
+docs
+.vscode
+.idea
+.ackrc
+scripts
