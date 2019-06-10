@@ -1068,7 +1068,7 @@ export declare class EventStream<V> extends Observable<V> {
      * @param f transition function from previous state and new value to next state
      * @typeparam V2 state and result type
      */
-    flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2>;
+    flatScan<V2>(seed: V2 | Function2<V2, V, Observable<V2>>, f?: Function2<V2, V, Observable<V2>>): Property<V2>;
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
