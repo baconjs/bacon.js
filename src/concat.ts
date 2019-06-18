@@ -35,7 +35,7 @@ export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?:
 export function concatAll<V>(...streams_: (Observable<V> | Observable<V>[])[]): EventStream<V> {
   let streams = argumentsToObservables(streams_)
   return (streams.length
-    ? fold(tail(streams), head(streams).toEventStream(), (a: EventStream<V>, b: EventStream<V>) => a.concat(b))
+    ? fold(tail(streams), head(streams).toEventStream(), (a: EventStream<V>, b: Observable<V>) => a.concat(b))
     : never<V>()
   ).withDesc(new Desc("Bacon", "concatAll", streams))
 }

@@ -259,7 +259,7 @@ function processRawPatterns(rawPatterns: RawPattern[]): [AnySource[], IndexPatte
       pats.push(pat);
     }
   }
-  return [map(fromObservable, sources), pats]
+  return [map(fromObservable as any /* sorry */, sources), pats]
 }
 
 function extractLegacyPatterns(sourceArgs: any[]): RawPattern[] {

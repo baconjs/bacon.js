@@ -10,7 +10,7 @@ export function argumentsToObservables<T>(args: (Observable<T> | Observable<T>[]
 }
 
 function singleToObservables<T>(x: (Observable<T> | Observable<T>[] | T)): Observable<T>[] {
-  if (isObservable(x)) {
+  if (isObservable<T>(x)) {
     return [x]
   } else if (isArray(x)) {
     return argumentsToObservables(<any>x)
