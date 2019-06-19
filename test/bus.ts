@@ -30,7 +30,7 @@ describe("Bacon.Bus", function() {
       },
       ["lol", "wut"], unstable);
     it("dispose works with looped streams", function() {
-      const bus = new Bacon.Bus();
+      const bus = new Bacon.Bus<string>();
       bus.plug(later(t(2), "lol"));
       const filter = (value: string) => {
         return "lol" === value;

@@ -54,8 +54,8 @@ function regSrc<V>(source: Bacon.EventStream<V>) {
   return source;
 };
 
-export function series<V>(interval: number, values: (V | Bacon.Event<V>)[]) { return regSrc(sequentially<V>(t(interval), values)) }
-export function repeat<V>(interval: number, values: (V | Bacon.Event<V>)[]) { return regSrc(repeatedly<V>(t(interval), values)) }
+export function series<V>(interval: number, values: (V | Bacon.Event<V>)[]): Bacon.EventStream<V> { return regSrc(sequentially<V>(t(interval), values)) }
+export function repeat<V>(interval: number, values: (V | Bacon.Event<V>)[]): Bacon.EventStream<V> { return regSrc(repeatedly<V>(t(interval), values)) }
 export function error(msg: string = "") { return new Bacon.Error(msg) }
 export function soon(f: any) { setTimeout(f, t(1)) };
 

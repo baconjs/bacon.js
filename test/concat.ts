@@ -114,7 +114,7 @@ describe("EventStream.concat", function() {
   );
   describe("works with Bacon.never() and Bacon.once()", () =>
     expectStreamEvents(
-      () => Bacon.never().concat(once(1)),
+      () => Bacon.never<number>().concat(once(1)),
       [1])
   );
   describe("works with Bacon.once() and async source", () =>
