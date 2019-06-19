@@ -2,12 +2,12 @@ import * as Bacon from "..";
 
 import { expectStreamEvents, series, unstable, semiunstable } from "./util/SpecHelper";
 
-function flattenAndConcat<V>(obs: Bacon.EventStream<Bacon.Observable<V>>) {
+function flattenAndConcat<V>(obs: Bacon.EventStream<Bacon.EventStream<V>>) {
   return obs.flatMap((obs: Bacon.Observable<V>) =>
     obs.fold([], (xs: any, x: any) => xs.concat(x)))
 }
 
-function flattenAndMerge<V>(obs: Bacon.EventStream<Bacon.Observable<V>>) {
+function flattenAndMerge<V>(obs: Bacon.EventStream<Bacon.EventStream<V>>) {
   return obs.flatMap(Bacon._.id);
 }
 
@@ -23,7 +23,7 @@ function takeWhileInclusive<V>(obs: Bacon.EventStream<V>, f: (v: V) => boolean) 
   })
 }
 
-function toString<A>(x: number) {
+function toString(x: number) {
   return x.toString()
 }
 
