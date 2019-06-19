@@ -1461,9 +1461,9 @@ export class EventStream<V> extends Observable<V> {
   /**
    Merges two streams into one stream that delivers events from both
    */
-  merge(other: EventStream<V>): EventStream<V> {
+  merge<V2>(other: EventStream<V2>): EventStream<V  | V2> {
     assertEventStream(other)
-    return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
+    return mergeAll<V | V2>(this as EventStream<V | V2>, other as EventStream<V | V2>).withDesc(new Desc(this, "merge", [other]));
   }
 
   /**
