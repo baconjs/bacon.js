@@ -163,7 +163,7 @@ events from `other`. This means too that events from `other`,
 occurring before the end of this observable will not be included in the result
 stream/property.
    */
-  abstract concat(other: Observable<V>): Observable<V>
+  abstract concat<V2>(other: Observable<V2>): Observable<V | V2>
   /**
 Throttles stream/property by given amount
 of milliseconds, but so that event is only emitted after the given
@@ -969,8 +969,8 @@ export class Property<V> extends Observable<V> {
    occurring before the end of this property will not be included in the result
    stream/property.
    */
-  concat(other: Observable<V>): Property<V> {
-    return addPropertyInitValueToStream<V>(this, this.changes().concat(other))
+  concat<V2>(other: Observable<V2>): Property<V | V2> {
+    return addPropertyInitValueToStream<V | V2>(this as Property<V | V2>, this.changes().concat(other))
   }
 
   /** @hidden */
@@ -1333,7 +1333,7 @@ export class EventStream<V> extends Observable<V> {
    occurring before the end of this observable will not be included in the result
    stream/property.
    */
-  concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
+  concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2> {
     return concatE(this, other, options)
   }
   /** @hidden */
