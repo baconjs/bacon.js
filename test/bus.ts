@@ -185,6 +185,12 @@ describe("Bacon.Bus", function() {
     expect(values).to.deep.equal(["x"]);
   });
 
+  it("allows plugging a stream of subtype", function() {
+    type TestObject = { a?: number; b?: string };
+    const testBus = new Bacon.Bus<TestObject>();
+    testBus.plug(Bacon.once(0).map(a => ({ a })));
+  })
+
   it("allows consumers to re-subscribe after other consumers have unsubscribed (bug fix)", function() {
     const bus = new Bacon.Bus<string>();
     const otherBus = new Bacon.Bus<string>();
