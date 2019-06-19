@@ -144,7 +144,7 @@ export const expectPropertyEvents = (src: () => Bacon.Observable<any>, expectedE
 };
 
 var verifyPSingleSubscriber = (srcF: () => Bacon.Observable<any>, expectedEvents: Bacon.Event<any>[], extraCheck: (Function | undefined) = undefined) =>
-  verifyPropertyWith("(single subscriber)", srcF, expectedEvents, ((src: Bacon.EventStream<any>, events: Bacon.Event<any>[], done: (err: (Error | void)) => any) => {
+  verifyPropertyWith("(single subscriber)", srcF, expectedEvents, ((src: Bacon.Observable<any>, events: Bacon.Event<any>[], done: (err: (Error | void)) => any) => {
     let gotInitial = false;
     let gotNext = false;
     let sync = true;
@@ -170,7 +170,7 @@ var verifyPSingleSubscriber = (srcF: () => Bacon.Observable<any>, expectedEvents
 ;
 
 var verifyPLateEval = (srcF: () => Bacon.Observable<any>, expectedEvents: Bacon.Event<any>[]) =>
-  verifyPropertyWith("(late eval)", srcF, expectedEvents, (src: Bacon.EventStream<any>, events: Bacon.Event<any>[], done: () => any) =>
+  verifyPropertyWith("(late eval)", srcF, expectedEvents, (src: Bacon.Observable<any>, events: Bacon.Event<any>[], done: () => any) =>
     src.subscribe((event) => {
       if (event.isEnd) {
         return done();
@@ -212,9 +212,9 @@ const verifyPSwitching = (srcF: () => Bacon.Observable<any>, expectedEvents: Bac
         return Bacon.noMore;
       } else {
         if (event.hasValue) {
-          src.subscribe((event: Bacon.Value<any>) => {
-            if (event.isInitial) {
-              events.push(event.value);
+          src.subscribe((event: Bacon.Event<any>) => {
+            if (Bacon.isInitial(event)) {
+              events.push(event);
             }
             return Bacon.noMore;
           });
