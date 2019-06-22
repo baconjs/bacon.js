@@ -3,12 +3,10 @@ import { expect } from "chai";
 
 describe("Observable.log", function() {
   const preservingLog = function(f: any) {
-    const originalConsole = console;
     const originalLog = console.log;
     try {
       f();
     } finally {
-      global.console = originalConsole;
       console.log = originalLog;
     }
   };

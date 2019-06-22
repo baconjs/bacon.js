@@ -22,10 +22,10 @@ describe("Bacon._", () => {
     expect(_.tail([])).to.deep.equal([]);
   });
   it("filter", () => {
-    expect(_.filter(_.empty, ["","1",[],[2]])).to.deep.equal(["",[]])
+    expect(_.filter(x => !x.length, ["","1",[],[2]])).to.deep.equal(["",[]])
   });
   it("map", () =>
-    expect(_.map(_.head, [
+    expect(_.map(xs => xs[0], [
       [], [1], [2,2], [3,3,3]
     ])).to.deep.equal([
       undefined, 1, 2, 3
