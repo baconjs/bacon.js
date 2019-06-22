@@ -64,7 +64,7 @@ import bufferingThrottle from "./bufferingthrottle";
 import { transformE, Transformer, transformP } from "./transform";
 import { takeWhile } from "./takewhile";
 import skipUntil from "./skipuntil";
-import { Predicate, PredicateOrProperty } from "./predicate";
+import { Predicate, PredicateOrProperty, IsA } from "./predicate";
 import skipWhile from "./skipwhile";
 import { groupBy, GroupTransformer } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
@@ -1339,6 +1339,10 @@ export class EventStream<V> extends Observable<V> {
   /** @hidden */
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>f(this).withDesc(desc)
+  }
+
+  narrow<V2 extends V>(f: IsA<V, V2>): EventStream<V2> {
+    return <any>filter<V>(this, f)
   }
 
   /**

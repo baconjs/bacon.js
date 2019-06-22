@@ -12,6 +12,8 @@ export type Predicate<V> = Function1<V, boolean>
 export type PredicateOrBoolean<V> = Predicate<V> | boolean
 export type PredicateOrProperty<V> = Predicate<V> | boolean | Property<boolean>
 
+export type IsA<A, B extends A> = (x: A) => x is B
+
 /** @hidden */
 export function toPredicate<V>(f: PredicateOrBoolean<V>): Predicate<V> {
   if (typeof f == "boolean") {
