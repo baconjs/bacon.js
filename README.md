@@ -429,19 +429,6 @@ Then build the Typescript sources into a javascript bundle (plus typescript type
 Result javascript files will be generated in `dist` directory. If your planning
 to develop Bacon.js yourself, you'll want to run [tests] too using `npm test`.
 
-You can also build a bundle with selected features only. For instance
-
-    scripts/dist flatmap combine takeuntil
-
-The build system will do its best to determine the dependencies of the selected
-features and include those into the bundle too. You can also test the integrity
-of the bundle with your selected features using
-
-    scripts/runtests flatmap combine takeuntil
-
-TODO: partial testing currently broken.
-
-
 Test
 ====
 
