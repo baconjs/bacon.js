@@ -3909,48 +3909,6 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
         return flatMapWithConcurrencyLimit(this, limit, f);
     };
-    /**
-     Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
-     stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
-     and the original event causing the stream to start as parameters.
-  
-     Calculator for grouped consecutive values until group is cancelled:
-  
-     ```
-     var events = [
-     {id: 1, type: "add", val: 3 },
-     {id: 2, type: "add", val: -1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 2, type: "cancel"},
-     {id: 3, type: "add", val: 2 },
-     {id: 3, type: "cancel"},
-     {id: 1, type: "add", val: 1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 1, type: "cancel"}
-     ]
-  
-     function keyF(event) {
-    return event.id
-  }
-  
-     function limitF(groupedStream, groupStartingEvent) {
-    var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
-    var adds = groupedStream.filter(function(x) { return x.type === "add" })
-    return adds.takeUntil(cancel).map(".val")
-  }
-  
-     Bacon.sequentially(2, events)
-     .groupBy(keyF, limitF)
-     .flatMap(function(groupedStream) {
-      return groupedStream.fold(0, function(acc, x) { return acc + x })
-    })
-     .onValue(function(sum) {
-      console.log(sum)
-      // returns [-1, 2, 8] in an order
-    })
-     ```
-  
-     */
     Property.prototype.groupBy = function (keyF, limitF) {
         return groupBy(this, keyF, limitF);
     };
@@ -4240,48 +4198,6 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.flatScan = function (seed, f) {
         return flatScan(this, seed, f);
     };
-    /**
-     Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
-     stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
-     and the original event causing the stream to start as parameters.
-  
-     Calculator for grouped consecutive values until group is cancelled:
-  
-     ```
-     var events = [
-     {id: 1, type: "add", val: 3 },
-     {id: 2, type: "add", val: -1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 2, type: "cancel"},
-     {id: 3, type: "add", val: 2 },
-     {id: 3, type: "cancel"},
-     {id: 1, type: "add", val: 1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 1, type: "cancel"}
-     ]
-  
-     function keyF(event) {
-    return event.id
-  }
-  
-     function limitF(groupedStream, groupStartingEvent) {
-    var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
-    var adds = groupedStream.filter(function(x) { return x.type === "add" })
-    return adds.takeUntil(cancel).map(".val")
-  }
-  
-     Bacon.sequentially(2, events)
-     .groupBy(keyF, limitF)
-     .flatMap(function(groupedStream) {
-      return groupedStream.fold(0, function(acc, x) { return acc + x })
-    })
-     .onValue(function(sum) {
-      console.log(sum)
-      // returns [-1, 2, 8] in an order
-    })
-     ```
-  
-     */
     EventStream.prototype.groupBy = function (keyF, limitF) {
         return groupBy(this, keyF, limitF);
     };
@@ -5307,7 +5223,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.4';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;

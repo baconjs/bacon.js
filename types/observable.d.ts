@@ -341,6 +341,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
+    abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>;
     abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
@@ -833,6 +834,7 @@ export declare class Property<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
@@ -1111,6 +1113,7 @@ export declare class EventStream<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     /**
      Maps values using given function, returning a new

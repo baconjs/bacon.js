@@ -3818,7 +3818,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.4';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
