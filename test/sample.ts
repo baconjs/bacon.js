@@ -3,6 +3,30 @@ import { expect } from "chai";
 
 import { expectStreamEvents, expectPropertyEvents, error, fromArray, series, repeat, semiunstable, t, later, add } from "./util/SpecHelper";
 
+describe("EventStream.sampledBy(stream)", function() {
+  describe("samples property at events, resulting to EventStream", () =>
+    expectStreamEvents(
+      function() {
+        const prop = series(2, [1, 2]);
+        const stream = repeat(3, ["troll"]).take(4);
+        return prop.sampledBy(stream);
+      },
+      [1, 2, 2, 2])
+  );
+})
+
+describe("EventStream.sampledBy(property)", function() {
+  describe("samples property at events, resulting to a Property", () =>
+    expectPropertyEvents(
+      function() {
+        const prop = series(2, [1, 2]);
+        const sampler = repeat(3, ["troll"]).take(4).toProperty();
+        return prop.sampledBy(sampler);
+      },
+      [1, 2, 2, 2])
+  );
+})
+
 describe("Property.sampledBy(stream)", function() {
   describe("samples property at events, resulting to EventStream", () =>
     expectStreamEvents(

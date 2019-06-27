@@ -15,6 +15,15 @@ function makeCombinator<V, V2, R>(combinator: Combinator<V, V2, R> | undefined):
 }
 
 /** @hidden */
+export function sampledBy<V, V2, R>(samplee: Observable<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
+  if (samplee instanceof EventStream) {
+    return sampledByE(samplee, sampler, f)
+  } else {
+    return sampledByP(samplee as Property<V>, sampler, f)
+  }
+}
+
+/** @hidden */
 export function sampledByP<V, V2, R>(samplee: Property<V>, sampler: Observable<V2>, f: Combinator<V, V2, R>): Observable<R> {
   let combinator: (x: V, y: V2) => R = makeCombinator(f)
   var result = withLatestFrom(sampler, samplee, flip(combinator))

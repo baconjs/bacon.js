@@ -35,7 +35,7 @@ import { assertEventStream, assertFunction, assertNoArguments } from "./internal
 import skip from "./skip";
 import map from "./map";
 import flatMapConcat from "./flatmapconcat";
-import { sampledByE, sampledByP, sampleP } from "./sample";
+import { sampledBy, sampleP } from "./sample";
 import { filter } from "./filter";
 import { and, not, or } from "./boolean";
 import flatMapFirst from "./flatmapfirst";
@@ -608,7 +608,21 @@ Only applicable for observables with arrays as values.
 
    @param {Observable<V2>} sampler
    */
-  abstract sampledBy(sampler: Observable<any>): Observable<V>
+
+  /**
+   Creates an EventStream/Property by sampling this
+   stream/property value at each event from the `sampler` stream. The result
+   will contain the sampled value at each event in the source stream.
+
+   @param {Observable<V2>} sampler
+   */
+  sampledBy(sampler: EventStream<any>): EventStream<V>
+  sampledBy(sampler: Property<any>): Property<V>
+  sampledBy(sampler: Observable<any>): Observable<V>
+  sampledBy(sampler: Observable<any>): Observable<V> {
+    return sampledBy(this, sampler, arguments[1]) // TODO: combinator
+  }
+
   /**
 Scans stream/property with given seed value and
 accumulator function, resulting to a Property. For example, you might
@@ -1131,18 +1145,6 @@ export class Property<V> extends Observable<V> {
   }
 
   /**
-   Creates an EventStream by sampling this
-   stream/property value at each event from the `sampler` stream. The result
-   `EventStream` will contain the sampled value at each event in the source
-   stream.
-
-   @param {Observable<V2>} sampler
-   */
-  sampledBy(sampler: Observable<any>): Observable<V> {
-    return sampledByP(this, sampler, arguments[1])
-  }
-
-  /**
   Adds an initial "default" value for the
   Property. If the Property doesn't have an initial value of it's own, the
   given value will be used as the initial value. If the property has an
@@ -1482,18 +1484,6 @@ export class EventStream<V> extends Observable<V> {
    Returns a stream/property that inverts boolean values (using `!`)
    */
   not(): EventStream<boolean> {return <any>not(this) }
-
-  /**
-   Creates an EventStream by sampling this
-   stream/property value at each event from the `sampler` stream. The result
-   `EventStream` will contain the sampled value at each event in the source
-   stream.
-
-   @param {Observable<V2>} sampler
-   */
-  sampledBy(sampler: Observable<any>): Observable<V> {
-    return sampledByE(this, sampler, arguments[1])
-  }
 
   /**
    Adds a starting value to the stream/property, i.e. concats a
