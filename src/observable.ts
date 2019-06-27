@@ -1410,7 +1410,7 @@ export class EventStream<V> extends Observable<V> {
    */
   flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2>
 
-  flatScan<V2>(f: Function2<V2, V, Observable<V2>>): Property<V2>
+  flatScan(f: Function2<V, V, Observable<V>>): Property<V>
 
   flatScan<V2>(seed: V2 | Function2<V2, V, Observable<V2>>, f?: Function2<V2, V, Observable<V2>>): Property<V2> {
     if (arguments.length == 1) {
