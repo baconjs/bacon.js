@@ -1,3 +1,10 @@
+## 3.0.4
+
+- Improve Bus.plug type ergonomics (#738)
+- Allow `any` in `Reply` return type used in `subscribe`, `onValue` et al (#740)
+- More flexible typing for `merge` and `concat` (merge observables of `A` and `B` into `A | B`)
+- Compile library and tests with `--strict`
+
 ## 3.0.1
 
 - Fix Bacon.mergeAll incorrectly passing through Initial events (#736)
