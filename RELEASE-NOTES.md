@@ -1,3 +1,7 @@
+## 3.0.5
+
+- Add alternative signature to groupBy: no type param, no optional limitF param
+
 ## 3.0.4
 
 - Improve Bus.plug type ergonomics (#738)
