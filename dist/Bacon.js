@@ -2092,6 +2092,15 @@ function makeCombinator(combinator) {
     }
 }
 /** @hidden */
+function sampledBy(samplee, sampler, f) {
+    if (samplee instanceof EventStream) {
+        return sampledByE(samplee, sampler, f);
+    }
+    else {
+        return sampledByP(samplee, sampler, f);
+    }
+}
+/** @hidden */
 function sampledByP(samplee, sampler, f) {
     var combinator = makeCombinator(f);
     var result = withLatestFrom(sampler, samplee, flip(combinator));
@@ -3555,6 +3564,9 @@ var Observable = /** @class */ (function () {
     Observable.prototype.reduce = function (seed, f) {
         return fold$1(this, seed, f);
     };
+    Observable.prototype.sampledBy = function (sampler) {
+        return sampledBy(this, sampler, arguments[1]); // TODO: combinator
+    };
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -3940,17 +3952,6 @@ var Property = /** @class */ (function (_super) {
         return sampleP(this, interval);
     };
     /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    Property.prototype.sampledBy = function (sampler) {
-        return sampledByP(this, sampler, arguments[1]);
-    };
-    /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
     given value will be used as the initial value. If the property has an
@@ -4219,17 +4220,6 @@ var EventStream = /** @class */ (function (_super) {
      Returns a stream/property that inverts boolean values (using `!`)
      */
     EventStream.prototype.not = function () { return not(this); };
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    EventStream.prototype.sampledBy = function (sampler) {
-        return sampledByE(this, sampler, arguments[1]);
-    };
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.
@@ -5223,7 +5213,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.5';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;

@@ -447,7 +447,16 @@ export declare abstract class Observable<V> {
   
      @param {Observable<V2>} sampler
      */
-    abstract sampledBy(sampler: Observable<any>): Observable<V>;
+    /**
+     Creates an EventStream/Property by sampling this
+     stream/property value at each event from the `sampler` stream. The result
+     will contain the sampled value at each event in the source stream.
+  
+     @param {Observable<V2>} sampler
+     */
+    sampledBy(sampler: EventStream<any>): EventStream<V>;
+    sampledBy(sampler: Property<any>): Property<V>;
+    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -856,15 +865,6 @@ export declare class Property<V> extends Observable<V> {
      */
     sample(interval: number): EventStream<V>;
     /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    sampledBy(sampler: Observable<any>): Observable<V>;
-    /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
     given value will be used as the initial value. If the property has an
@@ -1130,15 +1130,6 @@ export declare class EventStream<V> extends Observable<V> {
      Returns a stream/property that inverts boolean values (using `!`)
      */
     not(): EventStream<boolean>;
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.

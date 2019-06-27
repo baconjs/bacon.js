@@ -1827,6 +1827,13 @@
             return _.id;
         }
     }
+    function sampledBy(samplee, sampler, f) {
+        if (samplee instanceof EventStream) {
+            return sampledByE(samplee, sampler, f);
+        } else {
+            return sampledByP(samplee, sampler, f);
+        }
+    }
     function sampledByP(samplee, sampler, f) {
         var combinator = makeCombinator(f);
         var result = withLatestFrom(sampler, samplee, flip(combinator));
@@ -2923,6 +2930,9 @@
         Observable.prototype.reduce = function (seed, f) {
             return fold$1(this, seed, f);
         };
+        Observable.prototype.sampledBy = function (sampler) {
+            return sampledBy(this, sampler, arguments[1]);
+        };
         Observable.prototype.scan = function (seed, f) {
             return scan(this, seed, f);
         };
@@ -3064,9 +3074,6 @@
         Property.prototype.sample = function (interval) {
             return sampleP(this, interval);
         };
-        Property.prototype.sampledBy = function (sampler) {
-            return sampledByP(this, sampler, arguments[1]);
-        };
         Property.prototype.startWith = function (seed) {
             return startWithP(this, seed);
         };
@@ -3167,9 +3174,6 @@
         };
         EventStream.prototype.not = function () {
             return not(this);
-        };
-        EventStream.prototype.sampledBy = function (sampler) {
-            return sampledByE(this, sampler, arguments[1]);
         };
         EventStream.prototype.startWith = function (seed) {
             return startWithE(this, seed);
@@ -3818,7 +3822,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.5';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
