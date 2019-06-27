@@ -10,6 +10,12 @@ describe("EventStream.flatScan", function() {
       [0, 1, 3, error(), 6])
   );
 
+  describe.skip("beginning with the first source value successive values are accumulated values using the accumulator function which returns a stream of updated values", () =>
+    expectPropertyEvents(
+      () => series(1, [1, 2, error(), 3]).flatScan(addAsync(1)),
+      [1, 3, error(), 6])
+  );
+
   describe("Serializes updates even when they occur while performing previous update", () =>
     expectPropertyEvents(
       () => series(1, [1, 2, error(), 3]).flatScan(0, addAsync(5)),
