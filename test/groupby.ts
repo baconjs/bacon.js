@@ -30,10 +30,10 @@ function toString(x: number) {
 describe("EventStream.groupBy", function() {
   describe("without limiting function (legacy support)", function() {
     expectStreamEvents(
-      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, <any>undefined)),
+      () => flattenAndConcat(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString)),
       [[1,1],[2,2,2,2],[3,3]], unstable);
     return expectStreamEvents(
-      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString, <any>undefined)),
+      () => flattenAndMerge(series(2, [1,2,2,3,1,2,2,3]).groupBy(toString)),
       [1,2,2,3,1,2,2,3], semiunstable);
   });
   describe("with limiting function", function() {

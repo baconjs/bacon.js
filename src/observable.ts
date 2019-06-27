@@ -108,6 +108,7 @@ export abstract class Observable<V> {
     this.desc = desc
     this.initialDesc = desc
   }
+
   /**
 Creates a Property that indicates whether
 `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
@@ -461,7 +462,10 @@ Bacon.sequentially(2, events)
 ```
 
    */
+  abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>
+
   abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>
+
   /**
 Pauses and buffers the event stream if last event in valve is truthy.
 All buffered events are released when valve becomes falsy.
@@ -1087,8 +1091,12 @@ export class Property<V> extends Observable<V> {
    ```
 
    */
+  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>
+
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>
+
   groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>> {
-    return <any>groupBy(this, keyF, limitF)
+    return <any>groupBy<V, V2>(this, keyF, limitF)
   }
 
   /**
@@ -1446,6 +1454,10 @@ export class EventStream<V> extends Observable<V> {
    ```
 
    */
+  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>
+
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>
+
   groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>> {
     return <any>groupBy(this, keyF, limitF)
   }
