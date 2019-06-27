@@ -17,6 +17,22 @@ describe("Observable", () => {
     })
   );
 
+  describe("onValue and friends", () => {
+    it("Accept any return type", () => {
+      Bacon.once(1).onValue(n => {})
+      Bacon.once(1).onValue(n => { return "hello!" })
+    })
+
+    it("Stop subscription when noMore is returned", () => {
+      let b = new Bacon.Bus<number>()
+      let results = [] as number[]
+      b.onValue(x => { results.push(x); return Bacon.noMore})
+      b.push(1)
+      b.push(2)
+      expect(results).to.deep.equal([1])
+    })
+  })
+
   describe("Meta-info", function () {
     const obs = Bacon.once(1).map(function () { });
     describe("Observable::desc", () =>
