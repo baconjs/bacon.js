@@ -2558,6 +2558,16 @@
             f
         ]));
     }
+    function flatScanSeedless(src, f) {
+        var current;
+        var isSeeded = false;
+        return src.flatMapConcat(function (next) {
+            return (isSeeded ? makeObservable(f(current, next)) : makeObservable(next)).doAction(function (updated) {
+                isSeeded = true;
+                current = updated;
+            });
+        }).toProperty();
+    }
     function flatScan(src, seed, f) {
         var current = seed;
         return src.flatMapConcat(function (next) {
@@ -3154,6 +3164,9 @@
             return flatMapEvent(this, f);
         };
         EventStream.prototype.flatScan = function (seed, f) {
+            if (arguments.length == 1) {
+                return flatScanSeedless(this, seed);
+            }
             return flatScan(this, seed, f);
         };
         EventStream.prototype.groupBy = function (keyF, limitF) {
@@ -3818,7 +3831,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.5';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

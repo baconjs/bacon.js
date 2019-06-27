@@ -2920,9 +2920,22 @@ function diff(src, start, f) {
 }
 
 /** @hidden */
+function flatScanSeedless(src, f) {
+    var current;
+    var isSeeded = false;
+    return src.flatMapConcat(function (next) {
+        return (isSeeded ? makeObservable(f(current, next)) : makeObservable(next))
+            .doAction(function (updated) {
+            isSeeded = true;
+            current = updated;
+        });
+    }).toProperty();
+}
+/** @hidden */
 function flatScan(src, seed, f) {
     var current = seed;
     return src.flatMapConcat(function (next) {
+        // @ts-ignore: TS2722 Cannot invoke an object which is possibly 'undefined'. Cause it's optional!
         return makeObservable(f(current, next)).doAction(function (updated) { return current = updated; });
     }).toProperty().startWith(seed).withDesc(new Desc(src, "flatScan", [seed, f]));
 }
@@ -4185,17 +4198,10 @@ var EventStream = /** @class */ (function (_super) {
      */
     EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
     EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
-    /**
-     Scans stream with given seed value and accumulator function, resulting to a Property.
-     Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
-     of a pure value, meaning that you can use [`flatScan`](#flatscan) for asynchronous updates of state. It serializes
-     updates so that that the next update will be queued until the previous one has completed.
-  
-     * @param seed initial value to start with
-     * @param f transition function from previous state and new value to next state
-     * @typeparam V2 state and result type
-     */
     EventStream.prototype.flatScan = function (seed, f) {
+        if (arguments.length == 1) {
+            return flatScanSeedless(this, seed);
+        }
         return flatScan(this, seed, f);
     };
     EventStream.prototype.groupBy = function (keyF, limitF) {
@@ -5223,7 +5229,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.5';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;
