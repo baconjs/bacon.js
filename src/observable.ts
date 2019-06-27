@@ -69,7 +69,7 @@ import skipWhile from "./skipwhile";
 import { groupBy, GroupTransformer } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
-import { flatScan } from "./flatscan";
+import { flatScan, flatScanSeedless } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
 import decode from "./decode";
@@ -1413,7 +1413,10 @@ export class EventStream<V> extends Observable<V> {
   flatScan<V2>(f: Function2<V2, V, Observable<V2>>): Property<V2>
 
   flatScan<V2>(seed: V2 | Function2<V2, V, Observable<V2>>, f?: Function2<V2, V, Observable<V2>>): Property<V2> {
-    return <any>flatScan(this, seed, f)
+    if (arguments.length == 1) {
+      return <any>flatScanSeedless(this, seed as any as Function2<V, V, Observable<V>>)  
+    }
+    return <any>flatScan(this, seed as any as V2, f as any as Function2<V2, V, Observable<V2>>)
   }
 
   /**

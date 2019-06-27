@@ -4,21 +4,22 @@ import { Desc } from "./describe";
 import { Function2 } from "./types";
 
 /** @hidden */
-export function flatScan<In, Out>(src: Observable<In>, seed: any | Function2<Out, In, Observable<Out> | Out>, f?: Function2<Out, In, Observable<Out> | Out>): Property<Out> {
-  let current: Out;
+export function flatScanSeedless<V>(src: Observable<V>, f: Function2<V, V, Observable<V> | V>): Property<V> {
+  let current: V;
   let isSeeded = false;
 
-  if (typeof seed === "function") {
-    return src.flatMapConcat(function (next: In) {
-      return (isSeeded ? makeObservable(seed(current, next)) : makeObservable(next))
-      .doAction(function (updated) {
+  return src.flatMapConcat(function (next: V) {
+    return (isSeeded ? makeObservable(f(current, next)) : makeObservable(next))
+      .doAction(function (updated: V) {
         isSeeded = true;
-        return current = updated;
+        current = updated;
       });
-    }).toProperty();
-  }
+  }).toProperty();
+}
 
-  current = seed;
+/** @hidden */
+export function flatScan<In, Out>(src: Observable<In>, seed: Out, f: Function2<Out, In, Observable<Out> | Out>): Property<Out> {
+  let current = seed;
   return src.flatMapConcat((next: In) =>
       // @ts-ignore: TS2722 Cannot invoke an object which is possibly 'undefined'. Cause it's optional!
     makeObservable(f(current, next)).doAction(updated => current = updated)
