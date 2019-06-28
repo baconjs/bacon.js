@@ -1,3 +1,7 @@
+## 3.0.6
+
+- Add typings for `decode`
+
 ## 3.0.5
 
 - Add alternative signature to groupBy: no type param, no optional limitF param
