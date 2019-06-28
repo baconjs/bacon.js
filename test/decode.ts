@@ -9,10 +9,13 @@ describe("Property.decode", function() {
       function() {
         const a = Bacon.constant("a");
         const b = Bacon.constant("b");
-        const c = Bacon.constant("c");
-        return series(1, [1,2,3]).toProperty().decode({1: a, 2: b, 3: c});
+        const c = Bacon.constant(3);
+        const result: Bacon.Property<string | number> = series(1, [1,2,3])
+          .toProperty()
+          .decode({1: a, 2: b, 3: c});
+        return result
       },
-      ["a", "b", "c"])
+      ["a", "b", 3])
   );
   it("toString", () => expect(Bacon.constant(1).decode({1: "lol"}).toString()).to.equal("Bacon.constant(1).decode({1:lol})"));
 });

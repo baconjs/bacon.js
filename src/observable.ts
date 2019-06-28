@@ -72,7 +72,7 @@ import { diff, Differ } from "./diff";
 import { flatScan } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
-import decode from "./decode";
+import decode, { DecodedValueOf } from "./decode";
 import { firstToPromise, toPromise } from "./topromise";
 import { more } from "./reply"
 import { withLatestFromE, withLatestFromP } from "./withlatestfrom";
@@ -219,8 +219,10 @@ The return value of [`decode`](#decode) is always a [`Property`](property.html).
 
    */
 
-  decode(cases: any): Property<any> {
-    return decode(this, cases)
+  //decode<T extends Record<any, any>>(src: Observable<keyof T>, cases: T): Property<DecodedValueOf<T>>
+
+  decode<T extends Record<any, any>>(cases: T): Property<DecodedValueOf<T>> {
+    return decode(<any>this, cases)
   }
   /**
 Delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](property.html).
