@@ -3277,6 +3277,7 @@ var Observable = /** @class */ (function () {
   The return value of [`decode`](#decode) is always a [`Property`](property.html).
   
      */
+    //decode<T extends Record<any, any>>(src: Observable<keyof T>, cases: T): Property<DecodedValueOf<T>>
     Observable.prototype.decode = function (cases) {
         return decode(this, cases);
     };

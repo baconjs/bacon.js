@@ -11,6 +11,7 @@ import { Transformer } from "./transform";
 import { Predicate, PredicateOrProperty } from "./predicate";
 import { GroupTransformer } from "./groupby";
 import { Differ } from "./diff";
+import { DecodedValueOf } from "./decode";
 /**
  Observable is the base class for [EventsStream](eventstream.html) and [Property](property.html)
 
@@ -135,7 +136,7 @@ export declare abstract class Observable<V> {
   The return value of [`decode`](#decode) is always a [`Property`](property.html).
   
      */
-    decode(cases: any): Property<any>;
+    decode<T extends Record<any, any>>(cases: T): Property<DecodedValueOf<T>>;
     /**
   Delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](property.html).
   
