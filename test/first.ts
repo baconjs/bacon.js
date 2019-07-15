@@ -11,7 +11,7 @@ describe("EventStream.first", function() {
   );
   describe("works with empty stream", () =>
     expectStreamEvents(
-      () => series(1, []).first(),
+      () => series(1, [] as number[]).first(),
       [])
   );
   describe.skip("will stop properly even when exception thrown by subscriber", () =>

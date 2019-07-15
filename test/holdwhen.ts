@@ -49,7 +49,7 @@ describe("EventStream.holdWhen", function() {
       [[1, 2]])
   );
 
-  describe.skip("Doesn't crash when flushing huge buffers", function() {
+  describe("Doesn't crash when flushing huge buffers", function() {
     const count = 6000;
     return expectPropertyEvents(
       function() {

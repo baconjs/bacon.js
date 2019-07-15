@@ -38,7 +38,7 @@ export default class Bus<V> extends EventStream<V> {
     this.guardedSink = _.bind(this.guardedSink, this);
     this.subscriptions = [] // new array for each Bus instance
     this.ended = false;
-    EventStream.call(this, new Desc("Bacon", "Bus", []), this.subscribeAll);
+    EventStream.call(<any>this, new Desc("Bacon", "Bus", []), this.subscribeAll);
   }
 
   /**
@@ -51,10 +51,10 @@ export default class Bus<V> extends EventStream<V> {
 
    * @returns a function that can be called to "unplug" the source from Bus.
    */
-  plug(input: Observable<V>) {
+  plug<V2 extends V>(input: Observable<V2>) {
     assertObservable(input);
     if (this.ended) { return; }
-    var sub = { input: input, unsub: undefined };
+    var sub = { input: input as any as Observable<V>, unsub: undefined };
     this.subscriptions.push(sub);
     if (typeof this.sink !== "undefined") { this.subscribeInput(sub); }
     return (() => this.unsubscribeInput(input));
@@ -156,7 +156,7 @@ export default class Bus<V> extends EventStream<V> {
   }
 
   /** @hidden */
-  unsubscribeInput(input: Observable<V>) {
+  unsubscribeInput(input: Observable<any>) {
     var iterable = this.subscriptions;
     for (var i = 0, sub; i < iterable.length; i++) {
       sub = iterable[i];

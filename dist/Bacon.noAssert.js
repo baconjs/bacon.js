@@ -1827,6 +1827,13 @@
             return _.id;
         }
     }
+    function sampledBy(samplee, sampler, f) {
+        if (samplee instanceof EventStream) {
+            return sampledByE(samplee, sampler, f);
+        } else {
+            return sampledByP(samplee, sampler, f);
+        }
+    }
     function sampledByP(samplee, sampler, f) {
         var combinator = makeCombinator(f);
         var result = withLatestFrom(sampler, samplee, flip(combinator));
@@ -1907,7 +1914,7 @@
     }
     function and(left, right) {
         return left.combine(toProperty(right), function (x, y) {
-            return x && y;
+            return !!(x && y);
         }).withDesc(new Desc(left, 'and', [right]));
     }
     function or(left, right) {
@@ -2384,16 +2391,16 @@
         for (var _i = 0; _i < arguments.length; _i++) {
             streams[_i] = arguments[_i];
         }
-        streams = argumentsToObservables(streams);
-        if (streams.length) {
-            return new EventStream(new Desc('Bacon', 'mergeAll', streams), function (sink) {
+        var flattenedStreams = argumentsToObservables(streams);
+        if (flattenedStreams.length) {
+            return new EventStream(new Desc('Bacon', 'mergeAll', flattenedStreams), function (sink) {
                 var ends = 0;
                 var smartSink = function (obs) {
                     return function (unsubBoth) {
                         return obs.subscribeInternal(function (event) {
                             if (event.isEnd) {
                                 ends++;
-                                if (ends === streams.length) {
+                                if (ends === flattenedStreams.length) {
                                     return sink(endEvent());
                                 } else {
                                     return more;
@@ -2409,7 +2416,7 @@
                         });
                     };
                 };
-                var sinks = map(smartSink, streams);
+                var sinks = map(smartSink, flattenedStreams);
                 return new CompositeUnsubscribe(sinks).unsubscribe;
             });
         } else {
@@ -2539,14 +2546,18 @@
             minValues
         ]));
     }
+    var nullMarker = {};
     function diff(src, start, f) {
-        return transformP(scan(src, [start], function (prevTuple, next) {
+        return transformP(scan(src, [
+            start,
+            nullMarker
+        ], function (prevTuple, next) {
             return [
                 next,
                 f(prevTuple[0], next)
             ];
         }), composeT(filterT(function (tuple) {
-            return tuple.length === 2;
+            return tuple[1] !== nullMarker;
         }), mapT(function (tuple) {
             return tuple[1];
         })), new Desc(src, 'diff', [
@@ -2919,6 +2930,9 @@
         Observable.prototype.reduce = function (seed, f) {
             return fold$1(this, seed, f);
         };
+        Observable.prototype.sampledBy = function (sampler) {
+            return sampledBy(this, sampler, arguments[1]);
+        };
         Observable.prototype.scan = function (seed, f) {
             return scan(this, seed, f);
         };
@@ -3060,9 +3074,6 @@
         Property.prototype.sample = function (interval) {
             return sampleP(this, interval);
         };
-        Property.prototype.sampledBy = function (sampler) {
-            return sampledByP(this, sampler, arguments[1]);
-        };
         Property.prototype.startWith = function (seed) {
             return startWithP(this, seed);
         };
@@ -3163,9 +3174,6 @@
         };
         EventStream.prototype.not = function () {
             return not(this);
-        };
-        EventStream.prototype.sampledBy = function (sampler) {
-            return sampledByE(this, sampler, arguments[1]);
         };
         EventStream.prototype.startWith = function (seed) {
             return startWithE(this, seed);
@@ -3814,7 +3822,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.3';
+    var version = '3.0.6';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

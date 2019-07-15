@@ -16,7 +16,7 @@ describe("EventStream.fold", function() {
       () => fromArray([1, 2, error(), 3]).fold(0, add),
       [error(), 6], unstable)
   );
-  return describe.skip("works with really large chunks too, with { eager: true }", function() {
+  return describe("works with really large chunks too, with { eager: true }", function() {
     const count = 50000;
     return expectPropertyEvents(
       () => series(1, range(1, count, true)).fold(0, ((x: number,y: number) => x+1)),

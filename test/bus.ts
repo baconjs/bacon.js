@@ -30,7 +30,7 @@ describe("Bacon.Bus", function() {
       },
       ["lol", "wut"], unstable);
     it("dispose works with looped streams", function() {
-      const bus = new Bacon.Bus();
+      const bus = new Bacon.Bus<string>();
       bus.plug(later(t(2), "lol"));
       const filter = (value: string) => {
         return "lol" === value;
@@ -184,6 +184,12 @@ describe("Bacon.Bus", function() {
     src.push("y");
     expect(values).to.deep.equal(["x"]);
   });
+
+  it("allows plugging a stream of subtype", function() {
+    type TestObject = { a?: number; b?: string };
+    const testBus = new Bacon.Bus<TestObject>();
+    testBus.plug(Bacon.once(0).map(a => ({ a })));
+  })
 
   it("allows consumers to re-subscribe after other consumers have unsubscribed (bug fix)", function() {
     const bus = new Bacon.Bus<string>();

@@ -11,6 +11,7 @@ import { Transformer } from "./transform";
 import { Predicate, PredicateOrProperty } from "./predicate";
 import { GroupTransformer } from "./groupby";
 import { Differ } from "./diff";
+import { DecodedValueOf } from "./decode";
 /**
  Observable is the base class for [EventsStream](eventstream.html) and [Property](property.html)
 
@@ -85,7 +86,7 @@ export declare abstract class Observable<V> {
   occurring before the end of this observable will not be included in the result
   stream/property.
      */
-    abstract concat(other: Observable<V>): Observable<V>;
+    abstract concat<V2>(other: Observable<V2>): Observable<V | V2>;
     /**
   Throttles stream/property by given amount
   of milliseconds, but so that event is only emitted after the given
@@ -135,7 +136,7 @@ export declare abstract class Observable<V> {
   The return value of [`decode`](#decode) is always a [`Property`](property.html).
   
      */
-    decode(cases: any): Property<any>;
+    decode<T extends Record<any, any>>(cases: T): Property<DecodedValueOf<T>>;
     /**
   Delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](property.html).
   
@@ -341,6 +342,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
+    abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>;
     abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
@@ -446,7 +448,16 @@ export declare abstract class Observable<V> {
   
      @param {Observable<V2>} sampler
      */
-    abstract sampledBy(sampler: Observable<any>): Observable<V>;
+    /**
+     Creates an EventStream/Property by sampling this
+     stream/property value at each event from the `sampler` stream. The result
+     will contain the sampled value at each event in the source stream.
+  
+     @param {Observable<V2>} sampler
+     */
+    sampledBy(sampler: EventStream<any>): EventStream<V>;
+    sampledBy(sampler: Property<any>): Property<V>;
+    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -740,7 +751,7 @@ export declare class Property<V> extends Observable<V> {
      occurring before the end of this property will not be included in the result
      stream/property.
      */
-    concat(other: Observable<V>): Property<V>;
+    concat<V2>(other: Observable<V2>): Property<V | V2>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
@@ -833,6 +844,7 @@ export declare class Property<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
@@ -853,15 +865,6 @@ export declare class Property<V> extends Observable<V> {
      property value at given interval (in milliseconds)
      */
     sample(interval: number): EventStream<V>;
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
@@ -1007,7 +1010,7 @@ export declare class EventStream<V> extends Observable<V> {
      occurring before the end of this observable will not be included in the result
      stream/property.
      */
-    concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
+    concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
@@ -1111,6 +1114,7 @@ export declare class EventStream<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
@@ -1122,20 +1126,11 @@ export declare class EventStream<V> extends Observable<V> {
     /**
      Merges two streams into one stream that delivers events from both
      */
-    merge(other: EventStream<V>): EventStream<V>;
+    merge<V2>(other: EventStream<V2>): EventStream<V | V2>;
     /**
      Returns a stream/property that inverts boolean values (using `!`)
      */
     not(): EventStream<boolean>;
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    sampledBy(sampler: Observable<any>): Observable<V>;
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.

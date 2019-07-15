@@ -1685,7 +1685,7 @@ function processRawPatterns(rawPatterns) {
             pats.push(pat);
         }
     }
-    return [map(fromObservable, sources), pats];
+    return [map(fromObservable /* sorry */, sources), pats];
 }
 function extractLegacyPatterns(sourceArgs) {
     var i = 0;
@@ -2092,6 +2092,15 @@ function makeCombinator(combinator) {
     }
 }
 /** @hidden */
+function sampledBy(samplee, sampler, f) {
+    if (samplee instanceof EventStream) {
+        return sampledByE(samplee, sampler, f);
+    }
+    else {
+        return sampledByP(samplee, sampler, f);
+    }
+}
+/** @hidden */
 function sampledByP(samplee, sampler, f) {
     var combinator = makeCombinator(f);
     var result = withLatestFrom(sampler, samplee, flip(combinator));
@@ -2178,7 +2187,7 @@ function not(src) {
 }
 /** @hidden */
 function and(left, right) {
-    return left.combine(toProperty(right), function (x, y) { return x && y; }).withDesc(new Desc(left, "and", [right]));
+    return left.combine(toProperty(right), function (x, y) { return !!(x && y); }).withDesc(new Desc(left, "and", [right]));
 }
 /** @hidden */
 function or(left, right) {
@@ -2315,7 +2324,7 @@ function flatMapError(src, f) {
     return flatMap_(function (x) {
         if (x instanceof Error$1) {
             var error = x.error;
-            return f(error);
+            return f(error); // I don't understand why I need this little lie
         }
         else {
             return x;
@@ -2739,16 +2748,16 @@ function mergeAll() {
     for (var _i = 0; _i < arguments.length; _i++) {
         streams[_i] = arguments[_i];
     }
-    streams = argumentsToObservables(streams);
-    if (streams.length) {
-        return new EventStream(new Desc("Bacon", "mergeAll", streams), function (sink) {
+    var flattenedStreams = argumentsToObservables(streams);
+    if (flattenedStreams.length) {
+        return new EventStream(new Desc("Bacon", "mergeAll", flattenedStreams), function (sink) {
             var ends = 0;
             var smartSink = function (obs) {
                 return function (unsubBoth) {
                     return obs.subscribeInternal(function (event) {
                         if (event.isEnd) {
                             ends++;
-                            if (ends === streams.length) {
+                            if (ends === flattenedStreams.length) {
                                 return sink(endEvent());
                             }
                             else {
@@ -2766,7 +2775,7 @@ function mergeAll() {
                     });
                 };
             };
-            var sinks = map(smartSink, streams);
+            var sinks = map(smartSink, flattenedStreams);
             return new CompositeUnsubscribe(sinks).unsubscribe;
         });
     }
@@ -2913,9 +2922,10 @@ function slidingWindow(src, maxValues, minValues) {
     })).withDesc(new Desc(src, "slidingWindow", [maxValues, minValues]));
 }
 
+var nullMarker = {};
 /** @hidden */
 function diff(src, start, f) {
-    return transformP(scan(src, [start], function (prevTuple, next) { return [next, f(prevTuple[0], next)]; }), composeT(filterT(function (tuple) { return tuple.length === 2; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
+    return transformP(scan(src, [start, nullMarker], (function (prevTuple, next) { return [next, f(prevTuple[0], next)]; })), composeT(filterT(function (tuple) { return tuple[1] !== nullMarker; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
 }
 
 /** @hidden */
@@ -3267,6 +3277,7 @@ var Observable = /** @class */ (function () {
   The return value of [`decode`](#decode) is always a [`Property`](property.html).
   
      */
+    //decode<T extends Record<any, any>>(src: Observable<keyof T>, cases: T): Property<DecodedValueOf<T>>
     Observable.prototype.decode = function (cases) {
         return decode(this, cases);
     };
@@ -3553,6 +3564,9 @@ var Observable = /** @class */ (function () {
      */
     Observable.prototype.reduce = function (seed, f) {
         return fold$1(this, seed, f);
+    };
+    Observable.prototype.sampledBy = function (sampler) {
+        return sampledBy(this, sampler, arguments[1]); // TODO: combinator
     };
     /**
   Scans stream/property with given seed value and
@@ -3908,48 +3922,6 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
         return flatMapWithConcurrencyLimit(this, limit, f);
     };
-    /**
-     Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
-     stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
-     and the original event causing the stream to start as parameters.
-  
-     Calculator for grouped consecutive values until group is cancelled:
-  
-     ```
-     var events = [
-     {id: 1, type: "add", val: 3 },
-     {id: 2, type: "add", val: -1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 2, type: "cancel"},
-     {id: 3, type: "add", val: 2 },
-     {id: 3, type: "cancel"},
-     {id: 1, type: "add", val: 1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 1, type: "cancel"}
-     ]
-  
-     function keyF(event) {
-    return event.id
-  }
-  
-     function limitF(groupedStream, groupStartingEvent) {
-    var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
-    var adds = groupedStream.filter(function(x) { return x.type === "add" })
-    return adds.takeUntil(cancel).map(".val")
-  }
-  
-     Bacon.sequentially(2, events)
-     .groupBy(keyF, limitF)
-     .flatMap(function(groupedStream) {
-      return groupedStream.fold(0, function(acc, x) { return acc + x })
-    })
-     .onValue(function(sum) {
-      console.log(sum)
-      // returns [-1, 2, 8] in an order
-    })
-     ```
-  
-     */
     Property.prototype.groupBy = function (keyF, limitF) {
         return groupBy(this, keyF, limitF);
     };
@@ -3979,17 +3951,6 @@ var Property = /** @class */ (function (_super) {
      */
     Property.prototype.sample = function (interval) {
         return sampleP(this, interval);
-    };
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    Property.prototype.sampledBy = function (sampler) {
-        return sampledByP(this, sampler, arguments[1]);
     };
     /**
     Adds an initial "default" value for the
@@ -4239,48 +4200,6 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.flatScan = function (seed, f) {
         return flatScan(this, seed, f);
     };
-    /**
-     Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
-     stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
-     and the original event causing the stream to start as parameters.
-  
-     Calculator for grouped consecutive values until group is cancelled:
-  
-     ```
-     var events = [
-     {id: 1, type: "add", val: 3 },
-     {id: 2, type: "add", val: -1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 2, type: "cancel"},
-     {id: 3, type: "add", val: 2 },
-     {id: 3, type: "cancel"},
-     {id: 1, type: "add", val: 1 },
-     {id: 1, type: "add", val: 2 },
-     {id: 1, type: "cancel"}
-     ]
-  
-     function keyF(event) {
-    return event.id
-  }
-  
-     function limitF(groupedStream, groupStartingEvent) {
-    var cancel = groupedStream.filter(function(x) { return x.type === "cancel"}).take(1)
-    var adds = groupedStream.filter(function(x) { return x.type === "add" })
-    return adds.takeUntil(cancel).map(".val")
-  }
-  
-     Bacon.sequentially(2, events)
-     .groupBy(keyF, limitF)
-     .flatMap(function(groupedStream) {
-      return groupedStream.fold(0, function(acc, x) { return acc + x })
-    })
-     .onValue(function(sum) {
-      console.log(sum)
-      // returns [-1, 2, 8] in an order
-    })
-     ```
-  
-     */
     EventStream.prototype.groupBy = function (keyF, limitF) {
         return groupBy(this, keyF, limitF);
     };
@@ -4302,17 +4221,6 @@ var EventStream = /** @class */ (function (_super) {
      Returns a stream/property that inverts boolean values (using `!`)
      */
     EventStream.prototype.not = function () { return not(this); };
-    /**
-     Creates an EventStream by sampling this
-     stream/property value at each event from the `sampler` stream. The result
-     `EventStream` will contain the sampled value at each event in the source
-     stream.
-  
-     @param {Observable<V2>} sampler
-     */
-    EventStream.prototype.sampledBy = function (sampler) {
-        return sampledByE(this, sampler, arguments[1]);
-    };
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.
@@ -5306,7 +5214,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.3';
+var version = '3.0.6';
 
 exports.$ = $;
 exports.Bus = Bus;

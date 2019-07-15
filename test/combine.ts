@@ -116,7 +116,7 @@ describe("Bacon.combineAsArray", function() {
   );
   describe("works with arrays as values, with first array being empty (bug fix)", () =>
     expectPropertyEvents(
-      () => Bacon.combineAsArray([Bacon.constant([]), Bacon.constant([1])]),
+      () => Bacon.combineAsArray([Bacon.constant([] as number[]), Bacon.constant([1])]),
     ([[[], [1]]]))
   );
   describe("works with arrays as values, with first array being non-empty (bug fix)", () =>
