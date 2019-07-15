@@ -384,13 +384,13 @@ describe("Integration tests", function() {
     it("calls combinator function for valid combos only", function() {
       let calls = 0;
       const results: number[] = [];
-      const combinator = function(x: number,y: number) {
+      const combinator = function(x: number,y: number): number {
         calls++;
         return x+y;
       };
       const src = new Bacon.Bus<number>();
       const prop = src.toProperty();
-      const out = prop.map(Bacon._.id)
+      const out = prop.map(x => x)
         .combine(prop.map((x: number) => x * 2), combinator)
         .doAction(function() {})
         .combine(prop, (x,y) => x);

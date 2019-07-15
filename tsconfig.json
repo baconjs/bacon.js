@@ -5,6 +5,7 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "strict": true,
     "noUnusedLocals": true,
     "target": "ES5",
     "declaration": true,

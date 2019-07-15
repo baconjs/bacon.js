@@ -12,7 +12,7 @@ export function not(src: Observable<any>): Observable<boolean> {
 
 /** @hidden */
 export function and(left: Property<any>, right: Property<any>): Property<boolean> {
-  return left.combine(toProperty(right), (x, y) => x && y).withDesc(new Desc(left, "and", [right]))
+  return left.combine(toProperty(right), (x, y) => !!(x && y)).withDesc(new Desc(left, "and", [right]))
 }
 
 /** @hidden */

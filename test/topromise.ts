@@ -13,7 +13,7 @@ describe("firstToPromise", function() {
     sequentially(3, [1, 2, 3]).firstToPromise().then(x => expect(x).to.equal(1))
   });
 
-  return it.skip("never resolves with undefined from empty Observable", () => {
+  return it("never resolves with undefined from empty Observable", () => {
     sequentially(3, []).firstToPromise().then(x => expect(x).to.equal(undefined))
   });
 });

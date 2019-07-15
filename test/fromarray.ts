@@ -6,7 +6,7 @@ import { expectStreamEvents, error, deferred, range } from "./util/SpecHelper";
 describe("Bacon.fromArray", function() {
   describe("Turns an empty array into an EventStream", () =>
     expectStreamEvents(
-      () => Bacon.fromArray([]),
+      () => Bacon.fromArray<string>([]),
       [])
   );
   describe("Turns a single-element array into an EventStream", () =>

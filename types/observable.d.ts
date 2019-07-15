@@ -85,7 +85,7 @@ export declare abstract class Observable<V> {
   occurring before the end of this observable will not be included in the result
   stream/property.
      */
-    abstract concat(other: Observable<V>): Observable<V>;
+    abstract concat<V2>(other: Observable<V2>): Observable<V | V2>;
     /**
   Throttles stream/property by given amount
   of milliseconds, but so that event is only emitted after the given
@@ -341,6 +341,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
+    abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>;
     abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
@@ -740,7 +741,7 @@ export declare class Property<V> extends Observable<V> {
      occurring before the end of this property will not be included in the result
      stream/property.
      */
-    concat(other: Observable<V>): Property<V>;
+    concat<V2>(other: Observable<V2>): Property<V | V2>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
@@ -833,6 +834,7 @@ export declare class Property<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
@@ -1007,7 +1009,7 @@ export declare class EventStream<V> extends Observable<V> {
      occurring before the end of this observable will not be included in the result
      stream/property.
      */
-    concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
+    concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
@@ -1068,7 +1070,8 @@ export declare class EventStream<V> extends Observable<V> {
      * @param f transition function from previous state and new value to next state
      * @typeparam V2 state and result type
      */
-    flatScan<V2>(seed: V2 | Function2<V2, V, Observable<V2>>, f?: Function2<V2, V, Observable<V2>>): Property<V2>;
+    flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2>;
+    flatScan(f: Function2<V, V, Observable<V>>): Property<V>;
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
@@ -1111,6 +1114,7 @@ export declare class EventStream<V> extends Observable<V> {
      ```
   
      */
+    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>;
     groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
@@ -1122,7 +1126,7 @@ export declare class EventStream<V> extends Observable<V> {
     /**
      Merges two streams into one stream that delivers events from both
      */
-    merge(other: EventStream<V>): EventStream<V>;
+    merge<V2>(other: EventStream<V2>): EventStream<V | V2>;
     /**
      Returns a stream/property that inverts boolean values (using `!`)
      */

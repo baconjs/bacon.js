@@ -11,7 +11,7 @@ export default function flatMapError<V, V2>(src: Observable<V>, f: (error: any) 
     (x: Event<V>) => {
       if (x instanceof Error) {
         let error: any = x.error;
-        return f(error);
+        return f(error) as EventOrValue<V2>; // I don't understand why I need this little lie
       } else {
         return x;
       }

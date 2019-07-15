@@ -10,7 +10,7 @@ describe("EventStream.flatScan", function() {
       [0, 1, 3, error(), 6])
   );
 
-  describe.skip("beginning with the first source value successive values are accumulated values using the accumulator function which returns a stream of updated values", () =>
+  describe("Without a seed value", () =>
     expectPropertyEvents(
       () => series(1, [1, 2, error(), 3]).flatScan(addAsync(1)),
       [1, 3, error(), 6])

@@ -35,7 +35,7 @@ export default class Bus<V> extends EventStream<V> {
   
      * @returns a function that can be called to "unplug" the source from Bus.
      */
-    plug(input: Observable<V>): (() => void) | undefined;
+    plug<V2 extends V>(input: Observable<V2>): (() => void) | undefined;
     /**
      Ends the stream. Sends an [End](end.html) event to all subscribers.
      After this call, there'll be no more events to the subscribers.
@@ -59,6 +59,6 @@ export default class Bus<V> extends EventStream<V> {
     /** @hidden */
     subscribeInput(subscription: Subscription<V>): Unsub;
     /** @hidden */
-    unsubscribeInput(input: Observable<V>): void;
+    unsubscribeInput(input: Observable<any>): void;
 }
 export {};

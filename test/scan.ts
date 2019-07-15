@@ -74,10 +74,10 @@ describe("Property.scan", function() {
   );
   describe("treats null seed value like any other value", function() {
     expectPropertyEvents(
-      () => series(1, [1]).toProperty().scan(null, add),
+      () => series(1, [1]).toProperty().scan(null as any, add),
       [null, 1]);
     expectPropertyEvents(
-      () => series(1, [2]).toProperty(1).scan(null, add),
+      () => series(1, [2]).toProperty(1).scan(null as any, add),
       [1, 3]);
   });
   describe("for synchronous source", function() {
@@ -93,7 +93,7 @@ describe("Property.scan", function() {
     );
     describe("works with synchronously responding empty source", () =>
       expectPropertyEvents(
-        () => Bacon.never().toProperty(1).scan(0, add),
+        () => Bacon.never<number>().toProperty(1).scan(0, add),
         [1])
     );
   });

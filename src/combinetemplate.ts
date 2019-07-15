@@ -141,5 +141,5 @@ export default function combineTemplate<T>(template: T): Property<CombinedTempla
     ? (compileTemplate(template), combineAsArray(streams).map(combinator))
     : constant(template)
 
-  return resultProperty.withDesc(new Desc("Bacon", "combineTemplate", [template]));
+  return <any>resultProperty.withDesc(new Desc("Bacon", "combineTemplate", [template]));
 }

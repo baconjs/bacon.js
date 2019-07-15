@@ -16,16 +16,16 @@ import { Unsub } from "./types";
  See also [`merge`](classes/eventstream.html#merge).
  */
 export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): EventStream<V> {
-  streams = argumentsToObservables(streams);
-  if (streams.length) {
-    return new EventStream(new Desc("Bacon", "mergeAll", streams), function(sink) {
+  let flattenedStreams = argumentsToObservables(streams);
+  if (flattenedStreams.length) {
+    return new EventStream(new Desc("Bacon", "mergeAll", flattenedStreams), function(sink) {
       var ends = 0
       var smartSink = function(obs: Observable<V>) {
         return function(unsubBoth: Unsub) {
           return obs.subscribeInternal(function(event: Event<V>) {
             if (event.isEnd) {
               ends++
-              if (ends === streams.length) {
+              if (ends === flattenedStreams.length) {
                 return sink(endEvent())
               } else {
                 return more
@@ -40,7 +40,7 @@ export function mergeAll<V>(...streams: (Observable<V> | Observable<V>[])[]): Ev
           })
         }
       }
-      var sinks = map(smartSink, streams);
+      var sinks = map(smartSink, flattenedStreams);
       return new CompositeUnsubscribe(sinks).unsubscribe;
     })
   } else {

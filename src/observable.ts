@@ -69,7 +69,7 @@ import skipWhile from "./skipwhile";
 import { groupBy, GroupTransformer } from "./groupby";
 import { slidingWindow } from "./slidingwindow";
 import { diff, Differ } from "./diff";
-import { flatScan } from "./flatscan";
+import { flatScan, flatScanSeedless } from "./flatscan";
 import { holdWhen } from "./holdwhen";
 import { zip } from "./zip";
 import decode from "./decode";
@@ -108,6 +108,7 @@ export abstract class Observable<V> {
     this.desc = desc
     this.initialDesc = desc
   }
+
   /**
 Creates a Property that indicates whether
 `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
@@ -163,7 +164,7 @@ events from `other`. This means too that events from `other`,
 occurring before the end of this observable will not be included in the result
 stream/property.
    */
-  abstract concat(other: Observable<V>): Observable<V>
+  abstract concat<V2>(other: Observable<V2>): Observable<V | V2>
   /**
 Throttles stream/property by given amount
 of milliseconds, but so that event is only emitted after the given
@@ -461,7 +462,10 @@ Bacon.sequentially(2, events)
 ```
 
    */
+  abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>
+
   abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>
+
   /**
 Pauses and buffers the event stream if last event in valve is truthy.
 All buffered events are released when valve becomes falsy.
@@ -969,8 +973,8 @@ export class Property<V> extends Observable<V> {
    occurring before the end of this property will not be included in the result
    stream/property.
    */
-  concat(other: Observable<V>): Property<V> {
-    return addPropertyInitValueToStream<V>(this, this.changes().concat(other))
+  concat<V2>(other: Observable<V2>): Property<V | V2> {
+    return addPropertyInitValueToStream<V | V2>(this as Property<V | V2>, this.changes().concat(other))
   }
 
   /** @hidden */
@@ -1087,8 +1091,12 @@ export class Property<V> extends Observable<V> {
    ```
 
    */
+  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>
+
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>
+
   groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>> {
-    return <any>groupBy(this, keyF, limitF)
+    return <any>groupBy<V, V2>(this, keyF, limitF)
   }
 
   /**
@@ -1333,7 +1341,7 @@ export class EventStream<V> extends Observable<V> {
    occurring before the end of this observable will not be included in the result
    stream/property.
    */
-  concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V> {
+  concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2> {
     return concatE(this, other, options)
   }
   /** @hidden */
@@ -1400,8 +1408,15 @@ export class EventStream<V> extends Observable<V> {
    * @param f transition function from previous state and new value to next state
    * @typeparam V2 state and result type
    */
+  flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2>
+
+  flatScan(f: Function2<V, V, Observable<V>>): Property<V>
+
   flatScan<V2>(seed: V2 | Function2<V2, V, Observable<V2>>, f?: Function2<V2, V, Observable<V2>>): Property<V2> {
-    return <any>flatScan(this, seed, f)
+    if (arguments.length == 1) {
+      return <any>flatScanSeedless(this, seed as any as Function2<V, V, Observable<V>>)  
+    }
+    return <any>flatScan(this, seed as any as V2, f as any as Function2<V2, V, Observable<V2>>)
   }
 
   /**
@@ -1446,6 +1461,10 @@ export class EventStream<V> extends Observable<V> {
    ```
 
    */
+  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>
+
+  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>
+
   groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>> {
     return <any>groupBy(this, keyF, limitF)
   }
@@ -1461,9 +1480,9 @@ export class EventStream<V> extends Observable<V> {
   /**
    Merges two streams into one stream that delivers events from both
    */
-  merge(other: EventStream<V>): EventStream<V> {
+  merge<V2>(other: EventStream<V2>): EventStream<V  | V2> {
     assertEventStream(other)
-    return mergeAll<V>(this, other).withDesc(new Desc(this, "merge", [other]));
+    return mergeAll<V | V2>(this as EventStream<V | V2>, other as EventStream<V | V2>).withDesc(new Desc(this, "merge", [other]));
   }
 
   /**

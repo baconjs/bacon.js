@@ -9,8 +9,8 @@ import { argumentsToObservables } from "./internal/argumentstoobservables";
 import { more } from "./reply";
 
 /** @hidden */
-export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?: EventStreamOptions): EventStream<V> {
-  return new EventStream(new Desc(left, "concat", [right]), function(sink: EventSink<V>) {
+export function concatE<V, V2>(left: EventStream<V>, right: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2> {
+  return new EventStream(new Desc(left, "concat", [right]), function(sink: EventSink<V | V2>) {
     var unsubRight = nop;
     var unsubLeft = left.dispatcher.subscribe(function(e) {
       if (e.isEnd) {
@@ -35,7 +35,7 @@ export function concatE<V>(left: EventStream<V>, right: Observable<V>, options?:
 export function concatAll<V>(...streams_: (Observable<V> | Observable<V>[])[]): EventStream<V> {
   let streams = argumentsToObservables(streams_)
   return (streams.length
-    ? fold(tail(streams), head(streams).toEventStream(), (a: EventStream<V>, b: EventStream<V>) => a.concat(b))
+    ? fold(tail(streams), head(streams).toEventStream(), (a: EventStream<V>, b: Observable<V>) => a.concat(b))
     : never<V>()
   ).withDesc(new Desc("Bacon", "concatAll", streams))
 }
