@@ -10,12 +10,6 @@ describe("EventStream.flatScan", function() {
       [0, 1, 3, error(), 6])
   );
 
-  describe("Without a seed value", () =>
-    expectPropertyEvents(
-      () => series(1, [1, 2, error(), 3]).flatScan(addAsync(1)),
-      [1, 3, error(), 6])
-  );
-
   describe("Serializes updates even when they occur while performing previous update", () =>
     expectPropertyEvents(
       () => series(1, [1, 2, error(), 3]).flatScan(0, addAsync(5)),
@@ -33,6 +27,20 @@ describe("EventStream.flatScan", function() {
       () => series(1, [1, 2, error(), 3]).flatScan(0, (prev, next) => Bacon.constant(prev + next)),
       [0, 1, 3, error(), 6], semiunstable)
   );
+
+  describe("Without a seed value", () => {
+    it ("accumulates values with given seed and accumulator function which returns a stream of updated values", () =>
+      expectPropertyEvents(
+        () => series(1, [1, 2, error(), 3]).flatScan(addAsync(1)),
+        [1, 3, error(), 6]
+      )
+    );
+    it("Serializes updates even when they occur while performing previous update", () =>
+      expectPropertyEvents(
+        () => series(1, [0, 1, 2, error(), 3]).flatScan(addAsync(5)),
+        [0, error(), 1, 3, 6], semiunstable)
+    );
+  });
 
   return it("yields the seed value immediately", function() {
     const outputs: number[] = [];

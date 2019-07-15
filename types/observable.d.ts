@@ -293,6 +293,7 @@ export declare abstract class Observable<V> {
   [`Property`](property.html).
      */
     fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    fold(f: Accumulator<V, V>): Property<V>;
     /**
      An alias for [onValue](#onvalue).
   
@@ -439,6 +440,7 @@ export declare abstract class Observable<V> {
     /** A synonym for [scan](#scan).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    reduce(f: Accumulator<V, V>): Property<V>;
     /**
     Creates an EventStream by sampling this
     stream/property value at each event from the `sampler` stream. The result
@@ -479,6 +481,7 @@ export declare abstract class Observable<V> {
   because there can only be 1 initial value for a Property at a time.
      */
     scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    scan(f: Accumulator<V, V>): Property<V>;
     /**
   Skips the first n elements from the stream
      */

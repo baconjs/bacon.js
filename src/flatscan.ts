@@ -14,7 +14,7 @@ export function flatScanSeedless<V>(src: Observable<V>, f: Function2<V, V, Obser
         isSeeded = true;
         current = updated;
       });
-  }).toProperty();
+  }).toProperty().withDesc(new Desc(src, "flatScan", [f]));
 }
 
 /** @hidden */
