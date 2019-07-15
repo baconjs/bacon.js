@@ -1,5 +1,5 @@
 import Observable from "./observable";
-import { Property } from "./observable";;
+import { Property } from "./observable";
 import { Event, hasValue, Initial } from "./event";
 import { more, noMore } from "./reply";
 import { nop } from "./helpers";
@@ -57,4 +57,30 @@ export default function scan<In, Out>(src: Observable<In>, seed: Out, f: Accumul
     return unsub;
   }
   return resultProperty = new Property(new Desc(src, "scan", [seed, f]), subscribe)
+}
+
+/** @hidden */
+export function scanSeedless<V>(src: Observable<V>, f: Accumulator<V, V>): Property<V> {
+  let acc: V;
+  let hasAccumulatedFirstValue: Boolean = false;
+  const subscribe: Subscribe<V> = (sink: EventSink<V>) => {
+    let unsub = src.subscribeInternal(function(event: Event<V>) {
+      if (hasValue(event)) {
+        //console.log("has value: ", hasValue(event), "isInitial:", event.isInitial);
+        if (!hasAccumulatedFirstValue) {
+          acc = event.value;
+          hasAccumulatedFirstValue = true;
+          return sink(<any>event); // let the initial event pass through
+        }
+
+        acc = f(acc, event.value);
+        return sink(event.apply(acc));
+
+      } else {
+        return sink(<any>event);
+      }
+    });
+    return unsub;
+  }
+  return new Property(new Desc(src, "scan", [f]), subscribe)
 }

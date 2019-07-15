@@ -20,7 +20,7 @@ import doLogT from "./dolog";
 import doErrorT from "./doerror";
 import doActionT from "./doaction";
 import doEndT from "./doend";
-import { Accumulator, default as scan } from "./scan";
+import { Accumulator, scanSeedless, default as scan } from "./scan";
 import mapEndT from "./mapend";
 import mapErrorT from "./maperror";
 import { SpawnerOrObservable, EventSpawner, EventOrValue } from "./flatmap_";
@@ -40,7 +40,7 @@ import { filter } from "./filter";
 import { and, not, or } from "./boolean";
 import flatMapFirst from "./flatmapfirst";
 import addPropertyInitValueToStream from "./internal/addpropertyinitialvaluetostream";
-import fold from "./fold";
+import { default as fold, foldSeedless }  from "./fold";
 import { startWithE, startWithP } from "./startwith";
 import takeUntil from "./takeuntil";
 import flatMap from "./flatmap";
@@ -407,8 +407,16 @@ Works like [`scan`](#scan) but only emits the final
 value, i.e. the value just before the observable ends. Returns a
 [`Property`](property.html).
    */
-  fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
-    return fold(this, seed, f)
+
+  fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>
+
+  fold(f: Accumulator<V, V>): Property<V>
+
+  fold<V2>(seed: V2 | Accumulator<V, V>, f?: Accumulator<V, V2>): Property<V2> {
+    if (arguments.length === 1) {
+      return <any>foldSeedless(this, seed as any as Accumulator<V, V>);
+    }
+    return fold(this, seed as any as V2, f as any as Accumulator<V, V2>)
   }
 
   /**
@@ -596,8 +604,15 @@ Only applicable for observables with arrays as values.
   }
   /** A synonym for [scan](#scan).
    */
-  reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
-    return fold(this, seed, f)
+  reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>
+
+  reduce(f: Accumulator<V, V>): Property<V>
+
+  reduce<V2>(seed: V2 | Accumulator<V, V>, f?: Accumulator<V, V2>): Property<V2> {
+    if (arguments.length === 1) {
+      return <any>foldSeedless(this, seed as any as Accumulator<V, V>);
+    }
+    return fold(this, seed as any as V2, f as any as Accumulator<V, V2>)
   }
 
   /**
@@ -639,8 +654,16 @@ identically to EventStream.scan: the `seed` will be the initial value of
 seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
 because there can only be 1 initial value for a Property at a time.
    */
-  scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
-    return scan(this, seed, f)
+
+  scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>
+
+  scan(f: Accumulator<V, V>): Property<V>
+
+  scan<V2>(seed: V2 | Accumulator<V, V>, f?: Accumulator<V, V2>): Property<V2> {
+    if (arguments.length === 1) {
+      return <any>scanSeedless(this, seed as any as Accumulator<V, V>);
+    }
+    return <any>scan(this, seed as any as V2, f as any as Accumulator<V, V2>)
   }
   /**
 Skips the first n elements from the stream
