@@ -44,9 +44,10 @@ describe("Bacon.Bus", function() {
     let subscribed = 0;
     const bus = new Bacon.Bus();
     const input = new Bacon.Bus();
-    // override subscribe to increase the subscribed-count
-    const inputSubscribe = input.dispatcher.subscribe;
-    input.dispatcher.subscribe = function(sink) {
+    // override internal subscribe to track the subscribed-count
+    const dispatcher = (<any>input).dispatcher
+    const inputSubscribe = dispatcher.subscribe;
+    dispatcher.subscribe = function(sink: any) {
       subscribed++;
       return inputSubscribe.call(input, sink);
     };
@@ -188,7 +189,7 @@ describe("Bacon.Bus", function() {
   it("allows plugging a stream of subtype", function() {
     type TestObject = { a?: number; b?: string };
     const testBus = new Bacon.Bus<TestObject>();
-    testBus.plug(Bacon.once(0).map(a => ({ a })));
+    testBus.plug(Bacon.once(0).map((a: number) => ({ a })));
   })
 
   it("allows consumers to re-subscribe after other consumers have unsubscribed (bug fix)", function() {

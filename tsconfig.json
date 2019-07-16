@@ -13,6 +13,7 @@
     "newLine": "lf",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "stripInternal": true,
     "lib": [
       "ES5", "DOM"
     ]

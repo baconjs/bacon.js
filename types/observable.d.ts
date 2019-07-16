@@ -4,8 +4,6 @@ import { StateF } from "./withstatemachine";
 import { Equals } from "./skipduplicates";
 import { Accumulator } from "./scan";
 import { SpawnerOrObservable, EventSpawner, EventOrValue } from "./flatmap_";
-import PropertyDispatcher from "./internal/propertydispatcher";
-import Dispatcher from "./internal/dispatcher";
 import { DelayFunction } from "./buffer";
 import { Transformer } from "./transform";
 import { Predicate, PredicateOrProperty } from "./predicate";
@@ -342,8 +340,7 @@ export declare abstract class Observable<V> {
   ```
   
      */
-    abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>;
-    abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
+    abstract groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Observable<EventStream<V2>>;
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
   All buffered events are released when valve becomes falsy.
@@ -729,10 +726,6 @@ export declare type ObservableConstructor = (description: Desc, subscribe: Subsc
  @typeparam V   Type of the elements/values in the stream/property
  */
 export declare class Property<V> extends Observable<V> {
-    /** @hidden */
-    dispatcher: PropertyDispatcher<V, Property<V>>;
-    /** @hidden */
-    _isProperty: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>);
     /**
      Combines properties with the `&&` operator. It produces a new value when either of the Properties change,
@@ -752,8 +745,6 @@ export declare class Property<V> extends Observable<V> {
      stream/property.
      */
     concat<V2>(other: Observable<V2>): Property<V | V2>;
-    /** @hidden */
-    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned
@@ -844,8 +835,7 @@ export declare class Property<V> extends Observable<V> {
      ```
   
      */
-    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>;
-    groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>;
+    groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
      stream/property. Instead of a function, you can also provide a [Property](property.html),
@@ -961,8 +951,6 @@ export interface EventStreamOptions {
 
  */
 export declare class EventStream<V> extends Observable<V> {
-    /** @hidden */
-    dispatcher: Dispatcher<V, EventStream<V>>;
     /** @hidden */
     _isEventStream: boolean;
     constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>, options?: EventStreamOptions);
@@ -1114,8 +1102,7 @@ export declare class EventStream<V> extends Observable<V> {
      ```
   
      */
-    groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>;
-    groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
+    groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     /**
      Maps values using given function, returning a new
      stream/property. Instead of a function, you can also provide a [Property](property.html),

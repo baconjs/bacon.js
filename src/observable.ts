@@ -944,9 +944,9 @@ export type ObservableConstructor = (description: Desc, subscribe: Subscribe<any
  @typeparam V   Type of the elements/values in the stream/property
  */
 export class Property<V> extends Observable<V> {
-  /** @hidden */
+  /** @internal */
   dispatcher: PropertyDispatcher<V, Property<V>>
-  /** @hidden */
+  /** @internal */
   _isProperty = true
 
   constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>) {
@@ -991,7 +991,7 @@ export class Property<V> extends Observable<V> {
     return addPropertyInitValueToStream<V | V2>(this as Property<V | V2>, this.changes().concat(other))
   }
 
-  /** @hidden */
+  /** @internal */
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
@@ -1270,7 +1270,7 @@ export interface EventStreamOptions { forceAsync: boolean }
 
  */
 export class EventStream<V> extends Observable<V> {
-  /** @hidden */
+  /** @internal */
   dispatcher: Dispatcher<V, EventStream<V>>
   /** @hidden */
   _isEventStream: boolean = true

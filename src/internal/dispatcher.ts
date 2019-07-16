@@ -131,6 +131,6 @@ export default class Dispatcher<V, O> {
     }
   }
   inspect() {
-    return this.observable.toString()
+    return (this.observable as any).toString()
   }
 }
