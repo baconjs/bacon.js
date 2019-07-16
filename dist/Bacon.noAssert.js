@@ -3822,7 +3822,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.7';
+    var version = '3.0.8';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

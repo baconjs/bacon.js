@@ -84,6 +84,7 @@ export declare abstract class Observable<V> {
   occurring before the end of this observable will not be included in the result
   stream/property.
      */
+    abstract concat(other: Observable<V>): Observable<V>;
     abstract concat<V2>(other: Observable<V2>): Observable<V | V2>;
     /**
   Throttles stream/property by given amount
@@ -744,6 +745,7 @@ export declare class Property<V> extends Observable<V> {
      occurring before the end of this property will not be included in the result
      stream/property.
      */
+    concat(other: Observable<V>): Property<V>;
     concat<V2>(other: Observable<V2>): Property<V | V2>;
     /**
      For each element in the source stream, spawn a new
@@ -998,6 +1000,7 @@ export declare class EventStream<V> extends Observable<V> {
      occurring before the end of this observable will not be included in the result
      stream/property.
      */
+    concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
     concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2>;
     /** @hidden */
     delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
@@ -1113,6 +1116,7 @@ export declare class EventStream<V> extends Observable<V> {
     /**
      Merges two streams into one stream that delivers events from both
      */
+    merge(other: EventStream<V>): EventStream<V>;
     merge<V2>(other: EventStream<V2>): EventStream<V | V2>;
     /**
      Returns a stream/property that inverts boolean values (using `!`)

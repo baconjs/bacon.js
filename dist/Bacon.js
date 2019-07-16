@@ -3846,13 +3846,6 @@ var Property = /** @class */ (function (_super) {
             return more;
         }); });
     };
-    /**
-     Concatenates this property with another stream/properties into one property so that
-     it will deliver events from this property it ends and then deliver
-     events from `other`. This means too that events from `other`,
-     occurring before the end of this property will not be included in the result
-     stream/property.
-     */
     Property.prototype.concat = function (other) {
         return addPropertyInitValueToStream(this, this.changes().concat(other));
     };
@@ -4167,13 +4160,6 @@ var EventStream = /** @class */ (function (_super) {
     EventStream.prototype.changes = function () {
         return this;
     };
-    /**
-     Concatenates two streams/properties into one stream/property so that
-     it will deliver events from this observable until it ends and then deliver
-     events from `other`. This means too that events from `other`,
-     occurring before the end of this observable will not be included in the result
-     stream/property.
-     */
     EventStream.prototype.concat = function (other, options) {
         return concatE(this, other, options);
     };
@@ -4294,9 +4280,6 @@ var EventStream = /** @class */ (function (_super) {
      the given property.
      */
     EventStream.prototype.map = function (f) { return map$1(this, f); };
-    /**
-     Merges two streams into one stream that delivers events from both
-     */
     EventStream.prototype.merge = function (other) {
         assertEventStream(other);
         return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
@@ -5298,7 +5281,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.7';
+var version = '3.0.8';
 
 exports.$ = $;
 exports.Bus = Bus;
