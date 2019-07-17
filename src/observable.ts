@@ -994,7 +994,7 @@ export class Property<V> extends Observable<V> {
     return addPropertyInitValueToStream<any>(this as Property<any>, this.changes().concat(other))
   }
 
-  /** @internal */
+  /** @hidden */
   delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
   }
