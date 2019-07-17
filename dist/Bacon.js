@@ -3849,7 +3849,7 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.concat = function (other) {
         return addPropertyInitValueToStream(this, this.changes().concat(other));
     };
-    /** @internal */
+    /** @hidden */
     Property.prototype.delayChanges = function (desc, f) {
         return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
     };
@@ -5281,7 +5281,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.8';
+var version = '3.0.9';
 
 exports.$ = $;
 exports.Bus = Bus;

@@ -747,6 +747,8 @@ export declare class Property<V> extends Observable<V> {
      */
     concat(other: Observable<V>): Property<V>;
     concat<V2>(other: Observable<V2>): Property<V | V2>;
+    /** @hidden */
+    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned
