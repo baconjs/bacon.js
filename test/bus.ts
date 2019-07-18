@@ -189,7 +189,7 @@ describe("Bacon.Bus", function() {
   it("allows plugging a stream of subtype", function() {
     type TestObject = { a?: number; b?: string };
     const testBus = new Bacon.Bus<TestObject>();
-    testBus.plug(Bacon.once(0).map((a: number) => ({ a })));
+    testBus.plug(Bacon.once(0).map((a) => ({ a })));
   })
 
   it("allows consumers to re-subscribe after other consumers have unsubscribed (bug fix)", function() {

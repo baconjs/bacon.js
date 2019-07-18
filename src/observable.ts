@@ -1112,6 +1112,9 @@ export class Property<V> extends Observable<V> {
     return <any>groupBy<V, V2>(this, keyF, limitF)
   }
 
+  map<V2>(f: Function1<V, V2>): Property<V2>
+  map<V2>(f: Property<V2> | V2): Property<V2>
+
   /**
    Maps values using given function, returning a new
    stream/property. Instead of a function, you can also provide a [Property](property.html),
@@ -1461,13 +1464,18 @@ export class EventStream<V> extends Observable<V> {
     return <any>groupBy(this, keyF, limitF)
   }
 
-  /**
+  map<V2>(f: Function1<V, V2>): EventStream<V2>
+  map<V2>(f: Property<V2> | V2): EventStream<V2>
+
+    /**
    Maps values using given function, returning a new
    stream/property. Instead of a function, you can also provide a [Property](property.html),
    in which case each element in the source stream will be mapped to the current value of
    the given property.
    */
-  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
+  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { 
+    return <any>map(this, f) 
+  }
 
   /**
    Merges two streams into one stream that delivers events from both

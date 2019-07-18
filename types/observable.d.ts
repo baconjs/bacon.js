@@ -840,13 +840,8 @@ export declare class Property<V> extends Observable<V> {
   
      */
     groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Property<EventStream<V2>>;
-    /**
-     Maps values using given function, returning a new
-     stream/property. Instead of a function, you can also provide a [Property](property.html),
-     in which case each element in the source stream will be mapped to the current value of
-     the given property.
-     */
-    map<V2>(f: Function1<V, V2> | Property<V2> | V2): Property<V2>;
+    map<V2>(f: Function1<V, V2>): Property<V2>;
+    map<V2>(f: Property<V2> | V2): Property<V2>;
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
     not(): Property<boolean>;
     /**
@@ -1108,13 +1103,8 @@ export declare class EventStream<V> extends Observable<V> {
   
      */
     groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
-    /**
-     Maps values using given function, returning a new
-     stream/property. Instead of a function, you can also provide a [Property](property.html),
-     in which case each element in the source stream will be mapped to the current value of
-     the given property.
-     */
-    map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2>;
+    map<V2>(f: Function1<V, V2>): EventStream<V2>;
+    map<V2>(f: Property<V2> | V2): EventStream<V2>;
     /**
      Merges two streams into one stream that delivers events from both
      */

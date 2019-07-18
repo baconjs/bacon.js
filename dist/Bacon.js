@@ -4274,12 +4274,14 @@ var EventStream = /** @class */ (function (_super) {
         return groupBy(this, keyF, limitF);
     };
     /**
-     Maps values using given function, returning a new
-     stream/property. Instead of a function, you can also provide a [Property](property.html),
-     in which case each element in the source stream will be mapped to the current value of
-     the given property.
-     */
-    EventStream.prototype.map = function (f) { return map$1(this, f); };
+   Maps values using given function, returning a new
+   stream/property. Instead of a function, you can also provide a [Property](property.html),
+   in which case each element in the source stream will be mapped to the current value of
+   the given property.
+   */
+    EventStream.prototype.map = function (f) {
+        return map$1(this, f);
+    };
     EventStream.prototype.merge = function (other) {
         assertEventStream(other);
         return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
@@ -5281,7 +5283,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.9';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;

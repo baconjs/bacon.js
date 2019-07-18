@@ -107,7 +107,7 @@ describe("EventStream.groupBy", function() {
       const down = stream.filter(i => i.type === 'keydown');
       const up = stream.filter(i => i.type === 'keyup');
       const upWithKey = down.flatMapLatest(downEvent =>
-        up.take(1).map(function(upEvent: KeyEvent) {
+        up.take(1).map(function(upEvent) {
           upEvent.key = downEvent.key;
           return upEvent;
         })
