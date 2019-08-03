@@ -293,6 +293,7 @@ export declare abstract class Observable<V> {
   [`Property`](property.html).
      */
     fold<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    fold(f: Accumulator<V, V>): Property<V>;
     /**
      An alias for [onValue](#onvalue).
   
@@ -438,6 +439,7 @@ export declare abstract class Observable<V> {
     /** A synonym for [scan](#scan).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    reduce(f: Accumulator<V, V>): Property<V>;
     /**
     Creates an EventStream by sampling this
     stream/property value at each event from the `sampler` stream. The result
@@ -487,6 +489,7 @@ export declare abstract class Observable<V> {
   because there can only be 1 initial value for a Property at a time.
      */
     scan<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
+    scan(f: Accumulator<V, V>): Property<V>;
     /**
   Skips the first n elements from the stream
      */
@@ -1060,6 +1063,7 @@ export declare class EventStream<V> extends Observable<V> {
      * @typeparam V2 state and result type
      */
     flatScan<V2>(seed: V2, f: Function2<V2, V, Observable<V2>>): Property<V2>;
+    flatScan(f: Function2<V, V, Observable<V>>): Property<V>;
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
