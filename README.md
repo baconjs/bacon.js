@@ -385,6 +385,14 @@ would go directly `a1+b1 -> a2+b2`. And, in fact, it does exactly that.
 Prior to version 0.4.0, C would have an additional transitional
 state like `a1+b1 -> a2+b1 -> a2+b2`
 
+For jQuery users
+----------------
+
+Earlier versions of Bacon.js automatically installed the [`asEventStream`](http://baconjs.github.io/api3/globals.html#_)
+ method into jQuery.
+Now, if you still want to use that method, initialize this integration by calling [`Bacon.$.init($)`](http://baconjs.github.io/api3/globals.html#_)
+.
+
 For RxJs Users
 --------------
 
@@ -459,16 +467,13 @@ Run memory usage tests:
 Dependencies
 ============
 
-Runtime: jQuery or Zepto.js (optional; just for jQ/Zepto bindings)
+Runtime: none
 Build/test: see [package.json].
 
 Compatibility with other libs
 =============================
 
-Bacon.js doesn't mess with prototypes or the global object. Only exceptions below.
-
-* It exports the Bacon object, except in Node.js. In a browser, this is added to the window object.
-* If jQuery is defined, it adds the asEventStream method to jQuery (similarly to Zepto)
+Bacon.js doesn't mess with prototypes or the global object, except that it exports the Bacon object as `window.Bacon` when installed using the `<script>` tag.
 
 So, it should be pretty much compatible and a nice citizen.
 
