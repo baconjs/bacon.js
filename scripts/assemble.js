@@ -49,13 +49,12 @@ function main(options) {
       fs.writeFileSync(options.noAssert, noAssertOutput);
     }
 
-    // Minifying
-    var minifiedOutput = uglifyjs.minify(noAssertOutput, {
-      fromString: true
-    }).code;
-
     if (options.minified) {
-      fs.writeFileSync(options.minified, minifiedOutput);
+        var result = uglifyjs.minify(noAssertOutput);
+        if (result.error) {
+          throw result.error
+        }
+        fs.writeFileSync(options.minified, result.code);
     }
   }).catch(function(error) {
     console.error(error);

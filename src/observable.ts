@@ -164,6 +164,7 @@ events from `other`. This means too that events from `other`,
 occurring before the end of this observable will not be included in the result
 stream/property.
    */
+  abstract concat(other: Observable<V>): Observable<V>
   abstract concat<V2>(other: Observable<V2>): Observable<V | V2>
   /**
 Throttles stream/property by given amount
@@ -464,9 +465,7 @@ Bacon.sequentially(2, events)
 ```
 
    */
-  abstract groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Observable<EventStream<V>>
-
-  abstract groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Observable<EventStream<V2>>
+  abstract groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Observable<EventStream<V2>>
 
   /**
 Pauses and buffers the event stream if last event in valve is truthy.
@@ -946,9 +945,9 @@ export type ObservableConstructor = (description: Desc, subscribe: Subscribe<any
  @typeparam V   Type of the elements/values in the stream/property
  */
 export class Property<V> extends Observable<V> {
-  /** @hidden */
+  /** @internal */
   dispatcher: PropertyDispatcher<V, Property<V>>
-  /** @hidden */
+  /** @internal */
   _isProperty = true
 
   constructor(desc: Desc, subscribe: Subscribe<V>, handler?: EventSink<V>) {
@@ -989,8 +988,10 @@ export class Property<V> extends Observable<V> {
    occurring before the end of this property will not be included in the result
    stream/property.
    */
-  concat<V2>(other: Observable<V2>): Property<V | V2> {
-    return addPropertyInitValueToStream<V | V2>(this as Property<V | V2>, this.changes().concat(other))
+  concat(other: Observable<V>): Property<V>
+  concat<V2>(other: Observable<V2>): Property<V | V2>
+  concat(other: Observable<any>): Property<any> {
+    return addPropertyInitValueToStream<any>(this as Property<any>, this.changes().concat(other))
   }
 
   /** @hidden */
@@ -1107,13 +1108,12 @@ export class Property<V> extends Observable<V> {
    ```
 
    */
-  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): Property<EventStream<V>>
-
-  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>>
-
-  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): Property<EventStream<V2>> {
+  groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Property<EventStream<V2>> {
     return <any>groupBy<V, V2>(this, keyF, limitF)
   }
+
+  map<V2>(f: Function1<V, V2>): Property<V2>
+  map<V2>(f: Property<V2> | V2): Property<V2>
 
   /**
    Maps values using given function, returning a new
@@ -1276,7 +1276,7 @@ export interface EventStreamOptions { forceAsync: boolean }
 
  */
 export class EventStream<V> extends Observable<V> {
-  /** @hidden */
+  /** @internal */
   dispatcher: Dispatcher<V, EventStream<V>>
   /** @hidden */
   _isEventStream: boolean = true
@@ -1345,7 +1345,9 @@ export class EventStream<V> extends Observable<V> {
    occurring before the end of this observable will not be included in the result
    stream/property.
    */
-  concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2> {
+  concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>
+  concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2>
+  concat(other: Observable<any>, options?: EventStreamOptions): EventStream<any> {
     return concatE(this, other, options)
   }
   /** @hidden */
@@ -1458,28 +1460,31 @@ export class EventStream<V> extends Observable<V> {
    ```
 
    */
-  groupBy(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V>): EventStream<EventStream<V>>
-
-  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>>
-
-  groupBy<V2>(keyF: Function1<V, string>, limitF: GroupTransformer<V, V2>): EventStream<EventStream<V2>> {
+  groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): EventStream<EventStream<V2>> {
     return <any>groupBy(this, keyF, limitF)
   }
 
-  /**
+  map<V2>(f: Function1<V, V2>): EventStream<V2>
+  map<V2>(f: Property<V2> | V2): EventStream<V2>
+
+    /**
    Maps values using given function, returning a new
    stream/property. Instead of a function, you can also provide a [Property](property.html),
    in which case each element in the source stream will be mapped to the current value of
    the given property.
    */
-  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { return <any>map(this, f) }
+  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { 
+    return <any>map(this, f) 
+  }
 
   /**
    Merges two streams into one stream that delivers events from both
    */
-  merge<V2>(other: EventStream<V2>): EventStream<V  | V2> {
+  merge(other: EventStream<V>): EventStream<V>
+  merge<V2>(other: EventStream<V2>): EventStream<V | V2>
+  merge(other: EventStream<any>): EventStream<any> {
     assertEventStream(other)
-    return mergeAll<V | V2>(this as EventStream<V | V2>, other as EventStream<V | V2>).withDesc(new Desc(this, "merge", [other]));
+    return mergeAll<any>(this as EventStream<any>, other as EventStream<any>).withDesc(new Desc(this, "merge", [other]));
   }
 
   /**

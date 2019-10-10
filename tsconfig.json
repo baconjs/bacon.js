@@ -10,7 +10,13 @@
     "target": "ES5",
     "declaration": true,
     "declarationDir": "types",
-    "newLine": "lf"
+    "newLine": "lf",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "stripInternal": true,
+    "lib": [
+      "ES5", "DOM"
+    ]
   },
   "files": [
     "src/bacon.ts"

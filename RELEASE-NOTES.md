@@ -1,3 +1,9 @@
+## 3.0.7
+
+- Upgrade to typescript 3.5
+- Make observables covariant by stripping out the internal `dispatcher` field
+- Optimize compilation time by merging groupBy signatures
+
 ## 3.0.6
 
 - Add typings for `decode`

@@ -25,6 +25,6 @@ export default class Dispatcher<V, O> {
     handleEvent(event: Event<V>): any;
     unsubscribeFromSource(): void;
     subscribe(sink: EventSink<V>): typeof nop;
-    inspect(): string;
+    inspect(): any;
 }
 export {};

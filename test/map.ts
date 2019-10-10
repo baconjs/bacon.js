@@ -29,5 +29,16 @@ describe("EventStream.map", function() {
       () => series(1, [1,2,3]).map(Bacon.constant(2)),
       [2,2,2])
   );
-  return it("toString", () => expect(Bacon.never().map(true).toString()).to.equal("Bacon.never().map(true)"));
+  describe("type inference", () => {
+    it("case 1", () => {
+      const bus = new Bacon.Bus<number>()
+      const obs = Bacon.once(29).map(x => x + 1);
+      bus.plug(obs)
+    })  
+    it("case 2", () => {
+      const bus = new Bacon.Bus<number>()
+      bus.plug(Bacon.once(29).map(x => x + 1))
+    })  
+  })
+  it("toString", () => expect(Bacon.never().map(true).toString()).to.equal("Bacon.never().map(true)"));
 });
