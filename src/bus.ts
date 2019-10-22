@@ -38,7 +38,6 @@ export default class Bus<V> extends EventStream<V> {
     this.guardedSink = _.bind(this.guardedSink, this);
     this.subscriptions = [] // new array for each Bus instance
     this.ended = false;
-    EventStream.call(<any>this, new Desc("Bacon", "Bus", []), this.subscribeAll);
   }
 
   /**

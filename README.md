@@ -51,6 +51,15 @@ As you can see, the global methods, such as [`once`](http://baconjs.github.io/ap
 
 Check out the new [API Documentation](http://baconjs.github.io/api3/index.html), that's now generated using Typedoc from the Typescript source code.
 
+### Modern ES6 Browser, Node.js v.12+
+
+You can directly import Bacon.js as single aggregated ES6 module.
+
+```javascript
+import * as Bacon from 'node_modules/baconjs/dist/Bacon.mjs';
+Bacon.once("hello").log();
+```
+
 ### NPM, CommonJS, Node.js
 
 If you're on to CommonJS ([node.js](http://nodejs.org/), [webpack](https://webpack.js.org/) or similar) you can install Bacon using npm.
