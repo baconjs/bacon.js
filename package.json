@@ -53,6 +53,7 @@
     "rollup-plugin-typescript2": "^0.20",
     "rxjs": "^6",
     "sinon": "^7",
+    "terser": "^4.3.9",
     "ts-node": "^7.0.0",
     "tsify": "^4.0.1",
     "typedoc": "~0.14",
