@@ -461,8 +461,8 @@ single feature and run the test.
 Run browser tests locally:
 
     npm install
-    browsertest/browserify
-    open browsertest/mocha.runner.html
+    npm run browsertest-bundle
+    npm rum browsertest-open
 
 Run performance tests:
 
