@@ -1,42 +1,7 @@
-(function (global, factory) {
-typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-typeof define === 'function' && define.amd ? define(['exports'], factory) :
-(global = global || self, factory(global.Bacon = {}));
-}(this, function (exports) { 'use strict';
-
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
-
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
-***************************************************************************** */
-/* global Reflect, Promise */
-
-var extendStatics = function(d, b) {
-    extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return extendStatics(d, b);
-};
-
-function __extends(d, b) {
-    extendStatics(d, b);
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-}
-
 /** @hidden */
 function nop() { }
 /** @hidden */
-var isArray = Array.isArray || function (xs) { return xs instanceof Array; };
+const isArray = Array.isArray || function (xs) { return xs instanceof Array; };
 /** @hidden */
 function isObservable(x) {
     return x && x._isObservable;
@@ -53,7 +18,7 @@ function all(xs, f) {
     return true;
 }
 /** @hidden */
-function always(x) { return function () { return x; }; }
+function always(x) { return () => x; }
 /** @hidden */
 function any(xs, f) {
     for (var i = 0, x; i < xs.length; i++) {
@@ -100,7 +65,7 @@ function flatMap(f, xs) {
 }
 /** @hidden */
 function flip(f) {
-    return function (a, b) { return f(b, a); };
+    return (a, b) => f(b, a);
 }
 /** @hidden */
 function fold(xs, seed, f) {
@@ -129,7 +94,7 @@ function indexOfFallback(xs, x) {
     return -1;
 }
 /** @hidden */
-var indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
+const indexOf = Array.prototype.indexOf ? indexOfDefault : indexOfFallback;
 /** @hidden */
 function indexWhere(xs, f) {
     for (var i = 0, y; i < xs.length; i++) {
@@ -173,7 +138,7 @@ function toFunction(f) {
     if (typeof f == "function") {
         return f;
     }
-    return function (x) { return f; };
+    return x => f;
 }
 /** @hidden */
 function toString(obj) {
@@ -203,7 +168,7 @@ function toString(obj) {
             for (var key in obj) {
                 if (!hasProp.call(obj, key))
                     continue;
-                var value = (function () {
+                let value = (function () {
                     try {
                         return obj[key];
                     }
@@ -228,41 +193,41 @@ function without(x, xs) {
     return filter((function (y) { return y !== x; }), xs);
 }
 var _ = {
-    indexOf: indexOf,
-    indexWhere: indexWhere,
-    head: head,
-    always: always,
-    negate: negate,
-    empty: empty,
-    tail: tail,
-    filter: filter,
-    map: map,
-    each: each,
-    toArray: toArray,
-    contains: contains,
-    id: id,
-    last: last,
-    all: all,
-    any: any,
-    without: without,
-    remove: remove,
-    fold: fold,
-    flatMap: flatMap,
-    bind: bind,
-    isFunction: isFunction,
-    toFunction: toFunction,
-    toString: toString
+    indexOf,
+    indexWhere,
+    head,
+    always,
+    negate,
+    empty,
+    tail,
+    filter,
+    map,
+    each,
+    toArray,
+    contains,
+    id,
+    last,
+    all,
+    any,
+    without,
+    remove,
+    fold,
+    flatMap,
+    bind,
+    isFunction,
+    toFunction,
+    toString
 };
 var recursionDepth = 0;
 
 /**
  * Reply for "more data, please".
  */
-var more = undefined;
+const more = undefined;
 /**
  * Reply for "no more data, please".
  */
-var noMore = "<no-more>";
+const noMore = "<no-more>";
 
 /** @hidden */
 function assert(message, condition) {
@@ -298,14 +263,14 @@ function assertNoArguments(args) {
 }
 
 /** @hidden */
-var defaultScheduler = {
-    setTimeout: function (f, d) { return setTimeout(f, d); },
-    setInterval: function (f, i) { return setInterval(f, i); },
-    clearInterval: function (id) { return clearInterval(id); },
-    clearTimeout: function (id) { return clearTimeout(id); },
-    now: function () { return new Date().getTime(); }
+const defaultScheduler = {
+    setTimeout(f, d) { return setTimeout(f, d); },
+    setInterval(f, i) { return setInterval(f, i); },
+    clearInterval(id) { return clearInterval(id); },
+    clearTimeout(id) { return clearTimeout(id); },
+    now() { return new Date().getTime(); }
 };
-var GlobalScheduler = {
+const GlobalScheduler = {
     scheduler: defaultScheduler
 };
 function getScheduler() {
@@ -323,7 +288,7 @@ var aftersStackHeight = 0;
 var flushed = {};
 var processingAfters = false;
 function toString$1() {
-    return _.toString({ rootEvent: rootEvent, processingAfters: processingAfters, waiterObs: waiterObs, waiters: waiters, aftersStack: aftersStack, aftersStackHeight: aftersStackHeight, flushed: flushed });
+    return _.toString({ rootEvent, processingAfters, waiterObs, waiters, aftersStack, aftersStackHeight, flushed });
 }
 function ensureStackHeight(h) {
     if (h <= aftersStackHeight)
@@ -377,19 +342,19 @@ function containsObs(obs, aftersList) {
     return false;
 }
 function processAfters() {
-    var stackSizeAtStart = aftersStackHeight;
+    let stackSizeAtStart = aftersStackHeight;
     if (!stackSizeAtStart)
         return;
-    var isRoot = !processingAfters;
+    let isRoot = !processingAfters;
     processingAfters = true;
     try {
         while (aftersStackHeight >= stackSizeAtStart) { // to prevent sinking to levels started by others
             var topOfStack = aftersStack[aftersStackHeight - 1];
             if (!topOfStack)
                 throw new Error("Unexpected stack top: " + topOfStack);
-            var topAfters = topOfStack[0], index = topOfStack[1];
+            var [topAfters, index] = topOfStack;
             if (index < topAfters.length) {
-                var _a = topAfters[index], after = _a[1];
+                var [, after] = topAfters[index];
                 topOfStack[1]++; // increase index already here to indicate that this level is being processed
                 ensureStackHeight(aftersStackHeight + 1); // to ensure there's a new level for recursively added afters
                 var callSuccess = false;
@@ -493,12 +458,12 @@ function currentEventId() {
 }
 function wrappedSubscribe(obs, subscribe, sink) {
     assertFunction(sink);
-    var unsubd = false;
-    var shouldUnsub = false;
-    var doUnsub = function () {
+    let unsubd = false;
+    let shouldUnsub = false;
+    let doUnsub = () => {
         shouldUnsub = true;
     };
-    var unsub = function () {
+    let unsub = () => {
         unsubd = true;
         doUnsub();
     };
@@ -519,11 +484,10 @@ function wrappedSubscribe(obs, subscribe, sink) {
     return unsub;
 }
 function hasWaiters() { return waiterObs.length > 0; }
-var UpdateBarrier = { toString: toString$1, whenDoneWith: whenDoneWith, hasWaiters: hasWaiters, inTransaction: inTransaction, currentEventId: currentEventId, wrappedSubscribe: wrappedSubscribe, afterTransaction: afterTransaction, soonButNotYet: soonButNotYet, isInTransaction: isInTransaction };
+var UpdateBarrier = { toString: toString$1, whenDoneWith, hasWaiters, inTransaction, currentEventId, wrappedSubscribe, afterTransaction, soonButNotYet, isInTransaction };
 
-var Desc = /** @class */ (function () {
-    function Desc(context, method, args) {
-        if (args === void 0) { args = []; }
+class Desc {
+    constructor(context, method, args = []) {
         /** @hidden */
         this._isDesc = true;
         //assert("context missing", context)
@@ -533,25 +497,20 @@ var Desc = /** @class */ (function () {
         this.method = method;
         this.args = args;
     }
-    Desc.prototype.deps = function () {
+    deps() {
         if (!this.cachedDeps) {
             this.cachedDeps = findDeps([this.context].concat(this.args));
         }
         return this.cachedDeps;
-    };
-    Desc.prototype.toString = function () {
-        var args = _.map(_.toString, this.args);
-        return _.toString(this.context) + "." + _.toString(this.method) + "(" + args + ")";
-    };
-    return Desc;
-}());
-/** @hidden */
-function describe(context, method) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
     }
-    var ref = context || method;
+    toString() {
+        let args = _.map(_.toString, this.args);
+        return _.toString(this.context) + "." + _.toString(this.method) + "(" + args + ")";
+    }
+}
+/** @hidden */
+function describe(context, method, ...args) {
+    const ref = context || method;
     if (ref && ref._isDesc) {
         return context || method;
     }
@@ -576,23 +535,23 @@ function findDeps(x) {
 }
 
 /** @hidden */
-var nullSink = function () { return more; };
+const nullSink = () => more;
 /** @hidden */
-var nullVoidSink = function () { return more; };
+const nullVoidSink = () => more;
 
 /** @hidden */
 function withStateMachine(initState, f, src) {
     return src.transform(withStateMachineT(initState, f), new Desc(src, "withStateMachine", [initState, f]));
 }
 function withStateMachineT(initState, f) {
-    var state = initState;
-    return function (event, sink) {
+    let state = initState;
+    return (event, sink) => {
         var fromF = f(state, event);
-        var newState = fromF[0], outputs = fromF[1];
+        var [newState, outputs] = fromF;
         state = newState;
         var reply = more;
         for (var i = 0; i < outputs.length; i++) {
-            var output = outputs[i];
+            let output = outputs[i];
             reply = sink(output);
             if (reply === noMore) {
                 return reply;
@@ -603,45 +562,44 @@ function withStateMachineT(initState, f) {
 }
 
 /** @hidden */
-var Some = /** @class */ (function () {
-    function Some(value) {
+class Some {
+    constructor(value) {
         this._isSome = true;
         this.isDefined = true;
         this.value = value;
     }
-    Some.prototype.getOrElse = function (arg) { return this.value; };
-    Some.prototype.get = function () { return this.value; };
-    Some.prototype.filter = function (f) {
+    getOrElse(arg) { return this.value; }
+    get() { return this.value; }
+    filter(f) {
         if (f(this.value)) {
             return new Some(this.value);
         }
         else {
             return None;
         }
-    };
-    Some.prototype.map = function (f) {
+    }
+    map(f) {
         return new Some(f(this.value));
-    };
-    Some.prototype.forEach = function (f) {
+    }
+    forEach(f) {
         f(this.value);
-    };
-    Some.prototype.toArray = function () { return [this.value]; };
-    Some.prototype.inspect = function () { return "Some(" + this.value + ")"; };
-    Some.prototype.toString = function () { return this.inspect(); };
-    return Some;
-}());
+    }
+    toArray() { return [this.value]; }
+    inspect() { return "Some(" + this.value + ")"; }
+    toString() { return this.inspect(); }
+}
 /** @hidden */
-var None = {
+const None = {
     _isNone: true,
-    getOrElse: function (value) { return value; },
-    get: function () { throw new Error("None.get()"); },
-    filter: function () { return None; },
-    map: function () { return None; },
-    forEach: function () { },
+    getOrElse(value) { return value; },
+    get() { throw new Error("None.get()"); },
+    filter() { return None; },
+    map() { return None; },
+    forEach() { },
     isDefined: false,
-    toArray: function () { return []; },
-    inspect: function () { return "None"; },
-    toString: function () { return this.inspect(); }
+    toArray() { return []; },
+    inspect() { return "None"; },
+    toString() { return this.inspect(); }
 };
 function none() { return None; }
 function toOption(v) {
@@ -661,8 +619,8 @@ var eventIdCounter = 0;
 /**
  * Base class for all events passed through [EventStreams](eventstream.html) and [Properties](property.html).
  */
-var Event = /** @class */ (function () {
-    function Event() {
+class Event {
+    constructor() {
         this.id = ++eventIdCounter;
         /** @hidden */
         this.isEvent = true;
@@ -675,133 +633,114 @@ var Event = /** @class */ (function () {
         this.hasValue = false;
     }
     /** @hidden */
-    Event.prototype.filter = function (f) { return true; };
+    filter(f) { return true; }
     /** @hidden */
-    Event.prototype.inspect = function () { return this.toString(); };
+    inspect() { return this.toString(); }
     /** @hidden */
-    Event.prototype.log = function () { return this.toString(); };
+    log() { return this.toString(); }
     /** @hidden */
-    Event.prototype.toNext = function () { return this; };
-    return Event;
-}());
+    toNext() { return this; }
+}
 /**
  *  Base class for all [Events](event.html) carrying a value.
  *
  *  Can be distinguished from other events using [hasValue](../globals.html#hasvalue)
  **/
-var Value = /** @class */ (function (_super) {
-    __extends(Value, _super);
-    function Value(value) {
-        var _this = _super.call(this) || this;
-        _this.hasValue = true;
+class Value extends Event {
+    constructor(value) {
+        super();
+        this.hasValue = true;
         if (value instanceof Event) {
             throw new Error$1("Wrapping an event inside other event");
         }
-        _this.value = value;
-        return _this;
+        this.value = value;
     }
     /** @hidden */
-    Value.prototype.fmap = function (f) {
+    fmap(f) {
         return this.apply(f(this.value));
-    };
+    }
     /** @hidden */
-    Value.prototype.filter = function (f) { return f(this.value); };
+    filter(f) { return f(this.value); }
     /** @hidden */
-    Value.prototype.toString = function () { return _.toString(this.value); };
+    toString() { return _.toString(this.value); }
     //toString(): string { return "<value " + this.id + ">" + _.toString(this.value) }
     /** @hidden */
-    Value.prototype.log = function () { return this.value; };
-    return Value;
-}(Event));
+    log() { return this.value; }
+}
 /**
  *  Indicates a new value in an [EventStream](eventstream.html) or a [Property](property.html).
  *
  *  Can be distinguished from other events using [isNext](../globals.html#isnext)
  */
-var Next = /** @class */ (function (_super) {
-    __extends(Next, _super);
-    function Next(value) {
-        var _this = _super.call(this, value) || this;
-        _this.isNext = true;
+class Next extends Value {
+    constructor(value) {
+        super(value);
+        this.isNext = true;
         /** @hidden */
-        _this._isNext = true; // some compatibility stuff?
-        return _this;
+        this._isNext = true; // some compatibility stuff?
     }
     /** @hidden */
-    Next.prototype.apply = function (value) { return new Next(value); };
-    return Next;
-}(Value));
+    apply(value) { return new Next(value); }
+}
 /**
  * An event carrying the initial value of a [Property](classes/property.html). This event can be emitted by a property
  * immediately when subscribing to it.
  *
  * Can be distinguished from other events using [isInitial](../globals.html#isinitial)
  */
-var Initial = /** @class */ (function (_super) {
-    __extends(Initial, _super);
-    function Initial(value) {
-        var _this = _super.call(this, value) || this;
-        _this.isInitial = true;
+class Initial extends Value {
+    constructor(value) {
+        super(value);
+        this.isInitial = true;
         /** @hidden */
-        _this._isInitial = true;
-        return _this;
+        this._isInitial = true;
     }
     /** @hidden */
-    Initial.prototype.apply = function (value) { return new Initial(value); };
+    apply(value) { return new Initial(value); }
     /** @hidden */
-    Initial.prototype.toNext = function () { return new Next(this.value); };
-    return Initial;
-}(Value));
+    toNext() { return new Next(this.value); }
+}
 /**
  * Base class for events not carrying a value.
  */
-var NoValue = /** @class */ (function (_super) {
-    __extends(NoValue, _super);
-    function NoValue() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.hasValue = false;
-        return _this;
+class NoValue extends Event {
+    constructor() {
+        super(...arguments);
+        this.hasValue = false;
     }
     /** @hidden */
-    NoValue.prototype.fmap = function (f) {
+    fmap(f) {
         return this;
-    };
-    return NoValue;
-}(Event));
+    }
+}
 /**
  * An event that indicates the end of an [EventStream](classes/eventstream.html) or a [Property](classes/property.html).
  * No more events can be emitted after this one.
  *
  * Can be distinguished from other events using [isEnd](../globals.html#isend)
  */
-var End = /** @class */ (function (_super) {
-    __extends(End, _super);
-    function End() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.isEnd = true;
-        return _this;
+class End extends NoValue {
+    constructor() {
+        super(...arguments);
+        this.isEnd = true;
     }
     /** @hidden */
-    End.prototype.toString = function () { return "<end>"; };
-    return End;
-}(NoValue));
+    toString() { return "<end>"; }
+}
 /**
  *  An event carrying an error. You can use [onError](observable.html#onerror) to subscribe to errors.
  */
-var Error$1 = /** @class */ (function (_super) {
-    __extends(Error, _super);
-    function Error(error) {
-        var _this = _super.call(this) || this;
-        _this.isError = true;
-        _this.error = error;
-        return _this;
+class Error$1 extends NoValue {
+    constructor(error) {
+        super();
+        this.isError = true;
+        this.error = error;
     }
     /** @hidden */
-    Error.prototype.toString = function () {
+    toString() {
         return "<error> " + _.toString(this.error);
-    };
-    return Error;
-}(NoValue));
+    }
+}
 /** @hidden */
 function initialEvent(value) { return new Initial(value); }
 /** @hidden */
@@ -858,9 +797,8 @@ function isNext(e) {
 /** @hidden */
 function equals(a, b) { return a === b; }
 /** @hidden */
-function skipDuplicates(src, isEqual) {
-    if (isEqual === void 0) { isEqual = equals; }
-    var desc = new Desc(src, "skipDuplicates", []);
+function skipDuplicates(src, isEqual = equals) {
+    let desc = new Desc(src, "skipDuplicates", []);
     return withStateMachine(none(), function (prev, event) {
         if (!hasValue(event)) {
             return [prev, [event]];
@@ -880,7 +818,7 @@ function take(count, src, desc) {
 }
 /** @hidden */
 function takeT(count) {
-    return function (e, sink) {
+    return (e, sink) => {
         if (!e.hasValue) {
             return sink(e);
         }
@@ -904,7 +842,7 @@ function takeT(count) {
 function log(args, src) {
     src.subscribe(function (event) {
         if (typeof console !== "undefined" && typeof console.log === "function") {
-            console.log.apply(console, args.concat([event.log()]));
+            console.log(...args.concat([event.log()]));
         }
         return more;
     });
@@ -912,9 +850,9 @@ function log(args, src) {
 
 /** @hidden */
 function doLogT(args) {
-    return function (event, sink) {
+    return (event, sink) => {
         if (typeof console !== "undefined" && console !== null && typeof console.log === "function") {
-            console.log.apply(console, args.concat([event.log()]));
+            console.log(...args.concat([event.log()]));
         }
         return sink(event);
     };
@@ -922,7 +860,7 @@ function doLogT(args) {
 
 /** @hidden */
 function doErrorT(f) {
-    return function (event, sink) {
+    return (event, sink) => {
         if (isError(event)) {
             f(event.error);
         }
@@ -932,7 +870,7 @@ function doErrorT(f) {
 
 /** @hidden */
 function doActionT(f) {
-    return function (event, sink) {
+    return (event, sink) => {
         if (hasValue(event)) {
             f(event.value);
         }
@@ -942,7 +880,7 @@ function doActionT(f) {
 
 /** @hidden */
 function doEndT(f) {
-    return function (event, sink) {
+    return (event, sink) => {
         if (isEnd(event)) {
             f();
         }
@@ -952,14 +890,14 @@ function doEndT(f) {
 
 /** @hidden */
 function scan(src, seed, f) {
-    var resultProperty;
-    var acc = seed;
-    var initHandled = false;
-    var subscribe = function (sink) {
+    let resultProperty;
+    let acc = seed;
+    let initHandled = false;
+    const subscribe = (sink) => {
         var initSent = false;
         var unsub = nop;
         var reply = more;
-        var sendInit = function () {
+        const sendInit = function () {
             if (!initSent) {
                 initSent = initHandled = true;
                 reply = sink(new Initial(acc));
@@ -1006,7 +944,7 @@ function scan(src, seed, f) {
 
 /** @hidden */
 function mapEndT(f) {
-    var theF = _.toFunction(f);
+    let theF = _.toFunction(f);
     return function (event, sink) {
         if (isEnd(event)) {
             sink(nextEvent(theF(event)));
@@ -1021,7 +959,7 @@ function mapEndT(f) {
 
 /** @hidden */
 function mapErrorT(f) {
-    var theF = _.toFunction(f);
+    let theF = _.toFunction(f);
     return function (event, sink) {
         if (isError(event)) {
             return sink(nextEvent(theF(event.error)));
@@ -1066,9 +1004,8 @@ function last$1(src) {
 }
 
 /** @hidden */
-var CompositeUnsubscribe = /** @class */ (function () {
-    function CompositeUnsubscribe(ss) {
-        if (ss === void 0) { ss = []; }
+class CompositeUnsubscribe {
+    constructor(ss = []) {
         this.unsubscribed = false;
         this.unsubscribe = _.bind(this.unsubscribe, this);
         this.unsubscribed = false;
@@ -1079,19 +1016,18 @@ var CompositeUnsubscribe = /** @class */ (function () {
             this.add(s);
         }
     }
-    CompositeUnsubscribe.prototype.add = function (subscription) {
-        var _this = this;
+    add(subscription) {
         if (!this.unsubscribed) {
             var ended = false;
             var unsub = nop;
             this.starting.push(subscription);
-            var unsubMe = function () {
-                if (_this.unsubscribed) {
+            var unsubMe = () => {
+                if (this.unsubscribed) {
                     return;
                 }
                 ended = true;
-                _this.remove(unsub);
-                _.remove(subscription, _this.starting);
+                this.remove(unsub);
+                _.remove(subscription, this.starting);
             };
             unsub = subscription(this.unsubscribe, unsubMe);
             if (!(this.unsubscribed || ended)) {
@@ -1102,16 +1038,16 @@ var CompositeUnsubscribe = /** @class */ (function () {
             }
             _.remove(subscription, this.starting);
         }
-    };
-    CompositeUnsubscribe.prototype.remove = function (unsub) {
+    }
+    remove(unsub) {
         if (this.unsubscribed) {
             return;
         }
         if ((_.remove(unsub, this.subscriptions)) !== undefined) {
             return unsub();
         }
-    };
-    CompositeUnsubscribe.prototype.unsubscribe = function () {
+    }
+    unsubscribe() {
         if (this.unsubscribed) {
             return;
         }
@@ -1122,18 +1058,17 @@ var CompositeUnsubscribe = /** @class */ (function () {
         }
         this.subscriptions = [];
         this.starting = [];
-    };
-    CompositeUnsubscribe.prototype.count = function () {
+    }
+    count() {
         if (this.unsubscribed) {
             return 0;
         }
         return this.subscriptions.length + this.starting.length;
-    };
-    CompositeUnsubscribe.prototype.empty = function () {
+    }
+    empty() {
         return this.count() === 0;
-    };
-    return CompositeUnsubscribe;
-}());
+    }
+}
 
 /** @hidden */
 function streamSubscribeToPropertySubscribe(initValue, streamSubscribe) {
@@ -1203,7 +1138,7 @@ function propertyFromStreamSubscribe(desc, subscribe) {
  @typeparam V Type of stream elements
  */
 function once(value) {
-    var s = new EventStream(new Desc("Bacon", "once", [value]), function (sink) {
+    const s = new EventStream(new Desc("Bacon", "once", [value]), function (sink) {
         UpdateBarrier.soonButNotYet(s, function () {
             sink(toEvent(value));
             sink(endEvent());
@@ -1214,18 +1149,17 @@ function once(value) {
 }
 
 /** @hidden */
-function flatMap_(spawner, src, params) {
-    if (params === void 0) { params = {}; }
-    var root = src;
-    var rootDep = [root];
-    var childDeps = [];
-    var isProperty = src._isProperty;
-    var ctor = (isProperty ? propertyFromStreamSubscribe : newEventStreamAllowSync);
-    var initialSpawned = false;
-    var desc = params.desc || new Desc(src, "flatMap_", [spawner]);
-    var result = ctor(desc, function (sink) {
-        var composite = new CompositeUnsubscribe();
-        var queue = [];
+function flatMap_(spawner, src, params = {}) {
+    const root = src;
+    const rootDep = [root];
+    const childDeps = [];
+    const isProperty = src._isProperty;
+    const ctor = (isProperty ? propertyFromStreamSubscribe : newEventStreamAllowSync);
+    let initialSpawned = false;
+    const desc = params.desc || new Desc(src, "flatMap_", [spawner]);
+    const result = ctor(desc, function (sink) {
+        const composite = new CompositeUnsubscribe();
+        const queue = [];
         function spawn(event) {
             if (isProperty && event.isInitial) {
                 if (initialSpawned) {
@@ -1233,7 +1167,7 @@ function flatMap_(spawner, src, params) {
                 }
                 initialSpawned = true;
             }
-            var child = makeObservable(spawner(event));
+            const child = makeObservable(spawner(event));
             childDeps.push(child);
             return composite.add(function (unsubAll, unsubMe) {
                 return child.subscribeInternal(function (event) {
@@ -1245,7 +1179,7 @@ function flatMap_(spawner, src, params) {
                     }
                     else {
                         event = event.toNext(); // To support Property as the spawned stream
-                        var reply = sink(event);
+                        const reply = sink(event);
                         if (reply === noMore) {
                             unsubAll();
                         }
@@ -1255,7 +1189,7 @@ function flatMap_(spawner, src, params) {
             });
         }
         function checkQueue() {
-            var event = queue.shift();
+            const event = queue.shift();
             if (event) {
                 spawn(event);
             }
@@ -1307,14 +1241,14 @@ function flatMap_(spawner, src, params) {
 /** @hidden */
 function handleEventValueWith(f) {
     if (typeof f == "function") {
-        return (function (event) {
+        return ((event) => {
             if (hasValue(event)) {
                 return f(event.value);
             }
             return event;
         });
     }
-    return (function (event) { return f; });
+    return ((event) => f);
 }
 /** @hidden */
 function makeObservable(x) {
@@ -1336,7 +1270,7 @@ function flatMapEvent(src, f) {
 
 /** @hidden */
 function endAsValue(src) {
-    return src.transform(function (event, sink) {
+    return src.transform((event, sink) => {
         if (isEnd(event)) {
             sink(nextEvent({}));
             sink(endEvent());
@@ -1347,9 +1281,8 @@ function endAsValue(src) {
 }
 
 /** @hidden */
-function endOnError(src, predicate) {
-    if (predicate === void 0) { predicate = function (x) { return true; }; }
-    return src.transform(function (event, sink) {
+function endOnError(src, predicate = x => true) {
+    return src.transform((event, sink) => {
         if (isError(event) && predicate(event.error)) {
             sink(event);
             return sink(endEvent());
@@ -1361,89 +1294,77 @@ function endOnError(src, predicate) {
 }
 
 /** @hidden */
-var Source = /** @class */ (function () {
-    function Source(obs, sync) {
+class Source {
+    constructor(obs, sync) {
         this._isSource = true;
         this.flatten = true;
         this.ended = false;
         this.obs = obs;
         this.sync = sync;
     }
-    Source.prototype.subscribe = function (sink) {
+    subscribe(sink) {
         return this.obs.subscribeInternal(sink);
-    };
-    Source.prototype.toString = function () {
+    }
+    toString() {
         return this.obs.toString();
-    };
-    Source.prototype.markEnded = function () {
+    }
+    markEnded() {
         this.ended = true;
-    };
-    Source.prototype.mayHave = function (count) { return true; };
-    return Source;
-}());
-/** @hidden */
-var DefaultSource = /** @class */ (function (_super) {
-    __extends(DefaultSource, _super);
-    function DefaultSource() {
-        return _super !== null && _super.apply(this, arguments) || this;
     }
-    DefaultSource.prototype.consume = function () {
+    mayHave(count) { return true; }
+}
+/** @hidden */
+class DefaultSource extends Source {
+    consume() {
         return this.value;
-    };
-    DefaultSource.prototype.push = function (x) {
+    }
+    push(x) {
         this.value = x;
-    };
-    DefaultSource.prototype.hasAtLeast = function (c) {
+    }
+    hasAtLeast(c) {
         return !!this.value;
-    };
-    return DefaultSource;
-}(Source));
-/** @hidden */
-var ConsumingSource = /** @class */ (function (_super) {
-    __extends(ConsumingSource, _super);
-    function ConsumingSource(obs, sync) {
-        var _this = _super.call(this, obs, sync) || this;
-        _this.flatten = false;
-        _this.queue = [];
-        return _this;
     }
-    ConsumingSource.prototype.consume = function () {
+}
+/** @hidden */
+class ConsumingSource extends Source {
+    constructor(obs, sync) {
+        super(obs, sync);
+        this.flatten = false;
+        this.queue = [];
+    }
+    consume() {
         return this.queue.shift();
-    };
-    ConsumingSource.prototype.push = function (x) {
-        this.queue.push(x);
-    };
-    ConsumingSource.prototype.mayHave = function (count) {
-        return !this.ended || this.queue.length >= count;
-    };
-    ConsumingSource.prototype.hasAtLeast = function (count) {
-        return this.queue.length >= count;
-    };
-    return ConsumingSource;
-}(Source));
-/** @hidden */
-var BufferingSource = /** @class */ (function (_super) {
-    __extends(BufferingSource, _super);
-    function BufferingSource(obs) {
-        var _this = _super.call(this, obs, true) || this;
-        _this.queue = [];
-        return _this;
     }
-    BufferingSource.prototype.consume = function () {
-        var values = this.queue;
+    push(x) {
+        this.queue.push(x);
+    }
+    mayHave(count) {
+        return !this.ended || this.queue.length >= count;
+    }
+    hasAtLeast(count) {
+        return this.queue.length >= count;
+    }
+}
+/** @hidden */
+class BufferingSource extends Source {
+    constructor(obs) {
+        super(obs, true);
+        this.queue = [];
+    }
+    consume() {
+        const values = this.queue;
         this.queue = [];
         return {
             value: values
         };
-    };
-    BufferingSource.prototype.push = function (x) {
+    }
+    push(x) {
         return this.queue.push(x.value);
-    };
-    BufferingSource.prototype.hasAtLeast = function (count) {
+    }
+    hasAtLeast(count) {
         return true;
-    };
-    return BufferingSource;
-}(Source));
+    }
+}
 /** @hidden */
 function isTrigger(s) {
     if (s == null)
@@ -1473,7 +1394,7 @@ function fromObservable(s) {
  @typeparam V Type of stream elements
  */
 function never() {
-    return new EventStream(describe("Bacon", "never"), function (sink) {
+    return new EventStream(describe("Bacon", "never"), (sink) => {
         sink(endEvent());
         return nop;
     });
@@ -1516,19 +1437,11 @@ function never() {
  * @param {Pattern<O>} patterns Join patterns
  * @typeparam O result type
  */
-function when() {
-    var patterns = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        patterns[_i] = arguments[_i];
-    }
+function when(...patterns) {
     return when_(newEventStream, patterns);
 }
 /** @hidden */
-function whenP() {
-    var patterns = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        patterns[_i] = arguments[_i];
-    }
+function whenP(...patterns) {
     return when_(propertyFromStreamSubscribe, patterns);
 }
 /** @hidden */
@@ -1536,18 +1449,18 @@ function when_(ctor, patterns) {
     if (patterns.length === 0) {
         return never();
     }
-    var _a = processRawPatterns(extractRawPatterns(patterns)), sources = _a[0], ixPats = _a[1];
+    var [sources, ixPats] = processRawPatterns(extractRawPatterns(patterns));
     if (!sources.length) {
         return never();
     }
-    var needsBarrier = (any(sources, function (s) { return s.flatten; })) && containsDuplicateDeps(map((function (s) { return s.obs; }), sources));
+    var needsBarrier = (any(sources, (s) => s.flatten)) && containsDuplicateDeps(map(((s) => s.obs), sources));
     var desc = new Desc("Bacon", "when", Array.prototype.slice.call(patterns));
     var resultStream = ctor(desc, function (sink) {
         var triggers = [];
         var ends = false;
         function match(p) {
             for (var i = 0; i < p.ixs.length; i++) {
-                var ix = p.ixs[i];
+                let ix = p.ixs[i];
                 if (!sources[ix.index].hasAtLeast(ix.count)) {
                     return false;
                 }
@@ -1556,7 +1469,7 @@ function when_(ctor, patterns) {
         }
         function cannotMatch(p) {
             for (var i = 0; i < p.ixs.length; i++) {
-                var ix = p.ixs[i];
+                let ix = p.ixs[i];
                 if (!sources[ix.index].mayHave(ix.count)) {
                     return true;
                 }
@@ -1576,15 +1489,15 @@ function when_(ctor, patterns) {
                         for (var i = 0, p; i < ixPats.length; i++) {
                             p = ixPats[i];
                             if (match(p)) {
-                                var values = [];
+                                const values = [];
                                 for (var j = 0; j < p.ixs.length; j++) {
-                                    var event_1 = sources[p.ixs[j].index].consume();
-                                    if (!event_1)
+                                    let event = sources[p.ixs[j].index].consume();
+                                    if (!event)
                                         throw new Error("Event was undefined");
-                                    values.push(event_1.value);
+                                    values.push(event.value);
                                 }
                                 //console.log("flushing values", values)
-                                var applied = p.f.apply(null, values);
+                                let applied = p.f.apply(null, values);
                                 //console.log('sinking', applied)
                                 reply = sink((trigger).e.apply(applied));
                                 if (triggers.length) {
@@ -1628,7 +1541,7 @@ function when_(ctor, patterns) {
                         reply = sink(e);
                     }
                     else {
-                        var valueEvent = e;
+                        let valueEvent = e;
                         //console.log "got value", e.value
                         source.push(valueEvent);
                         if (source.sync) {
@@ -1656,9 +1569,9 @@ function when_(ctor, patterns) {
 function processRawPatterns(rawPatterns) {
     var sources = [];
     var pats = [];
-    for (var i = 0; i < rawPatterns.length; i++) {
-        var _a = rawPatterns[i], patSources = _a[0], f = _a[1];
-        var pat = { f: f, ixs: [] };
+    for (let i = 0; i < rawPatterns.length; i++) {
+        let [patSources, f] = rawPatterns[i];
+        var pat = { f, ixs: [] };
         var triggerFound = false;
         for (var j = 0, s; j < patSources.length; j++) {
             s = patSources[j];
@@ -1671,7 +1584,7 @@ function processRawPatterns(rawPatterns) {
                 index = sources.length - 1;
             }
             for (var k = 0; k < pat.ixs.length; k++) {
-                var ix = pat.ixs[k];
+                let ix = pat.ixs[k];
                 if (ix.index === index) {
                     ix.count++;
                 }
@@ -1692,8 +1605,8 @@ function extractLegacyPatterns(sourceArgs) {
     var len = sourceArgs.length;
     var rawPatterns = [];
     while (i < len) {
-        var patSources = toArray(sourceArgs[i++]);
-        var f = toFunction(sourceArgs[i++]);
+        let patSources = toArray(sourceArgs[i++]);
+        let f = toFunction(sourceArgs[i++]);
         rawPatterns.push([patSources, f]);
     }
     var usage = "when: expecting arguments in the form (Observable+,function)+";
@@ -1708,9 +1621,9 @@ function isRawPattern(pattern) {
 }
 /** @hidden */
 function extractRawPatterns(patterns) {
-    var rawPatterns = [];
-    for (var i = 0; i < patterns.length; i++) {
-        var pattern = patterns[i];
+    let rawPatterns = [];
+    for (let i = 0; i < patterns.length; i++) {
+        let pattern = patterns[i];
         if (!isTypedOrRawPattern(pattern)) {
             // Fallback to legacy patterns
             return extractLegacyPatterns(patterns);
@@ -1719,15 +1632,14 @@ function extractRawPatterns(patterns) {
             rawPatterns.push([pattern[0], toFunction(pattern[1])]);
         }
         else { // typed pattern, then
-            var sources = pattern.slice(0, pattern.length - 1);
-            var f = toFunction(pattern[pattern.length - 1]);
+            let sources = pattern.slice(0, pattern.length - 1);
+            let f = toFunction(pattern[pattern.length - 1]);
             rawPatterns.push([sources, f]);
         }
     }
     return rawPatterns;
 }
-function containsDuplicateDeps(observables, state) {
-    if (state === void 0) { state = []; }
+function containsDuplicateDeps(observables, state = []) {
     function checkObservable(obs) {
         if (contains(state, obs)) {
             return true;
@@ -1776,14 +1688,14 @@ function withLatestFrom(sampler, samplee, f) {
 /** @hidden */
 function map$1(src, f) {
     if (f instanceof Property) {
-        return withLatestFrom(src, f, function (a, b) { return b; });
+        return withLatestFrom(src, f, (a, b) => b);
     }
     return src.transform(mapT(f), new Desc(src, "map", [f]));
 }
 /** @hidden */
 function mapT(f) {
-    var theF = _.toFunction(f);
-    return function (e, sink) {
+    let theF = _.toFunction(f);
+    return (e, sink) => {
         return sink(e.fmap(theF));
     };
 }
@@ -1826,24 +1738,16 @@ function argumentsToObservablesAndFunction(args) {
 }
 
 /** @hidden */
-function groupSimultaneous() {
-    var streams = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams[_i] = arguments[_i];
-    }
+function groupSimultaneous(...streams) {
     return groupSimultaneous_(argumentsToObservables(streams));
 }
 // TODO: type is not exactly correct, because different inputs may have different types.
 // Result values are arrays where each element is the list from each input observable. Type this.
 /** @hidden */
 function groupSimultaneous_(streams, options) {
-    var sources = _.map(function (stream) { return new BufferingSource(stream); }, streams);
-    var ctor = function (desc, subscribe) { return new EventStream(desc, subscribe, undefined, options); };
-    return when_(ctor, [sources, (function () {
-            var xs = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                xs[_i] = arguments[_i];
-            }
+    let sources = _.map((stream) => new BufferingSource(stream), streams);
+    let ctor = (desc, subscribe) => new EventStream(desc, subscribe, undefined, options);
+    return when_(ctor, [sources, (function (...xs) {
             return xs;
         })]).withDesc(new Desc("Bacon", "groupSimultaneous", streams));
 }
@@ -1851,7 +1755,7 @@ function groupSimultaneous_(streams, options) {
 /** @hidden */
 function awaiting(src, other) {
     return groupSimultaneous_([src, other], allowSync)
-        .map(function (values) { return values[1].length === 0; })
+        .map((values) => values[1].length === 0)
         .toProperty(false)
         .skipDuplicates()
         .withDesc(new Desc(src, "awaiting", [other]));
@@ -1872,27 +1776,17 @@ function awaiting(src, other) {
 
  * @param streams streams and properties to combine
  */
-function combineAsArray() {
-    var streams = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams[_i] = arguments[_i];
-    }
+function combineAsArray(...streams) {
     streams = argumentsToObservables(streams);
     if (streams.length) {
         var sources = [];
         for (var i = 0; i < streams.length; i++) {
-            var stream = (isObservable(streams[i])
+            let stream = (isObservable(streams[i])
                 ? streams[i]
                 : constant(streams[i]));
             sources.push(wrap(stream));
         }
-        return whenP([sources, function () {
-                var xs = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    xs[_i] = arguments[_i];
-                }
-                return xs;
-            }]).withDesc(new Desc("Bacon", "combineAsArray", streams));
+        return whenP([sources, (...xs) => xs]).withDesc(new Desc("Bacon", "combineAsArray", streams));
     }
     else {
         return constant([]);
@@ -1909,16 +1803,12 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-function combineWith(f) {
-    var streams = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        streams[_i - 1] = arguments[_i];
-    }
+function combineWith(f, ...streams) {
     // TODO: untyped
-    var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
-    var desc = new Desc("Bacon", "combineWith", [f].concat(streams));
+    var [streams, f] = argumentsToObservablesAndFunction(arguments);
+    var desc = new Desc("Bacon", "combineWith", [f, ...streams]);
     return combineAsArray(streams).map(function (values) {
-        return f.apply(void 0, values);
+        return f(...values);
     }).withDesc(desc);
 }
 /** @hidden */
@@ -1931,7 +1821,7 @@ function wrap(obs) {
 
 /** @hidden */
 function skip(src, count) {
-    return src.transform(function (event, sink) {
+    return src.transform((event, sink) => {
         if (!event.hasValue) {
             return sink(event);
         }
@@ -2006,8 +1896,7 @@ function flatMapConcat(src, f) {
  @typeparam V Type of stream elements
 
  */
-function fromBinder(binder, eventTransformer) {
-    if (eventTransformer === void 0) { eventTransformer = _.id; }
+function fromBinder(binder, eventTransformer = _.id) {
     var desc = new Desc("Bacon", "fromBinder", [binder, eventTransformer]);
     return new EventStream(desc, function (sink) {
         var unbound = false;
@@ -2023,20 +1912,16 @@ function fromBinder(binder, eventTransformer) {
                 }
             }
         };
-        var unbinder = binder(function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var value_ = eventTransformer.apply(void 0, args);
-            var valueArray = isArray(value_) && isEvent(_.last(value_))
+        var unbinder = binder(function (...args) {
+            var value_ = eventTransformer(...args);
+            let valueArray = isArray(value_) && isEvent(_.last(value_))
                 ? value_
                 : [value_];
             var reply = more;
             for (var i = 0; i < valueArray.length; i++) {
-                var event_1 = toEvent(valueArray[i]);
-                reply = sink(event_1);
-                if (reply === noMore || event_1.isEnd) {
+                let event = toEvent(valueArray[i]);
+                reply = sink(event);
+                if (reply === noMore || event.isEnd) {
                     // defer if binder calls handler in sync before returning unbinder
                     unbind();
                     return reply;
@@ -2102,7 +1987,7 @@ function sampledBy(samplee, sampler, f) {
 }
 /** @hidden */
 function sampledByP(samplee, sampler, f) {
-    var combinator = makeCombinator(f);
+    let combinator = makeCombinator(f);
     var result = withLatestFrom(sampler, samplee, flip(combinator));
     return result.withDesc(new Desc(samplee, "sampledBy", [sampler]));
 }
@@ -2112,32 +1997,24 @@ function sampledByE(samplee, sampler, f) {
 }
 /** @hidden */
 function sampleP(samplee, samplingInterval) {
-    return sampledByP(samplee, interval(samplingInterval, {}), function (a, b) { return a; }).withDesc(new Desc(samplee, "sample", [samplingInterval]));
+    return sampledByP(samplee, interval(samplingInterval, {}), (a, b) => a).withDesc(new Desc(samplee, "sample", [samplingInterval]));
 }
 
 /** @hidden */
 function transformP(src, transformer, desc) {
-    return new Property(new Desc(src, "transform", [transformer]), function (sink) {
-        return src.subscribeInternal(function (e) {
-            return transformer(e, sink);
-        });
-    }).withDesc(desc);
+    return new Property(new Desc(src, "transform", [transformer]), sink => src.subscribeInternal(e => transformer(e, sink))).withDesc(desc);
 }
 /** @hidden */
 function transformE(src, transformer, desc) {
-    return new EventStream(new Desc(src, "transform", [transformer]), function (sink) {
-        return src.subscribeInternal(function (e) {
-            return transformer(e, sink);
-        });
-    }, undefined, allowSync).withDesc(desc);
+    return new EventStream(new Desc(src, "transform", [transformer]), sink => src.subscribeInternal(e => transformer(e, sink)), undefined, allowSync).withDesc(desc);
 }
 /** @hidden */
 function composeT(t1, t2) {
-    var finalSink; // mutation used to avoid closure creation while dispatching events
-    var sink2 = function (event) {
+    let finalSink; // mutation used to avoid closure creation while dispatching events
+    const sink2 = (event) => {
         return t2(event, finalSink);
     };
-    return function (event, sink) {
+    return (event, sink) => {
         finalSink = sink;
         return t1(event, sink2);
     };
@@ -2158,8 +2035,8 @@ function toPredicate(f) {
 /** @hidden */
 function withPredicate(src, f, predicateTransformer, desc) {
     if (f instanceof Property) {
-        return withLatestFrom(src, f, function (p, v) { return [p, v]; })
-            .transform(composeT(predicateTransformer((function (tuple) { return tuple[1]; })), mapT(function (tuple) { return tuple[0]; })), desc);
+        return withLatestFrom(src, f, (p, v) => [p, v])
+            .transform(composeT(predicateTransformer(((tuple) => tuple[1])), mapT((tuple) => tuple[0])), desc);
         // the `any` type above is needed because the type argument for Predicate2Transformer is fixed. We'd need higher-kinded types to be able to express this properly, I think.
     }
     return src.transform(predicateTransformer(toPredicate(f)), desc);
@@ -2171,7 +2048,7 @@ function filter$1(src, f) {
 }
 /** @hidden */
 function filterT(f) {
-    return function (e, sink) {
+    return (e, sink) => {
         if (e.filter(f)) {
             return sink(e);
         }
@@ -2183,15 +2060,15 @@ function filterT(f) {
 
 /** @hidden */
 function not(src) {
-    return src.map(function (x) { return !x; }).withDesc(new Desc(src, "not", []));
+    return src.map(x => !x).withDesc(new Desc(src, "not", []));
 }
 /** @hidden */
 function and(left, right) {
-    return left.combine(toProperty(right), function (x, y) { return !!(x && y); }).withDesc(new Desc(left, "and", [right]));
+    return left.combine(toProperty(right), (x, y) => !!(x && y)).withDesc(new Desc(left, "and", [right]));
 }
 /** @hidden */
 function or(left, right) {
-    return left.combine(toProperty(right), function (x, y) { return x || y; }).withDesc(new Desc(left, "or", [right]));
+    return left.combine(toProperty(right), (x, y) => x || y).withDesc(new Desc(left, "or", [right]));
 }
 function toProperty(x) {
     if (isProperty(x)) {
@@ -2232,22 +2109,18 @@ function concatE(left, right, options) {
 
  See [`concat`](#observable-concat)
  */
-function concatAll() {
-    var streams_ = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams_[_i] = arguments[_i];
-    }
-    var streams = argumentsToObservables(streams_);
+function concatAll(...streams_) {
+    let streams = argumentsToObservables(streams_);
     return (streams.length
-        ? fold(tail(streams), head(streams).toEventStream(), function (a, b) { return a.concat(b); })
+        ? fold(tail(streams), head(streams).toEventStream(), (a, b) => a.concat(b))
         : never()).withDesc(new Desc("Bacon", "concatAll", streams));
 }
 
 /** @hidden */
 function addPropertyInitValueToStream(property, stream) {
-    var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
-        var value;
-        var unsub = property.dispatcher.subscribe(function (event) {
+    const justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
+        let value;
+        const unsub = property.dispatcher.subscribe(function (event) {
             if (!event.isEnd) {
                 value = event;
             }
@@ -2277,27 +2150,27 @@ function startWithE(src, seed) {
 }
 /** @hidden */
 function startWithP(src, seed) {
-    return src.scan(seed, function (prev, next) { return next; }).withDesc(new Desc(src, "startWith", [seed]));
+    return src.scan(seed, (prev, next) => next).withDesc(new Desc(src, "startWith", [seed]));
 }
 
 /** @hidden */
-var endMarker = {};
+const endMarker = {};
 /** @hidden */
 function takeUntil(src, stopper) {
-    var endMapped = src.mapEnd(endMarker);
-    var withEndMarker = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync);
+    let endMapped = src.mapEnd(endMarker);
+    let withEndMarker = groupSimultaneous_([endMapped, stopper.skipErrors()], allowSync);
     if (src instanceof Property)
         withEndMarker = withEndMarker.toProperty();
     return withEndMarker.transform(function (event, sink) {
         if (hasValue(event)) {
-            var _a = event.value, data = _a[0], stopper = _a[1];
+            var [data, stopper] = event.value;
             if (stopper.length) {
                 return sink(endEvent());
             }
             else {
                 var reply = more;
                 for (var i = 0; i < data.length; i++) {
-                    var value = data[i];
+                    let value = data[i];
                     if (value === endMarker) {
                         return sink(endEvent());
                     }
@@ -2321,9 +2194,9 @@ function flatMap$1(src, f) {
 
 /** @hidden */
 function flatMapError(src, f) {
-    return flatMap_(function (x) {
+    return flatMap_((x) => {
         if (x instanceof Error$1) {
-            var error = x.error;
+            let error = x.error;
             return f(error); // I don't understand why I need this little lie
         }
         else {
@@ -2357,21 +2230,21 @@ function registerObs(obs) {
  Adds your function as a "spy" that will get notified on all new Observables.
  This will allow a visualization/analytics tool to spy on all Bacon activity.
  */
-var spy = function (spy) { return spies.push(spy); };
+const spy = (spy) => spies.push(spy);
 
 /** @hidden */
 function flatMapLatest(src, f_) {
-    var f = _.toFunction(f_);
+    let f = _.toFunction(f_);
     var stream = isProperty(src) ? src.toEventStream(allowSync) : src;
-    var flatMapped = flatMap$1(stream, function (value) { return makeObservable(f(value)).takeUntil(stream); });
+    let flatMapped = flatMap$1(stream, (value) => makeObservable(f(value)).takeUntil(stream));
     if (isProperty(src))
         flatMapped = flatMapped.toProperty();
     return flatMapped.withDesc(new Desc(src, "flatMapLatest", [f]));
 }
 
 /** @hidden */
-var Dispatcher = /** @class */ (function () {
-    function Dispatcher(observable, _subscribe, _handleEvent) {
+class Dispatcher {
+    constructor(observable, _subscribe, _handleEvent) {
         this.pushing = false;
         this.ended = false;
         this.prevError = undefined;
@@ -2384,26 +2257,26 @@ var Dispatcher = /** @class */ (function () {
         this.observable = observable;
         this.queue = [];
     }
-    Dispatcher.prototype.hasSubscribers = function () {
+    hasSubscribers() {
         return this.subscriptions.length > 0;
-    };
-    Dispatcher.prototype.removeSub = function (subscription) {
+    }
+    removeSub(subscription) {
         this.subscriptions = _.without(subscription, this.subscriptions);
         return this.subscriptions;
-    };
-    Dispatcher.prototype.push = function (event) {
+    }
+    push(event) {
         if (event.isEnd) {
             this.ended = true;
         }
         return UpdateBarrier.inTransaction(event, this, this.pushIt, [event]);
-    };
-    Dispatcher.prototype.pushToSubscriptions = function (event) {
+    }
+    pushToSubscriptions(event) {
         try {
-            var tmp = this.subscriptions;
-            var len = tmp.length;
-            for (var i = 0; i < len; i++) {
-                var sub = tmp[i];
-                var reply = sub.sink(event);
+            let tmp = this.subscriptions;
+            const len = tmp.length;
+            for (let i = 0; i < len; i++) {
+                const sub = tmp[i];
+                let reply = sub.sink(event);
                 if (reply === noMore || event.isEnd) {
                     this.removeSub(sub);
                 }
@@ -2415,8 +2288,8 @@ var Dispatcher = /** @class */ (function () {
             this.queue = []; // ditch queue in case of exception to avoid unexpected behavior
             throw error;
         }
-    };
-    Dispatcher.prototype.pushIt = function (event) {
+    }
+    pushIt(event) {
         if (!this.pushing) {
             if (event === this.prevError) {
                 return;
@@ -2428,7 +2301,7 @@ var Dispatcher = /** @class */ (function () {
             this.pushToSubscriptions(event);
             this.pushing = false;
             while (true) {
-                var e = this.queue.shift();
+                let e = this.queue.shift();
                 if (e) {
                     this.push(e);
                 }
@@ -2448,62 +2321,59 @@ var Dispatcher = /** @class */ (function () {
             this.queue.push(event);
             return more;
         }
-    };
-    Dispatcher.prototype.handleEvent = function (event) {
+    }
+    handleEvent(event) {
         if (this._handleEvent) {
             return this._handleEvent(event);
         }
         else {
             return this.push(event);
         }
-    };
-    Dispatcher.prototype.unsubscribeFromSource = function () {
+    }
+    ;
+    unsubscribeFromSource() {
         if (this.unsubSrc) {
             this.unsubSrc();
         }
         this.unsubSrc = undefined;
-    };
-    Dispatcher.prototype.subscribe = function (sink) {
-        var _this = this;
+    }
+    subscribe(sink) {
         if (this.ended) {
             sink(endEvent());
             return nop;
         }
         else {
             assertFunction(sink);
-            var subscription_1 = {
+            let subscription = {
                 sink: sink
             };
-            this.subscriptions.push(subscription_1);
+            this.subscriptions.push(subscription);
             if (this.subscriptions.length === 1) {
                 this.unsubSrc = this._subscribe(this.handleEvent);
                 assertFunction(this.unsubSrc);
             }
-            return function () {
-                _this.removeSub(subscription_1);
-                if (!_this.hasSubscribers()) {
-                    return _this.unsubscribeFromSource();
+            return () => {
+                this.removeSub(subscription);
+                if (!this.hasSubscribers()) {
+                    return this.unsubscribeFromSource();
                 }
             };
         }
-    };
-    Dispatcher.prototype.inspect = function () {
+    }
+    inspect() {
         return this.observable.toString();
-    };
-    return Dispatcher;
-}());
+    }
+}
 
 /** @hidden */
-var PropertyDispatcher = /** @class */ (function (_super) {
-    __extends(PropertyDispatcher, _super);
-    function PropertyDispatcher(property, subscribe, handleEvent) {
-        var _this = _super.call(this, property, subscribe, handleEvent) || this;
-        _this.current = none();
-        _this.propertyEnded = false;
-        _this.subscribe = _.bind(_this.subscribe, _this);
-        return _this;
+class PropertyDispatcher extends Dispatcher {
+    constructor(property, subscribe, handleEvent) {
+        super(property, subscribe, handleEvent);
+        this.current = none();
+        this.propertyEnded = false;
+        this.subscribe = _.bind(this.subscribe, this);
     }
-    PropertyDispatcher.prototype.push = function (event) {
+    push(event) {
         //console.log("dispatch", event, "from",  this)
         if (event.isEnd) {
             this.propertyEnded = true;
@@ -2516,9 +2386,9 @@ var PropertyDispatcher = /** @class */ (function (_super) {
         else if (event.hasValue) {
             console.error("Unknown event, two Bacons loaded?", event.constructor);
         }
-        return _super.prototype.push.call(this, event);
-    };
-    PropertyDispatcher.prototype.maybeSubSource = function (sink, reply) {
+        return super.push(event);
+    }
+    maybeSubSource(sink, reply) {
         if (reply === noMore) {
             return nop;
         }
@@ -2527,11 +2397,10 @@ var PropertyDispatcher = /** @class */ (function (_super) {
             return nop;
         }
         else {
-            return _super.prototype.subscribe.call(this, sink);
+            return super.subscribe(sink);
         }
-    };
-    PropertyDispatcher.prototype.subscribe = function (sink) {
-        var _this = this;
+    }
+    subscribe(sink) {
         // init value is "bounced" here because the base Dispatcher class
         // won't add more than one subscription to the underlying observable.
         // without bouncing, the init value would be missing from all new subscribers
@@ -2545,10 +2414,10 @@ var PropertyDispatcher = /** @class */ (function (_super) {
                 // when subscribing while already dispatching a value and this property hasn't been updated yet
                 // we cannot bounce before this property is up to date.
                 //console.log("bouncing with possibly stale value", event.value, "root at", valId, "vs", dispatchingId)
-                UpdateBarrier.whenDoneWith(this.observable, function () {
-                    if (_this.currentValueRootId === valId) {
+                UpdateBarrier.whenDoneWith(this.observable, () => {
+                    if (this.currentValueRootId === valId) {
                         //console.log("bouncing", this.current.get().value)
-                        return sink(initialEvent(_this.current.get().value));
+                        return sink(initialEvent(this.current.get().value));
                     }
                 });
                 // the subscribing thing should be defered
@@ -2556,8 +2425,8 @@ var PropertyDispatcher = /** @class */ (function (_super) {
             }
             else {
                 //console.log("bouncing immdiately", this.current.get().value)
-                UpdateBarrier.inTransaction(undefined, this, function () {
-                    reply = sink(initialEvent(_this.current.get().value));
+                UpdateBarrier.inTransaction(undefined, this, () => {
+                    reply = sink(initialEvent(this.current.get().value));
                     return reply;
                 }, []);
                 return this.maybeSubSource(sink, reply);
@@ -2567,18 +2436,17 @@ var PropertyDispatcher = /** @class */ (function (_super) {
             //console.log("normal subscribe", this)
             return this.maybeSubSource(sink, reply);
         }
-    };
-    PropertyDispatcher.prototype.inspect = function () {
+    }
+    inspect() {
         return this.observable + " current= " + this.current;
-    };
-    return PropertyDispatcher;
-}(Dispatcher));
+    }
+}
 
 /** @hidden */
 function flatMapWithConcurrencyLimit(src, limit, f) {
     return flatMap_(handleEventValueWith(f), src, {
         desc: new Desc(src, "flatMapWithConcurrencyLimit", [limit, f]),
-        limit: limit
+        limit
     });
 }
 
@@ -2592,7 +2460,7 @@ function bufferWithCount(src, count) {
 }
 /** @hidden */
 function bufferWithTimeOrCount(src, delay, count) {
-    var delayFunc = toDelayFunction(delay);
+    const delayFunc = toDelayFunction(delay);
     function flushOrSchedule(buffer) {
         if (buffer.values.length === count) {
             //console.log Bacon.scheduler.now() + ": count-flush"
@@ -2605,16 +2473,16 @@ function bufferWithTimeOrCount(src, delay, count) {
     var desc = new Desc(src, "bufferWithTimeOrCount", [delay, count]);
     return buffer(src, flushOrSchedule, flushOrSchedule).withDesc(desc);
 }
-var Buffer = /** @class */ (function () {
-    function Buffer(onFlush, onInput) {
-        this.push = function (e) { return more; };
+class Buffer {
+    constructor(onFlush, onInput) {
+        this.push = (e) => more;
         this.scheduled = null;
         this.end = undefined;
         this.values = [];
         this.onFlush = onFlush;
         this.onInput = onInput;
     }
-    Buffer.prototype.flush = function () {
+    flush() {
         if (this.scheduled) {
             GlobalScheduler.scheduler.clearTimeout(this.scheduled);
             this.scheduled = null;
@@ -2636,18 +2504,16 @@ var Buffer = /** @class */ (function () {
                 return this.push(this.end);
             }
         }
-    };
-    Buffer.prototype.schedule = function (delay) {
-        var _this = this;
+    }
+    schedule(delay) {
         if (!this.scheduled) {
-            return this.scheduled = delay(function () {
+            return this.scheduled = delay(() => {
                 //console.log Bacon.scheduler.now() + ": scheduled flush"
-                return _this.flush();
+                return this.flush();
             });
         }
-    };
-    return Buffer;
-}());
+    }
+}
 function toDelayFunction(delay) {
     if (delay === undefined) {
         return undefined;
@@ -2662,12 +2528,10 @@ function toDelayFunction(delay) {
     return delay;
 }
 /** @hidden */
-function buffer(src, onInput, onFlush) {
-    if (onInput === void 0) { onInput = nop; }
-    if (onFlush === void 0) { onFlush = nop; }
+function buffer(src, onInput = nop, onFlush = nop) {
     var reply = more;
     var buffer = new Buffer(onFlush, onInput);
-    return src.transform(function (event, sink) {
+    return src.transform((event, sink) => {
         buffer.push = sink;
         if (hasValue(event)) {
             buffer.values.push(event.value);
@@ -2694,7 +2558,7 @@ function asyncWrapSubscribe(obs, subscribe) {
     var subscribing = false;
     return function wrappedSubscribe(sink) {
         //assertFunction(sink)
-        var inTransaction = UpdateBarrier.isInTransaction();
+        const inTransaction = UpdateBarrier.isInTransaction();
         subscribing = true;
         var asyncDeliveries;
         function deliverAsync() {
@@ -2743,12 +2607,8 @@ function asyncWrapSubscribe(obs, subscribe) {
 
  See also [`merge`](classes/eventstream.html#merge).
  */
-function mergeAll() {
-    var streams = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        streams[_i] = arguments[_i];
-    }
-    var flattenedStreams = argumentsToObservables(streams);
+function mergeAll(...streams) {
+    let flattenedStreams = argumentsToObservables(streams);
     if (flattenedStreams.length) {
         return new EventStream(new Desc("Bacon", "mergeAll", flattenedStreams), function (sink) {
             var ends = 0;
@@ -2833,17 +2693,15 @@ function debounceImmediate(src, delay) {
 
 /** @hidden */
 function throttle(src, delay) {
-    return src.delayChanges(new Desc(src, "throttle", [delay]), function (changes) {
-        return changes.bufferWithTime(delay).map(function (values) { return values[values.length - 1]; });
-    });
+    return src.delayChanges(new Desc(src, "throttle", [delay]), (changes) => changes.bufferWithTime(delay).map((values) => values[values.length - 1]));
 }
 
 /** @hidden */
 function bufferingThrottle(src, minimumInterval) {
     var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
-    return src.delayChanges(desc, function (changes) { return changes.flatMapConcat(function (x) {
+    return src.delayChanges(desc, changes => changes.flatMapConcat((x) => {
         return once(x).concat(later(minimumInterval, x).errors());
-    }); });
+    }));
 }
 
 /** @hidden */
@@ -2851,7 +2709,7 @@ function takeWhile(src, f) {
     return withPredicate(src, f, takeWhileT, new Desc(src, "takeWhile", [f]));
 }
 function takeWhileT(f) {
-    return function (event, sink) {
+    return (event, sink) => {
         if (event.filter(f)) {
             return sink(event);
         }
@@ -2892,15 +2750,14 @@ function skipWhileT(f) {
 }
 
 /** @hidden */
-function groupBy(src, keyF, limitF) {
-    if (limitF === void 0) { limitF = _.id; }
+function groupBy(src, keyF, limitF = _.id) {
     var streams = {};
-    return src.transform(composeT(filterT(function (x) { return !streams[keyF(x)]; }), mapT(function (firstValue) {
+    return src.transform(composeT(filterT((x) => !streams[keyF(x)]), mapT(function (firstValue) {
         var key = keyF(firstValue);
-        var similarValues = src.changes().filter(function (x) { return keyF(x) === key; });
+        var similarValues = src.changes().filter(x => keyF(x) === key);
         var data = once(firstValue).concat(similarValues);
-        var limited = limitF(data, firstValue).toEventStream().transform(function (event, sink) {
-            var reply = sink(event);
+        var limited = limitF(data, firstValue).toEventStream().transform((event, sink) => {
+            let reply = sink(event);
             if (event.isEnd) {
                 delete streams[key];
             }
@@ -2912,8 +2769,7 @@ function groupBy(src, keyF, limitF) {
 }
 
 /** @hidden */
-function slidingWindow(src, maxValues, minValues) {
-    if (minValues === void 0) { minValues = 0; }
+function slidingWindow(src, maxValues, minValues = 0) {
     return src.scan([], (function (window, value) {
         return window.concat([value]).slice(-maxValues);
     }))
@@ -2922,18 +2778,16 @@ function slidingWindow(src, maxValues, minValues) {
     })).withDesc(new Desc(src, "slidingWindow", [maxValues, minValues]));
 }
 
-var nullMarker = {};
+const nullMarker = {};
 /** @hidden */
 function diff(src, start, f) {
-    return transformP(scan(src, [start, nullMarker], (function (prevTuple, next) { return [next, f(prevTuple[0], next)]; })), composeT(filterT(function (tuple) { return tuple[1] !== nullMarker; }), mapT(function (tuple) { return tuple[1]; })), new Desc(src, "diff", [start, f]));
+    return transformP(scan(src, [start, nullMarker], ((prevTuple, next) => [next, f(prevTuple[0], next)])), composeT(filterT(tuple => tuple[1] !== nullMarker), mapT(tuple => tuple[1])), new Desc(src, "diff", [start, f]));
 }
 
 /** @hidden */
 function flatScan(src, seed, f) {
-    var current = seed;
-    return src.flatMapConcat(function (next) {
-        return makeObservable(f(current, next)).doAction(function (updated) { return current = updated; });
-    }).toProperty().startWith(seed).withDesc(new Desc(src, "flatScan", [seed, f]));
+    let current = seed;
+    return src.flatMapConcat((next) => makeObservable(f(current, next)).doAction(updated => current = updated)).toProperty().startWith(seed).withDesc(new Desc(src, "flatScan", [seed, f]));
 }
 
 /** @hidden */
@@ -3025,31 +2879,17 @@ function holdWhen(src, valve) {
  ```
 
  */
-function zipAsArray() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-    }
-    var streams = _.map((function (s) { return s.toEventStream(); }), argumentsToObservables(args));
-    return when([streams, function () {
-            var xs = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                xs[_i] = arguments[_i];
-            }
-            return xs;
-        }]).withDesc(new Desc("Bacon", "zipAsArray", args));
+function zipAsArray(...args) {
+    let streams = _.map(((s) => s.toEventStream()), argumentsToObservables(args));
+    return when([streams, (...xs) => xs]).withDesc(new Desc("Bacon", "zipAsArray", args));
 }
 /**
  Like [`zipAsArray`](#bacon-zipasarray) but uses the given n-ary
  function to combine the n values from n sources, instead of returning them in an Array.
  */
-function zipWith(f) {
-    var streams = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        streams[_i - 1] = arguments[_i];
-    }
-    var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
-    streams = _.map((function (s) { return s.toEventStream(); }), streams);
+function zipWith(f, ...streams) {
+    var [streams, f] = argumentsToObservablesAndFunction(arguments);
+    streams = _.map(((s) => s.toEventStream()), streams);
     return when([streams, f]).withDesc(new Desc("Bacon", "zipWith", [f].concat(streams)));
 }
 /** @hidden */
@@ -3078,7 +2918,7 @@ function combineTemplate(template) {
     }
     function pushContext(key, value) {
         return function (ctxStack) {
-            var newContext = mkContext(value);
+            const newContext = mkContext(value);
             setValue(ctxStack, key, newContext);
             ctxStack.push(newContext);
         };
@@ -3090,7 +2930,7 @@ function combineTemplate(template) {
         else if (value && (value.constructor == Object || value.constructor == Array)) {
             for (var key in value) {
                 if (Object.prototype.hasOwnProperty.call(value, key)) {
-                    var child = value[key];
+                    const child = value[key];
                     if (containsObservables(child))
                         return true;
                 }
@@ -3103,7 +2943,7 @@ function combineTemplate(template) {
             funcs.push(applyStreamValue(key, streams.length - 1));
         }
         else if (containsObservables(value)) {
-            var popContext = function (ctxStack) { ctxStack.pop(); };
+            const popContext = function (ctxStack) { ctxStack.pop(); };
             funcs.push(pushContext(key, value));
             compileTemplate(value);
             funcs.push(popContext);
@@ -3113,8 +2953,8 @@ function combineTemplate(template) {
         }
     }
     function combinator(values) {
-        var rootContext = mkContext(template);
-        var ctxStack = [rootContext];
+        const rootContext = mkContext(template);
+        const ctxStack = [rootContext];
         for (var i = 0, f; i < funcs.length; i++) {
             f = funcs[i];
             f(ctxStack, values);
@@ -3122,9 +2962,9 @@ function combineTemplate(template) {
         return rootContext;
     }
     function compileTemplate(template) { _.each(template, compile); }
-    var funcs = [];
-    var streams = [];
-    var resultProperty = containsObservables(template)
+    const funcs = [];
+    const streams = [];
+    const resultProperty = containsObservables(template)
         ? (compileTemplate(template), combineAsArray(streams).map(combinator))
         : constant(template);
     return resultProperty.withDesc(new Desc("Bacon", "combineTemplate", [template]));
@@ -3132,7 +2972,7 @@ function combineTemplate(template) {
 
 /** @hidden */
 function decode(src, cases) {
-    return src.combine(combineTemplate(cases), function (key, values) { return values[key]; })
+    return src.combine(combineTemplate(cases), (key, values) => values[key])
         .withDesc(new Desc(src, "decode", [cases]));
 }
 
@@ -3141,24 +2981,22 @@ function firstToPromise(src, PromiseCtr) {
     // Can't do in the global scope, as shim can be applied after Bacon is loaded.
     if (typeof PromiseCtr !== "function") {
         if (typeof Promise === "function") {
-            PromiseCtr = function (f) { return new Promise(f); };
+            PromiseCtr = (f) => new Promise(f);
         }
         else {
             throw new Error("There isn't default Promise, use shim or parameter");
         }
     }
-    return new PromiseCtr(function (resolve, reject) {
-        return src.subscribe(function (event) {
-            if (hasValue(event)) {
-                resolve(event.value);
-            }
-            if (isError(event)) {
-                reject(event.error);
-            }
-            // One event is enough
-            return noMore;
-        });
-    });
+    return new PromiseCtr((resolve, reject) => src.subscribe((event) => {
+        if (hasValue(event)) {
+            resolve(event.value);
+        }
+        if (isError(event)) {
+            reject(event.error);
+        }
+        // One event is enough
+        return noMore;
+    }));
 }
 /** @hidden */
 function toPromise(src, PromiseCtr) {
@@ -3171,8 +3009,8 @@ var idCounter = 0;
 
  @typeparam V   Type of the elements/values in the stream/property
  */
-var Observable = /** @class */ (function () {
-    function Observable(desc) {
+class Observable {
+    constructor(desc) {
         /**
          * Unique numeric id of this Observable. Implemented using a simple counter starting from 1.
          */
@@ -3193,9 +3031,9 @@ var Observable = /** @class */ (function () {
   ```
   
      */
-    Observable.prototype.awaiting = function (other) {
+    awaiting(other) {
         return awaiting(this, other);
-    };
+    }
     /**
   Throttles the observable using a buffer so that at most one value event in minimumInterval is issued.
   Unlike [`throttle`](#observable-throttle), it doesn't discard the excessive events but buffers them instead, outputting
@@ -3212,18 +3050,18 @@ var Observable = /** @class */ (function () {
   throttled: a-s-d-f-a-s-d-f-
   ```
      */
-    Observable.prototype.bufferingThrottle = function (minimumInterval) {
+    bufferingThrottle(minimumInterval) {
         return bufferingThrottle(this, minimumInterval);
-    };
+    }
     /**
   Combines the latest values of the two
   streams or properties using a two-arg function. Similarly to [`scan`](#scan), you can use a
   method name instead, so you could do `a.combine(b, ".concat")` for two
   properties with array value. The result is a [Property](property.html).
      */
-    Observable.prototype.combine = function (right, f) {
+    combine(right, f) {
         return combine(this, right, f);
-    };
+    }
     /**
   Throttles stream/property by given amount
   of milliseconds, but so that event is only emitted after the given
@@ -3239,9 +3077,9 @@ var Observable = /** @class */ (function () {
   ```
   
      */
-    Observable.prototype.debounce = function (minimumInterval) {
+    debounce(minimumInterval) {
         return debounce(this, minimumInterval);
-    };
+    }
     /**
   Passes the first event in the
   stream through, but after that, only passes events after a given number
@@ -3254,9 +3092,9 @@ var Observable = /** @class */ (function () {
   source.debounceImmediate(2): a-d-----a-d-----
   ```
      */
-    Observable.prototype.debounceImmediate = function (minimumInterval) {
+    debounceImmediate(minimumInterval) {
         return debounceImmediate(this, minimumInterval);
-    };
+    }
     /**
   Decodes input using the given mapping. Is a
   bit like a switch-case or the decode function in Oracle SQL. For
@@ -3278,9 +3116,9 @@ var Observable = /** @class */ (function () {
   
      */
     //decode<T extends Record<any, any>>(src: Observable<keyof T>, cases: T): Property<DecodedValueOf<T>>
-    Observable.prototype.decode = function (cases) {
+    decode(cases) {
         return decode(this, cases);
-    };
+    }
     /**
   Delays the stream/property by given amount of milliseconds. Does not delay the initial value of a [`Property`](property.html).
   
@@ -3294,18 +3132,18 @@ var Observable = /** @class */ (function () {
   ```
   
      */
-    Observable.prototype.delay = function (delayMs) {
+    delay(delayMs) {
         return delay(this, delayMs);
-    };
+    }
     /**
      * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
      This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
      Internally, many combinator functions depend on other combinators to create intermediate Observables that the result will actually depend on.
      The `deps` method will skip these internal dependencies. See also: [internalDeps](#internaldeps)
      */
-    Observable.prototype.deps = function () {
+    deps() {
         return this.desc.deps();
-    };
+    }
     /**
   Returns a Property that represents the result of a comparison
   between the previous and current value of the Observable. For the initial value of the Observable,
@@ -3325,9 +3163,9 @@ var Observable = /** @class */ (function () {
       3 - 2 = 1
   
      */
-    Observable.prototype.diff = function (start, f) {
+    diff(start, f) {
         return diff(this, start, f);
-    };
+    }
     /**
   Returns a stream/property where the function f
   is executed for each value, before dispatching to subscribers. This is
@@ -3340,20 +3178,20 @@ var Observable = /** @class */ (function () {
   per event; when a Property loses all of its subscribers it will re-emit its current value when a
   new subscriber is added.
      */
-    Observable.prototype.doAction = function (f) {
+    doAction(f) {
         return this.transform(doActionT(f), new Desc(this, "doAction", [f]));
-    };
-    Observable.prototype.doEnd = function (f) {
+    }
+    doEnd(f) {
         return this.transform(doEndT(f), new Desc(this, "doEnd", [f]));
-    };
+    }
     /**
   Returns a stream/property where the function f
   is executed for each error, before dispatching to subscribers.
   That is, same as [`doAction`](#observable-doaction) but for errors.
      */
-    Observable.prototype.doError = function (f) {
+    doError(f) {
         return this.transform(doErrorT(f), new Desc(this, "doError", [f]));
-    };
+    }
     /**
   Logs each value of the Observable to the console. doLog() behaves like [`log`](#log)
   but does not subscribe to the event stream. You can think of doLog() as a
@@ -3361,33 +3199,28 @@ var Observable = /** @class */ (function () {
   safe, because it does not cause the same surprising side-effects as log()
   does.
      */
-    Observable.prototype.doLog = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    doLog(...args) {
         return this.transform(doLogT(args), new Desc(this, "doLog", args));
-    };
-    Observable.prototype.endAsValue = function () {
+    }
+    endAsValue() {
         return endAsValue(this);
-    };
+    }
     /**
     Returns a stream/property that ends the on first [`Error`](error.html) event. The
     error is included in the output of the returned Observable.
     
     @param  predicate   optional predicate function to determine whether to end on a given error
      */
-    Observable.prototype.endOnError = function (predicate) {
-        if (predicate === void 0) { predicate = function (x) { return true; }; }
+    endOnError(predicate = x => true) {
         return endOnError(this, predicate);
-    };
+    }
     /**
   Returns a stream containing [`Error`](error.html) events only.
   Same as filtering with a function that always returns false.
      */
-    Observable.prototype.errors = function () {
-        return this.filter(function (x) { return false; }).withDesc(new Desc(this, "errors"));
-    };
+    errors() {
+        return this.filter(x => false).withDesc(new Desc(this, "errors"));
+    }
     /**
   Filters values using given predicate function.
   Instead of a function, you can use a constant value (`true` to include all, `false` to exclude all).
@@ -3396,66 +3229,65 @@ var Observable = /** @class */ (function () {
   property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
   at the time of the event.
      */
-    Observable.prototype.filter = function (f) {
+    filter(f) {
         return filter$1(this, f);
-    };
+    }
     /**
   Takes the first element from the stream. Essentially `observable.take(1)`.
      */
-    Observable.prototype.first = function () {
+    first() {
         return take(1, this, new Desc(this, "first"));
-    };
+    }
     /**
   Returns a Promise which will be resolved with the first event coming from an Observable.
   Like [`toPromise`](#topromise), the global ES6 promise implementation will be used unless a promise
   constructor is given.
      */
-    Observable.prototype.firstToPromise = function (PromiseCtr) {
+    firstToPromise(PromiseCtr) {
         return firstToPromise(this, PromiseCtr);
-    };
+    }
     /**
   Works like [`scan`](#scan) but only emits the final
   value, i.e. the value just before the observable ends. Returns a
   [`Property`](property.html).
      */
-    Observable.prototype.fold = function (seed, f) {
+    fold(seed, f) {
         return fold$1(this, seed, f);
-    };
+    }
     /**
      An alias for [onValue](#onvalue).
   
      Subscribes a given handler function to the observable. Function will be called for each new value (not for errors or stream end).
      */
-    Observable.prototype.forEach = function (f) {
-        if (f === void 0) { f = nullSink; }
+    forEach(f = nullSink) {
         // TODO: inefficient alias. Also, similar assign alias missing.
         return this.onValue(f);
-    };
+    }
     /**
   Pauses and buffers the event stream if last event in valve is truthy.
   All buffered events are released when valve becomes falsy.
      */
-    Observable.prototype.holdWhen = function (valve) {
+    holdWhen(valve) {
         return holdWhen(this, valve);
-    };
-    Observable.prototype.inspect = function () { return this.toString(); };
+    }
+    inspect() { return this.toString(); }
     /**
      * Returns the true dependencies of the observable, including the intermediate "hidden" Observables.
      This method is for Bacon.js internal purposes but could be useful for debugging/analysis tools as well.
      See also: [deps](#deps)
      */
-    Observable.prototype.internalDeps = function () {
+    internalDeps() {
         return this.initialDesc.deps();
-    };
+    }
     /**
   Takes the last element from the stream. None, if stream is empty.
   
   
   *Note:* `neverEndingStream.last()` creates the stream which doesn't produce any events and never ends.
      */
-    Observable.prototype.last = function () {
+    last() {
         return last$1(this);
-    };
+    }
     /**
   Logs each value of the Observable to the console.
   It optionally takes arguments to pass to console.log() alongside each
@@ -3475,66 +3307,60 @@ var Observable = /** @class */ (function () {
   ```
   
      */
-    Observable.prototype.log = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    log(...args) {
         log(args, this);
         return this;
-    };
+    }
     /**
   Adds an extra [`Next`](next.html) event just before End. The value is created
   by calling the given function when the source stream ends. Instead of a
   function, a static value can be used.
      */
     // TODO: mapEnd and mapError signatures should allow V|V2
-    Observable.prototype.mapEnd = function (f) {
+    mapEnd(f) {
         return this.transform(mapEndT(f), new Desc(this, "mapEnd", [f]));
-    };
+    }
     /**
   Maps errors using given function. More
   specifically, feeds the "error" field of the error event to the function
   and produces a [`Next`](next.html) event based on the return value.
      */
-    Observable.prototype.mapError = function (f) {
+    mapError(f) {
         return this.transform(mapErrorT(f), new Desc(this, "mapError", [f]));
-    };
+    }
     /**
   Sets the name of the observable. Overrides the default
   implementation of [`toString`](#tostring) and `inspect`.
   Returns the same observable, with mutated name.
      */
-    Observable.prototype.name = function (name) {
+    name(name) {
         this._name = name;
         return this;
-    };
+    }
     /**
   Subscribes a callback to stream end. The function will be called when the stream ends.
   Just like `subscribe`, this method returns a function for unsubscribing.
      */
-    Observable.prototype.onEnd = function (f) {
-        if (f === void 0) { f = nullVoidSink; }
+    onEnd(f = nullVoidSink) {
         return this.subscribe(function (event) {
             if (event.isEnd) {
                 return f();
             }
             return more;
         });
-    };
+    }
     /**
   Subscribes a handler to error events. The function will be called for each error in the stream.
   Just like `subscribe`, this method returns a function for unsubscribing.
      */
-    Observable.prototype.onError = function (f) {
-        if (f === void 0) { f = nullSink; }
+    onError(f = nullSink) {
         return this.subscribe(function (event) {
             if (isError(event)) {
                 return f(event.error);
             }
             return more;
         });
-    };
+    }
     /**
   Subscribes a given handler function to the observable. Function will be called for each new value.
   This is the simplest way to assign a side-effect to an observable. The difference
@@ -3544,30 +3370,29 @@ var Observable = /** @class */ (function () {
   `stream.onValue` and `property.onValue` behave similarly, except that the latter also
   pushes the initial value of the property, in case there is one.
      */
-    Observable.prototype.onValue = function (f) {
-        if (f === void 0) { f = nullSink; }
+    onValue(f = nullSink) {
         return this.subscribe(function (event) {
             if (hasValue(event)) {
                 return f(event.value);
             }
             return more;
         });
-    };
+    }
     /**
   Like [`onValue`](#onvalue), but splits the value (assuming its an array) as function arguments to `f`.
   Only applicable for observables with arrays as values.
      */
-    Observable.prototype.onValues = function (f) {
-        return this.onValue(function (args) { return f.apply(void 0, args); });
-    };
+    onValues(f) {
+        return this.onValue(function (args) { return f(...args); });
+    }
     /** A synonym for [scan](#scan).
      */
-    Observable.prototype.reduce = function (seed, f) {
+    reduce(seed, f) {
         return fold$1(this, seed, f);
-    };
-    Observable.prototype.sampledBy = function (sampler) {
+    }
+    sampledBy(sampler) {
         return sampledBy(this, sampler, arguments[1]); // TODO: combinator
-    };
+    }
     /**
   Scans stream/property with given seed value and
   accumulator function, resulting to a Property. For example, you might
@@ -3598,15 +3423,15 @@ var Observable = /** @class */ (function () {
   seed won't be output as is. Instead, the initial value of `r` will be `f(seed, x)`. This makes sense,
   because there can only be 1 initial value for a Property at a time.
      */
-    Observable.prototype.scan = function (seed, f) {
+    scan(seed, f) {
         return scan(this, seed, f);
-    };
+    }
     /**
   Skips the first n elements from the stream
      */
-    Observable.prototype.skip = function (count) {
+    skip(count) {
         return skip(this, count);
-    };
+    }
     /**
   Drops consecutive equal elements. So,
   from `[1, 2, 2, 1]` you'd get `[1, 2, 1]`. Uses the `===` operator for equality
@@ -3615,31 +3440,31 @@ var Observable = /** @class */ (function () {
   use the isEqual function from [underscore.js](http://underscorejs.org/)
   like `stream.skipDuplicates(_.isEqual)`.
      */
-    Observable.prototype.skipDuplicates = function (isEqual) {
+    skipDuplicates(isEqual) {
         return skipDuplicates(this, isEqual);
-    };
+    }
     /**
      * Returns a new stream/property which excludes all [Error](error.html) events in the source
      */
-    Observable.prototype.skipErrors = function () {
+    skipErrors() {
         return skipErrors(this);
-    };
+    }
     /**
      Skips elements from the source, until a value event
      appears in the given `starter` stream/property. In other words, starts delivering values
      from the source after first value appears in `starter`.
      */
-    Observable.prototype.skipUntil = function (starter) {
+    skipUntil(starter) {
         return skipUntil(this, starter);
-    };
+    }
     /**
      Skips elements until the given predicate function returns falsy once, and then
      lets all events pass through. Instead of a predicate you can also pass in a `Property<boolean>` to skip elements
      while the Property holds a truthy value.
      */
-    Observable.prototype.skipWhile = function (f) {
+    skipWhile(f) {
         return skipWhile(this, f);
-    };
+    }
     /**
   Returns a Property that represents a
   "sliding window" into the history of the values of the Observable. The
@@ -3654,10 +3479,9 @@ var Observable = /** @class */ (function () {
   [1,2] - [2,3] - [3,4] - [4,5].
   
      */
-    Observable.prototype.slidingWindow = function (maxValues, minValues) {
-        if (minValues === void 0) { minValues = 0; }
+    slidingWindow(maxValues, minValues = 0) {
         return slidingWindow(this, maxValues, minValues);
-    };
+    }
     /**
      * subscribes given handler function to event stream. Function will receive [event](event.html) objects
      for all new value, end and error events in the stream.
@@ -3670,32 +3494,30 @@ var Observable = /** @class */ (function () {
      * @param {EventSink<V>} sink the handler function
      * @returns {Unsub}
      */
-    Observable.prototype.subscribe = function (sink) {
-        var _this = this;
-        if (sink === void 0) { sink = nullSink; }
-        return UpdateBarrier.wrappedSubscribe(this, function (sink) { return _this.subscribeInternal(sink); }, sink);
-    };
+    subscribe(sink = nullSink) {
+        return UpdateBarrier.wrappedSubscribe(this, sink => this.subscribeInternal(sink), sink);
+    }
     /**
   Takes at most n values from the stream and then ends the stream. If the stream has
   fewer than n values then it is unaffected.
   Equal to [`Bacon.never()`](../globals.html#never) if `n <= 0`.
      */
-    Observable.prototype.take = function (count) {
+    take(count) {
         return take(count, this);
-    };
+    }
     /**
   Takes elements from source until a value event appears in the other stream.
   If other stream ends without value, it is ignored.
      */
-    Observable.prototype.takeUntil = function (stopper) {
+    takeUntil(stopper) {
         return takeUntil(this, stopper);
-    };
+    }
     /**
   Takes while given predicate function holds true, and then ends. Alternatively, you can supply a boolean Property to take elements while the Property holds `true`.
      */
-    Observable.prototype.takeWhile = function (f) {
+    takeWhile(f) {
         return takeWhile(this, f);
-    };
+    }
     /**
   Throttles stream/property by given amount
   of milliseconds. Events are emitted with the minimum interval of
@@ -3713,9 +3535,9 @@ var Observable = /** @class */ (function () {
   throttled: --s--f----s--f--
   ```
      */
-    Observable.prototype.throttle = function (minimumInterval) {
+    throttle(minimumInterval) {
         return throttle(this, minimumInterval);
-    };
+    }
     /**
   Returns a Promise which will be resolved with the last event coming from an Observable.
   The global ES6 promise implementation will be used unless a promise constructor is given.
@@ -3724,25 +3546,25 @@ var Observable = /** @class */ (function () {
   
   See also [firstToPromise](#firsttopromise).
      */
-    Observable.prototype.toPromise = function (PromiseCtr) {
+    toPromise(PromiseCtr) {
         return toPromise(this, PromiseCtr);
-    };
+    }
     /**
      *Returns a textual description of the Observable. For instance, `Bacon.once(1).map(function() {}).toString()` would return "Bacon.once(1).map(function)".
      **/
-    Observable.prototype.toString = function () {
+    toString() {
         if (this._name) {
             return this._name;
         }
         else {
             return this.desc.toString();
         }
-    };
-    Observable.prototype.withDesc = function (desc) {
+    }
+    withDesc(desc) {
         if (desc)
             this.desc = desc;
         return this;
-    };
+    }
     /**
   Sets the structured description of the observable. The [`toString`](#tostring) and `inspect` methods
   use this data recursively to create a string representation for the observable. This method
@@ -3761,14 +3583,10 @@ var Observable = /** @class */ (function () {
   The method returns the same observable with mutated description.
   
   */
-    Observable.prototype.withDescription = function (context, method) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        this.desc = describe.apply(void 0, [context, method].concat(args));
+    withDescription(context, method, ...args) {
+        this.desc = describe(context, method, ...args);
         return this;
-    };
+    }
     /**
   Returns an EventStream with elements
   pair-wise lined up with events from this and the other EventStream or Property.
@@ -3795,11 +3613,10 @@ var Observable = /** @class */ (function () {
   See also [`zipWith`](../globals.html#zipwith) and [`zipAsArray`](../globals.html/zipasarray) for zipping more than 2 sources.
   
      */
-    Observable.prototype.zip = function (other, f) {
+    zip(other, f) {
         return zip(this, other, f);
-    };
-    return Observable;
-}());
+    }
+}
 /**
  A reactive property. Has the concept of "current value".
  You can create a Property from an EventStream by using either [`toProperty`](eventstream.html#toproperty)
@@ -3815,44 +3632,41 @@ var Observable = /** @class */ (function () {
 
  @typeparam V   Type of the elements/values in the stream/property
  */
-var Property = /** @class */ (function (_super) {
-    __extends(Property, _super);
-    function Property(desc, subscribe, handler) {
-        var _this = _super.call(this, desc) || this;
+class Property extends Observable {
+    constructor(desc, subscribe, handler) {
+        super(desc);
         /** @internal */
-        _this._isProperty = true;
+        this._isProperty = true;
         assertFunction(subscribe);
-        _this.dispatcher = new PropertyDispatcher(_this, subscribe, handler);
-        registerObs(_this);
-        return _this;
+        this.dispatcher = new PropertyDispatcher(this, subscribe, handler);
+        registerObs(this);
     }
     /**
      Combines properties with the `&&` operator. It produces a new value when either of the Properties change,
      combining the latest values using `&&`.
      */
-    Property.prototype.and = function (other) {
+    and(other) {
         return and(this, other);
-    };
+    }
     /**
      * creates a stream of changes to the Property. The stream *does not* include
      an event for the current value of the Property at the time this method was called.
      */
-    Property.prototype.changes = function () {
-        var _this = this;
-        return new EventStream(new Desc(this, "changes", []), function (sink) { return _this.dispatcher.subscribe(function (event) {
+    changes() {
+        return new EventStream(new Desc(this, "changes", []), (sink) => this.dispatcher.subscribe(function (event) {
             if (!event.isInitial) {
                 return sink(event);
             }
             return more;
-        }); });
-    };
-    Property.prototype.concat = function (other) {
+        }));
+    }
+    concat(other) {
         return addPropertyInitValueToStream(this, this.changes().concat(other));
-    };
+    }
     /** @hidden */
-    Property.prototype.delayChanges = function (desc, f) {
+    delayChanges(desc, f) {
         return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
-    };
+    }
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned
@@ -3871,50 +3685,50 @@ var Property = /** @class */ (function (_super) {
   })
      ```
      */
-    Property.prototype.flatMap = function (f) {
+    flatMap(f) {
         return flatMap$1(this, f);
-    };
+    }
     /**
      A [`flatMapWithConcurrencyLimit`](#flatmapwithconcurrencylimit) with limit of 1.
      */
-    Property.prototype.flatMapConcat = function (f) {
+    flatMapConcat(f) {
         return flatMapConcat(this, f);
-    };
+    }
     /**
      Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events. Returned values go into the
      value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
      passed through, which can be implemented using flatMapError.
      */
-    Property.prototype.flatMapError = function (f) {
+    flatMapError(f) {
         return flatMapError(this, f);
-    };
-    Property.prototype.flatMapEvent = function (f) {
+    }
+    flatMapEvent(f) {
         return flatMapEvent(this, f);
-    };
+    }
     /**
      Like [`flatMap`](#observable-flatmap), but only spawns a new
      stream if the previously spawned stream has ended.
      */
-    Property.prototype.flatMapFirst = function (f) {
+    flatMapFirst(f) {
         return flatMapFirst(this, f);
-    };
+    }
     /**
      Like [`flatMap`](#flatmap), but instead of including events from
      all spawned streams, only includes them from the latest spawned stream.
      You can think this as switching from stream to stream.
      Note that instead of a function, you can provide a stream/property too.
      */
-    Property.prototype.flatMapLatest = function (f) {
+    flatMapLatest(f) {
         return flatMapLatest(this, f);
-    };
+    }
     /**
      A super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
      [`flatMapConcat`](#flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
      and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
      */
-    Property.prototype.flatMapWithConcurrencyLimit = function (limit, f) {
+    flatMapWithConcurrencyLimit(limit, f) {
         return flatMapWithConcurrencyLimit(this, limit, f);
-    };
+    }
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
@@ -3957,70 +3771,68 @@ var Property = /** @class */ (function (_super) {
      ```
   
      */
-    Property.prototype.groupBy = function (keyF, limitF) {
+    groupBy(keyF, limitF) {
         return groupBy(this, keyF, limitF);
-    };
+    }
     /**
      Maps values using given function, returning a new
      stream/property. Instead of a function, you can also provide a [Property](property.html),
      in which case each element in the source stream will be mapped to the current value of
      the given property.
      */
-    Property.prototype.map = function (f) {
+    map(f) {
         return map$1(this, f);
-    };
+    }
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
-    Property.prototype.not = function () {
+    not() {
         return not(this);
-    };
+    }
     /**
      Combines properties with the `||` operator. It produces a new value when either of the Properties change,
      combining the latest values using `||`.
      */
-    Property.prototype.or = function (other) {
+    or(other) {
         return or(this, other);
-    };
+    }
     /**
      Creates an EventStream by sampling the
      property value at given interval (in milliseconds)
      */
-    Property.prototype.sample = function (interval) {
+    sample(interval) {
         return sampleP(this, interval);
-    };
+    }
     /**
     Adds an initial "default" value for the
     Property. If the Property doesn't have an initial value of it's own, the
     given value will be used as the initial value. If the property has an
     initial value of its own, the given value will be ignored.
      */
-    Property.prototype.startWith = function (seed) {
+    startWith(seed) {
         return startWithP(this, seed);
-    };
+    }
     /** @hidden */
-    Property.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nullSink; }
+    subscribeInternal(sink = nullSink) {
         return this.dispatcher.subscribe(sink);
-    };
+    }
     /**
      Creates an EventStream based on this Property. The stream contains also an event for the current
      value of this Property at the time this method was called.
      */
-    Property.prototype.toEventStream = function (options) {
-        var _this = this;
-        return new EventStream(new Desc(this, "toEventStream", []), function (sink) { return _this.subscribeInternal(function (event) {
+    toEventStream(options) {
+        return new EventStream(new Desc(this, "toEventStream", []), (sink) => this.subscribeInternal(function (event) {
             return sink(event.toNext());
-        }); }, undefined, options);
-    };
+        }), undefined, options);
+    }
     /**
      Returns the Property itself.
      */
-    Property.prototype.toProperty = function () {
+    toProperty() {
         assertNoArguments(arguments);
         return this;
-    };
-    Property.prototype.transform = function (transformer, desc) {
+    }
+    transform(transformer, desc) {
         return transformP(this, transformer, desc);
-    };
+    }
     /**
      Creates an EventStream/Property by sampling a given `samplee`
      stream/property value at each event from the this stream/property.
@@ -4031,9 +3843,9 @@ var Property = /** @class */ (function (_super) {
      @typeparam V2  type of values in the samplee
      @typeparam R   type of values in the result
      */
-    Property.prototype.withLatestFrom = function (samplee, f) {
+    withLatestFrom(samplee, f) {
         return withLatestFromP(this, samplee, f);
-    };
+    }
     /**
      Lets you run a state machine
      on an observable. Give it an initial state object and a state
@@ -4058,11 +3870,10 @@ var Property = /** @class */ (function (_super) {
      @typeparam  State   type of machine state
      @typeparam  Out     type of values to be emitted
      */
-    Property.prototype.withStateMachine = function (initState, f) {
+    withStateMachine(initState, f) {
         return withStateMachine(initState, f, this);
-    };
-    return Property;
-}(Observable));
+    }
+}
 /** @hidden */
 function isProperty(x) {
     return !!x._isProperty;
@@ -4072,7 +3883,7 @@ function isProperty(x) {
 // relies on using internal EventStreams that have synchronous behavior. These are not exposed
 // to the outside world, though.
 /** @hidden */
-var allowSync = { forceAsync: false };
+const allowSync = { forceAsync: false };
 /**
  * EventStream represents a stream of events. It is an Observable object, meaning
  that you can listen to events in the stream using, for instance, the [`onValue`](#onvalue) method
@@ -4102,18 +3913,16 @@ var allowSync = { forceAsync: false };
  @typeparam V   Type of the elements/values in the stream/property
 
  */
-var EventStream = /** @class */ (function (_super) {
-    __extends(EventStream, _super);
-    function EventStream(desc, subscribe, handler, options) {
-        var _this = _super.call(this, desc) || this;
+class EventStream extends Observable {
+    constructor(desc, subscribe, handler, options) {
+        super(desc);
         /** @hidden */
-        _this._isEventStream = true;
+        this._isEventStream = true;
         if (options !== allowSync) {
-            subscribe = asyncWrapSubscribe(_this, subscribe);
+            subscribe = asyncWrapSubscribe(this, subscribe);
         }
-        _this.dispatcher = new Dispatcher(_this, subscribe, handler);
-        registerObs(_this);
-        return _this;
+        this.dispatcher = new Dispatcher(this, subscribe, handler);
+        registerObs(this);
     }
     /**
      Buffers stream events with given delay.
@@ -4131,9 +3940,9 @@ var EventStream = /** @class */ (function (_super) {
   
      * @param delay buffer duration in milliseconds
      */
-    EventStream.prototype.bufferWithTime = function (delay) {
+    bufferWithTime(delay) {
         return bufferWithTime(this, delay);
-    };
+    }
     /**
      Buffers stream events with given count.
      The buffer is flushed when it contains the given number of elements or the source stream ends.
@@ -4143,9 +3952,9 @@ var EventStream = /** @class */ (function (_super) {
   
      * @param {number} count
      */
-    EventStream.prototype.bufferWithCount = function (count) {
+    bufferWithCount(count) {
         return bufferWithCount(this, count);
-    };
+    }
     /**
      Buffers stream events and
      flushes when either the buffer contains the given number elements or the
@@ -4154,19 +3963,19 @@ var EventStream = /** @class */ (function (_super) {
      * @param {number | DelayFunction} delay in milliseconds or as a function
      * @param {number} count  maximum buffer size
      */
-    EventStream.prototype.bufferWithTimeOrCount = function (delay, count) {
+    bufferWithTimeOrCount(delay, count) {
         return bufferWithTimeOrCount(this, delay, count);
-    };
-    EventStream.prototype.changes = function () {
+    }
+    changes() {
         return this;
-    };
-    EventStream.prototype.concat = function (other, options) {
+    }
+    concat(other, options) {
         return concatE(this, other, options);
-    };
+    }
     /** @hidden */
-    EventStream.prototype.delayChanges = function (desc, f) {
+    delayChanges(desc, f) {
         return f(this).withDesc(desc);
-    };
+    }
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned
@@ -4185,36 +3994,36 @@ var EventStream = /** @class */ (function (_super) {
   })
      ```
      */
-    EventStream.prototype.flatMap = function (f) { return flatMap$1(this, f); };
+    flatMap(f) { return flatMap$1(this, f); }
     /**
      A [`flatMapWithConcurrencyLimit`](#flatmapwithconcurrencylimit) with limit of 1.
      */
-    EventStream.prototype.flatMapConcat = function (f) { return flatMapConcat(this, f); };
+    flatMapConcat(f) { return flatMapConcat(this, f); }
     /**
      Like [`flatMap`](#flatmap), but is applied only on [`Error`](error.html) events. Returned values go into the
      value stream, unless an error event is returned. As an example, one type of error could result in a retry and another just
      passed through, which can be implemented using flatMapError.
      */
-    EventStream.prototype.flatMapError = function (f) { return flatMapError(this, f); };
+    flatMapError(f) { return flatMapError(this, f); }
     /**
      Like [`flatMap`](#observable-flatmap), but only spawns a new
      stream if the previously spawned stream has ended.
      */
-    EventStream.prototype.flatMapFirst = function (f) { return flatMapFirst(this, f); };
+    flatMapFirst(f) { return flatMapFirst(this, f); }
     /**
      Like [`flatMap`](#flatmap), but instead of including events from
      all spawned streams, only includes them from the latest spawned stream.
      You can think this as switching from stream to stream.
      Note that instead of a function, you can provide a stream/property too.
      */
-    EventStream.prototype.flatMapLatest = function (f) { return flatMapLatest(this, f); };
+    flatMapLatest(f) { return flatMapLatest(this, f); }
     /**
      A super method of *flatMap* family. It limits the number of open spawned streams and buffers incoming events.
      [`flatMapConcat`](#flatmapconcat) is `flatMapWithConcurrencyLimit(1)` (only one input active),
      and [`flatMap`](#flatmap) is `flatMapWithConcurrencyLimit ∞` (all inputs are piped to output).
      */
-    EventStream.prototype.flatMapWithConcurrencyLimit = function (limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); };
-    EventStream.prototype.flatMapEvent = function (f) { return flatMapEvent(this, f); };
+    flatMapWithConcurrencyLimit(limit, f) { return flatMapWithConcurrencyLimit(this, limit, f); }
+    flatMapEvent(f) { return flatMapEvent(this, f); }
     /**
      Scans stream with given seed value and accumulator function, resulting to a Property.
      Difference to [`scan`](#scan) is that the function `f` can return an [`EventStream`](eventstream.html) or a [`Property`](property.html) instead
@@ -4225,9 +4034,9 @@ var EventStream = /** @class */ (function (_super) {
      * @param f transition function from previous state and new value to next state
      * @typeparam V2 state and result type
      */
-    EventStream.prototype.flatScan = function (seed, f) {
+    flatScan(seed, f) {
         return flatScan(this, seed, f);
-    };
+    }
     /**
      Groups stream events to new streams by `keyF`. Optional `limitF` can be provided to limit grouped
      stream life. Stream transformed by `limitF` is passed on if provided. `limitF` gets grouped stream
@@ -4270,43 +4079,42 @@ var EventStream = /** @class */ (function (_super) {
      ```
   
      */
-    EventStream.prototype.groupBy = function (keyF, limitF) {
+    groupBy(keyF, limitF) {
         return groupBy(this, keyF, limitF);
-    };
+    }
     /**
    Maps values using given function, returning a new
    stream/property. Instead of a function, you can also provide a [Property](property.html),
    in which case each element in the source stream will be mapped to the current value of
    the given property.
    */
-    EventStream.prototype.map = function (f) {
+    map(f) {
         return map$1(this, f);
-    };
-    EventStream.prototype.merge = function (other) {
+    }
+    merge(other) {
         assertEventStream(other);
         return mergeAll(this, other).withDesc(new Desc(this, "merge", [other]));
-    };
+    }
     /**
      Returns a stream/property that inverts boolean values (using `!`)
      */
-    EventStream.prototype.not = function () { return not(this); };
+    not() { return not(this); }
     /**
      Adds a starting value to the stream/property, i.e. concats a
      single-element stream containing the single seed value  with this stream.
      */
     // TODO: should allow V|V2 signature
-    EventStream.prototype.startWith = function (seed) {
+    startWith(seed) {
         return startWithE(this, seed);
-    };
+    }
     /** @hidden */
-    EventStream.prototype.subscribeInternal = function (sink) {
-        if (sink === void 0) { sink = nullSink; }
+    subscribeInternal(sink = nullSink) {
         return this.dispatcher.subscribe(sink);
-    };
+    }
     /**
      * Returns this stream.
      */
-    EventStream.prototype.toEventStream = function () { return this; };
+    toEventStream() { return this; }
     /**
      Creates a Property based on the
      EventStream.
@@ -4318,18 +4126,18 @@ var EventStream = /** @class */ (function (_super) {
      You can also give an initial value that will be used as the current value until
      the first value comes from the stream.
      */
-    EventStream.prototype.toProperty = function (initValue) {
-        var usedInitValue = arguments.length
+    toProperty(initValue) {
+        let usedInitValue = arguments.length
             ? toOption(initValue)
             : none();
-        var disp = this.dispatcher;
-        var desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
-        var streamSubscribe = disp.subscribe;
+        let disp = this.dispatcher;
+        let desc = new Desc(this, "toProperty", Array.prototype.slice.apply(arguments));
+        let streamSubscribe = disp.subscribe;
         return new Property(desc, streamSubscribeToPropertySubscribe(usedInitValue, streamSubscribe));
-    };
-    EventStream.prototype.transform = function (transformer, desc) {
+    }
+    transform(transformer, desc) {
         return transformE(this, transformer, desc);
-    };
+    }
     /**
      Creates an EventStream/Property by sampling a given `samplee`
      stream/property value at each event from the this stream/property.
@@ -4340,9 +4148,9 @@ var EventStream = /** @class */ (function (_super) {
      @typeparam V2  type of values in the samplee
      @typeparam R   type of values in the result
      */
-    EventStream.prototype.withLatestFrom = function (samplee, f) {
+    withLatestFrom(samplee, f) {
         return withLatestFromE(this, samplee, f);
-    };
+    }
     /**
      Lets you run a state machine
      on an observable. Give it an initial state object and a state
@@ -4367,11 +4175,10 @@ var EventStream = /** @class */ (function (_super) {
      @typeparam  State   type of machine state
      @typeparam  Out     type of values to be emitted
      */
-    EventStream.prototype.withStateMachine = function (initState, f) {
+    withStateMachine(initState, f) {
         return withStateMachine(initState, f, this);
-    };
-    return EventStream;
-}(Observable));
+    }
+}
 /** @hidden */
 function newEventStream(description, subscribe) {
     return new EventStream(description, subscribe);
@@ -4393,22 +4200,22 @@ function symbol(key) {
     }
 }
 
-var ESObservable = /** @class */ (function () {
-    function ESObservable(observable) {
+class ESObservable {
+    constructor(observable) {
         this.observable = observable;
     }
-    ESObservable.prototype.subscribe = function (observerOrOnNext, onError, onComplete) {
-        var observer = typeof observerOrOnNext === 'function'
+    subscribe(observerOrOnNext, onError, onComplete) {
+        const observer = typeof observerOrOnNext === 'function'
             ? { next: observerOrOnNext, error: onError, complete: onComplete }
             : observerOrOnNext;
-        var subscription = {
+        const subscription = {
             closed: false,
             unsubscribe: function () {
                 subscription.closed = true;
                 cancel();
             }
         };
-        var cancel = this.observable.subscribe(function (event) {
+        const cancel = this.observable.subscribe(function (event) {
             if (hasValue(event) && observer.next) {
                 observer.next(event.value);
             }
@@ -4424,9 +4231,8 @@ var ESObservable = /** @class */ (function () {
             }
         });
         return subscription;
-    };
-    return ESObservable;
-}());
+    }
+}
 ESObservable.prototype[symbol('observable')] = function () {
     return this;
 };
@@ -4471,28 +4277,20 @@ Observable.prototype[symbol('observable')] = Observable.prototype.toESObservable
  * @param {UpdatePattern<Out>} patterns
  * @returns {Property<Out>}
  */
-function update(initial) {
-    var patterns = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        patterns[_i - 1] = arguments[_i];
-    }
-    var rawPatterns = extractRawPatterns(patterns);
+function update(initial, ...patterns) {
+    let rawPatterns = extractRawPatterns(patterns);
     for (var i = 0; i < rawPatterns.length; i++) {
-        var pattern = rawPatterns[i];
+        let pattern = rawPatterns[i];
         pattern[1] = lateBindFirst(pattern[1]);
     }
-    return when.apply(void 0, rawPatterns).scan(initial, (function (x, f) {
+    return when(...rawPatterns).scan(initial, (function (x, f) {
         return f(x);
-    })).withDesc(new Desc("Bacon", "update", [initial].concat(patterns)));
+    })).withDesc(new Desc("Bacon", "update", [initial, ...patterns]));
 }
 function lateBindFirst(f) {
-    return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    return function (...args) {
         return function (i) {
-            return f.apply(void 0, [i].concat(args));
+            return f(...[i].concat(args));
         };
     };
 }
@@ -4637,7 +4435,7 @@ var findHandlerMethods = function (target) {
 
  */
 function fromEvent(target, eventSource, eventTransformer) {
-    var _a = findHandlerMethods(target), sub = _a[0], unsub = _a[1];
+    var [sub, unsub] = findHandlerMethods(target);
     var desc = new Desc("Bacon", "fromEvent", [target, eventSource]);
     return fromBinder(function (handler) {
         if (isEventSourceFn(eventSource)) {
@@ -4666,11 +4464,7 @@ function fromEvent(target, eventSource, eventTransformer) {
  Bacon.onValues(Bacon.constant(1), Bacon.constant(2), f)
  ```
  */
-function onValues() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-    }
+function onValues(...args) {
     return combineAsArray(args.slice(0, args.length - 1)).onValues(args[arguments.length - 1]);
 }
 
@@ -4739,7 +4533,7 @@ function repeat(generator) {
             flag = true;
         }
         subscribeNext();
-        return function () { return unsub(); };
+        return () => unsub();
     }).withDesc(new Desc("Bacon", "repeat", [generator]));
 }
 
@@ -4831,7 +4625,7 @@ function retry(options) {
         else if (errorEvent) {
             var context = {
                 error: errorEvent.error,
-                retriesDone: retriesDone
+                retriesDone
             };
             var pause = silence(delay(context));
             retriesDone++;
@@ -4884,10 +4678,9 @@ function valueAndEnd(value) {
  * @param {EventTransformer<V>} eventTransformer
  * @returns {EventStream<V>}
  */
-function fromPromise(promise, abort, eventTransformer) {
-    if (eventTransformer === void 0) { eventTransformer = valueAndEnd; }
+function fromPromise(promise, abort, eventTransformer = valueAndEnd) {
     return fromBinder(function (handler) {
-        var bound = promise.then(handler, function (e) { return handler(new Error$1(e)); });
+        const bound = promise.then(handler, (e) => handler(new Error$1(e)));
         if (bound && typeof bound.done === "function") {
             bound.done();
         }
@@ -4906,40 +4699,22 @@ function fromPromise(promise, abort, eventTransformer) {
 }
 
 function withMethodCallSupport(wrapped) {
-    return function (f) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    return function (f, ...args) {
         if (typeof f === "object" && args.length) {
             var context = f;
             var methodName = args[0];
-            f = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                return context[methodName].apply(context, args);
+            f = function (...args) {
+                return context[methodName](...args);
             };
             args = args.slice(1);
         }
-        return wrapped.apply(void 0, [f].concat(args));
+        return wrapped(f, ...args);
     };
 }
 function partiallyApplied(f, applied) {
-    return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        return f.apply(void 0, (applied.concat(args)));
-    };
+    return function (...args) { return f(...(applied.concat(args))); };
 }
-var makeFunction_ = withMethodCallSupport(function (f) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
-    }
+const makeFunction_ = withMethodCallSupport(function (f, ...args) {
     if (_.isFunction(f)) {
         if (args.length) {
             return partiallyApplied(f, args);
@@ -4954,7 +4729,7 @@ var makeFunction_ = withMethodCallSupport(function (f) {
 });
 /** @hidden */
 function makeFunction(f, args) {
-    return makeFunction_.apply(void 0, [f].concat(args));
+    return makeFunction_(f, ...args);
 }
 
 // TODO: types/doc for the object, fnname variant
@@ -4986,17 +4761,13 @@ function makeFunction(f, args) {
  * @param args
  * @returns {EventStream<V>}
  */
-function fromCallback(f) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
-    }
+function fromCallback(f, ...args) {
     return fromBinder(function (handler) {
         makeFunction(f, args)(handler);
         return nop;
     }, function (value) {
         return [value, endEvent()];
-    }).withDesc(new Desc("Bacon", "fromCallback", [f].concat(args)));
+    }).withDesc(new Desc("Bacon", "fromCallback", [f, ...args]));
 }
 /**
 Behaves the same way as `Bacon.fromCallback`,
@@ -5012,11 +4783,7 @@ read.onValue(function(value) { console.log("Read contents: " + value); });
 ```
 
  */
-function fromNodeCallback(f) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
-    }
+function fromNodeCallback(f, ...args) {
     return fromBinder(function (handler) {
         makeFunction(f, args)(handler);
         return nop;
@@ -5025,7 +4792,7 @@ function fromNodeCallback(f) {
             return [new Error$1(error), endEvent()];
         }
         return [value, endEvent()];
-    }).withDesc(new Desc("Bacon", "fromNodeCallback", [f].concat(args)));
+    }).withDesc(new Desc("Bacon", "fromNodeCallback", [f, ...args]));
 }
 
 /**
@@ -5070,22 +4837,20 @@ function fromESObservable(_observable) {
  merges all plugged-in streams and the values pushed using the [`push`](#push)
  method.
  */
-var Bus = /** @class */ (function (_super) {
-    __extends(Bus, _super);
-    function Bus() {
-        var _this = _super.call(this, new Desc("Bacon", "Bus", []), function (sink) { return _this.subscribeAll(sink); }) || this;
+class Bus extends EventStream {
+    constructor() {
+        super(new Desc("Bacon", "Bus", []), (sink) => this.subscribeAll(sink));
         /** @hidden */
-        _this.pushing = false;
+        this.pushing = false;
         /** @hidden */
-        _this.pushQueue = undefined;
+        this.pushQueue = undefined;
         /** @hidden */
-        _this.ended = false;
+        this.ended = false;
         /** @hidden */
-        _this.subscriptions = [];
-        _this.unsubAll = _.bind(_this.unsubAll, _this);
-        _this.subscriptions = []; // new array for each Bus instance
-        _this.ended = false;
-        return _this;
+        this.subscriptions = [];
+        this.unsubAll = _.bind(this.unsubAll, this);
+        this.subscriptions = []; // new array for each Bus instance
+        this.ended = false;
     }
     /**
      Plugs the given stream as an input to the Bus. All events from
@@ -5097,8 +4862,7 @@ var Bus = /** @class */ (function (_super) {
   
      * @returns a function that can be called to "unplug" the source from Bus.
      */
-    Bus.prototype.plug = function (input) {
-        var _this = this;
+    plug(input) {
         assertObservable(input);
         if (this.ended) {
             return;
@@ -5108,24 +4872,24 @@ var Bus = /** @class */ (function (_super) {
         if (typeof this.sink !== "undefined") {
             this.subscribeInput(sub);
         }
-        return (function () { return _this.unsubscribeInput(input); });
-    };
+        return (() => this.unsubscribeInput(input));
+    }
     /**
      Ends the stream. Sends an [End](end.html) event to all subscribers.
      After this call, there'll be no more events to the subscribers.
      Also, the [`push`](#push), [`error`](#error) and [`plug`](#plug) methods have no effect.
      */
-    Bus.prototype.end = function () {
+    end() {
         this.ended = true;
         this.unsubAll();
         if (typeof this.sink === "function") {
             return this.sink(endEvent());
         }
-    };
+    }
     /**
      * Pushes a new value to the stream.
      */
-    Bus.prototype.push = function (value) {
+    push(value) {
         if (!this.ended && typeof this.sink === "function") {
             var rootPush = !this.pushing;
             if (!rootPush) {
@@ -5155,17 +4919,17 @@ var Bus = /** @class */ (function (_super) {
                 this.pushing = false;
             }
         }
-    };
+    }
     /**
      * Pushes an error to this stream.
      */
-    Bus.prototype.error = function (error) {
+    error(error) {
         if (typeof this.sink === "function") {
             return this.sink(new Error$1(error));
         }
-    };
+    }
     /** @hidden */
-    Bus.prototype.unsubAll = function () {
+    unsubAll() {
         var iterable = this.subscriptions;
         for (var i = 0, sub; i < iterable.length; i++) {
             sub = iterable[i];
@@ -5173,9 +4937,9 @@ var Bus = /** @class */ (function (_super) {
                 sub.unsub();
             }
         }
-    };
+    }
     /** @hidden */
-    Bus.prototype.subscribeAll = function (newSink) {
+    subscribeAll(newSink) {
         if (this.ended) {
             newSink(endEvent());
         }
@@ -5188,30 +4952,29 @@ var Bus = /** @class */ (function (_super) {
             }
         }
         return this.unsubAll;
-    };
+    }
     /** @hidden */
-    Bus.prototype.guardedSink = function (input) {
-        var _this = this;
-        return function (event) {
+    guardedSink(input) {
+        return (event) => {
             if (event.isEnd) {
-                _this.unsubscribeInput(input);
+                this.unsubscribeInput(input);
                 return noMore;
             }
-            else if (_this.sink) {
-                return _this.sink(event);
+            else if (this.sink) {
+                return this.sink(event);
             }
             else {
                 return more;
             }
         };
-    };
+    }
     /** @hidden */
-    Bus.prototype.subscribeInput = function (subscription) {
+    subscribeInput(subscription) {
         subscription.unsub = subscription.input.subscribeInternal(this.guardedSink(subscription.input));
         return subscription.unsub;
-    };
+    }
     /** @hidden */
-    Bus.prototype.unsubscribeInput = function (input) {
+    unsubscribeInput(input) {
         var iterable = this.subscriptions;
         for (var i = 0, sub; i < iterable.length; i++) {
             sub = iterable[i];
@@ -5223,9 +4986,8 @@ var Bus = /** @class */ (function (_super) {
                 return;
             }
         }
-    };
-    return Bus;
-}(EventStream));
+    }
+}
 
 /** @hidden */
 function tryF(f) {
@@ -5242,7 +5004,7 @@ function tryF(f) {
 /**
  * JQuery/Zepto integration support
  */
-var $ = {
+const $ = {
     /**
      Creates an EventStream from events on a
      jQuery or Zepto.js object. You can pass optional arguments to add a
@@ -5258,21 +5020,20 @@ var $ = {
      Note: you need to install the `asEventStream` method on JQuery by calling
      [init()](#_.aseventstream) as in `Bacon.$.init($)`.
      */
-    asEventStream: function (eventName, selector, eventTransformer) {
-        var _this = this;
+    asEventStream(eventName, selector, eventTransformer) {
         if (_.isFunction(selector)) {
             eventTransformer = selector;
             selector = undefined;
         }
-        return fromBinder(function (handler) {
-            _this.on(eventName, selector, handler);
-            return (function () { return _this.off(eventName, selector, handler); });
+        return fromBinder((handler) => {
+            this.on(eventName, selector, handler);
+            return (() => this.off(eventName, selector, handler));
         }, eventTransformer).withDesc(new Desc(this.selector || this, "asEventStream", [eventName]));
     },
     /**
      * Installs the [asEventStream](#_.aseventstream) to the given jQuery/Zepto object (the `$` object).
      */
-    init: function (jQuery) {
+    init(jQuery) {
         jQuery.fn.asEventStream = $.asEventStream;
     }
 };
@@ -5280,69 +5041,6 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '<version>';
+const version = '<version>';
 
-exports.$ = $;
-exports.Bus = Bus;
-exports.CompositeUnsubscribe = CompositeUnsubscribe;
-exports.Desc = Desc;
-exports.End = End;
-exports.Error = Error$1;
-exports.Event = Event;
-exports.EventStream = EventStream;
-exports.Initial = Initial;
-exports.Next = Next;
-exports.Observable = Observable;
-exports.Property = Property;
-exports.Value = Value;
-exports._ = _;
-exports.combine = combine;
-exports.combineAsArray = combineAsArray;
-exports.combineTemplate = combineTemplate;
-exports.combineWith = combineWith;
-exports.concatAll = concatAll;
-exports.constant = constant;
-exports.fromArray = fromArray;
-exports.fromBinder = fromBinder;
-exports.fromCallback = fromCallback;
-exports.fromESObservable = fromESObservable;
-exports.fromEvent = fromEvent;
-exports.fromEventTarget = fromEvent;
-exports.fromNodeCallback = fromNodeCallback;
-exports.fromPoll = fromPoll;
-exports.fromPromise = fromPromise;
-exports.getScheduler = getScheduler;
-exports.groupSimultaneous = groupSimultaneous;
-exports.hasValue = hasValue;
-exports.interval = interval;
-exports.isEnd = isEnd;
-exports.isError = isError;
-exports.isEvent = isEvent;
-exports.isInitial = isInitial;
-exports.isNext = isNext;
-exports.later = later;
-exports.mergeAll = mergeAll;
-exports.more = more;
-exports.never = never;
-exports.noMore = noMore;
-exports.nullSink = nullSink;
-exports.nullVoidSink = nullVoidSink;
-exports.onValues = onValues;
-exports.once = once;
-exports.repeat = repeat;
-exports.repeatedly = repeatedly;
-exports.retry = retry;
-exports.sequentially = sequentially;
-exports.setScheduler = setScheduler;
-exports.silence = silence;
-exports.spy = spy;
-exports.try = tryF;
-exports.update = update;
-exports.version = version;
-exports.when = when;
-exports.zipAsArray = zipAsArray;
-exports.zipWith = zipWith;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
+export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };

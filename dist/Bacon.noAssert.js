@@ -3679,11 +3679,8 @@
             _this.ended = false;
             _this.subscriptions = [];
             _this.unsubAll = _.bind(_this.unsubAll, _this);
-            _this.subscribeAll = _.bind(_this.subscribeAll, _this);
-            _this.guardedSink = _.bind(_this.guardedSink, _this);
             _this.subscriptions = [];
             _this.ended = false;
-            EventStream.call(_this, new Desc('Bacon', 'Bus', []), _this.subscribeAll);
             return _this;
         }
         Bus.prototype.plug = function (input) {
@@ -3822,7 +3819,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.10';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
