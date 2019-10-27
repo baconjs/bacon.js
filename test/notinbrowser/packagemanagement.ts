@@ -2,10 +2,6 @@ import { expect } from "chai";
 import * as fs from "fs";
 
 describe("Package management", function() {
-  if (typeof window !== 'undefined') { return; }
-
-  const verifyJson = (fn: string) =>
-    JSON.parse(fs.readFileSync(fn, "utf-8"));
   it("NPM", () =>
       verifyJson("package.json"));
   it("Component", () =>
@@ -14,14 +10,18 @@ describe("Package management", function() {
     verifyJson("bower.json");
   });
   describe("distribution files", function() {
-    checkDistFile("dist/Bacon.js")
-    checkDistFile("dist/Bacon.min.js")
-    checkDistFile("dist/Bacon.mjs")
-    checkDistFile("dist/Bacon.min.mjs")
+    verifyDistFile("dist/Bacon.js")
+    verifyDistFile("dist/Bacon.min.js")
+    verifyDistFile("dist/Bacon.mjs")
+    verifyDistFile("dist/Bacon.min.mjs")
   })
 });
 
-function checkDistFile(filename: string) {
+function verifyJson(fn: string) {
+  JSON.parse(fs.readFileSync(fn, "utf-8"));
+}
+
+function verifyDistFile(filename: string) {
   describe(filename, function() {
     it("contains javascript", function() {
       let contents = fs.readFileSync(filename, "utf-8");
