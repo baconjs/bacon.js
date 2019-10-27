@@ -2,6 +2,15 @@
 
 - Distribute Bacon.js as ES6 module (#749)
 
+## 3.0.10
+
+- Fix minified Bacon.min.js
+- Split the map signature to come around some type inference inconveniences
+
+## 3.0.9
+
+- Avoid creating union type in concat if not needed
+
 ## 3.0.7
 
 - Upgrade to typescript 3.5
