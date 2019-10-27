@@ -14,20 +14,18 @@ describe("Package management", function() {
     verifyJson("bower.json");
   });
   describe("distribution files", function() {
-    describe("dist/Bacon.js", function() {
-        it("contains javascript", function() {
-            checkDistFile("dist/Bacon.js")
-        })
-    })
-    describe("dist/Bacon.min.js", function() {
-      it("contains javascript", function() {
-          checkDistFile("dist/Bacon.min.js")
-      })
-    })
+    checkDistFile("dist/Bacon.js")
+    checkDistFile("dist/Bacon.min.js")
+    checkDistFile("dist/Bacon.mjs")
+    checkDistFile("dist/Bacon.min.mjs")
   })
 });
 
 function checkDistFile(filename: string) {
-  let contents = fs.readFileSync(filename, "utf-8");
-  expect(contents.length).to.be.greaterThan(100);
+  describe(filename, function() {
+    it("contains javascript", function() {
+      let contents = fs.readFileSync(filename, "utf-8");
+      expect(contents.length).to.be.greaterThan(100);    
+    })
+  })
 }
