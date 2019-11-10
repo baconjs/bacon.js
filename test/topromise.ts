@@ -38,8 +38,8 @@ describe("toPromise", function() {
   });
 
   return it("supports custom Promise constructor", function() {
-    const promise = once("hi").toPromise(Bluebird);
-    expect(promise.constructor).to.equal(Bluebird);
+    const promise = once("hi").toPromise(Bluebird.Promise);
+    expect(promise.constructor).to.equal(Bluebird.Promise);
     return promise.then(x => expect(x).to.equal("hi"));
   });
 });
