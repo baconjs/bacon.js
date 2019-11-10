@@ -60,7 +60,7 @@
     "typedoc": "~0.14",
     "typescript": "~3.5",
     "uglify-js": "^3",
-    "zen-observable": "~0.8"
+    "zen-observable": "^0.8.14"
   },
   "repository": {
     "type": "git",
@@ -71,9 +71,10 @@
     "test": "npm run test:es6-modules && npm run test:ts-import && npm run test:unit",
     "test:ts-import": "tsc --noEmit test/importing/importtest.ts",
     "test:unit": "mocha -r ts-node/register test/*.ts test/notinbrowser/*.ts",
-    "test:es6-modules": "npm run test:prepare-es6-modules && if node --experimental-modules -e ''; then mocha -r esm test/es6-modules/*.js; fi",
+    "test:es6-modules": "npm run test:prepare-es6-modules && if node --experimental-modules -e ''; then mocha -r esm test/es6-modules/*.js; fi && npm run test:cleanup-es6-modules",
     "test:prepare-es6-modules": "./scripts/prepare_es6_tests.sh",
     "test:cleanup-es6-modules": "./scripts/cleanup_es6_tests.sh",
+    "test:run-es6-modules": "if node --experimental-modules -e ''; then mocha -r esm test/es6-modules/*.js; fi",
     "perftest": "performance/PerformanceTest.ts",
     "lint": "echo no linter at the moment",
     "dist": "./scripts/dist",

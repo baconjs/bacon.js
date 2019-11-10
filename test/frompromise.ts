@@ -7,12 +7,12 @@ describe("Bacon.fromPromise", function() {
   describe("With Bluebird", function() {
     describe("on success", () =>
       expectStreamEvents(
-        () => Bacon.fromPromise(new Bluebird(function(res, rej) { return res("ok"); }) as any),
+        () => Bacon.fromPromise(new Bluebird.Promise(function(res, rej) { return res("ok"); }) as any),
         ["ok"])
     );
     return describe("on error", () =>
       expectStreamEvents(
-        () => Bacon.fromPromise(new Bluebird(function(res, rej) { return rej("fail"); }) as any),
+        () => Bacon.fromPromise(new Bluebird.Promise(function(res, rej) { return rej("fail"); }) as any),
         [error("fail")])
     );
   });

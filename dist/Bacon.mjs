@@ -2978,16 +2978,7 @@ function decode(src, cases) {
 
 /** @hidden */
 function firstToPromise(src, PromiseCtr) {
-    // Can't do in the global scope, as shim can be applied after Bacon is loaded.
-    if (typeof PromiseCtr !== "function") {
-        if (typeof Promise === "function") {
-            PromiseCtr = (f) => new Promise(f);
-        }
-        else {
-            throw new Error("There isn't default Promise, use shim or parameter");
-        }
-    }
-    return new PromiseCtr((resolve, reject) => src.subscribe((event) => {
+    const generator = (resolve, reject) => src.subscribe((event) => {
         if (hasValue(event)) {
             resolve(event.value);
         }
@@ -2996,7 +2987,17 @@ function firstToPromise(src, PromiseCtr) {
         }
         // One event is enough
         return noMore;
-    }));
+    });
+    // Can't do in the global scope, as shim can be applied after Bacon is loaded.
+    if (typeof PromiseCtr === "function") {
+        return new PromiseCtr(generator);
+    }
+    else if (typeof Promise === "function") {
+        return new Promise(generator);
+    }
+    else {
+        throw new Error("There isn't default Promise, use shim or parameter");
+    }
 }
 /** @hidden */
 function toPromise(src, PromiseCtr) {
