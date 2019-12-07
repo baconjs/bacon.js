@@ -162,8 +162,8 @@ export function isEvent<V>(e: any): e is Event<V> {
 /**
  * Returns true if the given event is an [Initial](classes/initial.html) value of a [Property](classes/property.html).
  */
-export function isInitial<V>(e: any): e is Initial<V> {
-  return e && e._isInitial
+export function isInitial<V>(e: Event<V>): e is Initial<V> {
+  return e && (e as any)._isInitial
 }
 
 /**
