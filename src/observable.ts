@@ -997,7 +997,7 @@ export class Property<V> extends Observable<V> {
 
   /** @hidden */
   transformChanges(desc: Desc, f: EventStreamDelay<V>): this {
-    return <any>transformPropertyChanges(this, f).withDesc(desc)
+    return <any>transformPropertyChanges(this, f, desc)
   }
   /**
    For each element in the source stream, spawn a new
