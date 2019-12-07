@@ -3,7 +3,7 @@ import { Desc } from "./describe";
 import { nop } from "./helpers";
 import Observable from "./observable";
 import { EventSink } from "./types";
-import { tail, head, fold } from "./_";
+import { tail, head, fold } from "./_";
 import never from "./never";
 import { argumentsToObservables } from "./internal/argumentstoobservables";
 import { more } from "./reply";
