@@ -11,7 +11,7 @@ export declare type Unsub = () => void;
 export declare const nullSink: Sink<any>;
 /** @hidden */
 export declare const nullVoidSink: VoidSink;
-export declare type Subscribe<T> = (arg: EventSink<T>) => any;
+export declare type Subscribe<T> = (arg: EventSink<T>) => Unsub;
 /** @hidden */
 export declare type EventStreamDelay<V> = (stream: EventStream<V>) => EventStream<V>;
 export declare type Function0<R> = () => R;

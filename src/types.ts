@@ -12,7 +12,7 @@ export type Unsub = () => void
 export const nullSink: Sink<any> = () => more
 /** @hidden */
 export const nullVoidSink: VoidSink = () => more
-export type Subscribe<T> = (arg: EventSink<T>) => any;
+export type Subscribe<T> = (arg: EventSink<T>) => Unsub;
 /** @hidden */
 export type EventStreamDelay<V> = (stream: EventStream<V>) => EventStream<V>
 export type Function0<R> = () => R;
