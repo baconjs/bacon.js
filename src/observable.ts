@@ -39,7 +39,7 @@ import { sampledBy, sampleP } from "./sample";
 import { filter } from "./filter";
 import { and, not, or } from "./boolean";
 import flatMapFirst from "./flatmapfirst";
-import addPropertyInitValueToStream from "./internal/addpropertyinitialvaluetostream";
+import transformPropertyChanges from "./internal/transformpropertychanges";
 import fold from "./fold";
 import { startWithE, startWithP } from "./startwith";
 import takeUntil from "./takeuntil";
@@ -243,7 +243,7 @@ delayed:   --asdf----asdf--
   }
 
   /** @hidden */
-  abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this
+  abstract transformChanges(desc: Desc, f: EventStreamDelay<V>): this
 
   /**
    * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
@@ -990,13 +990,14 @@ export class Property<V> extends Observable<V> {
    */
   concat(other: Observable<V>): Property<V>
   concat<V2>(other: Observable<V2>): Property<V | V2>
+
   concat(other: Observable<any>): Property<any> {
-    return addPropertyInitValueToStream<any>(this as Property<any>, this.changes().concat(other))
+    return this.transformChanges(describe(this, "concat", other), changes => changes.concat(other))
   }
 
   /** @hidden */
-  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
-    return <any>addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc)
+  transformChanges(desc: Desc, f: EventStreamDelay<V>): this {
+    return <any>transformPropertyChanges(this, f).withDesc(desc)
   }
   /**
    For each element in the source stream, spawn a new
@@ -1351,7 +1352,7 @@ export class EventStream<V> extends Observable<V> {
     return concatE(this, other, options)
   }
   /** @hidden */
-  delayChanges(desc: Desc, f: EventStreamDelay<V>): this {
+  transformChanges(desc: Desc, f: EventStreamDelay<V>): this {
     return <any>f(this).withDesc(desc)
   }
 

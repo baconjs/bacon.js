@@ -5,10 +5,11 @@ import { describe } from '../describe';
 import UpdateBarrier from './updatebarrier';
 import { endEvent, Event } from '../event';
 import { Property } from "../observable";;
-import { EventSink } from "../types";
+import { EventSink, EventStreamDelay } from "../types";
 
 /** @hidden */
-export default function addPropertyInitValueToStream<V>(property: Property<V>, stream: EventStream<V>): Property<V> {
+export default function transformPropertyChanges<V>(property: Property<V>, f: EventStreamDelay<V>): Property<V> {
+  const stream = f(property.changes())
   const justInitValue: EventStream<V> = new EventStream(
     describe(property, "justInitValue"), 
     function(sink: EventSink<V>) {

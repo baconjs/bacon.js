@@ -8,7 +8,7 @@ import once from "./once"
 
 /** @hidden */
 export function debounce<V>(src: Observable<V>, delay: number): Observable<V> {
-  return src.delayChanges(new Desc(src, "debounce", [delay]), function(changes) {
+  return src.transformChanges(new Desc(src, "debounce", [delay]), function(changes) {
     return changes.flatMapLatest(function(value) {
       return later(delay, value)
     })
@@ -17,7 +17,7 @@ export function debounce<V>(src: Observable<V>, delay: number): Observable<V> {
 
 /** @hidden */
 export function debounceImmediate<V>(src: Observable<V>, delay: number): Observable<V> {
-  return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function(changes) {
+  return src.transformChanges(new Desc(src, "debounceImmediate", [delay]), function(changes) {
     return changes.flatMapFirst(function(value) {
       return once(value).concat(later(delay, value).errors());
     })

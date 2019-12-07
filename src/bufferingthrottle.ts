@@ -8,7 +8,7 @@ import { Desc } from "./describe";
 /** @hidden */
 export default function bufferingThrottle<V>(src: Observable<V>, minimumInterval: number): Observable<V> {
   var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
-  return src.delayChanges(desc, changes => changes.flatMapConcat((x) => {
+  return src.transformChanges(desc, changes => changes.flatMapConcat((x) => {
     return once(x).concat(later(minimumInterval, x).errors());
   }))
 }

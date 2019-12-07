@@ -5,7 +5,7 @@ import { Desc } from "./describe";
 
 /** @hidden */
 export default function throttle<V>(src: Observable<V>, delay: number): Observable<V> {
-  return src.delayChanges(new Desc(src, "throttle", [delay]), (changes) =>
+  return src.transformChanges(new Desc(src, "throttle", [delay]), (changes) =>
     changes.bufferWithTime(delay).map((values) => values[values.length - 1])
   );
 }
