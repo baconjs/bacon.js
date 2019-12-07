@@ -1,3 +1,7 @@
+## 3.0.12
+
+- Fix replayed Initial events in doAction in case of `delay` et al (#753)
+
 ## 3.0.11
 
 - Distribute Bacon.js as ES6 module (#749)
