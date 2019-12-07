@@ -120,7 +120,7 @@ export declare function isEvent<V>(e: any): e is Event<V>;
 /**
  * Returns true if the given event is an [Initial](classes/initial.html) value of a [Property](classes/property.html).
  */
-export declare function isInitial<V>(e: any): e is Initial<V>;
+export declare function isInitial<V>(e: Event<V>): e is Initial<V>;
 /**
  * Returns true if the given event is an [Error](classes/error.html) event of an [Observable](classes/observable.html).
  */

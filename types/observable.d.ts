@@ -151,7 +151,7 @@ export declare abstract class Observable<V> {
      */
     delay(delayMs: number): this;
     /** @hidden */
-    abstract delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
+    abstract transformChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      * Returns the an array of dependencies that the Observable has. For instance, for `a.map(function() {}).deps()`, would return `[a]`.
      This method returns the "visible" dependencies only, skipping internal details.  This method is thus suitable for visualization tools.
@@ -748,7 +748,7 @@ export declare class Property<V> extends Observable<V> {
     concat(other: Observable<V>): Property<V>;
     concat<V2>(other: Observable<V2>): Property<V | V2>;
     /** @hidden */
-    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
+    transformChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned
@@ -1000,7 +1000,7 @@ export declare class EventStream<V> extends Observable<V> {
     concat(other: Observable<V>, options?: EventStreamOptions): EventStream<V>;
     concat<V2>(other: Observable<V2>, options?: EventStreamOptions): EventStream<V | V2>;
     /** @hidden */
-    delayChanges(desc: Desc, f: EventStreamDelay<V>): this;
+    transformChanges(desc: Desc, f: EventStreamDelay<V>): this;
     /**
      For each element in the source stream, spawn a new
      stream/property using the function `f`. Collect events from each of the spawned

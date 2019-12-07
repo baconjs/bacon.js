@@ -2244,24 +2244,33 @@ function concatAll() {
 }
 
 /** @hidden */
-function addPropertyInitValueToStream(property, stream) {
-    var justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
-        var value;
-        var unsub = property.dispatcher.subscribe(function (event) {
-            if (!event.isEnd) {
-                value = event;
-            }
-            return noMore;
+function transformPropertyChanges(property, f, desc) {
+    var initValue;
+    var comboSink;
+    // Create a `changes` stream to be transformed, which also snatches the Initial value for later use.
+    var changes = new EventStream(describe(property, "changes", []), function (sink) { return property.dispatcher.subscribe(function (event) {
+        if (!initValue && isInitial(event)) {
+            initValue = event;
+            UpdateBarrier.whenDoneWith(combo, function () {
+                if (!comboSink) {
+                    throw new Error("Init sequence fail");
+                }
+                comboSink(initValue);
+            });
+        }
+        if (!event.isInitial) {
+            return sink(event);
+        }
+        return more;
+    }); }, undefined, allowSync);
+    var transformedChanges = f(changes);
+    var combo = propertyFromStreamSubscribe(desc, function (sink) {
+        comboSink = sink;
+        return transformedChanges.dispatcher.subscribe(function (event) {
+            sink(event);
         });
-        UpdateBarrier.whenDoneWith(justInitValue, function () {
-            if ((typeof value !== "undefined" && value !== null)) {
-                sink(value);
-            }
-            return sink(endEvent());
-        });
-        return unsub;
-    }, undefined, allowSync);
-    return justInitValue.concat(stream, allowSync).toProperty();
+    });
+    return combo;
 }
 
 /** @hidden */
@@ -2807,7 +2816,7 @@ function later(delay, value) {
 
 /** @hidden */
 function delay(src, delay) {
-    return src.delayChanges(new Desc(src, "delay", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "delay", [delay]), function (changes) {
         return changes.flatMap(function (value) {
             return later(delay, value);
         });
@@ -2816,7 +2825,7 @@ function delay(src, delay) {
 
 /** @hidden */
 function debounce(src, delay) {
-    return src.delayChanges(new Desc(src, "debounce", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "debounce", [delay]), function (changes) {
         return changes.flatMapLatest(function (value) {
             return later(delay, value);
         });
@@ -2824,7 +2833,7 @@ function debounce(src, delay) {
 }
 /** @hidden */
 function debounceImmediate(src, delay) {
-    return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
         return changes.flatMapFirst(function (value) {
             return once(value).concat(later(delay, value).errors());
         });
@@ -2833,7 +2842,7 @@ function debounceImmediate(src, delay) {
 
 /** @hidden */
 function throttle(src, delay) {
-    return src.delayChanges(new Desc(src, "throttle", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "throttle", [delay]), function (changes) {
         return changes.bufferWithTime(delay).map(function (values) { return values[values.length - 1]; });
     });
 }
@@ -2841,7 +2850,7 @@ function throttle(src, delay) {
 /** @hidden */
 function bufferingThrottle(src, minimumInterval) {
     var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
-    return src.delayChanges(desc, function (changes) { return changes.flatMapConcat(function (x) {
+    return src.transformChanges(desc, function (changes) { return changes.flatMapConcat(function (x) {
         return once(x).concat(later(minimumInterval, x).errors());
     }); });
 }
@@ -3847,11 +3856,11 @@ var Property = /** @class */ (function (_super) {
         }); });
     };
     Property.prototype.concat = function (other) {
-        return addPropertyInitValueToStream(this, this.changes().concat(other));
+        return this.transformChanges(describe(this, "concat", other), function (changes) { return changes.concat(other); });
     };
     /** @hidden */
-    Property.prototype.delayChanges = function (desc, f) {
-        return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
+    Property.prototype.transformChanges = function (desc, f) {
+        return transformPropertyChanges(this, f, desc);
     };
     /**
      For each element in the source stream, spawn a new
@@ -4164,7 +4173,7 @@ var EventStream = /** @class */ (function (_super) {
         return concatE(this, other, options);
     };
     /** @hidden */
-    EventStream.prototype.delayChanges = function (desc, f) {
+    EventStream.prototype.transformChanges = function (desc, f) {
         return f(this).withDesc(desc);
     };
     /**
@@ -5280,7 +5289,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.11';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;

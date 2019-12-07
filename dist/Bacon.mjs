@@ -2117,24 +2117,33 @@ function concatAll(...streams_) {
 }
 
 /** @hidden */
-function addPropertyInitValueToStream(property, stream) {
-    const justInitValue = new EventStream(describe(property, "justInitValue"), function (sink) {
-        let value;
-        const unsub = property.dispatcher.subscribe(function (event) {
-            if (!event.isEnd) {
-                value = event;
-            }
-            return noMore;
+function transformPropertyChanges(property, f, desc) {
+    let initValue;
+    let comboSink;
+    // Create a `changes` stream to be transformed, which also snatches the Initial value for later use.
+    const changes = new EventStream(describe(property, "changes", []), (sink) => property.dispatcher.subscribe(function (event) {
+        if (!initValue && isInitial(event)) {
+            initValue = event;
+            UpdateBarrier.whenDoneWith(combo, function () {
+                if (!comboSink) {
+                    throw new Error("Init sequence fail");
+                }
+                comboSink(initValue);
+            });
+        }
+        if (!event.isInitial) {
+            return sink(event);
+        }
+        return more;
+    }), undefined, allowSync);
+    const transformedChanges = f(changes);
+    const combo = propertyFromStreamSubscribe(desc, (sink) => {
+        comboSink = sink;
+        return transformedChanges.dispatcher.subscribe(function (event) {
+            sink(event);
         });
-        UpdateBarrier.whenDoneWith(justInitValue, function () {
-            if ((typeof value !== "undefined" && value !== null)) {
-                sink(value);
-            }
-            return sink(endEvent());
-        });
-        return unsub;
-    }, undefined, allowSync);
-    return justInitValue.concat(stream, allowSync).toProperty();
+    });
+    return combo;
 }
 
 /** @hidden */
@@ -2667,7 +2676,7 @@ function later(delay, value) {
 
 /** @hidden */
 function delay(src, delay) {
-    return src.delayChanges(new Desc(src, "delay", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "delay", [delay]), function (changes) {
         return changes.flatMap(function (value) {
             return later(delay, value);
         });
@@ -2676,7 +2685,7 @@ function delay(src, delay) {
 
 /** @hidden */
 function debounce(src, delay) {
-    return src.delayChanges(new Desc(src, "debounce", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "debounce", [delay]), function (changes) {
         return changes.flatMapLatest(function (value) {
             return later(delay, value);
         });
@@ -2684,7 +2693,7 @@ function debounce(src, delay) {
 }
 /** @hidden */
 function debounceImmediate(src, delay) {
-    return src.delayChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
+    return src.transformChanges(new Desc(src, "debounceImmediate", [delay]), function (changes) {
         return changes.flatMapFirst(function (value) {
             return once(value).concat(later(delay, value).errors());
         });
@@ -2693,13 +2702,13 @@ function debounceImmediate(src, delay) {
 
 /** @hidden */
 function throttle(src, delay) {
-    return src.delayChanges(new Desc(src, "throttle", [delay]), (changes) => changes.bufferWithTime(delay).map((values) => values[values.length - 1]));
+    return src.transformChanges(new Desc(src, "throttle", [delay]), (changes) => changes.bufferWithTime(delay).map((values) => values[values.length - 1]));
 }
 
 /** @hidden */
 function bufferingThrottle(src, minimumInterval) {
     var desc = new Desc(src, "bufferingThrottle", [minimumInterval]);
-    return src.delayChanges(desc, changes => changes.flatMapConcat((x) => {
+    return src.transformChanges(desc, changes => changes.flatMapConcat((x) => {
         return once(x).concat(later(minimumInterval, x).errors());
     }));
 }
@@ -3661,11 +3670,11 @@ class Property extends Observable {
         }));
     }
     concat(other) {
-        return addPropertyInitValueToStream(this, this.changes().concat(other));
+        return this.transformChanges(describe(this, "concat", other), changes => changes.concat(other));
     }
     /** @hidden */
-    delayChanges(desc, f) {
-        return addPropertyInitValueToStream(this, f(this.changes())).withDesc(desc);
+    transformChanges(desc, f) {
+        return transformPropertyChanges(this, f, desc);
     }
     /**
      For each element in the source stream, spawn a new
@@ -3973,7 +3982,7 @@ class EventStream extends Observable {
         return concatE(this, other, options);
     }
     /** @hidden */
-    delayChanges(desc, f) {
+    transformChanges(desc, f) {
         return f(this).withDesc(desc);
     }
     /**
