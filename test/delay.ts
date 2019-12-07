@@ -45,5 +45,15 @@ describe("Property.delay", function() {
       () => series(3, [1]).toProperty(0).delay(1).takeUntil(later(t(2))),
       [0])
   );
+  it("does not cause double subcription to source (#753)", () => {
+    var source = Bacon.constant("Y"); 
+    var actionCounter = 0
+    var derived = source
+        .doAction(x => actionCounter++)
+        .debounce(0);
+    
+    derived.onValue()
+    expect(actionCounter).to.equal(1)
+  })
   it("toString", () => expect(Bacon.constant(0).delay(1).toString()).to.equal("Bacon.constant(0).delay(1)"));
 });
