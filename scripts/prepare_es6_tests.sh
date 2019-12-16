@@ -10,8 +10,8 @@ done
 
 ### particular path fixes
 # alternative import for baconjs in two test files
-sed -i '' -E 's/ from "../..";/ from \"..\/..\/dist\/Bacon.mjs\";/' test/es6-modules/_.js
-sed -i '' -E 's/ from "../..";/ from \"..\/..\/dist\/Bacon.mjs\";/' test/es6-modules/combinetemplate.js
+sed -i '' -E 's/ from "..";/ from \"..\/..\/dist\/Bacon.mjs\";/' test/es6-modules/_.js
+sed -i '' -E 's/ from "..";/ from \"..\/..\/dist\/Bacon.mjs\";/' test/es6-modules/combinetemplate.js
 
 # util sources
 sed -i '' -E 's/import \* as Bacon from \"..\/..\";/import \* as Bacon from \"..\/..\/..\/dist\/Bacon.mjs\";/' test/es6-modules/util/TickScheduler.js
