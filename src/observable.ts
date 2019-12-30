@@ -1231,6 +1231,10 @@ export class Property<V> extends Observable<V> {
   withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
+
+  get [Symbol.toStringTag](){
+    return "Bacon.Property";
+  }
 }
 
 /** @hidden */
@@ -1576,6 +1580,10 @@ export class EventStream<V> extends Observable<V> {
   withStateMachine<State,Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out> {
     return <any>withStateMachine<V, State, Out>(initState, f, this)
   }
+
+  get [Symbol.toStringTag]() {
+        return "Bacon.EventStream";
+    }
 }
 
 /** @hidden */

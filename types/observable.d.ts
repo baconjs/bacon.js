@@ -909,6 +909,7 @@ export declare class Property<V> extends Observable<V> {
      @typeparam  Out     type of values to be emitted
      */
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): Property<Out>;
+    readonly [Symbol.toStringTag]: string;
 }
 /** @hidden */
 export declare function isProperty<V>(x: any): x is Property<V>;
@@ -1174,6 +1175,7 @@ export declare class EventStream<V> extends Observable<V> {
      @typeparam  Out     type of values to be emitted
      */
     withStateMachine<State, Out>(initState: State, f: StateF<V, State, Out>): EventStream<Out>;
+    readonly [Symbol.toStringTag]: string;
 }
 /** @hidden */
 export declare function newEventStream<V>(description: Desc, subscribe: Subscribe<V>): EventStream<V>;
