@@ -2227,7 +2227,7 @@ function concatE(left, right, options) {
     }, undefined, options);
 }
 /**
- Concatenates given array of EventStreams or Properties. Works by subcribing to the first source, and listeing to that
+ Concatenates given array of EventStreams or Properties. Works by subscribing to the first source, and listeing to that
  until it ends. Then repeatedly subscribes to the next source, until all sources have ended.
 
  See [`concat`](#observable-concat)
@@ -5289,7 +5289,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.12';
+var version = '3.0.13';
 
 exports.$ = $;
 exports.Bus = Bus;
