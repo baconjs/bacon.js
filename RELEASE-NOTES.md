@@ -1,3 +1,7 @@
+## 3.0.13
+
+- Typo fix
+
 ## 3.0.12
 
 - Fix replayed Initial events in doAction in case of `delay` et al (#753)
