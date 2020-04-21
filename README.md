@@ -24,7 +24,7 @@ Here's the stuff.
 - [Migrating to 2.0](https://github.com/baconjs/bacon.js/wiki/Migration-from-version-1.0-to-2.0)
 
 [![Build Status](https://travis-ci.org/baconjs/bacon.js.svg?branch=master)](https://travis-ci.org/baconjs/bacon.js)
-[![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)](https://www.browserstack.com/automate/public-build/RDRnTElXMlRsK2pWdXhYQXVOMkQvdz09LS1mbmgyL0l2NlVBUFZQNWEzYlIvWit3PT0=--779bf4c07cb76abcbee64b15f00e1998f7880ff2%)
+[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=Mlh0UHp2b1pJS01Uam5ZNHdIZnNHTjJoWGFpNldqR2JUSHdiV2NWb2dyST0tLUowV2Nrd0VmZXJhZWsyNVlyZUJxeHc9PQ==--040027ccf71cd208e0d2597276f5ef1e79eedd43%)](https://automate.browserstack.com/badge.svg?badge_key=Mlh0UHp2b1pJS01Uam5ZNHdIZnNHTjJoWGFpNldqR2JUSHdiV2NWb2dyST0tLUowV2Nrd0VmZXJhZWsyNVlyZUJxeHc9PQ==--040027ccf71cd208e0d2597276f5ef1e79eedd43%)
 [![NPM version](http://img.shields.io/npm/v/baconjs.svg)](https://www.npmjs.org/package/baconjs)
 [![Dependency Status](https://david-dm.org/baconjs/bacon.js.svg)](https://david-dm.org/baconjs/bacon.js)
 [![devDependency Status](https://david-dm.org/baconjs/bacon.js/dev-status.svg)](https://david-dm.org/baconjs/bacon.js#info=devDependencies)
