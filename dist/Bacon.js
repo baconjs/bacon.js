@@ -33,6 +33,14 @@ function __extends(d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
+function __spreadArrays() {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+}
+
 /** @hidden */
 function nop() { }
 /** @hidden */
@@ -1916,7 +1924,7 @@ function combineWith(f) {
     }
     // TODO: untyped
     var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
-    var desc = new Desc("Bacon", "combineWith", [f].concat(streams));
+    var desc = new Desc("Bacon", "combineWith", __spreadArrays([f], streams));
     return combineAsArray(streams).map(function (values) {
         return f.apply(void 0, values);
     }).withDesc(desc);
@@ -3775,7 +3783,7 @@ var Observable = /** @class */ (function () {
         for (var _i = 2; _i < arguments.length; _i++) {
             args[_i - 2] = arguments[_i];
         }
-        this.desc = describe.apply(void 0, [context, method].concat(args));
+        this.desc = describe.apply(void 0, __spreadArrays([context, method], args));
         return this;
     };
     /**
@@ -4492,7 +4500,7 @@ function update(initial) {
     }
     return when.apply(void 0, rawPatterns).scan(initial, (function (x, f) {
         return f(x);
-    })).withDesc(new Desc("Bacon", "update", [initial].concat(patterns)));
+    })).withDesc(new Desc("Bacon", "update", __spreadArrays([initial], patterns)));
 }
 function lateBindFirst(f) {
     return function () {
@@ -4932,7 +4940,7 @@ function withMethodCallSupport(wrapped) {
             };
             args = args.slice(1);
         }
-        return wrapped.apply(void 0, [f].concat(args));
+        return wrapped.apply(void 0, __spreadArrays([f], args));
     };
 }
 function partiallyApplied(f, applied) {
@@ -4963,7 +4971,7 @@ var makeFunction_ = withMethodCallSupport(function (f) {
 });
 /** @hidden */
 function makeFunction(f, args) {
-    return makeFunction_.apply(void 0, [f].concat(args));
+    return makeFunction_.apply(void 0, __spreadArrays([f], args));
 }
 
 // TODO: types/doc for the object, fnname variant
@@ -5005,7 +5013,7 @@ function fromCallback(f) {
         return nop;
     }, function (value) {
         return [value, endEvent()];
-    }).withDesc(new Desc("Bacon", "fromCallback", [f].concat(args)));
+    }).withDesc(new Desc("Bacon", "fromCallback", __spreadArrays([f], args)));
 }
 /**
 Behaves the same way as `Bacon.fromCallback`,
@@ -5034,7 +5042,7 @@ function fromNodeCallback(f) {
             return [new Error$1(error), endEvent()];
         }
         return [value, endEvent()];
-    }).withDesc(new Desc("Bacon", "fromNodeCallback", [f].concat(args)));
+    }).withDesc(new Desc("Bacon", "fromNodeCallback", __spreadArrays([f], args)));
 }
 
 /**

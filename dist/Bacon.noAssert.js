@@ -19,6 +19,14 @@
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
+    function __spreadArrays() {
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
+            s += arguments[i].length;
+        for (var r = Array(s), k = 0, i = 0; i < il; i++)
+            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+                r[k] = a[j];
+        return r;
+    }
     function nop() {
     }
     var isArray = Array.isArray || function (xs) {
@@ -1717,7 +1725,7 @@
             streams[_i - 1] = arguments[_i];
         }
         var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
-        var desc = new Desc('Bacon', 'combineWith', [f].concat(streams));
+        var desc = new Desc('Bacon', 'combineWith', __spreadArrays([f], streams));
         return combineAsArray(streams).map(function (values) {
             return f.apply(void 0, values);
         }).withDesc(desc);
@@ -3008,10 +3016,10 @@
             for (var _i = 2; _i < arguments.length; _i++) {
                 args[_i - 2] = arguments[_i];
             }
-            this.desc = describe.apply(void 0, [
+            this.desc = describe.apply(void 0, __spreadArrays([
                 context,
                 method
-            ].concat(args));
+            ], args));
             return this;
         };
         Observable.prototype.zip = function (other, f) {
@@ -3285,7 +3293,7 @@
         }
         return when.apply(void 0, rawPatterns).scan(initial, function (x, f) {
             return f(x);
-        }).withDesc(new Desc('Bacon', 'update', [initial].concat(patterns)));
+        }).withDesc(new Desc('Bacon', 'update', __spreadArrays([initial], patterns)));
     }
     function lateBindFirst(f) {
         return function () {
@@ -3584,7 +3592,7 @@
                 };
                 args = args.slice(1);
             }
-            return wrapped.apply(void 0, [f].concat(args));
+            return wrapped.apply(void 0, __spreadArrays([f], args));
         };
     }
     function partiallyApplied(f, applied) {
@@ -3612,7 +3620,7 @@
         }
     });
     function makeFunction(f, args) {
-        return makeFunction_.apply(void 0, [f].concat(args));
+        return makeFunction_.apply(void 0, __spreadArrays([f], args));
     }
     function fromCallback(f) {
         var args = [];
@@ -3627,7 +3635,7 @@
                 value,
                 endEvent()
             ];
-        }).withDesc(new Desc('Bacon', 'fromCallback', [f].concat(args)));
+        }).withDesc(new Desc('Bacon', 'fromCallback', __spreadArrays([f], args)));
     }
     function fromNodeCallback(f) {
         var args = [];
@@ -3648,7 +3656,7 @@
                 value,
                 endEvent()
             ];
-        }).withDesc(new Desc('Bacon', 'fromNodeCallback', [f].concat(args)));
+        }).withDesc(new Desc('Bacon', 'fromNodeCallback', __spreadArrays([f], args)));
     }
     function fromESObservable(_observable) {
         var observable;
