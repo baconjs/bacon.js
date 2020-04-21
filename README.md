@@ -517,7 +517,7 @@ Contribute
 Use [GitHub issues](https://github.com/baconjs/bacon.js/issues) and [Pull Requests](https://github.com/baconjs/bacon.js/pulls).
 
 Note:
-- the `dist/Bacon*.js` files are assembled from files in `src/`. After updating source files, run `npm install`.
+- the `dist/Bacon*.js` files are assembled from files in `src/`. After updating source files, run `npm install` to update the generated files. Then commit and create your Pull Request.
 - the [API docs](http://baconjs.github.io/api3/index.html) are generated from this README and docstrings in the sources in the src directory. See the [baconjs.github.io](https://github.com/baconjs/baconjs.github.io) repository for more info.
 
 Sponsors
