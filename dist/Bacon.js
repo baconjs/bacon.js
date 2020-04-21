@@ -2,7 +2,7 @@
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
 (global = global || self, factory(global.Bacon = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -5289,7 +5289,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.13';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;
@@ -5354,4 +5354,4 @@ exports.zipWith = zipWith;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));
