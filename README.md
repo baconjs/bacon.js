@@ -382,7 +382,7 @@ on how the Property was created.
 Atomic updates
 --------------
 
-Bacon.js supports atomic updates to properties.
+Bacon.js supports atomic updates to properties for solving a [glitches problem](https://en.wikipedia.org/wiki/Reactive_programming#Glitches).
 
 Assume you have properties A and B and property C = A + B. Assume that
 both A and B depend on D, so that when D changes, both A and B will
