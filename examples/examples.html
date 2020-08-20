@@ -80,14 +80,12 @@
     </div>
   </body>
   <script>
-        function isEmpty(s) { return s.length == 0 }
+        const isEmpty = s => s.length === 0
 
-        function always(value) { () => value }
+        const always = value => () => value
 
-        function keyCodeIs(keyCode) {
-          return event => event.keyCode == keyCode
-        }
-
+        const keyCodeIs = (keyCode) => event => event.keyCode === keyCode
+        
         function keyDownEvents(keyCode) {
           return Bacon.fromEvent(document, "keydown").filter(keyCodeIs(keyCode))
         }
@@ -108,6 +106,7 @@
 
         // Combinators example
         keyStateProperty(32)
+          .log()
           .onValue(value => document.querySelector("#spacebar-value").textContent = value)
 
         // Enable/disable example
