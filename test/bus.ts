@@ -4,6 +4,21 @@ import { expectStreamEvents, unstable, error, soon, once, toValues, later, verif
 import { expect } from "chai";
 
 describe("Bacon.Bus", function() {
+  it("implements EventsStream and allows pushing values", () => {
+    const bus = new Bacon.Bus<number>();
+    const values: number[] = [];
+    bus.onValue(v => values.push(v))
+    bus.push(1)
+    expect(values).to.deep.equal([1])
+  })
+  it("the push method is bound", () => {
+    const bus = new Bacon.Bus<number>();
+    const values: number[] = [];
+    bus.onValue(v => values.push(v))
+    const push = bus.push
+    push(1)
+    expect(values).to.deep.equal([1])
+  })
   it("merges plugged-in streams", function() {
     const bus = new Bacon.Bus<string>();
     const values: string[] = [];

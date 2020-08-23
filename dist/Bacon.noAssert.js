@@ -3703,6 +3703,7 @@
             _this.ended = false;
             _this.subscriptions = [];
             _this.unsubAll = _.bind(_this.unsubAll, _this);
+            _this.push = _.bind(_this.push, _this);
             _this.subscriptions = [];
             _this.ended = false;
             return _this;
@@ -3843,7 +3844,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.14';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

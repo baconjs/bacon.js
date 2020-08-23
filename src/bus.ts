@@ -34,6 +34,7 @@ export default class Bus<V> extends EventStream<V> {
   constructor() {
     super(new Desc("Bacon", "Bus", []), (sink: EventSink<V>) => this.subscribeAll(sink))
     this.unsubAll = _.bind(this.unsubAll, this);
+    this.push = _.bind(this.push, this)
     this.subscriptions = [] // new array for each Bus instance
     this.ended = false;
   }

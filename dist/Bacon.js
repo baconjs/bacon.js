@@ -5090,6 +5090,7 @@ var Bus = /** @class */ (function (_super) {
         /** @hidden */
         _this.subscriptions = [];
         _this.unsubAll = _.bind(_this.unsubAll, _this);
+        _this.push = _.bind(_this.push, _this);
         _this.subscriptions = []; // new array for each Bus instance
         _this.ended = false;
         return _this;
@@ -5287,7 +5288,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.14';
+var version = '<version>';
 
 exports.$ = $;
 exports.Bus = Bus;

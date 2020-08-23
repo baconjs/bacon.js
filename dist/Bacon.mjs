@@ -4848,6 +4848,7 @@ class Bus extends EventStream {
         /** @hidden */
         this.subscriptions = [];
         this.unsubAll = _.bind(this.unsubAll, this);
+        this.push = _.bind(this.push, this);
         this.subscriptions = []; // new array for each Bus instance
         this.ended = false;
     }
