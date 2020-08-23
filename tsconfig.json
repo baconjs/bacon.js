@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "stripInternal": true,
     "lib": [
-      "ES5", "DOM"
+      "ES2015", "DOM"
     ]
   },
   "files": [
