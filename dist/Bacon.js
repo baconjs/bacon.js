@@ -1917,10 +1917,10 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-function combineWith(f) {
-    var streams = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        streams[_i - 1] = arguments[_i];
+function combineWith() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
     }
     // TODO: untyped
     var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
@@ -1929,8 +1929,9 @@ function combineWith(f) {
         return f.apply(void 0, values);
     }).withDesc(desc);
 }
+var combine = combineWith;
 /** @hidden */
-function combine(left, right, f) {
+function combineTwo(left, right, f) {
     return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 }
 function wrap(obs) {
@@ -3239,7 +3240,7 @@ var Observable = /** @class */ (function () {
   properties with array value. The result is a [Property](property.html).
      */
     Observable.prototype.combine = function (right, f) {
-        return combine(this, right, f);
+        return combineTwo(this, right, f).withDesc(new Desc(this, "combine", [right, f]));
     };
     /**
   Throttles stream/property by given amount
@@ -5316,6 +5317,7 @@ exports._ = _;
 exports.combine = combine;
 exports.combineAsArray = combineAsArray;
 exports.combineTemplate = combineTemplate;
+exports.combineTwo = combineTwo;
 exports.combineWith = combineWith;
 exports.concatAll = concatAll;
 exports.constant = constant;

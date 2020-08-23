@@ -175,7 +175,7 @@ describe("Bacon.combineWith", function() {
     expectPropertyEvents(
       function() {
         const f = Math.max;
-        return Bacon.combineWith(f, <any>[Bacon.constant(0), Bacon.constant(1)]);
+        return Bacon.combineWith(f, [Bacon.constant(0), Bacon.constant(1)]);
       },
       [1]
     )
@@ -184,16 +184,16 @@ describe("Bacon.combineWith", function() {
     expectPropertyEvents(
       function() {
         const f = Math.max;
-        return Bacon.combineWith(<any>[Bacon.constant(0), Bacon.constant(1)], <any>f);
+        return Bacon.combineWith([Bacon.constant(0), Bacon.constant(1)], f);
       },
       [1]
     )
   );
-  describe("works with streams provided as arguments and function as last argument (legacy support)", () =>
+  describe("works with streams provided as arguments and function as last argument", () =>
     expectPropertyEvents(
       function() {
         const f = Math.max;
-        return Bacon.combineWith(<any>Bacon.constant(0), <any>Bacon.constant(1), <any>f);
+        return Bacon.combineWith(Bacon.constant(0), Bacon.constant(1), f);
       },
       [1]
     )
@@ -206,6 +206,12 @@ describe("Bacon.combineWith", function() {
   );
   return it("toString", () => expect(Bacon.combineWith((function() {}), Bacon.never()).toString()).to.equal("Bacon.combineWith(function,Bacon.never())"));
 });
+
+describe("Bacon.combine", () => {
+  it("Is an alias for Bacon.combineWith", () => {
+    expect(Bacon.combine).to.equal(Bacon.combineWith)
+  })
+})
 
 describe("Bacon.onValues", () =>
   it("is a shorthand for combineAsArray.onValues", function() {

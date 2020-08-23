@@ -1803,7 +1803,7 @@ function sum3(x,y,z) { return x + y + z }
 Bacon.combineWith(sum3, p1, p2, p3)
 ```
 */
-function combineWith(f, ...streams) {
+function combineWith(...args) {
     // TODO: untyped
     var [streams, f] = argumentsToObservablesAndFunction(arguments);
     var desc = new Desc("Bacon", "combineWith", [f, ...streams]);
@@ -1811,8 +1811,9 @@ function combineWith(f, ...streams) {
         return f(...values);
     }).withDesc(desc);
 }
+const combine = combineWith;
 /** @hidden */
-function combine(left, right, f) {
+function combineTwo(left, right, f) {
     return whenP([[wrap(left), wrap(right)], f]).withDesc(new Desc(left, "combine", [right, f]));
 }
 function wrap(obs) {
@@ -3069,7 +3070,7 @@ class Observable {
   properties with array value. The result is a [Property](property.html).
      */
     combine(right, f) {
-        return combine(this, right, f);
+        return combineTwo(this, right, f).withDesc(new Desc(this, "combine", [right, f]));
     }
     /**
   Throttles stream/property by given amount
@@ -5052,4 +5053,4 @@ const $ = {
  */
 const version = '<version>';
 
-export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };
+export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };

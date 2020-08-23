@@ -1719,10 +1719,10 @@
             return constant([]);
         }
     }
-    function combineWith(f) {
-        var streams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            streams[_i - 1] = arguments[_i];
+    function combineWith() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
         }
         var _a = argumentsToObservablesAndFunction(arguments), streams = _a[0], f = _a[1];
         var desc = new Desc('Bacon', 'combineWith', __spreadArrays([f], streams));
@@ -1730,7 +1730,8 @@
             return f.apply(void 0, values);
         }).withDesc(desc);
     }
-    function combine(left, right, f) {
+    var combine = combineWith;
+    function combineTwo(left, right, f) {
         return whenP([
             [
                 wrap(left),
@@ -2807,7 +2808,10 @@
             return bufferingThrottle(this, minimumInterval);
         };
         Observable.prototype.combine = function (right, f) {
-            return combine(this, right, f);
+            return combineTwo(this, right, f).withDesc(new Desc(this, 'combine', [
+                right,
+                f
+            ]));
         };
         Observable.prototype.debounce = function (minimumInterval) {
             return debounce(this, minimumInterval);
@@ -3857,6 +3861,7 @@
     exports.combine = combine;
     exports.combineAsArray = combineAsArray;
     exports.combineTemplate = combineTemplate;
+    exports.combineTwo = combineTwo;
     exports.combineWith = combineWith;
     exports.concatAll = concatAll;
     exports.constant = constant;

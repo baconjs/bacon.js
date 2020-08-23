@@ -30,7 +30,7 @@ import { default as flatMapEvent } from "./flatmapevent";
 import endAsValue from "./endasvalue"
 import endOnError from "./endonerror";
 import awaiting from "./awaiting";
-import { combine } from "./combine";
+import { combineTwo } from "./combine";
 import { assertEventStream, assertFunction, assertNoArguments } from "./internal/assert";
 import skip from "./skip";
 import map from "./map";
@@ -155,7 +155,7 @@ method name instead, so you could do `a.combine(b, ".concat")` for two
 properties with array value. The result is a [Property](property.html).
    */
   combine<V2, R>(right: Observable<V2>, f: Function2<V, V2, R>): Property<R> {
-    return combine(this, right, f)
+    return combineTwo(this, right, f).withDesc(new Desc(this, "combine", [right, f]))
   }
   /**
 Concatenates two streams/properties into one stream/property so that
