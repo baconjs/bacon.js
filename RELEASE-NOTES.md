@@ -1,3 +1,7 @@
+## 3.0.14
+
+- Improved types for `Bacon.combineWith`
+
 ## 3.0.13
 
 - Typo fix
