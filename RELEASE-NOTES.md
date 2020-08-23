@@ -1,3 +1,7 @@
+## 3.0.15
+
+- `Bus.push` bound to Bus
+
 ## 3.0.14
 
 - Improved types for `Bacon.combineWith`
