@@ -18,6 +18,17 @@ import { Function0, Function1, Function2, Function3, Function4, Function5, Funct
  * @param streams streams and properties to combine
  */
 export declare function combineAsArray<V>(...streams: (Observable<V> | Observable<V>[])[]): Property<V[]>;
+/**
+  Combines given *n* Properties and
+  EventStreams using the given n-ary function `f(v1, v2 ...)`.
+
+  To calculate the current sum of three numeric Properties, you can do
+
+```js
+function sum3(x,y,z) { return x + y + z }
+Bacon.combineWith(sum3, p1, p2, p3)
+```
+*/
 export declare function combineWith<R>(fn: Function0<R>): Property<R>;
 export declare function combineWith<V, R>(a: Observable<V>, fn: Function1<V, R>): Property<R>;
 export declare function combineWith<V, V2, R>(a: Observable<V>, b: Observable<V2>, fn: Function2<V, V2, R>): Property<R>;
