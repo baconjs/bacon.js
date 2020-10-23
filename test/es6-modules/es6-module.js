@@ -10,4 +10,10 @@ describe("ES6 module", function() {
     b.push(2)
     expect(results).to.deep.equal([2,4])
   })
+  it("fromPromise", () => {
+    Bacon.fromPromise(new Promise(() => {}))
+  })
+  it("firstToPromise", () => {
+    Bacon.once(1).firstToPromise()
+  })
 });
