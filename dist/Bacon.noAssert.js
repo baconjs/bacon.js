@@ -2769,16 +2769,7 @@
         }).withDesc(new Desc(src, 'decode', [cases]));
     }
     function firstToPromise(src, PromiseCtr) {
-        if (typeof PromiseCtr !== 'function') {
-            if (typeof Promise === 'function') {
-                PromiseCtr = function (f) {
-                    return new Promise(f);
-                };
-            } else {
-                throw new Error('There isn\'t default Promise, use shim or parameter');
-            }
-        }
-        return new PromiseCtr(function (resolve, reject) {
+        var generator = function (resolve, reject) {
             return src.subscribe(function (event) {
                 if (hasValue(event)) {
                     resolve(event.value);
@@ -2788,7 +2779,14 @@
                 }
                 return noMore;
             });
-        });
+        };
+        if (typeof PromiseCtr === 'function') {
+            return new PromiseCtr(generator);
+        } else if (typeof Promise === 'function') {
+            return new Promise(generator);
+        } else {
+            throw new Error('There isn\'t default Promise, use shim or parameter');
+        }
     }
     function toPromise(src, PromiseCtr) {
         return src.last().firstToPromise(PromiseCtr);
@@ -3844,7 +3842,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.15';
+    var version = '<version>';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
