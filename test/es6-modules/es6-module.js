@@ -1,5 +1,6 @@
 import * as Bacon from '../../dist/Bacon.mjs';
 import { expect } from "chai";
+const pkg = require('../../package.json');
 
 describe("ES6 module", function() {
   it("Passes smoke test", () => {
@@ -15,5 +16,8 @@ describe("ES6 module", function() {
   })
   it("firstToPromise", () => {
     Bacon.once(1).firstToPromise()
+  })
+  it("has the version number", () => {
+    expect(Bacon.version).to.equal(pkg.version);
   })
 });
