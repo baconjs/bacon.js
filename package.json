@@ -90,5 +90,10 @@
     "typedoc": "typedoc --out docs --ignoreCompilerErrors src --mode file --excludeNotExported"
   },
   "main": "dist/Bacon.js",
+  "module": "./dist/Bacon.mjs",
+  "exports": {
+    "import": "./dist/Bacon.mjs",
+    "require": "./dist/Bacon.js"
+  },
   "types": "types/bacon.d.ts"
 }
