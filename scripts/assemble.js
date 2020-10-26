@@ -4,6 +4,7 @@ var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
 var typescriptPlugin = require("rollup-plugin-typescript2");
+var replace = require('@rollup/plugin-replace');
 var Terser = require("terser");
 
 var uglifyjs = require("uglify-js");
@@ -41,6 +42,11 @@ function main(options) {
       useTsconfigDeclarationDir: true
     })
   ];
+  
+  if (process.env.DIST_VERSION) {
+    plugins.push(replace({__version__: process.env.DIST_VERSION}));
+    pluginsTargetingES6.push(replace({__version__: process.env.DIST_VERSION}));
+  }
 
   // sequence of transpiling to ES5 and then to ES6
   rollup({

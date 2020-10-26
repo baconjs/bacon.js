@@ -29,13 +29,13 @@
     }
   ],
   "license": "MIT",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^14.6.0",
+    "@rollup/plugin-replace": "^2.3.3",
     "@types/bluebird": "^3.5.26",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^7.0.2",
+    "@types/node": "^14.6.0",
     "@types/sinon": "^9.0.0",
     "@types/zen-observable": "^0.8.0",
     "benchmark": "^2",
