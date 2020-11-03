@@ -2,7 +2,7 @@ import "./esobservable";
 /**
  *  Bacon.js version as string
  */
-export declare const version = "<version>";
+export declare const version = "__version__";
 export * from "./update";
 export { when, Pattern, Pattern1, Pattern2, Pattern3, Pattern4, Pattern5, Pattern6 } from "./when";
 export * from "./combine";
