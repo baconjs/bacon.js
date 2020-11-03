@@ -1,3 +1,7 @@
+## 3.0.17
+
+- Export ES module properly using the `exports` and `module`fields in `package.json`. #776 by @semmel.
+
 ## 3.0.15
 
 - `Bus.push` bound to Bus

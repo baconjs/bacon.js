@@ -3842,7 +3842,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.16';
+    var version = '3.0.17';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;
