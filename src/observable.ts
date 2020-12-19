@@ -595,7 +595,7 @@ Only applicable for observables with arrays as values.
   onValues(f: Function): Unsub {
     return this.onValue(function(args) { return f(...(<any>args)) });
   }
-  /** A synonym for [scan](#scan).
+  /** A synonym for [fold](#fold).
    */
   reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2> {
     return fold(this, seed, f)
