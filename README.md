@@ -195,7 +195,7 @@ Creating EventStreams and Properties
 There's a multitude of methods for creating an EventStream from different sources, including the DOM, node callbacks and promises for example. 
 See [EventStream](http://baconjs.github.io/api3/classes/eventstream.html) documentation.
 
-Properties are usually created based on EventStreams. Some common ways are intruduced in [Property](http://baconjs.github.io/api3/classes/property.html) documentation.
+Properties are usually created based on EventStreams. Some common ways are introduced in [Property](http://baconjs.github.io/api3/classes/property.html) documentation.
 
 Combining multiple streams and properties
 -----------------------------------------
