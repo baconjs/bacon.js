@@ -262,15 +262,15 @@ the previous value will be the given start.
 Example:
 
 ```js
-var distance = function (a,b) { return Math.abs(b - a) }
+var distance = function (a,b) { return a - b }
 Bacon.sequentially(1, [1,2,3]).diff(0, distance)
 ```
 
 This would result to following elements in the result stream:
 
-    1 - 0 = 1
-    2 - 1 = 1
-    3 - 2 = 1
+    0 - 1 = -1
+    1 - 2 = -1
+    2 - 3 = -1
 
    */
   diff<V2>(start: V, f: Differ<V, V2>): Property<V2> {
