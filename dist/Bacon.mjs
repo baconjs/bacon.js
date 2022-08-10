@@ -3152,15 +3152,15 @@ class Observable {
   Example:
   
   ```js
-  var distance = function (a,b) { return Math.abs(b - a) }
+  var distance = function (a,b) { return a - b }
   Bacon.sequentially(1, [1,2,3]).diff(0, distance)
   ```
   
   This would result to following elements in the result stream:
   
-      1 - 0 = 1
-      2 - 1 = 1
-      3 - 2 = 1
+      0 - 1 = -1
+      1 - 2 = -1
+      2 - 3 = -1
   
      */
     diff(start, f) {
@@ -3385,7 +3385,7 @@ class Observable {
     onValues(f) {
         return this.onValue(function (args) { return f(...args); });
     }
-    /** A synonym for [scan](#scan).
+    /** A synonym for [fold](#fold).
      */
     reduce(seed, f) {
         return fold$1(this, seed, f);
@@ -3783,6 +3783,9 @@ class Property extends Observable {
     map(f) {
         return map$1(this, f);
     }
+    ["fantasy-land/map"](f) {
+        return this.map(f);
+    }
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
     not() {
         return not(this);
@@ -4090,6 +4093,9 @@ class EventStream extends Observable {
    */
     map(f) {
         return map$1(this, f);
+    }
+    ["fantasy-land/map"](f) {
+        return this.map(f);
     }
     merge(other) {
         assertEventStream(other);

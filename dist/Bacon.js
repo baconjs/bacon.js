@@ -3322,15 +3322,15 @@ var Observable = /** @class */ (function () {
   Example:
   
   ```js
-  var distance = function (a,b) { return Math.abs(b - a) }
+  var distance = function (a,b) { return a - b }
   Bacon.sequentially(1, [1,2,3]).diff(0, distance)
   ```
   
   This would result to following elements in the result stream:
   
-      1 - 0 = 1
-      2 - 1 = 1
-      3 - 2 = 1
+      0 - 1 = -1
+      1 - 2 = -1
+      2 - 3 = -1
   
      */
     Observable.prototype.diff = function (start, f) {
@@ -3568,7 +3568,7 @@ var Observable = /** @class */ (function () {
     Observable.prototype.onValues = function (f) {
         return this.onValue(function (args) { return f.apply(void 0, args); });
     };
-    /** A synonym for [scan](#scan).
+    /** A synonym for [fold](#fold).
      */
     Observable.prototype.reduce = function (seed, f) {
         return fold$1(this, seed, f);
@@ -3977,6 +3977,9 @@ var Property = /** @class */ (function (_super) {
     Property.prototype.map = function (f) {
         return map$1(this, f);
     };
+    Property.prototype["fantasy-land/map"] = function (f) {
+        return this.map(f);
+    };
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
     Property.prototype.not = function () {
         return not(this);
@@ -4289,6 +4292,9 @@ var EventStream = /** @class */ (function (_super) {
    */
     EventStream.prototype.map = function (f) {
         return map$1(this, f);
+    };
+    EventStream.prototype["fantasy-land/map"] = function (f) {
+        return this.map(f);
     };
     EventStream.prototype.merge = function (other) {
         assertEventStream(other);

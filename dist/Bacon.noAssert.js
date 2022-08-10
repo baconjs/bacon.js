@@ -3087,6 +3087,9 @@
         Property.prototype.map = function (f) {
             return map$1(this, f);
         };
+        Property.prototype['fantasy-land/map'] = function (f) {
+            return this.map(f);
+        };
         Property.prototype.not = function () {
             return not(this);
         };
@@ -3190,6 +3193,9 @@
         };
         EventStream.prototype.map = function (f) {
             return map$1(this, f);
+        };
+        EventStream.prototype['fantasy-land/map'] = function (f) {
+            return this.map(f);
         };
         EventStream.prototype.merge = function (other) {
             return mergeAll(this, other).withDesc(new Desc(this, 'merge', [other]));
