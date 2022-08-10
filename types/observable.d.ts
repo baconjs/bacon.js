@@ -167,15 +167,15 @@ export declare abstract class Observable<V> {
   Example:
   
   ```js
-  var distance = function (a,b) { return Math.abs(b - a) }
+  var distance = function (a,b) { return a - b }
   Bacon.sequentially(1, [1,2,3]).diff(0, distance)
   ```
   
   This would result to following elements in the result stream:
   
-      1 - 0 = 1
-      2 - 1 = 1
-      3 - 2 = 1
+      0 - 1 = -1
+      1 - 2 = -1
+      2 - 3 = -1
   
      */
     diff<V2>(start: V, f: Differ<V, V2>): Property<V2>;
@@ -388,6 +388,7 @@ export declare abstract class Observable<V> {
   the given property.
     */
     abstract map<V2>(f: (Function1<V, V2> | Property<V2> | V2)): Observable<V2>;
+    abstract ["fantasy-land/map"]<V2>(f: Function1<V, V2>): Observable<V2>;
     /**
   Adds an extra [`Next`](next.html) event just before End. The value is created
   by calling the given function when the source stream ends. Instead of a
@@ -435,7 +436,7 @@ export declare abstract class Observable<V> {
   Only applicable for observables with arrays as values.
      */
     onValues(f: Function): Unsub;
-    /** A synonym for [scan](#scan).
+    /** A synonym for [fold](#fold).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
     /**
@@ -842,6 +843,7 @@ export declare class Property<V> extends Observable<V> {
     groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): Property<EventStream<V2>>;
     map<V2>(f: Function1<V, V2>): Property<V2>;
     map<V2>(f: Property<V2> | V2): Property<V2>;
+    ["fantasy-land/map"]<V2>(f: Function1<V, V2>): Property<V2>;
     /** Returns a Property that inverts the value of this one (using the `!` operator). **/
     not(): Property<boolean>;
     /**
@@ -1105,6 +1107,7 @@ export declare class EventStream<V> extends Observable<V> {
     groupBy<V2 = V>(keyF: Function1<V, string>, limitF?: GroupTransformer<V, V2>): EventStream<EventStream<V2>>;
     map<V2>(f: Function1<V, V2>): EventStream<V2>;
     map<V2>(f: Property<V2> | V2): EventStream<V2>;
+    ["fantasy-land/map"]<V2>(f: Function1<V, V2>): EventStream<V2>;
     /**
      Merges two streams into one stream that delivers events from both
      */

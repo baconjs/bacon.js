@@ -218,7 +218,7 @@ const verifyPSwitching = (srcF: () => Bacon.Observable<any>, expectedEvents: Bac
             }
             return Bacon.noMore;
           });
-        } 
+        }
       }
     })
   )
@@ -366,7 +366,7 @@ var hasValue = (x: any) => toValue(x) !== "<error>";
 declare var Promise: any
 
 export const deferred = (f: () => any) =>
-  new Promise((resolve: () => void) => { 
+  new Promise((resolve: () => void) => {
     return setTimeout((() => {
       f();
       return resolve();
@@ -386,7 +386,7 @@ export const onUnsub: (stream: Bacon.EventStream<any>, f: () => any) => Bacon.Ev
 };
 
 export function range(left: number, right: number, inclusive: boolean) {
-  let range = [];
+  let range: Array<number> = [];
   let ascending = left < right;
   let end = !inclusive ? right : ascending ? right + 1 : right - 1;
   for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {

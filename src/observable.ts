@@ -285,7 +285,7 @@ also use a property-extractor string instead of a function, as in
 `".preventDefault"`.
 
 Please note that for Properties, it's not guaranteed that the function will be called exactly once
-per event; when a Property loses all of its subscribers it will re-emit its current value when a 
+per event; when a Property loses all of its subscribers it will re-emit its current value when a
 new subscriber is added.
    */
   doAction(f: Function1<V, any>): this {
@@ -363,7 +363,7 @@ streams into the result stream/property. Note that instead of a function, you ca
 stream/property too. Also, the return value of function `f` can be either an
 `Observable` (stream/property) or a constant value.
 
-`stream.flatMap()` can be used conveniently with [`Bacon.once()`](../globals.html#once) and [`Bacon.never()`](../globals.html#never) 
+`stream.flatMap()` can be used conveniently with [`Bacon.once()`](../globals.html#once) and [`Bacon.never()`](../globals.html#never)
 for converting and filtering at the same time, including only some of the results.
 
 Example - converting strings to integers, skipping empty values:
@@ -523,6 +523,7 @@ in which case each element in the source stream will be mapped to the current va
 the given property.
   */
   abstract map<V2>(f: (Function1<V, V2> | Property<V2> | V2)): Observable<V2>
+  abstract ["fantasy-land/map"]<V2>(f: Function1<V, V2>): Observable<V2>
   /**
 Adds an extra [`Next`](next.html) event just before End. The value is created
 by calling the given function when the source stream ends. Instead of a
@@ -1126,6 +1127,10 @@ export class Property<V> extends Observable<V> {
     return <any>map<V, V2>(this, f)
   }
 
+  ["fantasy-land/map"]<V2>(f: Function1<V, V2>): Property<V2> {
+    return this.map(f);
+  }
+
   /** Returns a Property that inverts the value of this one (using the `!` operator). **/
   not(): Property<boolean> {
     return <any>not(this)
@@ -1474,8 +1479,12 @@ export class EventStream<V> extends Observable<V> {
    in which case each element in the source stream will be mapped to the current value of
    the given property.
    */
-  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> { 
-    return <any>map(this, f) 
+  map<V2>(f: Function1<V, V2> | Property<V2> | V2): EventStream<V2> {
+    return <any>map(this, f)
+  }
+
+  ["fantasy-land/map"]<V2>(f: Function1<V, V2>): EventStream<V2> {
+    return this.map(f);
   }
 
   /**
