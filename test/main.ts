@@ -2,6 +2,7 @@ import * as Bacon from "..";
 import { expect } from "chai";
 
 import { expectStreamEvents, expectPropertyEvents, series, semiunstable, unstable, repeatedly, fromArray, later, once, t, activate, deferred } from "./util/SpecHelper";
+import {Property} from "..";
 
 function latter<A> (a: A, b: A) { return b }
 const concat = (x: string, y: string) => x + y
@@ -189,7 +190,7 @@ describe("Integration tests", function() {
         .flatMap(fromArray)
         .flatMapLatest(Bacon._.id)
         .onValue(v => { result2.push(v) });
-      return deferred(function() { 
+      return deferred(function() {
         expect(result).to.deep.equal({faq: "default value"});
         return expect(result2).to.deep.equal([1,2,3,1,2,3,1,2,3]);
       });
@@ -216,7 +217,7 @@ describe("Integration tests", function() {
   );
   describe("Property.startWith", () =>
     it("works with combineAsArray", function() {
-      let result = null;
+      let result: (Property<string>|null|string) = null;
       const a = Bacon.constant("lolbal");
       result = Bacon.combineAsArray([a.map(true), a.map(true)]).map("right").startWith("wrong");
       result.onValue(x => { result = x });
@@ -503,10 +504,10 @@ describe("Integration tests", function() {
       });
     };
 
-    verifyWhileDispatching("with stream.startWith", 
-      (() => later(1, 1).startWith(0)), 
+    verifyWhileDispatching("with stream.startWith",
+      (() => later(1, 1).startWith(0)),
       [0, 1]);
-    verifyWhileDispatching("with combineAsArray", 
+    verifyWhileDispatching("with combineAsArray",
       (() => Bacon.combineAsArray([Bacon.constant(1)])),
       [[1]]);
     verifyWhileDispatching("with combineAsArray.startWith",
@@ -625,7 +626,7 @@ describe("Integration tests", function() {
             outdatedChild.subscribe(function(event) {
               if (Bacon.isEnd(event)) {
                 bus.end();
-              } 
+              }
               if (Bacon.hasValue(event)) {
                 bus.push(event.value);
               }

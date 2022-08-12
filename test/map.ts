@@ -1,7 +1,8 @@
 import * as Bacon from "..";
 import { assert, expect } from "chai";
 
-import { expectStreamEvents, expectPropertyEvents, series, error } from "./util/SpecHelper";
+import { expectStreamEvents, expectPropertyEvents, series, error, whenDeepStrictEqual } from "./util/SpecHelper";
+import {Observable} from "..";
 
 // needs to run by the shell as
 // TS_NODE_COMPILER_OPTIONS='{"noImplicitAny":false}' mocha -r ts-node/register ./test/map.ts
@@ -47,21 +48,13 @@ describe("EventStream.map", function() {
 
   describe("Fantasy-Land functor", () => {
     const
-      map = fn => m => m['fantasy-land/map'](fn),
+      map = (fn: any) => (m: Observable<any>) => m['fantasy-land/map'](fn),
       identity = _ => _,
-      o = (f, g) => x => f(g(x)),
-      whenEqual = (s1, s2, desc = "") =>
-        Promise.all([
-          s1.toPromise(),
-          s2.toPromise()
-        ])
-          .then(([r1, r2]) => {
-            assert.strictEqual(r1, r2, desc);
-          });
+      o = f => g => x => f(g(x));
 
     it("obeys the identity law", () => {
       const foo = Bacon.once("foo");
-      return whenEqual(map(identity)(foo), foo);
+      return whenDeepStrictEqual(map(identity)(foo), foo);
     });
 
     it("obeys composition law", function () {
@@ -70,7 +63,11 @@ describe("EventStream.map", function() {
         f = s => `${s}-f`, g = s => `${s}-g`, gz = () => undefined, gn = () => [],
         // F.map(x => f(g(x)), mx) ≡ F.map(f, F.map(g, mx))
         assertCompositionLaw = (m, f, g, desc = "") =>
-          whenEqual(map(o(f, g))(m), o(map(f), map(g))(m), desc);
+          whenDeepStrictEqual(
+            map(o(f)(g))(m),
+            o(map(f))(map(g))(m),
+            desc
+          );
 
       return Promise.all([
         assertCompositionLaw(foo, f, g),

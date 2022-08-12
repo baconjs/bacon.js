@@ -35,6 +35,8 @@ export declare abstract class Observable<V> {
     /** @hidden */
     _isObservable: boolean;
     constructor(desc: Desc);
+    ap<V2>(mapper: Observable<(value: V) => V2>): Property<V2>;
+    ["fantasy-land/ap"]<V2>(mapper: Observable<(value: V) => V2>): Property<V2>;
     /**
   Creates a Property that indicates whether
   `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest

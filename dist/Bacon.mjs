@@ -3020,6 +3020,12 @@ class Observable {
         this.desc = desc;
         this.initialDesc = desc;
     }
+    ap(mapper) {
+        return mapper.combine(this, (fn, v) => fn(v));
+    }
+    ["fantasy-land/ap"](mapper) {
+        return this.ap(mapper);
+    }
     /**
   Creates a Property that indicates whether
   `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
@@ -5048,6 +5054,6 @@ const $ = {
 /**
  *  Bacon.js version as string
  */
-const version = '3.0.17';
+const version = '__version__';
 
 export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };

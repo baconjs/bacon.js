@@ -3190,6 +3190,12 @@ var Observable = /** @class */ (function () {
         this.desc = desc;
         this.initialDesc = desc;
     }
+    Observable.prototype.ap = function (mapper) {
+        return mapper.combine(this, function (fn, v) { return fn(v); });
+    };
+    Observable.prototype["fantasy-land/ap"] = function (mapper) {
+        return this.ap(mapper);
+    };
     /**
   Creates a Property that indicates whether
   `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest
@@ -5295,7 +5301,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.17';
+var version = '__version__';
 
 exports.$ = $;
 exports.Bus = Bus;

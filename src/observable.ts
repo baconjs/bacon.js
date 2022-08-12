@@ -109,6 +109,14 @@ export abstract class Observable<V> {
     this.initialDesc = desc
   }
 
+  ap<V2>(mapper: Observable<(value: V) => V2>): Property<V2> {
+    return mapper.combine(this, (fn: (value: V) => V2, v: V) => fn(v));
+  }
+
+  ["fantasy-land/ap"]<V2>(mapper: Observable<(value: V) => V2>): Property<V2> {
+    return this.ap(mapper);
+  }
+
   /**
 Creates a Property that indicates whether
 `observable` is awaiting `otherObservable`, i.e. has produced a value after the latest

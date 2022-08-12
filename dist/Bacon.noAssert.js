@@ -2799,6 +2799,14 @@
             this.desc = desc;
             this.initialDesc = desc;
         }
+        Observable.prototype.ap = function (mapper) {
+            return mapper.combine(this, function (fn, v) {
+                return fn(v);
+            });
+        };
+        Observable.prototype['fantasy-land/ap'] = function (mapper) {
+            return this.ap(mapper);
+        };
         Observable.prototype.awaiting = function (other) {
             return awaiting(this, other);
         };
@@ -3848,7 +3856,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.17';
+    var version = '__version__';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

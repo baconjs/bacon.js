@@ -1,10 +1,10 @@
-require('es6-promise').polyfill();
 import * as Bacon from "../..";
-import { expect } from "chai";
+import {assert, expect} from "chai";
 
 import { TickScheduler } from "./TickScheduler";
 import { mockFunction } from "./Mock"
 import { fail } from "assert";
+import {Observable} from "../..";
 
 export const sc = TickScheduler();
 Bacon.setScheduler(sc);
@@ -393,4 +393,14 @@ export function range(left: number, right: number, inclusive: boolean) {
     range.push(i);
   }
   return range;
+}
+
+export function whenDeepStrictEqual(s1: Observable<any>, s2: Observable<any>, desc: string = "") {
+  return Promise.all([
+    s1.toPromise(),
+    s2.toPromise()
+  ])
+  .then(([r1, r2]: [any, any]) => {
+    assert.deepStrictEqual(r1, r2, desc);
+  });
 }
