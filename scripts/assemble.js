@@ -36,7 +36,8 @@ function main(options) {
        tsconfigOverride: {
         compilerOptions: {
           target: "ES6",
-          lib: ["ES6", "DOM", "DOM.Iterable"]
+          lib: ["ES6", "DOM", "DOM.Iterable"],
+          sourceMap: true
         }
        },
       useTsconfigDeclarationDir: true
@@ -75,6 +76,10 @@ function main(options) {
     es6Bundle.write({
       format: 'esm',
       file: 'dist/Bacon.mjs'
+    }),
+    es6Bundle.write({
+      sourcemap: true,
+      file: 'dist/Bacon.mjs'
     })
   ]))
   .then(function() {
@@ -95,12 +100,22 @@ function main(options) {
     if (options.minifiedES6) {
       const
          esmOutput = fs.readFileSync('dist/Bacon.mjs', 'utf-8'),
-         esmResult = Terser.minify(esmOutput);
+         sourcemapOutput = fs.readFileSync('dist/Bacon.mjs.map', 'utf-8'),
+         esmResult = Terser.minify(
+            esmOutput,
+            {
+              sourceMap: {
+                url: "Bacon.min.mjs.map",
+                content: sourcemapOutput
+              }
+            }
+         );
       
       if (esmResult.error) {
         throw esmResult.error;
       }
       fs.writeFileSync(options.minifiedES6, esmResult.code);
+      fs.writeFileSync(options.minifiedES6.replace(/js$/, "js.map"), esmResult.map);
     }
   }).catch(function(error) {
     console.error(error);

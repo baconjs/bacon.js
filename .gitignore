@@ -16,3 +16,5 @@ browserstack-run.pid
 .rpt2_cache
 docs
 .vscode
+/dist/Bacon.mjs.map
+/dist/Bacon.min.mjs.map
