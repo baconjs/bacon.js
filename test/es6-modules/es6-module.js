@@ -1,4 +1,4 @@
-import * as Bacon from '../../dist/Bacon.mjs';
+import * as Bacon from '../../dist/es6/Bacon.js';
 import { expect } from "chai";
 const pkg = require('../../package.json');
 

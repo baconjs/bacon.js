@@ -1,5 +1,6 @@
 "use strict";
 
+var crypto = require('crypto');
 var fs = require("fs");
 var path = require("path");
 var rollup = require("rollup").rollup;
@@ -14,7 +15,11 @@ var argPieceNames = process.argv.slice(2);
 var defaultOutput = path.join(__dirname, "..", "dist", "Bacon.js");
 var defaultNoAssert = path.join(__dirname, "..", "dist", "Bacon.noAssert.js");
 var defaultMinified = path.join(__dirname, "..", "dist", "Bacon.min.js");
-var defaultMinifiedES6 = path.join(__dirname, "..", "dist", "Bacon.min.mjs");
+var defaultMinifiedES6 = path.join(__dirname, "..", "dist/es6", "Bacon.min.js");
+
+// openssl dgst -sha384 -binary FILENAME.js | openssl base64 -A
+const sha384SriString = fileContents =>
+   crypto.createHash('sha384').update(fileContents).digest("base64");
 
 function main(options) {
   options = options || {};
@@ -80,6 +85,14 @@ function main(options) {
     es6Bundle.write({
       sourcemap: true,
       file: 'dist/Bacon.mjs'
+    }),
+    es6Bundle.write({
+      format: 'esm',
+      file: 'dist/es6/Bacon.js'
+    }),
+    es6Bundle.write({
+      sourcemap: true,
+      file: 'dist/es6/Bacon.js'
     })
   ]))
   .then(function() {
@@ -99,13 +112,13 @@ function main(options) {
     
     if (options.minifiedES6) {
       const
-         esmOutput = fs.readFileSync('dist/Bacon.mjs', 'utf-8'),
-         sourcemapOutput = fs.readFileSync('dist/Bacon.mjs.map', 'utf-8'),
+         esmOutput = fs.readFileSync('dist/es6/Bacon.js', 'utf-8'),
+         sourcemapOutput = fs.readFileSync('dist/es6/Bacon.js.map', 'utf-8'),
          esmResult = Terser.minify(
             esmOutput,
             {
               sourceMap: {
-                url: "Bacon.min.mjs.map",
+                url: "Bacon.min.js.map",
                 content: sourcemapOutput
               }
             }
@@ -116,6 +129,10 @@ function main(options) {
       }
       fs.writeFileSync(options.minifiedES6, esmResult.code);
       fs.writeFileSync(options.minifiedES6.replace(/js$/, "js.map"), esmResult.map);
+      
+      console.log("Sub Resource Integrity (SRI) SHA-384 hash values:");
+      console.log(`dist/es/Bacon.js: ${sha384SriString(esmOutput)}`);
+      console.log(`${options.minifiedES6}: ${sha384SriString(esmResult.code)}`);
     }
   }).catch(function(error) {
     console.error(error);
