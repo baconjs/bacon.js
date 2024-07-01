@@ -3882,6 +3882,7 @@
     exports.isEvent = isEvent;
     exports.isInitial = isInitial;
     exports.isNext = isNext;
+    exports.isProperty = isProperty;
     exports.later = later;
     exports.mergeAll = mergeAll;
     exports.more = more;

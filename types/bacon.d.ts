@@ -30,7 +30,7 @@ export { more, noMore, Reply } from "./reply";
 export { default as fromPromise } from "./frompromise";
 export { fromCallback, fromNodeCallback } from "./callback";
 export { default as fromESObservable } from "./fromesobservable";
-export { EventStream, Observable, Property } from "./observable";
+export { EventStream, Observable, Property, isProperty } from "./observable";
 export { default as Bus } from "./bus";
 export * from "./types";
 export { Desc } from "./describe";

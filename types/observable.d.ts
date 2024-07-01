@@ -167,15 +167,15 @@ export declare abstract class Observable<V> {
   Example:
   
   ```js
-  var distance = function (a,b) { return Math.abs(b - a) }
+  var distance = function (a,b) { return a - b }
   Bacon.sequentially(1, [1,2,3]).diff(0, distance)
   ```
   
   This would result to following elements in the result stream:
   
-      1 - 0 = 1
-      2 - 1 = 1
-      3 - 2 = 1
+      0 - 1 = -1
+      1 - 2 = -1
+      2 - 3 = -1
   
      */
     diff<V2>(start: V, f: Differ<V, V2>): Property<V2>;
@@ -435,7 +435,7 @@ export declare abstract class Observable<V> {
   Only applicable for observables with arrays as values.
      */
     onValues(f: Function): Unsub;
-    /** A synonym for [scan](#scan).
+    /** A synonym for [fold](#fold).
      */
     reduce<V2>(seed: V2, f: Accumulator<V, V2>): Property<V2>;
     /**

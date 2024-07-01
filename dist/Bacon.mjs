@@ -3152,15 +3152,15 @@ class Observable {
   Example:
   
   ```js
-  var distance = function (a,b) { return Math.abs(b - a) }
+  var distance = function (a,b) { return a - b }
   Bacon.sequentially(1, [1,2,3]).diff(0, distance)
   ```
   
   This would result to following elements in the result stream:
   
-      1 - 0 = 1
-      2 - 1 = 1
-      3 - 2 = 1
+      0 - 1 = -1
+      1 - 2 = -1
+      2 - 3 = -1
   
      */
     diff(start, f) {
@@ -3385,7 +3385,7 @@ class Observable {
     onValues(f) {
         return this.onValue(function (args) { return f(...args); });
     }
-    /** A synonym for [scan](#scan).
+    /** A synonym for [fold](#fold).
      */
     reduce(seed, f) {
         return fold$1(this, seed, f);
@@ -4990,7 +4990,10 @@ class Bus extends EventStream {
     }
 }
 
-/** @hidden */
+/**
+ * A helper for creating an EventStream of a single value, or a single Error event in case the given
+ * function throws an exception.
+ */
 function tryF(f) {
     return function (value) {
         try {
@@ -5044,4 +5047,4 @@ const $ = {
  */
 const version = '3.0.17';
 
-export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };
+export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, isProperty, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };
