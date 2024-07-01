@@ -280,7 +280,7 @@ and wrap caught errors into Error events, you can do the following:
 wrapped = source.flatMap(Bacon.try(dangerousOperation))
 ```
 
-For example, you can use [`Bacon.try`](http://baconjs.github.io/api3/globals.html#try) to handle JSON parse errors:
+For example, you can use [`Bacon.try`](http://baconjs.github.io/api3/globals.html#tryf) to handle JSON parse errors:
 
 ```js
 var jsonStream = Bacon
