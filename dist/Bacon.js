@@ -5237,8 +5237,20 @@ var Bus = /** @class */ (function (_super) {
 }(EventStream));
 
 /**
- * A helper for creating an EventStream of a single value, or a single Error event in case the given
- * function throws an exception.
+ `Bacon.try` is a helper for creating an EventStream of a single value, or a single Error event in case the given
+ function throws an exception.
+
+For example, you can use `Bacon.try` to handle JSON parse errors:
+
+```js
+var jsonStream = Bacon
+  .once('{"this is invalid json"')
+  .flatMap(Bacon.try(JSON.parse))
+
+jsonStream.onError(function(err) {
+  console.error("Failed to parse JSON", err)
+})
+
  */
 function tryF(f) {
     return function (value) {
@@ -5292,7 +5304,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.17';
+var version = '3.0.18';
 
 exports.$ = $;
 exports.Bus = Bus;

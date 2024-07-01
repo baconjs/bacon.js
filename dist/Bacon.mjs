@@ -4991,8 +4991,20 @@ class Bus extends EventStream {
 }
 
 /**
- * A helper for creating an EventStream of a single value, or a single Error event in case the given
- * function throws an exception.
+ `Bacon.try` is a helper for creating an EventStream of a single value, or a single Error event in case the given
+ function throws an exception.
+
+For example, you can use `Bacon.try` to handle JSON parse errors:
+
+```js
+var jsonStream = Bacon
+  .once('{"this is invalid json"')
+  .flatMap(Bacon.try(JSON.parse))
+
+jsonStream.onError(function(err) {
+  console.error("Failed to parse JSON", err)
+})
+
  */
 function tryF(f) {
     return function (value) {
@@ -5045,6 +5057,6 @@ const $ = {
 /**
  *  Bacon.js version as string
  */
-const version = '3.0.17';
+const version = '3.0.18';
 
 export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, isProperty, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };
