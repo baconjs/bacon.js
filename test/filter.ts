@@ -10,6 +10,16 @@ describe("EventStream.filter", function() {
       [1, 2, error()])
   );
 
+  describe("supports type narrowing", () =>
+    expectStreamEvents(
+      () => {
+        const result: Bacon.EventStream<number> = series(1, [1, "hello"]).filter((x): x is number => typeof x === "number");
+        return result
+      },
+      [1])
+  );
+
+
   describe("can filter by Property value", () =>
     expectStreamEvents(
       function() {
