@@ -1,5 +1,6 @@
+import Bus from "./bus";
 import { Event } from "./event";
-import { EventStream } from "./observable";
+import { EventStream, Property, Observable } from "./observable";
 import { Reply } from "./reply";
 export declare type Sink<V> = (value: V) => Reply;
 export declare type EventSink<V> = (event: Event<V>) => Reply;
@@ -21,3 +22,5 @@ export declare type Function3<T1, T2, T3, R> = (t1: T1, t2: T2, t3: T3) => R;
 export declare type Function4<T1, T2, T3, T4, R> = (t1: T1, t2: T2, t3: T3, t4: T4) => R;
 export declare type Function5<T1, T2, T3, T4, T5, R> = (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5) => R;
 export declare type Function6<T1, T2, T3, T4, T5, T6, R> = (t1: T1, t2: T2, t3: T3, t4: T4, t5: T5, t6: T6) => R;
+export declare type ObservableWithParam<T extends Observable<any>, P> = T extends Bus<any> | EventStream<any> ? EventStream<P> : T extends Property<any> ? Property<P> : Observable<P>;
+export declare type TypePredicate<S> = (v: any) => v is S;

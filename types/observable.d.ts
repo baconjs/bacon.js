@@ -1,5 +1,5 @@
 import { Desc } from "./describe";
-import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink, Function1, Function2, Function0 } from "./types";
+import { EventSink, EventStreamDelay, Sink, Subscribe, Unsub, VoidSink, Function1, Function2, Function0, ObservableWithParam, TypePredicate } from "./types";
 import { StateF } from "./withstatemachine";
 import { Equals } from "./skipduplicates";
 import { Accumulator } from "./scan";
@@ -220,14 +220,7 @@ export declare abstract class Observable<V> {
   Same as filtering with a function that always returns false.
      */
     errors(): this;
-    /**
-  Filters values using given predicate function.
-  Instead of a function, you can use a constant value (`true` to include all, `false` to exclude all).
-  
-  You can also filter values based on the value of a
-  property. Event will be included in output [if and only if](http://en.wikipedia.org/wiki/If_and_only_if) the property holds `true`
-  at the time of the event.
-     */
+    filter<S extends V>(f: TypePredicate<S>): ObservableWithParam<this, S>;
     filter(f: Predicate<V> | boolean | Property<boolean>): this;
     /**
   Takes the first element from the stream. Essentially `observable.take(1)`.
