@@ -1,3 +1,11 @@
+## 3.0.21
+
+- Support type narrowing in filter
+
+## 3.0.20
+
+- Include types in package.json exports
+
 ## 3.0.17
 
 - Export ES module properly using the `exports` and `module`fields in `package.json`. #776 by @semmel.
