@@ -45,9 +45,8 @@ export function flatMap_<In, Out>(spawner: EventSpawner<In, Out>, src: Observabl
       const child = makeObservable<Out>(spawner(event))
       childDeps.push(child)
       return composite.add(function(unsubAll: Unsub, unsubMe: Unsub) {
-        return child.subscribeInternal(function(event: Event<Out>) {
+        const unsub = child.subscribeInternal(function(event: Event<Out>) {
           if (event.isEnd) {
-            _.remove(child, childDeps)
             checkQueue()
             checkEnd(unsubMe)
             return noMore
@@ -58,6 +57,10 @@ export function flatMap_<In, Out>(spawner: EventSpawner<In, Out>, src: Observabl
             return reply
           }
         })
+        return () => {
+          _.remove(child, childDeps)
+          unsub()
+        }
       })
     }
     function checkQueue(): void {
