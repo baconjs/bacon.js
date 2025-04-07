@@ -334,7 +334,7 @@ Same as filtering with a function that always returns false.
     return this.filter(x => false).withDesc(new Desc(this, "errors"))
   }
 
-  filter<S extends V>(f: TypePredicate<S>):  ObservableWithParam<this, S>
+  filter<S extends V>(f: TypePredicate<V, S>):  ObservableWithParam<this, S>
   filter(f: Predicate<V> | boolean | Property<boolean>): this
   /**
 Filters values using given predicate function.
