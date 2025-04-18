@@ -1,3 +1,7 @@
+## 3.0.23
+
+- Fix flatMap memory leak
+
 ## 3.0.22
 
 - Import type narrowing in filter
