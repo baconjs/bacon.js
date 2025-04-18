@@ -220,7 +220,7 @@ export declare abstract class Observable<V> {
   Same as filtering with a function that always returns false.
      */
     errors(): this;
-    filter<S extends V>(f: TypePredicate<S>): ObservableWithParam<this, S>;
+    filter<S extends V>(f: TypePredicate<V, S>): ObservableWithParam<this, S>;
     filter(f: Predicate<V> | boolean | Property<boolean>): this;
     /**
   Takes the first element from the stream. Essentially `observable.take(1)`.
