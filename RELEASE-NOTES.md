@@ -1,3 +1,7 @@
+## 3.0.22
+
+- Import type narrowing in filter
+
 ## 3.0.21
 
 - Support type narrowing in filter
