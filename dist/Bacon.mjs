@@ -1170,9 +1170,8 @@ function flatMap_(spawner, src, params = {}) {
             const child = makeObservable(spawner(event));
             childDeps.push(child);
             return composite.add(function (unsubAll, unsubMe) {
-                return child.subscribeInternal(function (event) {
+                const unsub = child.subscribeInternal(function (event) {
                     if (event.isEnd) {
-                        _.remove(child, childDeps);
                         checkQueue();
                         checkEnd(unsubMe);
                         return noMore;
@@ -1186,6 +1185,10 @@ function flatMap_(spawner, src, params = {}) {
                         return reply;
                     }
                 });
+                return () => {
+                    _.remove(child, childDeps);
+                    unsub();
+                };
             });
         }
         function checkQueue() {
@@ -5057,6 +5060,6 @@ const $ = {
 /**
  *  Bacon.js version as string
  */
-const version = '3.0.21';
+const version = '3.0.22';
 
 export { $, Bus, CompositeUnsubscribe, Desc, End, Error$1 as Error, Event, EventStream, Initial, Next, Observable, Property, Value, _, combine, combineAsArray, combineTemplate, combineTwo, combineWith, concatAll, constant, fromArray, fromBinder, fromCallback, fromESObservable, fromEvent, fromEvent as fromEventTarget, fromNodeCallback, fromPoll, fromPromise, getScheduler, groupSimultaneous, hasValue, interval, isEnd, isError, isEvent, isInitial, isNext, isProperty, later, mergeAll, more, never, noMore, nullSink, nullVoidSink, onValues, once, repeat, repeatedly, retry, sequentially, setScheduler, silence, spy, tryF as try, update, version, when, zipAsArray, zipWith };

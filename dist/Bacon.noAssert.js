@@ -1123,9 +1123,8 @@
                 var child = makeObservable(spawner(event));
                 childDeps.push(child);
                 return composite.add(function (unsubAll, unsubMe) {
-                    return child.subscribeInternal(function (event) {
+                    var unsub = child.subscribeInternal(function (event) {
                         if (event.isEnd) {
-                            _.remove(child, childDeps);
                             checkQueue();
                             checkEnd(unsubMe);
                             return noMore;
@@ -1138,6 +1137,10 @@
                             return reply;
                         }
                     });
+                    return function () {
+                        _.remove(child, childDeps);
+                        unsub();
+                    };
                 });
             }
             function checkQueue() {
@@ -3842,7 +3845,7 @@
             jQuery.fn.asEventStream = $.asEventStream;
         }
     };
-    var version = '3.0.21';
+    var version = '3.0.22';
     exports.$ = $;
     exports.Bus = Bus;
     exports.CompositeUnsubscribe = CompositeUnsubscribe;

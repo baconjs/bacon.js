@@ -1244,9 +1244,8 @@ function flatMap_(spawner, src, params) {
             var child = makeObservable(spawner(event));
             childDeps.push(child);
             return composite.add(function (unsubAll, unsubMe) {
-                return child.subscribeInternal(function (event) {
+                var unsub = child.subscribeInternal(function (event) {
                     if (event.isEnd) {
-                        _.remove(child, childDeps);
                         checkQueue();
                         checkEnd(unsubMe);
                         return noMore;
@@ -1260,6 +1259,10 @@ function flatMap_(spawner, src, params) {
                         return reply;
                     }
                 });
+                return function () {
+                    _.remove(child, childDeps);
+                    unsub();
+                };
             });
         }
         function checkQueue() {
@@ -5304,7 +5307,7 @@ var $ = {
 /**
  *  Bacon.js version as string
  */
-var version = '3.0.21';
+var version = '3.0.22';
 
 exports.$ = $;
 exports.Bus = Bus;
